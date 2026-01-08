@@ -1,0 +1,1 @@
+https://en.ryte.com/wiki/InURL_Search/ (GET)  # sqlmap.py -g inurl:index.php?id=1 --proxy=socks5://127.0.0.1:9050 --batch --banner

