@@ -2,20 +2,20 @@ import pyotp
 from instagrapi import Client
 import telebot
 
-# الإعدادات المحدثة بالـ ID حقك
-BOT_TOKEN = "7547470402:AAH93lK8X6P13rI4YI-e_R-mGv8f4eF7_oI"
+# التوكن والـ ID اللي استخرجتهم أنت ذلحين
+BOT_TOKEN = "8202624609:AAFANTQ275DFav65KnGGtcji1SibG0-u1E0"
 CHAT_ID = "5042495708"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 cl = Client()
-# مفتاح الأمان (2FA)
+# مفتاح الأمان (2FA) حقك
 totp = pyotp.TOTP("UZ6SLU76H7KNYI3YSTV26T27O53EUKG2")
 
 def login_to_insta():
     try:
-        bot.send_message(CHAT_ID, "🚀 يا فادي، السيرفر اشتغل ذلحين وجاري الدخول...")
+        bot.send_message(CHAT_ID, "🚀 السيرفر اشتغل يا فادي.. جاري كسر حماية انستقرام!")
         cl.login("fadi97781", "god12god12")
-        bot.send_message(CHAT_ID, "✅ تم الدخول للحساب الجديد بنجاح!")
+        bot.send_message(CHAT_ID, "✅ تم الدخول للحساب بنجاح!")
     except Exception as e:
         if "two_factor_required" in str(e):
             verification_code = totp.now()
