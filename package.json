@@ -1,0 +1,8 @@
+{
+  "name": "sanaa-gold-bot",
+  "version": "1.0.0",
+  "main": "main.py",
+  "scripts": {
+    "start": "python main.py"
+  }
+}

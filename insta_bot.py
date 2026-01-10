@@ -1,48 +1,28 @@
+import pyotp
 from instagrapi import Client
-import time
-import random
-import requests
+import telebot
 
-# بيانات التلجرام (حق بوت الذهب حقك)
-TOKEN = "8202624609:AAFANTQ275DFav65KnGGtcji1SibG0-u1E0"
-CHAT_ID = "5042495708"
+# إعداداتك (تأكد من التوكن والـ ID)
+BOT_TOKEN = "7547470402:AAH93lK8X6P13rI4YI-e_R-mGv8f4eF7_oI"
+CHAT_ID = "6106644026"
 
-# بيانات الانستقرام
-USERNAME = 'malk.mostafa.946517'
-PASSWORD = 'god12god13'
-
+bot = telebot.TeleBot(BOT_TOKEN)
 cl = Client()
+# مفتاح الأمان حقك
+totp = pyotp.TOTP("UZ6SLU76H7KNYI3YSTV26T27O53EUKG2")
 
-def send_telegram(msg):
+def login_to_insta():
     try:
-        requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", 
-                      json={"chat_id": CHAT_ID, "text": msg})
-    except:
-        pass
-
-def run_bot():
-    try:
-        print("جاري الدخول...")
-        cl.login(USERNAME, PASSWORD)
-        send_telegram("🚀 أبشرك يا فادي.. بوت الانستا سجل دخول وشغال ذلحين يقنص!")
-        
-        hashtags = ["اليمن", "صنعاء", "برمجة"]
-        
-        while True:
-            tag = random.choice(hashtags)
-            medias = cl.hashtag_medias_recent(tag, amount=2)
-            
-            for media in medias:
-                cl.media_like(media.id)
-                info = f"❤️ سويت لايك لمنشور في هاشتاج (# {tag})\nالمعرف: {media.id}"
-                print(info)
-                # إذا تشتي يرسل لك في التلجرام عن كل لايك (بس عتوقع رسائل كثير)
-                # send_telegram(info) 
-                
-                time.sleep(random.randint(600, 900)) # خليه ثقيل عشان الأمان
-                
+        bot.send_message(CHAT_ID, "🚀 جاري محاولة الدخول (fadi97781)...")
+        cl.login("fadi97781", "god12god12")
+        bot.send_message(CHAT_ID, "✅ تم الدخول بنجاح يا فادي!")
     except Exception as e:
-        send_telegram(f"⚠️ الحق يا فادي، البوت وقف بسبب: {e}")
+        if "two_factor_required" in str(e):
+            verification_code = totp.now()
+            cl.two_factor_login(verification_code)
+            bot.send_message(CHAT_ID, "✅ تم تخطي الـ 2FA والدخول بنجاح!")
+        else:
+            bot.send_message(CHAT_ID, f"❌ خطأ: {str(e)}")
 
 if __name__ == "__main__":
-    run_bot()
+    login_to_insta()
