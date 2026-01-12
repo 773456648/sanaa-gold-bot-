@@ -5,7 +5,7 @@ import sys
 
 # بياناتك يا مبرمج
 FB_USER = "488intellectual@gmail.com"
-FB_PASS = "god12god1"
+FB_PASS = "god12god13"
 TG_TOKEN = "8202624609:AAFANTQ275DFav65KnGGtcji1SibG0-u1E0"
 TG_ID = "1214068560"
 
