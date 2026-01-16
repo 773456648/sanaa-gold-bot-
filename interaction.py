@@ -20,28 +20,33 @@ def send_tele(msg):
     except: pass
 
 def start_bot():
-    send_tele("✅ تم تفعيل النسخة المستقرة! بدأنا محط اللايكات والمتابعات يا فادي.")
-    tags = ['yemen', 'explore', 'nature']
-    while True:
-        try:
+    try:
+        # جلب معلومات الحساب للتأكيد
+        check_url = "https://www.instagram.com/api/v1/accounts/current_user/?edit=true"
+        res = requests.get(check_url, headers=headers).json()
+        username = res.get('user', {}).get('username', 'غير معروف')
+        user_id = res.get('user', {}).get('pk', 'غير معروف')
+        
+        send_tele(f"👤 تم الدخول بنجاح يا فادي!\n✅ الحساب: @{username}\n🆔 الآيدي: {user_id}\n🔥 الموتور شغال ذلحين!")
+        
+        # بعد التأكيد، نرجع لمحط اللايكات
+        tags = ['yemen', 'explore']
+        while True:
             tag = random.choice(tags)
-            res = requests.get(f"https://www.instagram.com/explore/tags/{tag}/?__a=1&__d=dis", headers=headers).json()
-            items = res['graphql']['hashtag']['edge_hashtag_to_media']['edges']
-            
-            for item in items[:8]:
-                p_id = item['node']['id']
-                # لايك
+            r = requests.get(f"https://www.instagram.com/explore/tags/{tag}/?__a=1&__d=dis", headers=headers).json()
+            posts = r['graphql']['hashtag']['edge_hashtag_to_media']['edges']
+            for p in posts[:5]:
+                p_id = p['node']['id']
                 requests.post(f"https://www.instagram.com/web/likes/{p_id}/like/", headers=headers)
                 send_tele(f"❤️ لايك مسمار للمنشور: {p_id}")
-                time.sleep(15) 
-                
-            time.sleep(180) 
-        except:
-            time.sleep(60)
+                time.sleep(20)
+            time.sleep(300)
+    except Exception as e:
+        send_tele(f"🚫 فشل في سحب اسم الحساب، الكوكيز قد تكون انتهت. الخطأ: {str(e)[:50]}")
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(b"Stable Bot Running")
+        self.send_response(200); self.end_headers(); self.wfile.write(b"Confirmation Bot Active")
 
 if __name__ == "__main__":
     Thread(target=start_bot).start()
