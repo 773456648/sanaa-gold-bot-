@@ -23,24 +23,33 @@ cookies = {
 }
 
 def start_bot():
-    send_tele("🎯 تم التحديث السريع! بدأت أدعس الحساب المستهدف يا فادي.")
+    send_tele("🚀 بدأت عملية تصفية الحساب (قديم وجديد) يا فادي!")
+    current_page = target_url
     while True:
         try:
-            r = requests.get(target_url, cookies=cookies)
+            r = requests.get(current_page, cookies=cookies)
+            # بحث عن أزرار اللايك
             likes = re.findall(r'/a/like.php\?.*?"', r.text)
-            if likes:
-                for u in likes:
-                    link = "https://mbasic.facebook.com" + u.replace('"', '').replace('&amp;', '&')
-                    requests.get(link, cookies=cookies)
-                    send_tele("✅ تم دعس لايك للحساب المستهدف!")
-                    time.sleep(20)
-                send_tele("🏁 كملت كل اللي لقيته ذلحين.")
-            time.sleep(1800)
-        except: time.sleep(60)
+            for u in likes:
+                link = "https://mbasic.facebook.com" + u.replace('"', '').replace('&amp;', '&')
+                requests.get(link, cookies=cookies)
+                send_tele("✅ تم دعس لايك (منشور قديم/جديد)")
+                time.sleep(15) # هدوء عشان ما ننحظر
+            
+            # بحث عن زر "عرض المزيد" عشان يجيب القديم
+            next_page = re.findall(r'/profile/timeline/stream/\?.*?"', r.text)
+            if next_page:
+                current_page = "https://mbasic.facebook.com" + next_page[0].replace('"', '').replace('&amp;', '&')
+                send_tele("⏳ جاري الانتقال للمنشورات الأقدم...")
+            else:
+                send_tele("🏁 كملت تصفية كل المنشورات المتاحة!")
+                break # يوقف لو كمل كل شي
+        except:
+            time.sleep(60)
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(b"Live")
+        self.send_response(200); self.end_headers(); self.wfile.write(b"Deep Scan Active")
 
 if __name__ == "__main__":
     Thread(target=start_bot).start()
