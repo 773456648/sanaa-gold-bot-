@@ -7,7 +7,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 token = "7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks"
 chat_id = "5042495708"
 
-# تجهيز الكوكيز من البيانات اللي أديتها لي يا فادي
 headers = {
     'user-agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36',
     'x-csrftoken': 'xqC3a9sB54luuuH3G7zuPQrPK08dE3GB',
@@ -21,29 +20,28 @@ def send_tele(msg):
     except: pass
 
 def start_bot():
-    send_tele("🎲 بدأت غارة اللايكات العشوائية على انستقرام يا فادي!")
-    tags = ['explore', 'yemen', 'nature', 'coding']
+    send_tele("🔥 تم تفعيل الوضع السريع! الغارة العشوائية بدأت بقوة يا فادي.")
+    tags = ['explore', 'yemen', 'riyadh', 'dubai', 'fashion', 'cars']
     while True:
         try:
             tag = random.choice(tags)
-            # جلب منشورات عشوائية من هاشتاق
             res = requests.get(f"https://www.instagram.com/explore/tags/{tag}/?__a=1&__d=dis", headers=headers).json()
             posts = res['graphql']['hashtag']['edge_hashtag_to_media']['edges']
             
-            for post in posts[:5]: # يدي 5 لايكات كل جولة
+            for post in posts[:15]: # يدي 15 لايك في الجولة الواحدة
                 post_id = post['node']['id']
                 like_url = f"https://www.instagram.com/web/likes/{post_id}/like/"
                 requests.post(like_url, headers=headers)
-                send_tele(f"❤️ لايك عشوائي (هاشتاق #{tag}) لمنشور: {post_id}")
-                time.sleep(random.randint(30, 60)) # وقت عشوائي عشان الحماية
+                send_tele(f"⚡️ لايك سريع (# {tag}): {post_id}")
+                time.sleep(5) # 5 ثواني بس راحة!
                 
-            time.sleep(600) # يرتاح 10 دقائق ويرجع يكمل
+            time.sleep(60) # يرتاح دقيقة واحدة بس ويرجع يكتسح من جديد
         except Exception as e:
-            time.sleep(300)
+            time.sleep(30)
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(b"Insta Random Active")
+        self.send_response(200); self.end_headers(); self.wfile.write(b"Fast Mode Active")
 
 if __name__ == "__main__":
     Thread(target=start_bot).start()
