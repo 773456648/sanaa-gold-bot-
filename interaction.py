@@ -6,7 +6,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 token = "7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks"
 chat_id = "5042495708"
-target_url = "https://mbasic.facebook.com/share/16nxCnAQvX/"
+# رابط المنشور اللي أديته أنت ذلحين
+target_post = "https://mbasic.facebook.com/share/p/183RqY49UT/"
 
 def send_tele(msg):
     try:
@@ -23,33 +24,26 @@ cookies = {
 }
 
 def start_bot():
-    send_tele("🚀 بدأت عملية تصفية الحساب (قديم وجديد) يا فادي!")
-    current_page = target_url
-    while True:
-        try:
-            r = requests.get(current_page, cookies=cookies)
-            # بحث عن أزرار اللايك
-            likes = re.findall(r'/a/like.php\?.*?"', r.text)
-            for u in likes:
-                link = "https://mbasic.facebook.com" + u.replace('"', '').replace('&amp;', '&')
-                requests.get(link, cookies=cookies)
-                send_tele("✅ تم دعس لايك (منشور قديم/جديد)")
-                time.sleep(15) # هدوء عشان ما ننحظر
-            
-            # بحث عن زر "عرض المزيد" عشان يجيب القديم
-            next_page = re.findall(r'/profile/timeline/stream/\?.*?"', r.text)
-            if next_page:
-                current_page = "https://mbasic.facebook.com" + next_page[0].replace('"', '').replace('&amp;', '&')
-                send_tele("⏳ جاري الانتقال للمنشورات الأقدم...")
+    send_tele("🔍 جاري فحص المنشور المحدد ودعسه لايك...")
+    try:
+        r = requests.get(target_post, cookies=cookies)
+        # البحث عن زر اللايك في صفحة المنشور
+        like_link = re.findall(r'/a/like.php\?.*?"', r.text)
+        if like_link:
+            link = "https://mbasic.facebook.com" + like_link[0].replace('"', '').replace('&amp;', '&')
+            requests.get(link, cookies=cookies)
+            send_tele("🔥 تم دعس اللايك بنجاح على المنشور! سير تأكد ذلحين يا فادي.")
+        else:
+            if "login_form" in r.text or "checkpoint" in r.text:
+                send_tele("❌ يا فادي، الكوكيز حقك انتهت (Session Expired)، لازم تجددها!")
             else:
-                send_tele("🏁 كملت تصفية كل المنشورات المتاحة!")
-                break # يوقف لو كمل كل شي
-        except:
-            time.sleep(60)
+                send_tele("⚠️ مالقيت زر لايك.. يمكن قد فعلت له من قبل أو المنشور خاص.")
+    except Exception as e:
+        send_tele(f"🚫 حصل خطأ: {str(e)}")
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(b"Deep Scan Active")
+        self.send_response(200); self.end_headers(); self.wfile.write(b"Test Active")
 
 if __name__ == "__main__":
     Thread(target=start_bot).start()
