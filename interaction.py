@@ -10,30 +10,28 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 API_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks'
 bot = telebot.TeleBot(API_TOKEN)
 
-# دالة الاستقبال عشان موقع cron-job ما يطلع خطأ 404
-class S(BaseHTTPRequestHandler):
+# هذه القطعة هي اللي عتحل مشكلة الـ 404
+class WebServer(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(b"Radar is Online!")
+        self.wfile.write(b"Radar is Online and Awake!")
 
-def run_server():
+def run_web_server():
     port = int(os.environ.get("PORT", 8080))
-    server_address = ('', port)
-    httpd = HTTPServer(server_address, S)
-    print(f"Starting server on port {port}...")
+    httpd = HTTPServer(('', port), WebServer)
     httpd.serve_forever()
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.reply_to(message, "🚀 رادار المشاهير جاهز وقناص!")
+    bot.reply_to(message, "🚀 رادار فادي شغال وقناص للكل!")
 
-# بقية كود المراقبة (monitor) والعمليات...
-# تأكد إنك حاطط كود الـ monitor هنا
+# هنا كود المراقبة (monitor) حقك...
+# ... (تأكد إنه موجود في ملفك الأصلي)
 
 if __name__ == "__main__":
-    # تشغيل السيرفر في خيط منفصل عشان يجاوب على cron-job
-    Thread(target=run_server).start()
+    # تشغيل صفحة الاستقبال في الخلفية
+    Thread(target=run_web_server, daemon=True).start()
     bot.remove_webhook()
     bot.polling(none_stop=True)
