@@ -10,17 +10,16 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 API_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks'
 bot = telebot.TeleBot(API_TOKEN)
 
-# دالة لتشغيل سيرفر وهمي لإرضاء Render
-class HealthCheckHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"Radar is Live!")
-
-def run_health_server():
-    port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
-    server.serve_forever()
+def get_uc_from_url(url):
+    try:
+        response = requests.get(url, timeout=10).text
+        # البحث عن كود UC داخل صفحة القناة
+        match = re.search(r'browse_id":"(UC[a-zA-Z0-9_-]{22})"', response)
+        if match:
+            return match.group(1)
+        return None
+    except:
+        return None
 
 def init_db():
     conn = sqlite3.connect('users.db')
@@ -40,22 +39,31 @@ def get_latest_video(channel_id):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.reply_to(message, "🤖 **أهلاً بك في رادار المشاهير!**\n\nأرسل لي آيدي (Channel ID) أي قناة يوتيوب تشتي تراقبها، وعأرسل لك الرابط أول ما ينزل الفيديو بـ 'ثواني'!")
+    bot.reply_to(message, "🤖 **رادار المشاهير جاهز!**\n\nأرسل لي رابط أي قناة يوتيوب (أو الـ ID) وعأراقبها لك طوالي.")
 
 @bot.message_handler(func=lambda m: True)
 def add_channel(message):
-    chat_id = str(message.chat.id)
-    channel_id = message.text.strip()
-    if "UC" not in channel_id:
-        bot.reply_to(message, "❌ أرسل آيدي القناة الصحيح يا مسمار!")
+    input_text = message.text.strip()
+    channel_id = None
+
+    if input_text.startswith("UC") and len(input_text) > 20:
+        channel_id = input_text
+    elif "youtube.com" in input_text or "youtu.be" in input_text:
+        bot.reply_to(message, "⏳ جاري استخراج معرف القناة..")
+        channel_id = get_uc_from_url(input_text)
+    
+    if not channel_id:
+        bot.reply_to(message, "❌ لم أستطع التعرف على القناة. تأكد من إرسال رابط القناة الصحيح!")
         return
+
     conn = sqlite3.connect('users.db')
     c = conn.cursor()
     last_v = get_latest_video(channel_id)
-    c.execute("INSERT INTO subscriptions VALUES (?, ?, ?)", (chat_id, channel_id, last_v))
+    c.execute("INSERT INTO subscriptions VALUES (?, ?, ?)", (str(message.chat.id), channel_id, last_v))
     conn.commit(); conn.close()
-    bot.reply_to(message, "✅ تم تفعيل الرادار لهذه القناة!")
+    bot.reply_to(message, f"✅ تم تفعيل الرادار!\n🆔 ID: `{channel_id}`")
 
+# كود السيرفر والمراقبة يبقى كما هو...
 def monitor_loop():
     while True:
         try:
@@ -72,8 +80,12 @@ def monitor_loop():
         except: pass
         time.sleep(60)
 
+class S(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200); self.end_headers(); self.wfile.write(b"Live")
+
 if __name__ == "__main__":
     init_db()
-    Thread(target=run_health_server).start() # تشغيل السيرفر الوهمي
-    Thread(target=monitor_loop).start() # تشغيل المراقبة
+    Thread(target=lambda: HTTPServer(('0.0.0.0', int(os.environ.get("PORT", 8080))), S).serve_forever()).start()
+    Thread(target=monitor_loop).start()
     bot.polling(none_stop=True)
