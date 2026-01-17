@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 token = "7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks"
 chat_id = "5042495708"
 
-# الكوكيز الطازة يا مبرمج
+# الكوكيز الجديدة (الـ JSON الأخير)
 fb_cookies = {
     'sb': 'iWplaTgxXWaKpJpcZOMr2nJZ',
     'datr': 'iGplaV28PgweKRFA2B3ALpcC',
@@ -19,12 +19,12 @@ fb_cookies = {
 }
 
 def send_tele(msg):
-    try:
-        requests.get(f"https://api.telegram.org/bot{token}/sendMessage", params={"chat_id": chat_id, "text": msg})
+    try: requests.get(f"https://api.telegram.org/bot{token}/sendMessage", params={"chat_id": chat_id, "text": msg})
     except: pass
 
-def monitor_fb():
-    send_tele("🚀 السيرفر اشتغل ذلحين.. جاري صيد اسم الحساب!")
+def run_fb():
+    # أول رسالة للتأكيد
+    send_tele("🚀 تم تشغيل السيرفر بنجاح يا فادي! جاري فحص الحساب...")
     scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
     
     while True:
@@ -32,18 +32,17 @@ def monitor_fb():
             res = scraper.get("https://mbasic.facebook.com/profile.php", cookies=fb_cookies)
             if "Logout" in res.text or "تسجيل الخروج" in res.text:
                 name = re.search(r'<title>(.*?)</title>', res.text).group(1).split('|')[0].strip()
-                send_tele(f"👤 الحساب نشط: {name}\n✅ السيرفر يراقب ذلحين مسمار.")
-                time.sleep(3600) # يفحص كل ساعة
+                send_tele(f"✅ الحساب شغال: {name}")
+                time.sleep(3600) # فحص كل ساعة
             else:
-                send_tele("⚠️ الجلسة طفت! فيسبوك يحتاج كوكيز جديدة يا فادي.")
+                send_tele("⚠️ الكوكيز طفيت! حدث الجلسة.")
                 break
-        except:
-            time.sleep(600)
+        except: time.sleep(600)
 
-class WebServer(BaseHTTPRequestHandler):
+class Server(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(b"Facebook Server LIVE")
+        self.send_response(200); self.end_headers(); self.wfile.write(b"Server is Live and Cookies Updated")
 
 if __name__ == "__main__":
-    Thread(target=monitor_fb).start()
-    HTTPServer(('0.0.0.0', 8080), WebServer).serve_forever()
+    Thread(target=run_fb).start()
+    HTTPServer(('0.0.0.0', 8080), Server).serve_forever()
