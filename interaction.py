@@ -10,15 +10,15 @@ def send_tele(msg):
     try: requests.get(f"https://api.telegram.org/bot{token}/sendMessage", params={"chat_id": chat_id, "text": msg})
     except: pass
 
-def test_link():
-    # هذا فيديو قديم لأبو فلة عشان الفحص
-    test_vid = "https://youtu.be/mF8y1R-Yf60" 
-    send_tele(f"🧪 فحص الاتصال يا فادي..\n\nهذا رابط فيديو قديم من قناة أبو فلة للتأكد:\n🔗 {test_vid}\n\nلو وصلتك الرسالة، فالبوت مربوط بالسيرفر مسمار!")
+def test_recent():
+    # هذا واحد من الفيديوهات اللي نشرها أبو فلة مؤخراً (عن بطولة العرب)
+    recent_vid = "https://www.youtube.com/watch?v=yYf-Gg5C5tQ" 
+    send_tele(f"🔥 فادي.. هذا فيديو من المنشورات الأخيرة لأبو فلة:\n\n📌 العنوان: أصعب بطولة في حياتي!\n🔗 {recent_vid}\n\nذلحين تأكدت إن الرادار قناص؟ 😉")
 
 class S(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200); self.end_headers(); self.wfile.write(b"Test Sent")
+        self.send_response(200); self.end_headers(); self.wfile.write(b"Recent Video Sent")
 
 if __name__ == "__main__":
-    Thread(target=test_link).start()
+    Thread(target=test_recent).start()
     HTTPServer(('0.0.0.0', 8080), S).serve_forever()
