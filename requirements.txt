@@ -1,2 +1,2 @@
-fbchat
-pyTelegramBotAPI
+cloudscraper
+requests
