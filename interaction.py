@@ -4,32 +4,23 @@ import requests
 import re
 import time
 import os
+import cloudscraper
 from threading import Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 API_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks'
 bot = telebot.TeleBot(API_TOKEN)
+scraper = cloudscraper.create_scraper()
 
-def get_channel_id_pro(input_text):
+def get_uc_id_fast(input_text):
     try:
-        if "UC" in input_text and len(input_text) > 20 and "/" not in input_text:
+        if "UC" in input_text and len(input_text) > 20 and not "/" in input_text:
             return input_text
-        
         url = input_text if "http" in input_text else f"https://www.youtube.com/{input_text}"
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-        res = requests.get(url, headers=headers, timeout=15).text
-        
-        # محاولة البحث بـ 3 طرق مختلفة
-        patterns = [
-            r'browse_id":"(UC[a-zA-Z0-9_-]{22})"',
-            r'channel/(UC[a-zA-Z0-9_-]{22})"',
-            r'canonical" href="https://www.youtube.com/channel/(UC[a-zA-Z0-9_-]{22})"'
-        ]
-        
-        for p in patterns:
-            match = re.search(p, res)
-            if match: return match.group(1)
-        return None
+        res = scraper.get(url, timeout=15).text
+        match = re.search(r'canonical" href="https://www.youtube.com/channel/(UC[a-zA-Z0-9_-]{22})"', res)
+        if not match: match = re.search(r'browse_id":"(UC[a-zA-Z0-9_-]{22})"', res)
+        return match.group(1) if match else None
     except: return None
 
 def init_db():
@@ -39,19 +30,19 @@ def init_db():
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.reply_to(message, "🚀 **رادار المشاهير جاهز!**\n\nأرسل رابط القناة أو اليوزر (مثلاً @AboFlah) وعأجيب لك كل جديد!")
+    bot.reply_to(message, "🚀 **رادار المشاهير جاهز!**\n\nأرسل رابط القناة أو اليوزر وعأجيب لك كل جديد!")
 
 @bot.message_handler(func=lambda m: True)
 def add_sub(message):
-    bot.send_message(message.chat.id, "⏳ جاري استخراج معرف القناة..")
-    uid = get_channel_id_pro(message.text.strip())
+    msg = bot.reply_to(message, "⏳ جاري فحص الرابط وقنص القناة..")
+    uid = get_uc_id_fast(message.text.strip())
     if uid:
         conn = sqlite3.connect('users.db'); c = conn.cursor()
         c.execute("INSERT INTO subs VALUES (?, ?, ?)", (str(message.chat.id), uid, ""))
         conn.commit(); conn.close()
-        bot.reply_to(message, f"✅ تم تفعيل الرادار بنجاح!\n🆔 ID: `{uid}`")
+        bot.edit_message_text(f"✅ تم تفعيل الرادار بنجاح!\n🆔 ID: `{uid}`", message.chat.id, msg.message_id)
     else:
-        bot.reply_to(message, "❌ لسه يوتيوب معقد المهرة! جرب تنسخ رابط القناة 'الرسمي' من صفحة (لمحة/About).")
+        bot.edit_message_text("❌ الرابط خارررب! تأكد إنك نسخت رابط القناة الرسمي من يوتيوب.", message.chat.id, msg.message_id)
 
 def monitor():
     while True:
@@ -59,7 +50,7 @@ def monitor():
             conn = sqlite3.connect('users.db'); c = conn.cursor()
             c.execute("SELECT * FROM subs"); rows = c.fetchall()
             for chat_id, cid, last_v in rows:
-                feed = requests.get(f"https://www.youtube.com/feeds/videos.xml?channel_id={cid}").text
+                feed = requests.get(f"https://www.youtube.com/feeds/videos.xml?channel_id={cid}", timeout=10).text
                 v_id = re.search(r'<yt:videoId>(.*?)</yt:videoId>', feed).group(1)
                 if v_id != last_v:
                     bot.send_message(chat_id, f"🚨 **عاجل: نزل فيديو جديد!**\n🔗 https://youtu.be/{v_id}")
@@ -73,6 +64,7 @@ class S(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     init_db()
-    Thread(target=lambda: HTTPServer(('0.0.0.0', int(os.environ.get("PORT", 8080))), S).serve_forever()).start()
+    port = int(os.environ.get("PORT", 8080))
+    Thread(target=lambda: HTTPServer(('0.0.0.0', port), S).serve_forever()).start()
     Thread(target=monitor).start()
     bot.polling(none_stop=True)
