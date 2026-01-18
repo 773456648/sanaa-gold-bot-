@@ -1,39 +1,33 @@
 import telebot, requests, time, random, os
 from threading import Thread
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# بياناتك يا فادي
 API_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks'
 MY_ID = "5042495708"
-# رابط المنشور الجديد (الصورة)
 new_post_url = "https://www.instagram.com/p/DTimxHejDKB/"
 bot = telebot.TeleBot(API_TOKEN)
 
-def send_photo_view():
-    headers = {'User-Agent': random.choice([
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X)",
-        "Mozilla/5.0 (Linux; Android 13; SM-S908B)",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    ])}
-    try:
-        # إرسال طلب للمنشور
-        requests.get(new_post_url, headers=headers, timeout=5)
-    except:
-        pass
+# هذا الجزء عشان ريندر ما يزعل ويقول مابش Port
+class S(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200); self.end_headers()
+        self.wfile.write(b"Server is Alive and Boosting!")
 
 def worker():
-    count = 0
     while True:
-        send_photo_view()
-        count += 1
-        if count % 100 == 0:
-            try: bot.send_message(MY_ID, f"📸 أبشر يا فادي! المنشور الجديد استلم {count} زيارة مسمار!")
-            except: pass
-        time.sleep(random.uniform(0.2, 0.8))
+        try:
+            requests.get(new_post_url, timeout=5)
+            time.sleep(random.uniform(0.1, 0.5))
+        except: pass
 
 if __name__ == "__main__":
-    # تشغيل 3 مسارات عشان نكون في السليم مع الصور
-    for i in range(3):
+    # تشغيل سيرفر الويب في الخلفية
+    port = int(os.environ.get("PORT", 8080))
+    Thread(target=lambda: HTTPServer(('', port), S).serve_forever(), daemon=True).start()
+    
+    # تشغيل 5 مسارات رشق
+    for i in range(5):
         Thread(target=worker, daemon=True).start()
     
-    bot.send_message(MY_ID, "🚀 تم تحويل الرشق للمنشور الجديد (الصورة).. بدأت المهرة ذلحين!")
+    bot.send_message(MY_ID, "🔥 تم الإصلاح! السيرفر ذلحين شغال 'مسمار' وبدون أخطاء في ريندر.")
     bot.polling(none_stop=True)
