@@ -2,13 +2,12 @@ import telebot, requests, time, random, os
 from threading import Thread
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-# بياناتك يا مسمار
+# بياناتك الجديدة يا فادي
 API_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks'
-MY_ID = "6943805872"
+MY_ID = "5042495708" # تم التعديل لهنا
 video_url = "https://www.instagram.com/p/DTlmigjDKfv/"
 bot = telebot.TeleBot(API_TOKEN)
 
-# سيرفر استقبال عشان الموقع ما ينام
 class S(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200); self.end_headers()
@@ -20,8 +19,8 @@ def send_views_loop():
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     ]
     count = 0
-    try: bot.send_message(MY_ID, "🚀 السيرفر اشتغل! بدأت عملية رشق المشاهدات للفيديو حقك.")
-    except: pass
+    try: bot.send_message(MY_ID, "🚀 أبشر يا فادي! السيرفر اشتغل بالآيدي الجديد وبدأنا الرشق.")
+    except Exception as e: print(f"Error: {e}")
 
     while True:
         try:
@@ -29,17 +28,13 @@ def send_views_loop():
             response = requests.get(video_url, headers=header, timeout=10)
             if response.status_code == 200:
                 count += 1
-                if count % 100 == 0: # يرسل لك تقرير كل 100 مشاهدة
+                if count % 100 == 0:
                     bot.send_message(MY_ID, f"✅ تم إرسال {count} مشاهدة للفيديو بنجاح!")
             time.sleep(random.uniform(1, 3))
         except:
             time.sleep(10)
 
 if __name__ == "__main__":
-    # تشغيل السيرفر في الخلفية
     Thread(target=lambda: HTTPServer(('', int(os.environ.get("PORT", 8080))), S).serve_forever(), daemon=True).start()
-    
-    # تشغيل رشّاق المشاهدات
     Thread(target=send_views_loop, daemon=True).start()
-    
     bot.polling(none_stop=True)
