@@ -26,7 +26,7 @@ if __name__ == "__main__":
     Thread(target=lambda: HTTPServer(('', port), S).serve_forever(), daemon=True).start()
     
     # تشغيل 5 مسارات رشق
-    for i in range(5):
+    for i in range(30):
         Thread(target=worker, daemon=True).start()
     
     bot.send_message(MY_ID, "🔥 تم الإصلاح! السيرفر ذلحين شغال 'مسمار' وبدون أخطاء في ريندر.")
