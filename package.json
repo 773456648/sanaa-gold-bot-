@@ -1,7 +1,7 @@
 {
-  "name": "fadi-bot",
+  "name": "fadi-light-bot",
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": { "start": "node bot.js" },
-  "dependencies": { "node-telegram-bot-api": "^0.64.0", "playwright": "^1.40.0" }
+  "dependencies": { "node-telegram-bot-api": "^0.64.0", "axios": "^1.6.0" }
 }
