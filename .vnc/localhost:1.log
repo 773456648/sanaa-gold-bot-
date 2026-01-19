@@ -1,0 +1,255 @@
+
+Xvnc TigerVNC 1.15.0 - built Sep 22 2025 16:36:41
+Copyright (C) 1999-2025 TigerVNC team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12101016
+
+Built without GBM support
+Failed to initialize DRI3 extension
+Sync Extension 3.1
+
+Tue Jan 20 01:14:21 2026
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      Created VNC server for screen 0
+[dix] Could not init font path element /data/data/com.termux/files/usr/share/fonts/misc/, removing from list!
+[dix] Could not init font path element /data/data/com.termux/files/usr/share/fonts/TTF/, removing from list!
+[dix] Could not init font path element /data/data/com.termux/files/usr/share/fonts/OTF/, removing from list!
+[dix] Could not init font path element /data/data/com.termux/files/usr/share/fonts/Type1/, removing from list!
+[dix] Could not init font path element /data/data/com.termux/files/usr/share/fonts/100dpi/, removing from list!
+[dix] Could not init font path element /data/data/com.termux/files/usr/share/fonts/75dpi/, removing from list!
+Popen: `"/data/data/com.termux/files/usr/bin/xkbcomp" -w 1 "-R/data/data/com.termux/files/usr/share/X11/xkb" -xkm "-" -em1 "The XKEYBOARD keymap compiler (xkbcomp) reports:" -emp "> " -eml "Errors from xkbcomp are not fatal to the X server" "/data/data/com.termux/files/usr/tmp/server-1.xkm"', fp = 0xb400007c0ec8d4b8
+Pclose: fp = 0xb400007c0ec8d4b8
+The XKEYBOARD keymap compiler (xkbcomp) reports:
+> Warning:          Could not resolve keysym XF86OK
+> Warning:          Could not resolve keysym XF86GoTo
+> Warning:          Could not resolve keysym XF86VendorLogo
+> Warning:          Could not resolve keysym XF86MediaSelectProgramGuide
+> Warning:          Could not resolve keysym XF86MediaSelectProgramGuide
+> Warning:          Could not resolve keysym XF86MediaSelectHome
+> Warning:          Could not resolve keysym XF86MediaLanguageMenu
+> Warning:          Could not resolve keysym XF86MediaTitleMenu
+> Warning:          Could not resolve keysym XF86AudioChannelMode
+> Warning:          Could not resolve keysym XF86MediaSelectPC
+> Warning:          Could not resolve keysym XF86MediaSelectTV
+> Warning:          Could not resolve keysym XF86MediaSelectCable
+> Warning:          Could not resolve keysym XF86MediaSelectVCR
+> Warning:          Could not resolve keysym XF86MediaSelectVCRPlus
+> Warning:          Could not resolve keysym XF86MediaSelectSatellite
+> Warning:          Could not resolve keysym XF86MediaSelectCD
+> Warning:          Could not resolve keysym XF86MediaSelectTape
+> Warning:          Could not resolve keysym XF86MediaSelectRadio
+> Warning:          Could not resolve keysym XF86MediaSelectTuner
+> Warning:          Could not resolve keysym XF86MediaPlayer
+> Warning:          Could not resolve keysym XF86MediaSelectTeletext
+> Warning:          Could not resolve keysym XF86MediaSelectAuxiliary
+> Warning:          Could not resolve keysym XF86MediaPlaySlow
+> Warning:          Could not resolve keysym XF86NumberEntryMode
+> Warning:          Could not resolve keysym XF86RefreshRateToggle
+> Warning:          Could not resolve keysym XF86Accessibility
+> Warning:          Could not resolve keysym XF86DoNotDisturb
+Errors from xkbcomp are not fatal to the X server
+Loaded XKB keymap /data/data/com.termux/files/usr/tmp/server-1.xkm, defined=0x7f
+client(0): Reserved pid(28785).
+client(0): Reserved cmdname(/data/data/com.termux/files/usr/bin/Xvnc) and cmdargs(:1 -auth /data/data/com.termux/files/home/.Xauthority -desktop localhost:1 () -geometry 1024x768 -rfbauth /data/data/com.termux/files/home/.vnc/passwd -rfbport 5901).
+[mi] mieq: warning: overriding existing handler 0x0 with 0x62ab1f5804 for event 2
+[mi] mieq: warning: overriding existing handler 0x0 with 0x62ab1f5804 for event 3
+/data/data/com.termux/files/usr/bin/startxfce4: X server already running on display :1
+client(200000): Reserved pid(28813).
+client(200000): Reserved cmdname(xrdb) and cmdargs(-merge -).
+AllocNewConnection: client index = 1, socket fd = 8, local = 1
+client(200000): Released pid(28813).
+client(200000): Released cmdline(xrdb) and cmdargs(-merge -).
+client(200000): Reserved pid(28816).
+client(200000): Reserved cmdname(dbus-launch) and cmdargs(--autolaunch 3485ee4d7021528a6b925f32696ea068 --binary-syntax --close-stderr).
+AllocNewConnection: client index = 1, socket fd = 8, local = 1
+client(400000): Reserved pid(28819).
+client(400000): Reserved cmdname(dbus-launch) and cmdargs(--autolaunch 3485ee4d7021528a6b925f32696ea068 --binary-syntax --close-stderr).
+AllocNewConnection: client index = 2, socket fd = 9, local = 1
+client(600000): Reserved pid(28808).
+client(600000): Reserved cmdname(/data/data/com.termux/files/usr/bin/dbus-launch) and cmdargs(--sh-syntax --exit-with-session xfce4-session).
+AllocNewConnection: client index = 3, socket fd = 10, local = 1
+client(800000): Reserved pid(28823).
+client(800000): Reserved cmdname(/data/data/com.termux/files/usr/bin/dbus-launch) and cmdargs(--sh-syntax --exit-with-session xfce4-session).
+AllocNewConnection: client index = 4, socket fd = 11, local = 1
+client(a00000): Reserved pid(28808).
+client(a00000): Reserved cmdname(xfce4-session) and cmdargs(NULL).
+AllocNewConnection: client index = 5, socket fd = 12, local = 1
+
+(xfce4-session:28808): libxfce4util-WARNING **: 01:14:24.877: Failed to get a ConsoleKit proxy: Could not connect: No such file or directory
+** Message: 01:14:24.888: Failed to fetch _NET_NUMBER_OF_DESKTOPS; assuming 1
+** Message: 01:14:24.888: Failed to get _NET_WORKAREA; using full screen dimensions
+** Message: 01:14:24.888: Failed to fetch _NET_CURRENT_DESKTOP; assuming 0
+** Message: 01:14:24.888: Failed to fetch _NET_CURRENT_DESKTOP; assuming 0
+client(c00000): Reserved pid(28849).
+client(c00000): Reserved cmdname(xfwm4) and cmdargs(NULL).
+AllocNewConnection: client index = 6, socket fd = 13, local = 1
+** Message: 01:14:25.110: Failed to fetch _NET_CURRENT_DESKTOP; assuming 0
+client(e00000): Reserved pid(28865).
+client(e00000): Reserved cmdname(xfsettingsd) and cmdargs(NULL).
+AllocNewConnection: client index = 7, socket fd = 15, local = 1
+client(1000000): Reserved pid(28865).
+client(1000000): Reserved cmdname(xfsettingsd) and cmdargs(NULL).
+AllocNewConnection: client index = 8, socket fd = 18, local = 1
+client(1000000): Released pid(28865).
+client(1000000): Released cmdline(xfsettingsd) and cmdargs(NULL).
+client(1000000): Reserved pid(28865).
+client(1000000): Reserved cmdname(xfsettingsd) and cmdargs(NULL).
+AllocNewConnection: client index = 8, socket fd = 18, local = 1
+
+Tue Jan 20 01:14:25 2026
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:nan ratio)
+client(1200000): Reserved pid(28879).
+client(1200000): Reserved cmdname(xfce4-panel) and cmdargs(NULL).
+AllocNewConnection: client index = 9, socket fd = 19, local = 1
+client(1000000): Released pid(28865).
+client(1000000): Released cmdline(xfsettingsd) and cmdargs(NULL).
+client(1000000): Reserved pid(28879).
+client(1000000): Reserved cmdname(xfce4-panel) and cmdargs(NULL).
+AllocNewConnection: client index = 8, socket fd = 18, local = 1
+client(1400000): Reserved pid(28891).
+client(1400000): Reserved cmdname(Thunar) and cmdargs(--daemon).
+AllocNewConnection: client index = 10, socket fd = 20, local = 1
+client(1000000): Released pid(28879).
+client(1000000): Released cmdline(xfce4-panel) and cmdargs(NULL).
+client(1000000): Reserved pid(28906).
+client(1000000): Reserved cmdname(xfdesktop) and cmdargs(NULL).
+AllocNewConnection: client index = 8, socket fd = 18, local = 1
+client(1600000): Reserved pid(28906).
+client(1600000): Reserved cmdname(xfdesktop) and cmdargs(NULL).
+AllocNewConnection: client index = 11, socket fd = 21, local = 1
+ Connections: Accepted: 127.0.0.1::58108
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VncAuth(2)
+client(1800000): Reserved pid(28927).
+client(1800000): Reserved cmdname(xfsettingsd) and cmdargs(NULL).
+AllocNewConnection: client index = 12, socket fd = 23, local = 1
+client(1800000): Released pid(28927).
+client(1800000): Released cmdline(xfsettingsd) and cmdargs(NULL).
+client(1800000): Reserved pid(28930).
+client(1800000): Reserved cmdname(/data/data/com.termux/files/usr/lib/xfce4/panel/wrapper-2.0) and cmdargs(/data/data/com.termux/files/usr/lib/xfce4/panel/plugins/libsystray.so 6 18874380 systray Status Tray Plugin Provides status notifier items (application indicators) and legacy systray items).
+AllocNewConnection: client index = 12, socket fd = 23, local = 1
+client(1a00000): Reserved pid(28928).
+client(1a00000): Reserved cmdname(/data/data/com.termux/files/usr/lib/xfce4/notifyd/xfce4-notifyd) and cmdargs(NULL).
+AllocNewConnection: client index = 13, socket fd = 22, local = 1
+client(1c00000): Reserved pid(28970).
+client(1c00000): Reserved cmdname(/data/data/com.termux/files/usr/lib/xfce4/panel/wrapper-2.0) and cmdargs(/data/data/com.termux/files/usr/lib/xfce4/panel/plugins/libactions.so 10 18874381 actions Action Buttons Log out, lock or other system actions).
+AllocNewConnection: client index = 14, socket fd = 27, local = 1
+client(1600000): Released pid(28906).
+client(1600000): Released cmdline(xfdesktop) and cmdargs(NULL).
+
+** (xfdesktop:28906): WARNING **: 01:14:26.343: Failed to get system bus: Could not connect: No such file or directory
+Xlib:  extension "DPMS" missing on display ":1".
+
+Tue Jan 20 01:14:27 2026
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ VNCSConnST:  Client pixel format depth 6 (8bpp) rgb222
+client(1600000): Reserved pid(29045).
+client(1600000): Reserved cmdname(exo-open) and cmdargs(--launch WebBrowser).
+AllocNewConnection: client index = 11, socket fd = 21, local = 1
+client(1600000): Released pid(29045).
+client(1600000): Released cmdline(exo-open) and cmdargs(--launch WebBrowser).
+client(1600000): Reserved pid(29049).
+client(1600000): Reserved cmdname(/data/data/com.termux/files/usr/bin/xfce4-mime-helper) and cmdargs(--launch WebBrowser).
+AllocNewConnection: client index = 11, socket fd = 21, local = 1
+client(1e00000): Reserved pid(29051).
+client(1e00000): Reserved cmdname(/data/data/com.termux/files/usr/bin/firefox) and cmdargs(NULL).
+AllocNewConnection: client index = 15, socket fd = 29, local = 1
+client(2000000): Reserved pid(29051).
+client(2000000): Reserved cmdname(/data/data/com.termux/files/usr/bin/firefox) and cmdargs(NULL).
+AllocNewConnection: client index = 16, socket fd = 30, local = 1
+client(2000000): Released pid(29051).
+client(2000000): Released cmdline(/data/data/com.termux/files/usr/bin/firefox) and cmdargs(NULL).
+client(2000000): Reserved pid(29051).
+client(2000000): Reserved cmdname(/data/data/com.termux/files/usr/bin/firefox) and cmdargs(NULL).
+AllocNewConnection: client index = 16, socket fd = 30, local = 1
+client(2000000): Released pid(29051).
+client(2000000): Released cmdline(/data/data/com.termux/files/usr/bin/firefox) and cmdargs(NULL).
+client(2000000): Reserved pid(29056).
+client(2000000): Reserved cmdname(/data/data/com.termux/files/usr/lib/firefox/glxtest) and cmdargs(-f 13).
+AllocNewConnection: client index = 16, socket fd = 30, local = 1
+client(2000000): Released pid(29056).
+client(2000000): Released cmdline(/data/data/com.termux/files/usr/lib/firefox/glxtest) and cmdargs(-f 13).
+console.warn: BackupService: "There was an error while trying to get the Document's directory" [Exception... "Component returned failure code: 0x80004005 (NS_ERROR_FAILURE) [nsIProperties.get]"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame :: resource:///modules/backup/BackupService.sys.mjs :: get docsDirFolderPath :: line 1228"  data: no]
+client(1600000): Released pid(29049).
+client(1600000): Released cmdline(/data/data/com.termux/files/usr/bin/xfce4-mime-helper) and cmdargs(--launch WebBrowser).
+GetShaderInfoLog() ->
+0:2(12): error: extension `GL_EXT_shader_texture_lod' unsupported in fragment shader
+
+GetShaderSource() ->
+
+#extension GL_EXT_shader_texture_lod: require
+void main() {}
+
+GetShaderInfoLog() ->
+0:2(12): error: extension `GL_EXT_shader_texture_lod' unsupported in fragment shader
+
+GetShaderSource() ->
+
+#extension GL_EXT_shader_texture_lod: require
+void main() {}
+
+GetShaderInfoLog() ->
+0:2(12): error: extension `GL_EXT_shader_texture_lod' unsupported in fragment shader
+
+GetShaderSource() ->
+
+#extension GL_EXT_shader_texture_lod: require
+void main() {}
+
+JavaScript warning: https://static.xx.fbcdn.net/rsrc.php/v4ihVQ4/y_/l/en_US-j/vw1h9pbSv6z.js, line 36: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+GetShaderInfoLog() ->
+0:2(12): error: extension `GL_EXT_shader_texture_lod' unsupported in fragment shader
+
+GetShaderSource() ->
+
+#extension GL_EXT_shader_texture_lod: require
+void main() {}
+
+JavaScript warning: https://static.xx.fbcdn.net/rsrc.php/v4iB2R4/yq/l/ar_AR-j/bJM3tMQjZJheQw0xvVUvZRF0JyboqNHPG2dCTCx_AYL61PwYe_dFLoYfQagRRCzLs3ehPRfIz-DyKz2-3N44_s8ERnyShF5rIeOrrCxjEFdRGjg55D4FdClGWMnETLqdNBSSixGjYeQLm-bdkfXXSZYqQG1MuDFFDSsp0fh8XHisdiJ0jCQmi6IRvCdPxoBYvVpAkGa5QKmVufnpMYeFYq5mIVmRFcPSm3wsOUzvl8BuL13Y9t9SJSdfKtbreiVwhGINgQPMmese8PpaA6Y3da_c737RiTwBSuuypY1odOcAmpowsZ40k4aMncpzJkRlbfXlvNMBAs.js, line 108: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+JavaScript error: https://static.xx.fbcdn.net/rsrc.php/v4i0HF4/yi/l/ar_AR-j/KRcNG9BICTq.js, line 136: GraphQLError: GraphQL operation responded with error 1675030: حدث خطأ أثناء تنفيذ الاستعلام. (Operation: HighTouchSupportLazyLoadQuery)
+
+JavaScript error: https://static.xx.fbcdn.net/rsrc.php/v4i0HF4/yi/l/ar_AR-j/KRcNG9BICTq.js, line 136: GraphQLError: GraphQL operation responded with error 1675030: حدث خطأ أثناء تنفيذ الاستعلام. (Operation: HighTouchSupportLazyLoadQuery)
+
+JavaScript error: https://static.xx.fbcdn.net/rsrc.php/v4i0HF4/yi/l/ar_AR-j/KRcNG9BICTq.js, line 136: GraphQLError: GraphQL operation responded with error 1675030: حدث خطأ أثناء تنفيذ الاستعلام. (Operation: HighTouchSupportLazyLoadQuery)
+
+
+Tue Jan 20 01:15:53 2026
+ VNCSConnST:  Client pixel format depth 24 (32bpp) little-endian rgb888
+GetShaderInfoLog() ->
+0:2(12): error: extension `GL_EXT_shader_texture_lod' unsupported in fragment shader
+
+GetShaderSource() ->
+
+#extension GL_EXT_shader_texture_lod: require
+void main() {}
+
+JavaScript warning: https://static.xx.fbcdn.net/rsrc.php/v4ialh4/ys/l/ar_AR-j/AYzJ2yY8ysp0chKOT86V_97M4nf-JzQ0rygi4_mk5izkr7pt7wYYIG-iDGTWhppLUasB6Hjr0tFVRCsr9s3J7v1Y8R-tIwxAucOHoHtIagxQN7LDsbExrZgsLu9MvX0b5gifJPg1mqlK3Pvi11BA3r3AojHjHDQSl0qOnfC5i8G5KYcFAB-RtyAx84YrrCxjEFdRGjgv-b59Rv-mFiDAYjqpPcQFCiGIdXm4rCpg-Nqluj3MiXSwwM_yg0hXVNnR4l1PNWqo.js, line 555: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+
+(xfdesktop:28906): libxfce4ui-WARNING **: 01:16:20.397: ICE I/O Error
+
+(xfdesktop:28906): libxfce4ui-WARNING **: 01:16:20.397: Disconnected from session manager.
+
+(xfce4-panel:28879): libxfce4ui-WARNING **: 01:16:20.397: ICE I/O Error
+
+(xfce4-panel:28879): libxfce4ui-WARNING **: 01:16:20.397: Disconnected from session manager.
+
+(xfsettingsd:28865): libxfce4ui-WARNING **: 01:16:20.397: ICE I/O Error
+
+(xfsettingsd:28865): libxfce4ui-WARNING **: 01:16:20.398: Disconnected from session manager.
+
+(xfwm4:28849): libxfce4ui-WARNING **: 01:16:20.397: ICE I/O Error
+
+(xfwm4:28849): libxfce4ui-WARNING **: 01:16:20.398: Disconnected from session manager.
+xfce4-panel-Message: 01:16:20.405: Plugin systray-6 has been automatically restarted after crash.
+Crash Annotation GraphicsCriticalError: |[C0][GFX1-]: CompositorBridgeChild receives IPC close with reason=AbnormalShutdown (t=108.525) [GFX1-]: CompositorBridgeChild receives IPC close with reason=AbnormalShutdown
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+Crash Annotation GraphicsCriticalError: |[C0][GFX1-]: CompositorBridgeChild receives IPC close with reason=AbnormalShutdown (t=108.533) Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.
+Exiting due to channel error.

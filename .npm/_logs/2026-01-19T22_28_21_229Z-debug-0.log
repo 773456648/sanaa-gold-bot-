@@ -1,0 +1,270 @@
+0 verbose cli /data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/usr/bin/npm
+1 info using npm@11.6.2
+2 info using node@v25.3.0
+3 silly config load:file:/data/data/com.termux/files/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/data/data/com.termux/files/home/.npmrc
+5 silly config load:file:/data/data/com.termux/files/usr/etc/npmrc
+6 verbose title npm install playwright node-telegram-bot-api
+7 verbose argv "install" "playwright" "node-telegram-bot-api"
+8 verbose logfile logs-max:10 dir:/data/data/com.termux/files/home/.npm/_logs/2026-01-19T22_28_21_229Z-
+9 verbose logfile /data/data/com.termux/files/home/.npm/_logs/2026-01-19T22_28_21_229Z-debug-0.log
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:1174405120 maxSize:293601280 maxEntrySize:146800640
+12 silly idealTree buildDeps
+13 silly fetch manifest node-telegram-bot-api@^0.67.0
+14 silly packumentCache full:https://registry.npmjs.org/node-telegram-bot-api cache-miss
+15 http cache https://registry.npmjs.org/node-telegram-bot-api 84ms (cache hit)
+16 silly packumentCache full:https://registry.npmjs.org/node-telegram-bot-api set size:249643 disposed:false
+17 silly fetch manifest playwright@^1.57.0
+18 silly packumentCache full:https://registry.npmjs.org/playwright cache-miss
+19 http cache https://registry.npmjs.org/playwright 38ms (cache hit)
+20 silly packumentCache full:https://registry.npmjs.org/playwright set size:15506137 disposed:false
+21 silly placeDep ROOT node-telegram-bot-api@0.67.0 REPLACE for: sanaa-gold-bot@1.0.0 want: ^0.67.0
+22 silly placeDep ROOT playwright@1.57.0 REPLACE for: sanaa-gold-bot@1.0.0 want: ^1.57.0
+23 silly reify moves {}
+24 silly audit bulk request {
+24 silly audit   '@cypress/request': [ '3.0.10' ],
+24 silly audit   '@cypress/request-promise': [ '5.0.0' ],
+24 silly audit   'tough-cookie': [ '4.1.4', '2.5.0', '5.1.2' ],
+24 silly audit   ajv: [ '6.12.6' ],
+24 silly audit   'array-buffer-byte-length': [ '1.0.2' ],
+24 silly audit   'array.prototype.findindex': [ '2.2.4' ],
+24 silly audit   'arraybuffer.prototype.slice': [ '1.0.4' ],
+24 silly audit   asn1: [ '0.2.6' ],
+24 silly audit   'assert-plus': [ '1.0.0' ],
+24 silly audit   'async-function': [ '1.0.0' ],
+24 silly audit   asynckit: [ '0.4.0' ],
+24 silly audit   'available-typed-arrays': [ '1.0.7' ],
+24 silly audit   'aws-sign2': [ '0.7.0' ],
+24 silly audit   aws4: [ '1.13.2' ],
+24 silly audit   'bcrypt-pbkdf': [ '1.0.2' ],
+24 silly audit   bl: [ '1.2.3' ],
+24 silly audit   bluebird: [ '3.7.2' ],
+24 silly audit   'call-bind': [ '1.0.8' ],
+24 silly audit   'call-bind-apply-helpers': [ '1.0.2' ],
+24 silly audit   'call-bound': [ '1.0.4' ],
+24 silly audit   caseless: [ '0.12.0' ],
+24 silly audit   'combined-stream': [ '1.0.8' ],
+24 silly audit   'core-util-is': [ '1.0.3', '1.0.2' ],
+24 silly audit   dashdash: [ '1.14.1' ],
+24 silly audit   'data-view-buffer': [ '1.0.2' ],
+24 silly audit   'data-view-byte-length': [ '1.0.2' ],
+24 silly audit   'data-view-byte-offset': [ '1.0.1' ],
+24 silly audit   debug: [ '3.2.7' ],
+24 silly audit   'define-data-property': [ '1.1.4' ],
+24 silly audit   'define-properties': [ '1.2.1' ],
+24 silly audit   'delayed-stream': [ '1.0.0' ],
+24 silly audit   'dunder-proto': [ '1.0.1' ],
+24 silly audit   'ecc-jsbn': [ '0.1.2' ],
+24 silly audit   'end-of-stream': [ '1.4.5' ],
+24 silly audit   'es-abstract': [ '1.24.1' ],
+24 silly audit   'es-define-property': [ '1.0.1' ],
+24 silly audit   'es-errors': [ '1.3.0' ],
+24 silly audit   'es-object-atoms': [ '1.1.1' ],
+24 silly audit   'es-set-tostringtag': [ '2.1.0' ],
+24 silly audit   'es-shim-unscopables': [ '1.1.0' ],
+24 silly audit   'es-to-primitive': [ '1.3.0' ],
+24 silly audit   eventemitter3: [ '3.1.2' ],
+24 silly audit   extend: [ '3.0.2' ],
+24 silly audit   extsprintf: [ '1.3.0' ],
+24 silly audit   'fast-deep-equal': [ '3.1.3' ],
+24 silly audit   'fast-json-stable-stringify': [ '2.1.0' ],
+24 silly audit   'file-type': [ '3.9.0' ],
+24 silly audit   'for-each': [ '0.3.5' ],
+24 silly audit   'forever-agent': [ '0.6.1' ],
+24 silly audit   'form-data': [ '4.0.5', '2.3.3' ],
+24 silly audit   fsevents: [ '2.3.2' ],
+24 silly audit   'function-bind': [ '1.1.2' ],
+24 silly audit   'function.prototype.name': [ '1.1.8' ],
+24 silly audit   'functions-have-names': [ '1.2.3' ],
+24 silly audit   'generator-function': [ '2.0.1' ],
+24 silly audit   'get-intrinsic': [ '1.3.0' ],
+24 silly audit   'get-proto': [ '1.0.1' ],
+24 silly audit   'get-symbol-description': [ '1.1.0' ],
+24 silly audit   getpass: [ '0.1.7' ],
+24 silly audit   globalthis: [ '1.0.4' ],
+24 silly audit   gopd: [ '1.2.0' ],
+24 silly audit   'har-schema': [ '2.0.0' ],
+24 silly audit   'har-validator': [ '5.1.5' ],
+24 silly audit   'has-bigints': [ '1.1.0' ],
+24 silly audit   'has-property-descriptors': [ '1.0.2' ],
+24 silly audit   'has-proto': [ '1.2.0' ],
+24 silly audit   'has-symbols': [ '1.1.0' ],
+24 silly audit   'has-tostringtag': [ '1.0.2' ],
+24 silly audit   hasown: [ '2.0.2' ],
+24 silly audit   'http-signature': [ '1.4.0', '1.2.0' ],
+24 silly audit   inherits: [ '2.0.4' ],
+24 silly audit   'internal-slot': [ '1.1.0' ],
+24 silly audit   'is-array-buffer': [ '3.0.5' ],
+24 silly audit   'is-async-function': [ '2.1.1' ],
+24 silly audit   'is-bigint': [ '1.1.0' ],
+24 silly audit   'is-boolean-object': [ '1.2.2' ],
+24 silly audit   'is-callable': [ '1.2.7' ],
+24 silly audit   'is-data-view': [ '1.0.2' ],
+24 silly audit   'is-date-object': [ '1.1.0' ],
+24 silly audit   'is-finalizationregistry': [ '1.1.1' ],
+24 silly audit   'is-generator-function': [ '1.1.2' ],
+24 silly audit   'is-map': [ '2.0.3' ],
+24 silly audit   'is-negative-zero': [ '2.0.3' ],
+24 silly audit   'is-number-object': [ '1.1.1' ],
+24 silly audit   'is-regex': [ '1.2.1' ],
+24 silly audit   'is-set': [ '2.0.3' ],
+24 silly audit   'is-shared-array-buffer': [ '1.0.4' ],
+24 silly audit   'is-string': [ '1.1.1' ],
+24 silly audit   'is-symbol': [ '1.1.1' ],
+24 silly audit   'is-typed-array': [ '1.1.15' ],
+24 silly audit   'is-typedarray': [ '1.0.0' ],
+24 silly audit   'is-weakmap': [ '2.0.2' ],
+24 silly audit   'is-weakref': [ '1.1.1' ],
+24 silly audit   'is-weakset': [ '2.0.4' ],
+24 silly audit   isarray: [ '1.0.0', '2.0.5' ],
+24 silly audit   isstream: [ '0.1.2' ],
+24 silly audit   jsbn: [ '0.1.1' ],
+24 silly audit   'json-schema': [ '0.4.0' ],
+24 silly audit   'json-schema-traverse': [ '0.4.1' ],
+24 silly audit   'json-stringify-safe': [ '5.0.1' ],
+24 silly audit   jsprim: [ '2.0.2', '1.4.2' ],
+24 silly audit   lodash: [ '4.17.21' ],
+24 silly audit   'math-intrinsics': [ '1.1.0' ],
+24 silly audit   mime: [ '1.6.0' ],
+24 silly audit   'mime-db': [ '1.52.0' ],
+24 silly audit   'mime-types': [ '2.1.35' ],
+24 silly audit   ms: [ '2.1.3' ],
+24 silly audit   'oauth-sign': [ '0.9.0' ],
+24 silly audit   'object-inspect': [ '1.13.4' ],
+24 silly audit   'object-keys': [ '1.1.1' ],
+24 silly audit   'object.assign': [ '4.1.7' ],
+24 silly audit   once: [ '1.4.0' ],
+24 silly audit   'own-keys': [ '1.0.1' ],
+24 silly audit   'performance-now': [ '2.1.0' ],
+24 silly audit   'playwright-core': [ '1.57.0' ],
+24 silly audit   'possible-typed-array-names': [ '1.1.0' ],
+24 silly audit   'process-nextick-args': [ '2.0.1' ],
+24 silly audit   psl: [ '1.15.0' ],
+24 silly audit   pump: [ '2.0.1' ],
+24 silly audit   punycode: [ '2.3.1' ],
+24 silly audit   qs: [ '6.14.1', '6.5.3' ],
+24 silly audit   querystringify: [ '2.2.0' ],
+24 silly audit   'readable-stream': [ '2.3.8' ],
+24 silly audit   'safe-buffer': [ '5.1.2', '5.2.1' ],
+24 silly audit   'reflect.getprototypeof': [ '1.0.10' ],
+24 silly audit   'regexp.prototype.flags': [ '1.5.4' ],
+24 silly audit   request: [ '2.88.2' ],
+24 silly audit   'request-promise-core': [ '1.1.3' ],
+24 silly audit   uuid: [ '3.4.0', '8.3.2' ],
+24 silly audit   'requires-port': [ '1.0.0' ],
+24 silly audit   'safe-array-concat': [ '1.1.3' ],
+24 silly audit   'safe-push-apply': [ '1.0.0' ],
+24 silly audit   'safe-regex-test': [ '1.1.0' ],
+24 silly audit   'safer-buffer': [ '2.1.2' ],
+24 silly audit   'set-function-length': [ '1.2.2' ],
+24 silly audit   'set-function-name': [ '2.0.2' ],
+24 silly audit   'set-proto': [ '1.0.0' ],
+24 silly audit   'side-channel': [ '1.1.0' ],
+24 silly audit   'side-channel-list': [ '1.0.0' ],
+24 silly audit   'side-channel-map': [ '1.0.1' ],
+24 silly audit   'side-channel-weakmap': [ '1.0.2' ],
+24 silly audit   'social-analyzer': [ '1.0.0' ],
+24 silly audit   sshpk: [ '1.18.0' ],
+24 silly audit   'stealthy-require': [ '1.1.1' ],
+24 silly audit   'stop-iteration-iterator': [ '1.1.0' ],
+24 silly audit   string_decoder: [ '1.1.1' ],
+24 silly audit   'string.prototype.trim': [ '1.2.10' ],
+24 silly audit   'string.prototype.trimend': [ '1.0.9' ],
+24 silly audit   'string.prototype.trimstart': [ '1.0.8' ],
+24 silly audit   tldts: [ '6.1.86' ],
+24 silly audit   'tldts-core': [ '6.1.86' ],
+24 silly audit   'tunnel-agent': [ '0.6.0' ],
+24 silly audit   tweetnacl: [ '0.14.5' ],
+24 silly audit   'typed-array-buffer': [ '1.0.3' ],
+24 silly audit   'typed-array-byte-length': [ '1.0.3' ],
+24 silly audit   'typed-array-byte-offset': [ '1.0.4' ],
+24 silly audit   'typed-array-length': [ '1.0.7' ],
+24 silly audit   'unbox-primitive': [ '1.1.0' ],
+24 silly audit   universalify: [ '0.2.0' ],
+24 silly audit   'uri-js': [ '4.4.1' ],
+24 silly audit   'url-parse': [ '1.5.10' ],
+24 silly audit   'util-deprecate': [ '1.0.2' ],
+24 silly audit   verror: [ '1.10.0' ],
+24 silly audit   'which-boxed-primitive': [ '1.1.1' ],
+24 silly audit   'which-builtin-type': [ '1.2.1' ],
+24 silly audit   'which-collection': [ '1.0.2' ],
+24 silly audit   'which-typed-array': [ '1.1.20' ],
+24 silly audit   wrappy: [ '1.0.2' ],
+24 silly audit   'node-telegram-bot-api': [ '0.67.0' ],
+24 silly audit   playwright: [ '1.57.0' ]
+24 silly audit }
+25 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 932ms
+26 silly audit report {
+26 silly audit report   'tough-cookie': [
+26 silly audit report     {
+26 silly audit report       id: 1097682,
+26 silly audit report       url: 'https://github.com/advisories/GHSA-72xf-g2v4-qvf3',
+26 silly audit report       title: 'tough-cookie Prototype Pollution vulnerability',
+26 silly audit report       severity: 'moderate',
+26 silly audit report       vulnerable_versions: '<4.1.3',
+26 silly audit report       cwe: [Array],
+26 silly audit report       cvss: [Object]
+26 silly audit report     }
+26 silly audit report   ],
+26 silly audit report   'form-data': [
+26 silly audit report     {
+26 silly audit report       id: 1109540,
+26 silly audit report       url: 'https://github.com/advisories/GHSA-fjxv-7rqg-78g4',
+26 silly audit report       title: 'form-data uses unsafe random function in form-data for choosing boundary',
+26 silly audit report       severity: 'critical',
+26 silly audit report       vulnerable_versions: '<2.5.4',
+26 silly audit report       cwe: [Array],
+26 silly audit report       cvss: [Object]
+26 silly audit report     }
+26 silly audit report   ],
+26 silly audit report   qs: [
+26 silly audit report     {
+26 silly audit report       id: 1111755,
+26 silly audit report       url: 'https://github.com/advisories/GHSA-6rw7-vpxm-498p',
+26 silly audit report       title: "qs's arrayLimit bypass in its bracket notation allows DoS via memory exhaustion",
+26 silly audit report       severity: 'high',
+26 silly audit report       vulnerable_versions: '<6.14.1',
+26 silly audit report       cwe: [Array],
+26 silly audit report       cvss: [Object]
+26 silly audit report     }
+26 silly audit report   ],
+26 silly audit report   request: [
+26 silly audit report     {
+26 silly audit report       id: 1096727,
+26 silly audit report       url: 'https://github.com/advisories/GHSA-p8p7-x288-28g6',
+26 silly audit report       title: 'Server-Side Request Forgery in Request',
+26 silly audit report       severity: 'moderate',
+26 silly audit report       vulnerable_versions: '<=2.88.2',
+26 silly audit report       cwe: [Array],
+26 silly audit report       cvss: [Object]
+26 silly audit report     }
+26 silly audit report   ]
+26 silly audit report }
+27 silly packumentCache corgi:https://registry.npmjs.org/tough-cookie cache-miss
+28 silly packumentCache corgi:https://registry.npmjs.org/form-data cache-miss
+29 silly packumentCache corgi:https://registry.npmjs.org/qs cache-miss
+30 silly packumentCache corgi:https://registry.npmjs.org/request cache-miss
+31 http cache https://registry.npmjs.org/tough-cookie 19ms (cache hit)
+32 silly packumentCache corgi:https://registry.npmjs.org/tough-cookie set size:55049 disposed:false
+33 http cache https://registry.npmjs.org/qs 21ms (cache hit)
+34 silly packumentCache corgi:https://registry.npmjs.org/qs set size:111251 disposed:false
+35 http cache https://registry.npmjs.org/form-data 25ms (cache hit)
+36 silly packumentCache corgi:https://registry.npmjs.org/form-data set size:51426 disposed:false
+37 http cache https://registry.npmjs.org/request 33ms (cache hit)
+38 silly packumentCache corgi:https://registry.npmjs.org/request set size:129997 disposed:false
+39 silly packumentCache corgi:https://registry.npmjs.org/request-promise-core cache-miss
+40 http cache https://registry.npmjs.org/request-promise-core 11ms (cache hit)
+41 silly packumentCache corgi:https://registry.npmjs.org/request-promise-core set size:6997 disposed:false
+42 silly packumentCache corgi:https://registry.npmjs.org/@cypress%2frequest-promise cache-miss
+43 http cache https://registry.npmjs.org/@cypress%2frequest-promise 7ms (cache hit)
+44 silly packumentCache corgi:https://registry.npmjs.org/@cypress%2frequest-promise set size:4166 disposed:false
+45 silly packumentCache corgi:https://registry.npmjs.org/node-telegram-bot-api cache-miss
+46 http cache https://registry.npmjs.org/node-telegram-bot-api 9ms (cache hit)
+47 silly packumentCache corgi:https://registry.npmjs.org/node-telegram-bot-api set size:90673 disposed:false
+48 verbose cwd /data/data/com.termux/files/home
+49 verbose os Linux 4.19.113-26203352
+50 verbose node v25.3.0
+51 verbose npm  v11.6.2
+52 verbose exit 0
+53 info ok

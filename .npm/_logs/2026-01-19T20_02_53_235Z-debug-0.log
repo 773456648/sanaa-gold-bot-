@@ -1,0 +1,32 @@
+0 verbose cli /data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/usr/bin/npm
+1 info using npm@11.6.2
+2 info using node@v25.3.0
+3 silly config load:file:/data/data/com.termux/files/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/data/data/com.termux/files/home/.npmrc
+5 silly config load:file:/data/data/com.termux/files/usr/etc/npmrc
+6 verbose title npm install social-analyzer
+7 verbose argv "install" "social-analyzer"
+8 verbose logfile logs-max:10 dir:/data/data/com.termux/files/home/.npm/_logs/2026-01-19T20_02_53_235Z-
+9 verbose logfile /data/data/com.termux/files/home/.npm/_logs/2026-01-19T20_02_53_235Z-debug-0.log
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:1174405120 maxSize:293601280 maxEntrySize:146800640
+12 silly idealTree buildDeps
+13 silly fetch manifest social-analyzer@*
+14 silly packumentCache full:https://registry.npmjs.org/social-analyzer cache-miss
+15 http fetch GET 200 https://registry.npmjs.org/social-analyzer 2535ms (cache miss)
+16 silly packumentCache full:https://registry.npmjs.org/social-analyzer set size:undefined disposed:false
+17 silly placeDep ROOT social-analyzer@1.0.0 OK for: sanaa-gold-bot@1.0.0 want: *
+18 silly reify moves {}
+19 silly audit bulk request { 'social-analyzer': [ '1.0.0' ] }
+20 http cache social-analyzer@https://registry.npmjs.org/social-analyzer/-/social-analyzer-1.0.0.tgz 0ms (cache hit)
+21 silly tarball no local data for social-analyzer@https://registry.npmjs.org/social-analyzer/-/social-analyzer-1.0.0.tgz. Extracting by manifest.
+22 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 749ms
+23 silly audit report {}
+24 http fetch GET 200 https://registry.npmjs.org/social-analyzer/-/social-analyzer-1.0.0.tgz 2943ms (cache miss)
+25 silly ADD node_modules/social-analyzer
+26 verbose cwd /data/data/com.termux/files/home
+27 verbose os Linux 4.19.113-26203352
+28 verbose node v25.3.0
+29 verbose npm  v11.6.2
+30 verbose exit 0
+31 info ok

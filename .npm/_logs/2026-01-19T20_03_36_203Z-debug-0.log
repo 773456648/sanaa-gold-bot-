@@ -1,0 +1,26 @@
+0 verbose cli /data/data/com.termux/files/usr/bin/node /data/data/com.termux/files/usr/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.6.2
+2 info using node@v25.3.0
+3 silly config load:file:/data/data/com.termux/files/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/data/data/com.termux/files/home/.npmrc
+5 silly config load:file:/data/data/com.termux/files/usr/etc/npmrc
+6 verbose title npm exec social-analyzer --username pkg install nodejs -y
+7 verbose argv "exec" "--" "social-analyzer" "--username" "pkg" "install" "nodejs" "-y"
+8 verbose logfile logs-max:10 dir:/data/data/com.termux/files/home/.npm/_logs/2026-01-19T20_03_36_203Z-
+9 verbose logfile /data/data/com.termux/files/home/.npm/_logs/2026-01-19T20_03_36_203Z-debug-0.log
+10 silly logfile done cleaning log files
+11 silly packumentCache heap:1174405120 maxSize:293601280 maxEntrySize:146800640
+12 verbose stack Error: could not determine executable to run
+12 verbose stack     at getBinFromManifest (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/libnpmexec/lib/get-bin-from-manifest.js:17:23)
+12 verbose stack     at exec (/data/data/com.termux/files/usr/lib/node_modules/npm/node_modules/libnpmexec/lib/index.js:206:15)
+12 verbose stack     at async Npm.exec (/data/data/com.termux/files/usr/lib/node_modules/npm/lib/npm.js:208:9)
+12 verbose stack     at async module.exports (/data/data/com.termux/files/usr/lib/node_modules/npm/lib/cli/entry.js:60:5)
+13 verbose pkgid social-analyzer@1.0.0
+14 error could not determine executable to run
+15 verbose cwd /data/data/com.termux/files/home
+16 verbose os Linux 4.19.113-26203352
+17 verbose node v25.3.0
+18 verbose npm  v11.6.2
+19 verbose exit 1
+20 verbose code 1
+21 error A complete log of this run can be found in: /data/data/com.termux/files/home/.npm/_logs/2026-01-19T20_03_36_203Z-debug-0.log
