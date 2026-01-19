@@ -1,31 +1,20 @@
-import telebot, requests, time, random, os
-from threading import Thread
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import telebot
+import requests
+from bs4 import BeautifulSoup
 
-API_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks'
-MY_ID = "5042495708"
-video_url = "https://www.instagram.com/p/DTlmigjDKfv/"
-bot = telebot.TeleBot(API_TOKEN)
+bot = telebot.TeleBot('7684061554:AAH9p8oTz-L2yP8T4Vj4W4p6Y8p4')
 
-class S(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200); self.end_headers()
-        self.wfile.write(b"IG Booster is Running!")
-
-def send_views_loop():
-    headers_list = ["Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)"]
-    count = 0
-    try: bot.send_message(MY_ID, "🚀 قرحنا يا فادي! التحديث الجديد وصل والسيرفر بدأ يرشق بالآيدي حقك.")
-    except: pass
-    while True:
+@bot.message_handler(func=lambda message: True)
+def echo_all(message):
+    if 'http' in message.text:
+        bot.reply_to(message, "جاري سحب المعلومات من السيرفر... 🚀")
         try:
-            requests.get(video_url, headers={'User-Agent': random.choice(headers_list)}, timeout=10)
-            count += 1
-            if count % 100 == 0: bot.send_message(MY_ID, f"✅ تم إرسال {count} مشاهدة!")
-            time.sleep(1)
-        except: time.sleep(5)
+            res = requests.get(message.text)
+            soup = BeautifulSoup(res.text, 'html.parser')
+            title = soup.title.string if soup.title else "بدون عنوان"
+            bot.reply_to(message, f"✅ تم بنجاح: {title}")
+        except Exception as e:
+            bot.reply_to(message, f"❌ حصلت عكة: {str(e)}")
 
-if __name__ == "__main__":
-    Thread(target=lambda: HTTPServer(('', int(os.environ.get("PORT", 8080))), S).serve_forever(), daemon=True).start()
-    Thread(target=send_views_loop, daemon=True).start()
-    bot.polling(none_stop=True)
+print("البوت شغال ذلحين بنظام بايثون المتوافق مع Render!")
+bot.infinity_polling()
