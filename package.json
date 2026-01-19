@@ -1,13 +1,7 @@
 {
-  "name": "sanaa-gold-bot",
+  "name": "fadi-bot",
   "version": "1.0.0",
-  "main": "main.py",
-  "scripts": {
-    "start": "python main.py"
-  },
-  "dependencies": {
-    "node-telegram-bot-api": "^0.67.0",
-    "playwright": "^1.57.0",
-    "social-analyzer": "^1.0.0"
-  }
+  "main": "bot.js",
+  "scripts": { "start": "node bot.js" },
+  "dependencies": { "node-telegram-bot-api": "^0.64.0", "playwright": "^1.40.0" }
 }
