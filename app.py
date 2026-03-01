@@ -58,12 +58,11 @@ HTML_CODE = '''
     let peer, myName, myRoom, conns = [], currentCall, myStream;
     const chatBox = document.getElementById('chat');
 
-    // الإعدادات القوية للاشتباك من أي مكان (STUN + TURN)
+    // السر هنا يا فادي: سيرفرات TURN عشان كسر الحماية
     const cfg = {
         config: {
             'iceServers': [
                 { 'urls': 'stun:stun.l.google.com:19302' },
-                { 'urls': 'stun:stun1.l.google.com:19302' },
                 { 
                   'urls': 'turn:openrelay.metered.ca:80', 
                   'username': 'openrelayproject', 
@@ -85,20 +84,15 @@ HTML_CODE = '''
     function tryHost() {
         peer = new Peer(myRoom, cfg);
         peer.on('open', () => {
-            log("👑 أنت الزعيم.. المجموعة جاهزة", "sys");
             peer.on('connection', c => { conns.push(c); handleConn(c, true); });
             peer.on('call', call => handleCall(call));
         });
-        peer.on('error', err => { 
-            if(err.type === 'unavailable-id') joinRoom();
-            else console.error("Peer Error:", err);
-        });
+        peer.on('error', err => { if(err.type === 'unavailable-id') joinRoom(); });
     }
 
     function joinRoom() {
         peer = new Peer(myRoom + "-" + Math.floor(Math.random()*999), cfg);
         peer.on('open', () => {
-            log("✅ دخلت المنظومة", "sys");
             let c = peer.connect(myRoom);
             conns.push(c); handleConn(c, false);
         });
@@ -110,7 +104,6 @@ HTML_CODE = '''
         c.on('data', d => {
             if(isHost) conns.forEach(client => { if(client !== c) client.send(d); });
             if(d.type === 'msg') log(d.text, "other", d.user);
-            if(d.type === 'voice') log(`<audio controls src="${d.data}"></audio>`, "other", d.user);
             if(d.type === 'join') log(d.user + " انضم", "sys");
         });
     }
@@ -157,7 +150,6 @@ HTML_CODE = '''
         if(myStream) myStream.getTracks().forEach(t => t.stop());
         document.getElementById('videoArea').style.display = 'none';
         document.getElementById('endCallBtn').style.display = 'none';
-        log("🔴 تم الإغلاق", "sys");
     }
 
     function send() {
