@@ -1,149 +1,82 @@
 from flask import Flask, render_template_string
-from flask_cors import CORS
 import os
 
 app = Flask(__name__)
-CORS(app)
 
 @app.route('/')
 def index():
     return render_template_string(HTML_CODE)
 
-# منظومة فادي الإمبراطورية - تحديث 2026 👑
 HTML_CODE = '''
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 FADI SYSTEM PRO</title>
+    <title>💬 FADI CHAT ONLY</title>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
-        :root { --fadi-gold: #ffcc00; --fadi-neon: #00ffe0; --fadi-bg: #05080a; }
-        body { background: var(--fadi-bg); color: white; font-family: sans-serif; margin: 0; padding: 10px; height: 100vh; display: flex; flex-direction: column; }
-        .box { background: #161b22; padding: 15px; border-radius: 12px; border: 1px solid var(--fadi-neon); margin-bottom: 10px; }
-        input { width: 85%; padding: 10px; margin: 5px 0; border-radius: 5px; background: #000; color: #fff; border: 1px solid #333; }
-        .btn { background: var(--fadi-gold); color: #000; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; width: 100%; }
-        #chat { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px; border: 1px solid #222; margin: 10px 0; display: flex; flex-direction: column; }
-        .msg { padding: 8px; margin: 5px 0; border-radius: 8px; max-width: 80%; font-size: 14px; color: white; }
-        .msg.me { background: #1d2a35; align-self: flex-start; border-right: 3px solid var(--fadi-neon); }
-        .msg.other { background: #21262d; align-self: flex-end; border-left: 3px solid #58a6ff; }
-        .controls { display: flex; gap: 5px; background: #161b22; padding: 10px; border-radius: 12px; }
-        .icon-btn { background: #222; border: 1px solid var(--fadi-gold); color: var(--fadi-gold); width: 45px; height: 45px; border-radius: 50%; font-size: 20px; cursor: pointer; }
-        #videoArea { display: none; width: 100%; height: 180px; background: #000; border-radius: 10px; overflow: hidden; position: relative; margin-bottom: 5px; }
-        #remoteVid { width: 100%; height: 100%; object-fit: cover; }
-        #localVid { width: 60px; height: 45px; position: absolute; bottom: 5px; right: 5px; border: 1px solid var(--fadi-neon); }
+        body { background: #05080a; color: #ffcc00; font-family: sans-serif; text-align: center; padding: 20px; }
+        .box { border: 2px solid #00ffe0; padding: 15px; border-radius: 12px; background: #161b22; }
+        #chat { height: 250px; overflow-y: auto; background: rgba(0,0,0,0.5); margin: 15px 0; padding: 10px; border-radius: 8px; text-align: right; color: white; border: 1px solid #333; }
+        input { width: 70%; padding: 10px; border-radius: 5px; }
+        button { background: #ffcc00; color: #000; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
+    <h1>💎 منظومة الدردشة 💎</h1>
     <div class="box" id="setup">
-        <input type="text" id="userName" placeholder="اكتب اسمك">
-        <input type="text" id="roomNum" placeholder="رقم الغرفة (مثلاً 100)">
-        <button class="btn" onclick="initFadi()">🚀 دخول المنظومة</button>
+        <input type="text" id="room" placeholder="رقم الغرفة">
+        <button onclick="start()">🚀 اشتبك</button>
     </div>
-
-    <div id="videoArea">
-        <video id="remoteVid" autoplay playsinline></video>
-        <video id="localVid" autoplay muted playsinline></video>
-    </div>
-
-    <div id="chat"></div>
-    <audio id="remoteVoice" autoplay></audio>
-
-    <div class="controls" id="inputSection" style="display:none;">
-        <button class="icon-btn" onclick="callAll(false)">📞</button>
-        <button class="icon-btn" onclick="callAll(true)">🎥</button>
-        <input type="text" id="msgInput" placeholder="اكتب رسالة..." style="flex:1;">
-        <button class="btn" style="width: 70px;" onclick="send()">إرسال</button>
+    <div id="mainUI" style="display:none;">
+        <div id="chat"></div>
+        <input type="text" id="msg" placeholder="اكتب رسالة...">
+        <button onclick="send()">إرسال</button>
     </div>
 
 <script>
-    let peer, myName, myRoom, conns = [];
-    const cfg = { 
-        config: { 
-            'iceServers': [
-                { 'urls': 'stun:stun.l.google.com:19302' }, 
-                { 'urls': 'turn:openrelay.metered.ca:80', 'username': 'openrelayproject', 'credential': 'openrelayproject' }
-            ] 
-        } 
-    };
-
-    function initFadi() {
-        myName = document.getElementById('userName').value;
-        myRoom = document.getElementById('roomNum').value;
-        if(!myName || !myRoom) return alert("دخل بياناتك!");
+    let peer, conn;
+    function start() {
+        let room = document.getElementById('room').value;
+        if(!room) return;
         document.getElementById('setup').style.display = 'none';
-        document.getElementById('inputSection').style.display = 'flex';
+        document.getElementById('mainUI').style.display = 'block';
         
-        peer = new Peer(myRoom, cfg);
-        peer.on('open', (id) => {
-            log("✅ المنظومة جاهزة! رقم الغرفة: " + id, "sys");
-            peer.on('connection', c => { conns.push(c); setupConn(c); });
-            peer.on('call', call => {
-                navigator.mediaDevices.getUserMedia({audio:true, video:!!call.metadata?.video}).then(s => {
-                    if(call.metadata?.video) {
-                        document.getElementById('videoArea').style.display='block';
-                        document.getElementById('localVid').srcObject = s;
-                    }
-                    call.answer(s);
-                    setupCall(call);
-                });
+        peer = new Peer(room);
+        peer.on('open', (id) => { log("✅ جاهز في الغرفة: " + id); });
+        
+        peer.on('connection', (c) => { 
+            conn = c; 
+            log("🤝 اشتبك صاحبك معك!");
+            setupConn();
+        });
+
+        peer.on('error', () => {
+            const guest = new Peer();
+            guest.on('open', () => {
+                conn = guest.connect(room);
+                log("✅ متصل الآن بالغرفة: " + room);
+                setupConn();
             });
         });
-
-        peer.on('error', err => {
-            if(err.type === 'unavailable-id') {
-                peer = new Peer('guest-' + Math.floor(Math.random()*999), cfg);
-                peer.on('open', () => {
-                    let c = peer.connect(myRoom);
-                    conns.push(c); setupConn(c);
-                });
-            }
-        });
     }
 
-    function setupConn(c) {
-        c.on('open', () => {
-            c.on('data', d => { if(d.type==='msg') log(d.text, "other", d.user); });
-        });
-    }
-
-    function setupCall(call) {
-        call.on('stream', rs => {
-            if(call.metadata?.video) {
-                document.getElementById('videoArea').style.display='block';
-                document.getElementById('remoteVid').srcObject = rs;
-            } else {
-                document.getElementById('remoteVoice').srcObject = rs;
-            }
-        });
-    }
-
-    function callAll(v) {
-        navigator.mediaDevices.getUserMedia({audio:true, video:v}).then(s => {
-            if(v) {
-                document.getElementById('videoArea').style.display='block';
-                document.getElementById('localVid').srcObject = s;
-            }
-            conns.forEach(c => {
-                let call = peer.call(c.peer, s, {metadata:{video:v}});
-                setupCall(call);
-            });
-        });
+    function setupConn() {
+        conn.on('data', (data) => { log("صاحبك: " + data); });
     }
 
     function send() {
-        let val = document.getElementById('msgInput').value;
-        if(!val) return;
-        conns.forEach(c => c.send({type:'msg', user:myName, text:val}));
-        log(val, "me", myName);
-        document.getElementById('msgInput').value = "";
+        let m = document.getElementById('msg').value;
+        if(conn && conn.open) {
+            conn.send(m);
+            log("أنا: " + m);
+            document.getElementById('msg').value = "";
+        }
     }
 
-    function log(m, t, u) {
+    function log(m) {
         let d = document.createElement('div');
-        d.className = `msg ${t}`;
-        d.innerHTML = u ? `<b>${u}:</b><br>${m}` : m;
+        d.innerText = m;
         document.getElementById('chat').appendChild(d);
         document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
     }
