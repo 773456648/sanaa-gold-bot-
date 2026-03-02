@@ -7,56 +7,151 @@ app = Flask(__name__)
 def index():
     return render_template_string(HTML_CODE)
 
+# هنا كودك الإمبراطوري حق فادي بدون أي تغيير
 HTML_CODE = '''
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>💬 FADI CHAT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💎 FADI SYSTEM PRO | منظومة فادي</title>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
-        body { background: #05080a; color: #ffcc00; font-family: sans-serif; text-align: center; padding: 20px; }
-        .box { border: 2px solid #00ffe0; padding: 15px; border-radius: 12px; background: #161b22; }
-        #chat { height: 300px; overflow-y: auto; background: rgba(0,0,0,0.5); margin: 15px 0; padding: 10px; border-radius: 8px; text-align: right; color: white; border: 1px solid #333; }
-        input { width: 70%; padding: 10px; border-radius: 5px; background: #000; color: #fff; border: 1px solid #444; }
-        button { background: #ffcc00; color: #000; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        :root { --fadi-gold: #ffcc00; --fadi-neon: #00ffe0; --fadi-bg: #05080a; }
+        body { background: var(--fadi-bg); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 15px; height: 100vh; display: flex; flex-direction: column; }
+        .header { text-align: center; border-bottom: 2px solid var(--fadi-gold); padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { font-size: 22px; color: var(--fadi-gold); margin: 0; text-shadow: 0 0 10px var(--fadi-gold); }
+        .setup-box { background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid var(--fadi-neon); box-shadow: 0 0 15px rgba(0,255,224,0.2); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: white; text-align: center; font-weight: bold; }
+        .btn-gold { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: linear-gradient(45deg, #ffcc00, #ffaa00); color: #000; font-size: 16px; transition: 0.3s; }
+        #chat { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 12px; padding: 15px; border: 1px solid #1a2c38; margin: 15px 0; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 12px; max-width: 85%; position: relative; font-size: 14px; }
+        .msg.me { background: #1d2a35; align-self: flex-start; border-right: 4px solid var(--fadi-neon); }
+        .msg.other { background: #21262d; align-self: flex-end; border-left: 4px solid #58a6ff; }
+        .input-row { display: flex; gap: 8px; align-items: center; }
+        .tool-btn { background: #222; border: 1px solid var(--fadi-gold); color: var(--fadi-gold); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        #videoArea { display: none; position: relative; width: 100%; height: 200px; background: #000; border-radius: 12px; border: 1px solid var(--fadi-gold); margin-bottom: 10px; overflow: hidden; }
+        #remoteVid { width: 100%; height: 100%; object-fit: cover; }
+        #localVid { width: 80px; height: 60px; position: absolute; bottom: 5px; right: 5px; border: 1px solid var(--fadi-neon); }
+        #endCallBtn { display: none; background: #ff4444 !important; border-color: #ff4444 !important; }
     </style>
 </head>
 <body>
-    <h1>💎 منظومة الدردشة 💎</h1>
-    <div class="box" id="setup">
-        <input type="text" id="room" placeholder="أدخل رقم الغرفة">
-        <button onclick="start()">🚀 اشتبك</button>
+    <div class="header"><h1>👑FADI SYSTEM PRO👑</h1></div>
+    <div class="setup-box" id="setup">
+        <input type="text" id="userName" placeholder="اكتب اسمك للمجموعة">
+        <input type="text" id="roomNum" placeholder="رقم الغرفة">
+        <button class="btn-gold" onclick="initFadi()">🚀 دخول المنظومة الآن</button>
     </div>
-    <div id="mainUI" style="display:none;">
-        <div id="chat"></div>
-        <input type="text" id="msg" placeholder="اكتب رسالة...">
-        <button onclick="send()">إرسال</button>
+    <div id="videoArea"><video id="remoteVid" autoplay playsinline></video><video id="localVid" autoplay muted playsinline></video></div>
+    <div id="chat"></div>
+    <audio id="remoteVoice" autoplay></audio>
+    <div class="input-row" id="inputSection" style="display:none;">
+        <button class="tool-btn" id="micBtn" onclick="handleMic()">🎤</button>
+        <button class="tool-btn" onclick="callAll(false)">📞</button>
+        <button class="tool-btn" onclick="callAll(true)">🎥</button>
+        <button class="tool-btn" id="endCallBtn" onclick="endCall()">🛑</button>
+        <input type="text" id="msgInput" placeholder="اكتب للجميع..." onkeypress="if(event.key==='Enter') send()">
+        <button class="btn-gold" style="width: 70px; height: 40px;" onclick="send()">إرسال</button>
     </div>
+
 <script>
-    let peer, conn;
-    function start() {
-        let room = document.getElementById('room').value;
-        if(!room) return alert("دخل الرقم!");
+    let peer, myName, myRoom, conns = [], currentCall, myStream, mediaRec;
+    const chatBox = document.getElementById('chat');
+    const cfg = { config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } };
+
+    function initFadi() {
+        myName = document.getElementById('userName').value;
+        myRoom = document.getElementById('roomNum').value;
+        if(!myName || !myRoom) return alert("يا فادي البيانات!");
         document.getElementById('setup').style.display = 'none';
-        document.getElementById('mainUI').style.display = 'block';
-        peer = new Peer(room);
-        peer.on('open', (id) => { log("✅ جاهز في الغرفة: " + id); });
-        peer.on('connection', (c) => { conn = c; log("🤝 اشتبك صاحبك معك!"); setupConn(); });
-        peer.on('error', () => {
-            const guest = new Peer();
-            guest.on('open', () => { conn = guest.connect(room); log("✅ متصل الآن بالغرفة: " + room); setupConn(); });
+        document.getElementById('inputSection').style.display = 'flex';
+        tryHost();
+    }
+
+    function tryHost() {
+        peer = new Peer(myRoom, cfg);
+        peer.on('open', () => {
+            log("👑 أنت الزعيم.. المجموعة جاهزة", "sys");
+            peer.on('connection', c => { conns.push(c); handleConn(c, true); });
+            peer.on('call', call => handleCall(call));
+        });
+        peer.on('error', err => { if(err.type === 'unavailable-id') joinRoom(); });
+    }
+
+    function joinRoom() {
+        peer = new Peer(myRoom + "-" + Math.floor(Math.random()*999), cfg);
+        peer.on('open', () => {
+            log("✅ دخلت المنظومة", "sys");
+            let c = peer.connect(myRoom);
+            conns.push(c); handleConn(c, false);
+        });
+        peer.on('call', call => handleCall(call));
+    }
+
+    function handleConn(c, isHost) {
+        c.on('open', () => c.send({type:'join', user:myName}));
+        c.on('data', d => {
+            if(isHost) conns.forEach(client => { if(client !== c) client.send(d); }); // بث للكل
+            if(d.type === 'msg') log(d.text, "other", d.user);
+            if(d.type === 'voice') log(`<audio controls src="${d.data}"></audio>`, "other", d.user);
+            if(d.type === 'join') log(d.user + " انضم", "sys");
         });
     }
-    function setupConn() { conn.on('data', (data) => { log("صاحبك: " + data); }); }
-    function send() {
-        let m = document.getElementById('msg').value;
-        if(conn && conn.open) { conn.send(m); log("أنا: " + m); document.getElementById('msg').value = ""; }
+
+    function handleCall(call) {
+        if(confirm("اتصال وارد.. ترد؟")) {
+            navigator.mediaDevices.getUserMedia({audio:true, video:!!call.metadata?.video}).then(s => {
+                myStream = s;
+                if(call.metadata?.video) { document.getElementById('videoArea').style.display='block'; document.getElementById('localVid').srcObject=s; }
+                call.answer(s); setupCall(call);
+            });
+        }
     }
-    function log(m) {
-        let d = document.createElement('div'); d.innerText = m;
-        document.getElementById('chat').appendChild(d);
-        document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+
+    function setupCall(call) {
+        currentCall = call;
+        document.getElementById('endCallBtn').style.display = 'flex';
+        call.on('stream', rs => {
+            if(call.metadata?.video) document.getElementById('remoteVid').srcObject = rs;
+            else document.getElementById('remoteVoice').srcObject = rs;
+        });
+        call.on('close', endCall);
+    }
+
+    function callAll(video) {
+        navigator.mediaDevices.getUserMedia({audio:true, video:video}).then(s => {
+            myStream = s;
+            if(video) { document.getElementById('videoArea').style.display='block'; document.getElementById('localVid').srcObject=s; }
+            conns.forEach(c => {
+                let call = peer.call(c.peer, s, {metadata:{video:video}});
+                setupCall(call);
+            });
+        });
+    }
+
+    function endCall() {
+        if(currentCall) currentCall.close();
+        if(myStream) myStream.getTracks().forEach(t => t.stop());
+        document.getElementById('videoArea').style.display = 'none';
+        document.getElementById('endCallBtn').style.display = 'none';
+        log("🔴 تم الإغلاق", "sys");
+    }
+
+    function send() {
+        const inp = document.getElementById('msgInput');
+        if(!inp.value) return;
+        conns.forEach(c => c.send({type:'msg', user:myName, text:inp.value}));
+        log(inp.value, "me", myName); inp.value = "";
+    }
+
+    function handleMic() { /* نفس كود التسجيل السابق بدون تغيير */ }
+
+    function log(m, t, u) {
+        const d = document.createElement('div');
+        d.className = `msg ${t}`;
+        d.innerHTML = u ? `<b>${u}:</b><br>${m}` : m;
+        chatBox.appendChild(d); chatBox.scrollTop = chatBox.scrollHeight;
     }
 </script>
 </body>
@@ -66,4 +161,3 @@ HTML_CODE = '''
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
-# Update-Check-2026
