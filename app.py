@@ -1,5 +1,5 @@
 from flask import Flask, render_template_string, request, jsonify
-import os, socket, requests, random, string
+import os, requests, random, string
 
 app = Flask(__name__)
 
@@ -19,55 +19,71 @@ HTML_CODE = """
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         body { background: #0b0719; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .card { background: rgba(255,255,255,0.05); border: 2px solid gold; border-radius: 20px; padding: 20px; max-width: 500px; margin: auto; }
-        input { width: 80%; padding: 10px; margin: 10px; border-radius: 10px; border: 1px solid gold; background: #000; color: white; }
-        .btn { background: gold; color: black; padding: 12px 25px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        #vArea { display: none; margin-top: 20px; }
-        video { width: 45%; border: 1px solid cyan; border-radius: 10px; background: #000; }
-        .chat { height: 200px; overflow-y: auto; border: 1px solid #333; margin: 10px 0; padding: 10px; text-align: right; }
+        .card { background: rgba(255,255,255,0.05); border: 2px solid gold; border-radius: 20px; padding: 20px; max-width: 500px; margin: auto; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+        input { width: 85%; padding: 12px; margin: 10px; border-radius: 25px; border: 1px solid gold; background: #000; color: white; outline: none; }
+        .btn { background: linear-gradient(gold, #ffcc00); color: black; padding: 12px 30px; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 0 15px gold; }
+        #vArea { display: none; margin-top: 20px; gap: 10px; justify-content: center; }
+        video { width: 45%; border: 2px solid cyan; border-radius: 15px; background: #000; }
+        .chat { height: 250px; overflow-y: auto; border: 1px solid #444; margin: 15px 0; padding: 15px; text-align: right; background: rgba(0,0,0,0.3); border-radius: 15px; }
+        .system-msg { color: gold; font-size: 0.8em; text-align: center; display: block; margin: 5px 0; }
     </style>
 </head>
 <body>
     <div class="card" id="entry">
         <h1 style="color:gold">👑 FADI GOLD</h1>
-        <p id="srvId" style="color:cyan">جاري التحميل...</p>
-        <input type="text" id="uName" placeholder="اسمك يا بطل">
-        <input type="text" id="uRoom" placeholder="رقم الغرفة">
-        <button class="btn" onclick="start()">دخول 🚀</button>
+        <p id="srvId" style="color:cyan; font-family: monospace;">جاري استخراج المعرف...</p>
+        <input type="text" id="uName" placeholder="اسمك المستعار">
+        <input type="text" id="uRoom" placeholder="رقم الغرفة (مثلاً: 101)">
+        <button class="btn" onclick="start()">دخول العالم الذهبي 🚀</button>
     </div>
 
-    <div class="card" id="main" style="display:none">
-        <h2 id="roomTitle"></h2>
+    <div class="card" id="main" style="display:none; max-width: 800px;">
+        <h2 id="roomTitle" style="color:gold"></h2>
         <div id="vArea">
             <video id="lVid" autoplay muted playsinline></video>
             <video id="rVid" autoplay playsinline></video>
         </div>
         <div class="chat" id="chat"></div>
-        <input type="text" id="msgI" placeholder="اكتب رسالة...">
-        <button class="btn" onclick="send()">إرسال</button>
-        <button class="btn" onclick="call()" style="background:cyan">اتصال 📞</button>
+        <div style="display:flex; gap:5px; align-items:center;">
+            <input type="text" id="msgI" placeholder="اكتب رسالة..." style="margin:0; flex:1;">
+            <button class="btn" onclick="send()" style="padding:10px 20px;">ارسل</button>
+        </div>
+        <div style="margin-top:15px;">
+            <button class="btn" onclick="makeCall()" style="background:cyan">اتصال فيديو 📹</button>
+            <button class="btn" onclick="location.reload()" style="background:red; color:white;">خروج 🚪</button>
+        </div>
     </div>
 
     <script>
         let peer, conn, myStream;
-        fetch('/api/server-info').then(r=>r.json()).then(d=>document.getElementById('srvId').innerText="ID: "+d.server_id);
+        fetch('/api/server-info').then(r=>r.json()).then(d=>document.getElementById('srvId').innerText="Server ID: "+d.server_id);
 
         function start() {
-            const name = document.getElementById('uName').value;
-            const room = document.getElementById('uRoom').value;
-            if(!name || !room) return alert("املا البيانات!");
+            const name = document.getElementById('uName').value.trim();
+            const room = document.getElementById('uRoom').value.trim();
+            if(!name || !room) return alert("يا خبير، سجل اسمك ورقم الغرفة!");
             
             peer = new Peer('FADI-'+room+'-'+name);
+            
             peer.on('open', id => {
                 document.getElementById('entry').style.display='none';
                 document.getElementById('main').style.display='block';
-                document.getElementById('roomTitle').innerText="غرفة: "+room;
+                document.getElementById('roomTitle').innerText="غرفة ذهبية رقم: "+room;
+                addMsg('system', 'تم الدخول بنجاح كـ ' + name);
             });
-            peer.on('connection', c => { conn = c; setup(); });
+
+            peer.on('connection', c => {
+                conn = c;
+                conn.on('data', data => {
+                    if(data.type === 'msg') addMsg('other', data.user + ": " + data.txt);
+                });
+            });
+
             peer.on('call', async call => {
-                if(confirm("مكالمة واردة؟")) {
+                if(confirm("مكالمة فيديو واردة.. تشتي ترد؟")) {
                     myStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-                    document.getElementById('vArea').style.display='block';
+                    document.getElementById('vArea').style.display='flex';
                     document.getElementById('lVid').srcObject = myStream;
                     call.answer(myStream);
                     call.on('stream', s => document.getElementById('rVid').srcObject = s);
@@ -75,20 +91,35 @@ HTML_CODE = """
             });
         }
 
-        async function call() {
-            const friend = prompt("ادخل اسم الصديق اللي في الغرفة:");
-            myStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-            document.getElementById('vArea').style.display='block';
-            document.getElementById('lVid').srcObject = myStream;
-            const c = peer.call('FADI-'+document.getElementById('uRoom').value+'-'+friend, myStream);
-            c.on('stream', s => document.getElementById('rVid').srcObject = s);
+        async function makeCall() {
+            const friend = prompt("اكتب اسم صديقك الموجود في الغرفة حالياً:");
+            if(!friend) return;
+            try {
+                myStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+                document.getElementById('vArea').style.display='flex';
+                document.getElementById('lVid').srcObject = myStream;
+                const destId = 'FADI-'+document.getElementById('uRoom').value+'-'+friend;
+                const call = peer.call(destId, myStream);
+                call.on('stream', s => document.getElementById('rVid').srcObject = s);
+            } catch(e) { alert("تأكد من إذن الكاميرا!"); }
         }
 
         function send() {
             const txt = document.getElementById('msgI').value;
-            const msg = document.createElement('p'); msg.innerText = "أنا: " + txt;
-            document.getElementById('chat').appendChild(msg);
+            const name = document.getElementById('uName').value;
+            if(!txt) return;
+            if(conn) conn.send({type:'msg', user:name, txt:txt});
+            addMsg('me', "أنا: " + txt);
             document.getElementById('msgI').value = '';
+        }
+
+        function addMsg(type, text) {
+            const p = document.createElement('p');
+            p.className = type === 'system' ? 'system-msg' : '';
+            p.innerText = text;
+            const chat = document.getElementById('chat');
+            chat.appendChild(p);
+            chat.scrollTop = chat.scrollHeight;
         }
     </script>
 </body>
