@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💎 FADI CONNECT | منصة الاتصالات</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: linear-gradient(135deg, #0b0719, #1a0f2e); min-height: 100vh; padding: 20px; color: white; position: relative; overflow-x: hidden; }
+        .bg-glow { position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 50%); animation: rotate 20s linear infinite; z-index: -2; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .glass-card { background: rgba(20, 15, 40, 0.6); backdrop-filter: blur(15px); border: 1.5px solid rgba(255, 215, 0, 0.4); border-radius: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); padding: 30px; margin-bottom: 20px; }
+        .royal-header { text-align: center; margin-bottom: 30px; }
+        .royal-header h1 { font-size: 2.5em; background: linear-gradient(135deg, #ffd700, #ffb347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .elegant-input { width: 100%; padding: 15px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 2px solid gold; border-radius: 30px; color: white; }
+        .royal-btn { width: 100%; padding: 15px; background: gold; color: black; border-radius: 30px; font-weight: bold; cursor: pointer; border: none; }
+        .chat-lounge { background: rgba(0,0,0,0.5); height: 300px; overflow-y: auto; border-radius: 20px; padding: 15px; margin: 15px 0; border: 1px solid gold; }
+        .video-studio { display: none; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        video { width: 100%; border-radius: 15px; border: 2px solid gold; background: #000; }
+    </style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div id="entryScreen" class="glass-card" style="max-width: 500px; margin: 50px auto;">
+    <div class="royal-header"><h1>👑 FADI CONNECT</h1></div>
+    <input type="text" class="elegant-input" id="loginName" placeholder="اسمك">
+    <input type="text" id="loginRoom" class="elegant-input" placeholder="رقم الغرفة">
+    <button class="royal-btn" onclick="startConnect()">🚀 اشتبك الآن</button>
+</div>
+<div id="mainUI" style="display:none;">
+    <div class="video-studio" id="videoArea">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <video id="localVideo" autoplay muted playsinline></video>
+    </div>
+    <div class="chat-lounge" id="chat"></div>
+    <div style="display:flex; gap:10px;">
+        <input type="text" id="msg" class="elegant-input" placeholder="اكتب رسالة...">
+        <button class="royal-btn" style="width:80px;" onclick="send()">📩</button>
+    </div>
+    <div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
+        <button onclick="startMedia(true)" style="background:none; border:1px solid gold; color:gold; padding:10px; border-radius:10px;">📹 فيديو</button>
+        <button onclick="startMedia(false)" style="background:none; border:1px solid gold; color:gold; padding:10px; border-radius:10px;">🎤 صوت</button>
+    </div>
+</div>
+<script>
+    let peer, conn, myStream;
+    function startConnect() {
+        let room = document.getElementById('loginRoom').value;
+        let name = document.getElementById('loginName').value;
+        if(!room || !name) return alert("دخل البيانات!");
+        document.getElementById('entryScreen').style.display='none';
+        document.getElementById('mainUI').style.display='block';
+        peer = new Peer(room);
+        peer.on('open', id => log("✅ متصل بالغرفة: " + id));
+        peer.on('connection', c => { conn = c; setupConn(); log("🤝 صاحبك اشتبك!"); });
+        peer.on('call', call => {
+            if(confirm("مكالمة واردة! رد؟")) {
+                navigator.mediaDevices.getUserMedia({video:true, audio:true}).then(s => {
+                    myStream = s; call.answer(s); setupCall(call);
+                });
+            }
+        });
+        peer.on('error', () => {
+            const guest = new Peer();
+            guest.on('open', () => { conn = guest.connect(room); setupConn(); log("✅ دخلت عند صاحبك!"); });
+        });
+    }
+    function setupConn() { conn.on('data', d => log("صاحبك: " + d)); }
+    function send() { 
+        let m = document.getElementById('msg').value;
+        if(conn && conn.open) { conn.send(m); log("أنا: " + m); document.getElementById('msg').value=""; }
+    }
+    function log(m) {
+        let d = document.createElement('div'); d.innerText = m;
+        document.getElementById('chat').appendChild(d);
+        document.getElementById('chat').scrollTop = 9999;
+    }
+    function startMedia(vid) {
+        navigator.mediaDevices.getUserMedia({video:vid, audio:true}).then(s => {
+            myStream = s; document.getElementById('videoArea').style.display='grid';
+            document.getElementById('localVideo').srcObject = s;
+            let call = peer.call(conn.peer, s); setupCall(call);
+        });
+    }
+    function setupCall(call) {
+        call.on('stream', s => { document.getElementById('remoteVideo').srcObject = s; });
+    }
+</script>
+</body>
+</html>
