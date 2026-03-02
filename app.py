@@ -2,7 +2,7 @@ from flask import Flask, render_template_string
 import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fadi-secret-key')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fadi-gold-secret')
 
 HTML_CODE = '''
 <!DOCTYPE html>
@@ -10,14 +10,14 @@ HTML_CODE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 FADI CONNECT | المكالمات الصوتية والمرئية</title>
+    <title>💎 FADI GOLD CONNECT</title>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
         body { background: linear-gradient(135deg, #0b0719, #1a0f2e); min-height: 100vh; padding: 20px; color: white; }
         .glass-card { background: rgba(20, 15, 40, 0.8); backdrop-filter: blur(10px); border: 2px solid gold; border-radius: 40px; padding: 30px; max-width: 600px; margin: 20px auto; }
         .royal-header { text-align: center; margin-bottom: 30px; }
-        .royal-header h1 { font-size: 2.8em; background: linear-gradient(135deg, #ffd700, #ffb347); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .royal-header h1 { font-size: 2.8em; background: linear-gradient(135deg, gold, orange); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .crown-icon { font-size: 3em; animation: float 3s infinite; display: inline-block; }
         @keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);} }
         .elegant-input { width: 100%; padding: 15px 20px; margin: 10px 0; background: rgba(0,0,0,0.5); border: 2px solid gold; border-radius: 60px; color: white; font-size: 1.1em; }
@@ -37,8 +37,8 @@ HTML_CODE = '''
         .audio-wave { font-size: 3em; animation: wave 1.5s infinite; }
         @keyframes wave { 0%,100%{opacity:0.5;} 50%{opacity:1;transform:scale(1.1);} }
         .chat-area { background: rgba(0,0,0,0.5); border: 2px solid gold; border-radius: 30px; padding: 20px; height: 300px; overflow-y: auto; margin: 20px 0; display: flex; flex-direction: column; }
-        .message { padding: 10px 15px; margin: 10px 0; border-radius: 20px; max-width: 80%; animation: msg 0.3s; }
-        @keyframes msg { 0%{opacity:0;transform:translateX(20px);} 100%{opacity:1;transform:translateX(0);} }
+        .message { padding: 10px 15px; margin: 10px 0; border-radius: 20px; max-width: 80%; animation: msgIn 0.3s; }
+        @keyframes msgIn { 0%{opacity:0;transform:translateX(20px);} 100%{opacity:1;transform:translateX(0);} }
         .message.me { background: #1a2f4a; border-right: 5px solid cyan; align-self: flex-start; }
         .message.other { background: #2a1f3a; border-left: 5px solid gold; align-self: flex-end; }
         .message.system { background: rgba(255,215,0,0.1); border: 1px dashed gold; color: gold; text-align: center; max-width: 100%; }
@@ -51,8 +51,8 @@ HTML_CODE = '''
         .status-item { background: rgba(0,0,0,0.5); border: 1px solid gold; border-radius: 50px; padding: 8px 20px; display: flex; align-items: center; gap: 8px; }
         .online-dot { width: 10px; height: 10px; background: #00ff88; border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
-        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1a1f35; border: 2px solid gold; border-radius: 60px; padding: 15px 30px; color: gold; z-index: 9999; animation: slide 0.5s; }
-        @keyframes slide { 0%{top:-100px;} 100%{top:20px;} }
+        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1a1f35; border: 2px solid gold; border-radius: 60px; padding: 15px 30px; color: gold; z-index: 9999; animation: slideDown 0.5s; }
+        @keyframes slideDown { 0%{top:-100px;} 100%{top:20px;} }
     </style>
 </head>
 <body>
@@ -61,10 +61,10 @@ HTML_CODE = '''
 <div id="entryScreen" class="glass-card">
     <div class="royal-header">
         <div class="crown-icon">👑</div>
-        <h1>FADI CONNECT</h1>
-        <div style="color: cyan; margin-top: 10px;">مكالمات صوتية ومرئية</div>
+        <h1>FADI GOLD</h1>
+        <div style="color: cyan; margin-top: 10px;">تم تصميمه من قبل فادي </div>
     </div>
-    <input type="text" class="elegant-input" id="loginName" placeholder="الاسم">
+    <input type="text" class="elegant-input" id="loginName" placeholder="اسمك">
     <input type="text" class="elegant-input" id="loginRoom" placeholder="رقم الغرفة">
     <button class="royal-btn" onclick="enterRoom()">🚀 دخول</button>
 </div>
@@ -74,7 +74,7 @@ HTML_CODE = '''
     <div class="glass-card" style="max-width: 100%;">
         <div class="royal-header">
             <div class="crown-icon">👑</div>
-            <h1 id="roomTitle">FADI CONNECT</h1>
+            <h1 id="roomTitle">FADI GOLD</h1>
             <div class="status-bar">
                 <div class="status-item"><span class="online-dot"></span><span id="membersCount">1</span></div>
                 <div class="status-item"><span>💬</span><span id="msgCount">0</span></div>
@@ -85,7 +85,7 @@ HTML_CODE = '''
 
     <!-- شريط الأدوات -->
     <div class="toolbar">
-        <div class="tool" onclick="showChatPanel()" title="الدردشة">💬</div>
+        <div class="tool" onclick="showChat()" title="الدردشة">💬</div>
         <div class="tool" onclick="toggleMembers()" title="الأعضاء">👥</div>
         <div class="tool" onclick="startVideoCall()" title="مكالمة فيديو">📹</div>
         <div class="tool" onclick="startAudioCall()" title="مكالمة صوتية فقط">🎤</div>
@@ -101,9 +101,9 @@ HTML_CODE = '''
 
     <!-- منطقة الصوت فقط -->
     <div class="audio-area" id="audioContainer">
-        <div class="audio-wave">🎤 🔴 🎵</div>
+        <div class="audio-wave">🎤 🔊 🎵</div>
         <h3 style="color: cyan;">مكالمة صوتية فقط</h3>
-        <p style="color: gold;">تحدث الآن، الطرف الآخر يسمعك</p>
+        <p style="color: gold;">تحدث الآن، الجميع يسمعك</p>
     </div>
 
     <!-- قائمة الأعضاء -->
@@ -116,8 +116,8 @@ HTML_CODE = '''
 
     <!-- منطقة الإرسال -->
     <div class="send-area">
-        <input type="text" class="send-input" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
-        <button class="send-btn" onclick="sendMessage()">إرسال</button>
+        <input type="text" class="send-input" id="messageInput" placeholder="اكتب رسالتك للجميع..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <button class="send-btn" onclick="sendMessage()">إرسال للكل</button>
     </div>
 </div>
 
@@ -125,7 +125,7 @@ HTML_CODE = '''
 <audio id="remoteAudio" autoplay></audio>
 
 <script>
-    // المتغيرات العامة
+    // ========== المتغيرات العامة ==========
     let peer = null;
     let myName = '';
     let myRoom = '';
@@ -149,7 +149,7 @@ HTML_CODE = '''
     const endCallBtn = document.getElementById('endCallBtn');
     const callStatus = document.getElementById('callStatus');
 
-    // دالة الإشعارات
+    // ========== دوال مساعدة ==========
     function notify(text) {
         const notif = document.createElement('div');
         notif.className = 'notification';
@@ -158,29 +158,30 @@ HTML_CODE = '''
         setTimeout(() => notif.remove(), 3000);
     }
 
-    // دخول الغرفة
+    // ========== دخول الغرفة ==========
     function enterRoom() {
         myName = document.getElementById('loginName').value.trim();
         myRoom = document.getElementById('loginRoom').value.trim();
 
         if (!myName || !myRoom) {
-            notify('❌ اكتب الاسم ورقم الغرفة');
+            notify('❌ اكتب اسمك ورقم الغرفة');
             return;
         }
 
         document.getElementById('entryScreen').style.display = 'none';
         document.getElementById('mainWorld').style.display = 'block';
-        document.getElementById('roomTitle').innerText = `غرفة ${myRoom}`;
+        document.getElementById('roomTitle').innerText = ` 
+FADI GOLD ${myRoom}`;
 
         notify('✨ جاري الاتصال...');
         setTimeout(() => {
             tryHost();
-            addMessage('system', '✨ مرحباً بك في FADI CONNECT');
-            addMessage('system', '🌟 مكالمات صوتية ومرئية');
+            addMessage('system', '✨ مرحباً بك في FADI GOLD');
+            addMessage('system', '🌟 الجميع يرسل - الجميع يتكلم');
         }, 500);
     }
 
-    // محاولة استضافة الغرفة
+    // ========== محاولة استضافة الغرفة ==========
     function tryHost() {
         peer = new Peer(myRoom, {
             config: {'iceServers': [
@@ -194,13 +195,20 @@ HTML_CODE = '''
             myId = id;
             notify('👑 أنت مضيف الغرفة');
             updateMembersList();
+            updateMembersCount();
         });
 
         peer.on('connection', (conn) => {
             connections.push(conn);
             setupConnection(conn);
+            
+            // إرسال قائمة الأعضاء للمستخدم الجديد
             setTimeout(() => {
-                conn.send({ type: 'members', list: members, host: myId });
+                conn.send({ 
+                    type: 'members', 
+                    list: members,
+                    host: myId 
+                });
             }, 500);
         });
 
@@ -209,15 +217,17 @@ HTML_CODE = '''
         });
 
         peer.on('error', (err) => {
+            console.log('Peer error:', err);
             if (err.type === 'unavailable-id') {
                 joinRoom();
             }
         });
     }
 
-    // الانضمام لغرفة
+    // ========== الانضمام إلى غرفة ==========
     function joinRoom() {
         const randomId = myRoom + '-' + Math.floor(Math.random() * 10000);
+        
         peer = new Peer(randomId, {
             config: {'iceServers': [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -228,6 +238,8 @@ HTML_CODE = '''
         peer.on('open', (id) => {
             myId = id;
             notify('✅ دخلت الغرفة');
+            
+            // الاتصال بالمضيف
             const conn = peer.connect(myRoom);
             connections.push(conn);
             setupConnection(conn);
@@ -236,35 +248,81 @@ HTML_CODE = '''
         peer.on('call', (call) => {
             handleIncomingCall(call);
         });
+
+        peer.on('error', (err) => {
+            console.log('Join error:', err);
+            notify('⚠️ خطأ في الانضمام للغرفة');
+        });
     }
 
-    // إعداد الاتصال
+    // ========== إعداد اتصال مع مستخدم ==========
     function setupConnection(conn) {
         conn.on('open', () => {
-            conn.send({ type: 'join', user: myName, id: myId });
+            // إرسال بياناتي للمستخدم الآخر
+            conn.send({ 
+                type: 'join', 
+                user: myName, 
+                id: myId 
+            });
         });
 
         conn.on('data', (data) => {
-            handleData(data);
+            handleData(data, conn);
+        });
+
+        conn.on('close', () => {
+            // إزالة الاتصال المغلق
+            connections = connections.filter(c => c !== conn);
+            
+            // إزالة العضو من القائمة
+            members = members.filter(m => m.id !== conn.peer);
+            
+            updateMembersList();
+            updateMembersCount();
+            addMessage('system', `👋 أحدهم غادر الغرفة`);
         });
     }
 
-    // معالجة البيانات
-    function handleData(data) {
+    // ========== معالجة البيانات الواردة ==========
+    function handleData(data, conn) {
+        console.log('Data received:', data);
+
+        // حالة 1: مستخدم جديد دخل الغرفة
         if (data.type === 'join') {
-            members.push({ name: data.user, id: data.id });
-            addMessage('system', `🌟 ${data.user} دخل`);
+            // إضافة العضو الجديد للقائمة
+            const newMember = { name: data.user, id: data.id };
+            members.push(newMember);
+            
+            addMessage('system', `🌟 ${data.user} دخل إلى الغرفة`);
             updateMembersCount();
             updateMembersList();
+
+            // إذا كنت المضيف، أرسل القائمة المحدثة للجميع
             if (isHost) {
-                broadcast({ type: 'members', list: members });
+                broadcastToAll({ 
+                    type: 'members', 
+                    list: members 
+                });
             }
         }
+        
+        // حالة 2: رسالة نصية (الجميع يقدر يرسل ويستقبل)
         else if (data.type === 'msg') {
             addMessage('other', data.text, data.user);
             msgCount++;
             document.getElementById('msgCount').innerText = msgCount;
+            
+            // إعادة بث الرسالة للجميع (إذا كنت المضيف)
+            if (isHost) {
+                broadcastToAll({
+                    type: 'msg',
+                    user: data.user,
+                    text: data.text
+                });
+            }
         }
+        
+        // حالة 3: تحديث قائمة الأعضاء
         else if (data.type === 'members') {
             members = data.list || [];
             updateMembersList();
@@ -272,45 +330,88 @@ HTML_CODE = '''
         }
     }
 
-    // البث للجميع
-    function broadcast(data) {
+    // ========== البث للجميع (فقط المضيف يستخدمها) ==========
+    function broadcastToAll(data) {
         connections.forEach(conn => {
-            if (conn.open) conn.send(data);
+            if (conn.open) {
+                conn.send(data);
+            }
         });
     }
 
-    // إرسال رسالة
+    // ========== إرسال رسالة (أي عضو يقدر يرسل) ==========
     function sendMessage() {
         const input = document.getElementById('messageInput');
         const text = input.value.trim();
+
         if (!text) return;
 
+        // عرض الرسالة عندي
         addMessage('me', text, myName);
         msgCount++;
         document.getElementById('msgCount').innerText = msgCount;
-        broadcast({ type: 'msg', user: myName, text: text });
+
+        // إرسال الرسالة لكل الاتصالات المفتوحة
+        // كل عضو يرسل مباشرة للآخرين (Peer to Peer)
+        connections.forEach(conn => {
+            if (conn.open) {
+                conn.send({
+                    type: 'msg',
+                    user: myName,
+                    text: text
+                });
+            }
+        });
+
+        // تفريغ حقل الإدخال
         input.value = '';
     }
 
-    // إضافة رسالة
+    // ========== إضافة رسالة للشات ==========
     function addMessage(type, text, user = '') {
-        const div = document.createElement('div');
-        div.className = `message ${type}`;
-        if (type === 'system') div.innerText = text;
-        else div.innerHTML = `<div style="color: gold;">${user}</div>${text}`;
-        chatContainer.appendChild(div);
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${type}`;
+
+        if (type === 'system') {
+            msgDiv.innerText = text;
+        } else {
+            msgDiv.innerHTML = `
+                <div style="color: gold; font-size: 0.9em; margin-bottom: 5px;">${user}</div>
+                ${text}
+            `;
+        }
+
+        chatContainer.appendChild(msgDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    // تحديث قائمة الأعضاء
+    // ========== تحديث قائمة الأعضاء ==========
     function updateMembersList() {
         const listDiv = document.getElementById('membersList');
         listDiv.innerHTML = '';
-        [{ name: myName, id: myId }].concat(members).forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'member-item';
-            div.innerHTML = `<div class="member-avatar">${m.id === myId ? '👑' : '👤'}</div><div class="member-name">${m.name}${m.id === myId ? ' (أنت)' : ''}</div><div class="online-dot"></div>`;
-            listDiv.appendChild(div);
+
+        // إضافة نفسي أولاً
+        const myDiv = document.createElement('div');
+        myDiv.className = 'member-item';
+        myDiv.innerHTML = `
+            <div class="member-avatar">👑</div>
+            <div class="member-name">${myName} (أنت)</div>
+            <div class="online-dot"></div>
+        `;
+        listDiv.appendChild(myDiv);
+
+        // إضافة باقي الأعضاء
+        members.forEach(m => {
+            if (m.id !== myId) {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'member-item';
+                memberDiv.innerHTML = `
+                    <div class="member-avatar">👤</div>
+                    <div class="member-name">${m.name}</div>
+                    <div class="online-dot"></div>
+                `;
+                listDiv.appendChild(memberDiv);
+            }
         });
     }
 
@@ -318,7 +419,7 @@ HTML_CODE = '''
         document.getElementById('membersCount').innerText = members.length + 1;
     }
 
-    function showChatPanel() {
+    function showChat() {
         document.getElementById('membersPanel').style.display = 'none';
     }
 
@@ -327,13 +428,17 @@ HTML_CODE = '''
         panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
     }
 
-    // بدء مكالمة فيديو
+    // ========== دوال المكالمات ==========
     async function startVideoCall() {
         if (isVideoActive || isAudioOnly) {
             endAllCalls();
         } else {
             try {
-                myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                myStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                
                 isVideoActive = true;
                 isAudioOnly = false;
                 
@@ -341,9 +446,15 @@ HTML_CODE = '''
                 audioContainer.style.display = 'none';
                 localVideo.srcObject = myStream;
 
+                // الاتصال بجميع الأعضاء
                 connections.forEach(conn => {
                     if (conn.open) {
-                        const call = peer.call(conn.peer, myStream, { metadata: { type: 'video', user: myName } });
+                        const call = peer.call(conn.peer, myStream, { 
+                            metadata: { 
+                                type: 'video', 
+                                user: myName 
+                            } 
+                        });
                         setupCall(call, true);
                     }
                 });
@@ -357,22 +468,31 @@ HTML_CODE = '''
         }
     }
 
-    // بدء مكالمة صوتية فقط
     async function startAudioCall() {
         if (isAudioOnly || isVideoActive) {
             endAllCalls();
         } else {
             try {
-                myStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+                myStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: false, 
+                    audio: true 
+                });
+                
                 isAudioOnly = true;
                 isVideoActive = false;
                 
                 videoContainer.style.display = 'none';
                 audioContainer.style.display = 'block';
 
+                // الاتصال بجميع الأعضاء
                 connections.forEach(conn => {
                     if (conn.open) {
-                        const call = peer.call(conn.peer, myStream, { metadata: { type: 'audio', user: myName } });
+                        const call = peer.call(conn.peer, myStream, { 
+                            metadata: { 
+                                type: 'audio', 
+                                user: myName 
+                            } 
+                        });
                         setupCall(call, false);
                     }
                 });
@@ -386,11 +506,15 @@ HTML_CODE = '''
         }
     }
 
-    // مشاركة الشاشة
     async function shareScreen() {
         if (myStream) endAllCalls();
+        
         try {
-            myStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            myStream = await navigator.mediaDevices.getDisplayMedia({ 
+                video: true, 
+                audio: true 
+            });
+            
             isVideoActive = true;
             isAudioOnly = false;
             
@@ -398,9 +522,15 @@ HTML_CODE = '''
             audioContainer.style.display = 'none';
             localVideo.srcObject = myStream;
 
+            // الاتصال بجميع الأعضاء
             connections.forEach(conn => {
                 if (conn.open) {
-                    const call = peer.call(conn.peer, myStream, { metadata: { type: 'screen', user: myName } });
+                    const call = peer.call(conn.peer, myStream, { 
+                        metadata: { 
+                            type: 'screen', 
+                            user: myName 
+                        } 
+                    });
                     setupCall(call, true);
                 }
             });
@@ -409,18 +539,22 @@ HTML_CODE = '''
             callStatus.style.display = 'flex';
             notify('🖥️ مشاركة الشاشة بدأت');
 
-            myStream.getVideoTracks()[0].onended = () => endAllCalls();
+            // عند إيقاف مشاركة الشاشة
+            myStream.getVideoTracks()[0].onended = () => {
+                endAllCalls();
+            };
+
         } catch (err) {
             notify('❌ فشل مشاركة الشاشة');
         }
     }
 
-    // معالجة مكالمة واردة
     function handleIncomingCall(call) {
         const type = call.metadata?.type || 'video';
         const userName = call.metadata?.user || 'مستخدم';
         
         if (confirm(`📞 مكالمة ${type === 'audio' ? 'صوتية' : 'فيديو'} واردة من ${userName}\nهل تريد الرد؟`)) {
+            
             navigator.mediaDevices.getUserMedia({ 
                 audio: true, 
                 video: type !== 'audio' 
@@ -441,59 +575,86 @@ HTML_CODE = '''
                 }
 
                 setupCall(call, type !== 'audio');
+                
                 endCallBtn.style.display = 'flex';
                 callStatus.style.display = 'flex';
                 notify('📞 المكالمة بدأت');
-            }).catch(() => notify('❌ فشل الرد'));
+
+            }).catch(() => {
+                notify('❌ فشل الرد على المكالمة');
+            });
+
         } else {
             call.close();
         }
     }
 
-    // إعداد المكالمة
     function setupCall(call, hasVideo) {
         calls.push(call);
 
         call.on('stream', (remoteStream) => {
-            if (hasVideo) remoteVideo.srcObject = remoteStream;
-            else remoteAudio.srcObject = remoteStream;
+            if (hasVideo) {
+                remoteVideo.srcObject = remoteStream;
+            } else {
+                remoteAudio.srcObject = remoteStream;
+            }
         });
 
         call.on('close', () => {
             calls = calls.filter(c => c !== call);
-            if (calls.length === 0) resetCallUI();
+            if (calls.length === 0) {
+                resetCallUI();
+            }
+        });
+
+        call.on('error', (err) => {
+            console.error('Call error:', err);
+            calls = calls.filter(c => c !== call);
+            if (calls.length === 0) {
+                resetCallUI();
+            }
         });
     }
 
-    // إنهاء جميع المكالمات
     function endAllCalls() {
-        calls.forEach(call => { if (call.open) call.close(); });
+        calls.forEach(call => {
+            if (call.open) {
+                call.close();
+            }
+        });
         calls = [];
+
         if (myStream) {
             myStream.getTracks().forEach(t => t.stop());
             myStream = null;
         }
+
         resetCallUI();
         notify('📞 المكالمة انتهت');
     }
 
-    // إعادة تعيين واجهة المكالمة
     function resetCallUI() {
         videoContainer.style.display = 'none';
         audioContainer.style.display = 'none';
         endCallBtn.style.display = 'none';
         callStatus.style.display = 'none';
+        
         remoteVideo.srcObject = null;
         localVideo.srcObject = null;
         remoteAudio.srcObject = null;
+        
         isVideoActive = false;
         isAudioOnly = false;
     }
 
     // تنظيف عند الخروج
-    window.onbeforeunload = () => {
-        if (myStream) myStream.getTracks().forEach(t => t.stop());
-        if (peer) peer.destroy();
+    window.onbeforeunload = function() {
+        if (myStream) {
+            myStream.getTracks().forEach(t => t.stop());
+        }
+        if (peer) {
+            peer.destroy();
+        }
     };
 </script>
 </body>
