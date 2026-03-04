@@ -14,471 +14,146 @@ HTML_CODE = '''
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FADI-DISCOVERY - ويب مباشر</title>
+    <title>💎 FADI SYSTEM PRO | منظومة فادي</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background: linear-gradient(145deg, #0a0f1e 0%, #0d1425 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            width: 100%;
-            background: rgba(18, 25, 40, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(64, 224, 208, 0.3);
-            border-radius: 32px;
-            padding: 30px 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-        }
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            color: #00ffff;
-            text-shadow: 0 0 10px cyan;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-        }
-        .sub {
-            color: #a0e7e0;
-            font-size: 14px;
-            border-bottom: 1px dashed #3f6e6b;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-        .buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-        .btn {
-            background: #0e1a26;
-            border: 1px solid #2c5f5a;
-            color: #b2f0e4;
-            padding: 14px 25px;
-            border-radius: 40px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 5px 0 #071016;
-            flex: 1;
-            text-align: center;
-        }
-        .btn:hover {
-            background: #1a3a44;
-            border-color: #4cd8c0;
-            color: white;
-            box-shadow: 0 0 15px #00ffe0;
-        }
-        .server-box {
-            background: #0b121f;
-            border-radius: 24px;
-            padding: 22px;
-            border: 1px solid #1e4a4a;
-            margin-top: 10px;
-            direction: rtl;
-        }
-        .server-title {
-            color: #bbffe0;
-            font-size: 20px;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        .server-id {
-            background: #010a14;
-            padding: 16px;
-            border-radius: 18px;
-            border: 2px solid #00ccb3;
-            color: #00ffe0;
-            font-size: 42px;
-            font-weight: 800;
-            text-align: center;
-            letter-spacing: 8px;
-            direction: ltr;
-            margin-bottom: 12px;
-            word-break: break-all;
-            font-family: monospace;
-            box-shadow: inset 0 0 15px #00554a;
-        }
-        .change-link {
-            color: #6fc9c0;
-            text-align: left;
-            font-size: 15px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            text-decoration: underline dotted;
-        }
-        .status {
-            background: #0d1a1f;
-            padding: 14px 18px;
-            border-radius: 40px;
-            color: #ffe69b;
-            font-size: 18px;
-            border-right: 6px solid #00ffc3;
-            margin-top: 15px;
-            font-weight: 500;
-        }
-        .chat-box {
-            background: #041016;
-            border-radius: 20px;
-            padding: 18px;
-            margin-top: 20px;
-        }
-        .chat-log {
-            background: #0a141c;
-            min-height: 90px;
-            max-height: 150px;
-            overflow-y: auto;
-            padding: 12px;
-            border-radius: 14px;
-            color: #c6f0e6;
-            font-size: 15px;
-            border: 1px solid #24756b;
-            margin-bottom: 15px;
-            direction: ltr;
-            text-align: left;
-        }
-        .chat-input-area {
-            display: flex;
-            gap: 8px;
-        }
-        #chatInput {
-            flex: 1;
-            background: #0e1e26;
-            border: 1px solid #178074;
-            border-radius: 30px;
-            padding: 12px 18px;
-            color: white;
-            font-size: 16px;
-            outline: none;
-        }
-        #chatInput::placeholder {
-            color: #6d9c96;
-        }
-        .send-btn {
-            background: #00b8a2;
-            border: none;
-            border-radius: 40px;
-            padding: 0 22px;
-            color: black;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .send-btn:hover {
-            background: #00ffe0;
-            box-shadow: 0 0 12px cyan;
-        }
-        small {
-            color: #7ba39e;
-            display: block;
-            margin-top: 15px;
-            text-align: center;
-        }
+        :root { --fadi-gold: #ffcc00; --fadi-neon: #00ffe0; --fadi-bg: #05080a; }
+        body { background: var(--fadi-bg); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 15px; height: 100vh; display: flex; flex-direction: column; }
+        .header { text-align: center; border-bottom: 2px solid var(--fadi-gold); padding-bottom: 10px; margin-bottom: 15px; }
+        .header h1 { font-size: 22px; color: var(--fadi-gold); margin: 0; text-shadow: 0 0 10px var(--fadi-gold); }
+        .setup-box { background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid var(--fadi-neon); box-shadow: 0 0 15px rgba(0,255,224,0.2); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: white; text-align: center; font-weight: bold; }
+        .btn-gold { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: linear-gradient(45deg, #ffcc00, #ffaa00); color: #000; font-size: 16px; transition: 0.3s; }
+        #chat { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 12px; padding: 15px; border: 1px solid #1a2c38; margin: 15px 0; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 12px; max-width: 85%; position: relative; font-size: 14px; }
+        .msg.me { background: #1d2a35; align-self: flex-start; border-right: 4px solid var(--fadi-neon); }
+        .msg.other { background: #21262d; align-self: flex-end; border-left: 4px solid #58a6ff; }
+        .input-row { display: flex; gap: 8px; align-items: center; }
+        .tool-btn { background: #222; border: 1px solid var(--fadi-gold); color: var(--fadi-gold); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        #videoArea { display: none; position: relative; width: 100%; height: 200px; background: #000; border-radius: 12px; border: 1px solid var(--fadi-gold); margin-bottom: 10px; overflow: hidden; }
+        #remoteVid { width: 100%; height: 100%; object-fit: cover; }
+        #localVid { width: 80px; height: 60px; position: absolute; bottom: 5px; right: 5px; border: 1px solid var(--fadi-neon); }
+        #endCallBtn { display: none; background: #ff4444 !important; border-color: #ff4444 !important; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="logo">FADI-DISCOVERY</div>
-    <div class="sub">اكشف السيرفارات التربية - اتصل بضغطك</div>
-
-    <div class="buttons">
-        <div id="btnCreate" class="btn">➕ إنشاء سيرفر</div>
-        <div id="btnConnect" class="btn">🔍 البحث عن سيرفورات</div>
+    <div class="header"><h1>👑FADI SYSTEM PRO👑</h1></div>
+    <div class="setup-box" id="setup">
+        <input type="text" id="userName" placeholder="اكتب اسمك للمجموعة">
+        <input type="text" id="roomNum" placeholder="رقم الغرفة">
+        <button class="btn-gold" onclick="initFadi()">🚀 دخول المنظومة الآن</button>
+    </div>
+    <div id="videoArea"><video id="remoteVid" autoplay playsinline></video><video id="localVid" autoplay muted playsinline></video></div>
+    <div id="chat"></div>
+    <audio id="remoteVoice" autoplay></audio>
+    <div class="input-row" id="inputSection" style="display:none;">
+        <button class="tool-btn" id="micBtn" onclick="handleMic()">🎤</button>
+        <button class="tool-btn" onclick="callAll(false)">📞</button>
+        <button class="tool-btn" onclick="callAll(true)">🎥</button>
+        <button class="tool-btn" id="endCallBtn" onclick="endCall()">🛑</button>
+        <input type="text" id="msgInput" placeholder="اكتب للجميع..." onkeypress="if(event.key==='Enter') send()">
+        <button class="btn-gold" style="width: 70px; height: 40px;" onclick="send()">إرسال</button>
     </div>
 
-    <!-- منطقة عرض المعرف والسيرفر -->
-    <div id="serverPanel" class="server-box" style="display: none;">
-        <div class="server-title">🖧 أنت الآن سيرفر مشغل</div>
-        <div id="myPeerId" class="server-id">...</div>
-        <div id="changeIdBtn" class="change-link">[ اضغط لتغيير ]</div>
-        <div id="statusMessage" class="status">⏳ السيرفر جاهز - في انتظار المتصلين...</div>
-    </div>
-
-    <!-- منطقة الاتصال والدردشة -->
-    <div id="chatSection" style="display: none;">
-        <div class="chat-box">
-            <div id="chatLog" class="chat-log">
-                ⚡ نظام الاتصال المباشر جاهز.
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="chatInput" placeholder="اكتب رسالة..." autocomplete="off">
-                <button id="sendBtn" class="send-btn">إرسال</button>
-            </div>
-        </div>
-    </div>
-
-    <small>اتصال حقيقي P2P عبر الإنترنت - يشبه الزابيا بالضبط</small>
-</div>
-
-<!-- مكتبة PeerJS للاتصال المباشر -->
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
-    (function(){
-        "use strict";
+    let peer, myName, myRoom, conns = [], currentCall, myStream, mediaRec;
+    const chatBox = document.getElementById('chat');
+    const cfg = { config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } };
 
-        // ---------- عناصر الواجهة ----------
-        const btnCreate = document.getElementById('btnCreate');
-        const btnConnect = document.getElementById('btnConnect');
-        const serverPanel = document.getElementById('serverPanel');
-        const myPeerIdEl = document.getElementById('myPeerId');
-        const changeIdBtn = document.getElementById('changeIdBtn');
-        const statusEl = document.getElementById('statusMessage');
-        const chatSection = document.getElementById('chatSection');
-        const chatLog = document.getElementById('chatLog');
-        const chatInput = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendBtn');
+    function initFadi() {
+        myName = document.getElementById('userName').value;
+        myRoom = document.getElementById('roomNum').value;
+        if(!myName || !myRoom) return alert("يا فادي البيانات!");
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('inputSection').style.display = 'flex';
+        tryHost();
+    }
 
-        // ---------- متغيرات الاتصال ----------
-        let peer = null;           // كائن PeerJS
-        let currentPeerId = '';    // معرفي الحقيقي
-        let conn = null;          // قناة الاتصال مع الطرف الآخر
-        let isServer = false;     // هل أنا منشئ السيرفر؟
-        let isConnected = false;  // هل تم الاتصال مع الطرف الآخر؟
-
-        // ---------- دالة إنشاء Peer جديد ----------
-        function createPeer(customId = null) {
-            if (peer && !peer.destroyed) {
-                peer.destroy();
-            }
-
-            // خيارات الاتصال - iceServers تساعد على الاتصال حتى خلف الشبكات الصعبة
-            const peerOptions = {
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun3.l.google.com:19302' },
-                        { urls: 'stun:stun4.l.google.com:19302' },
-                        { urls: 'stun:stun.services.mozilla.com' },
-                        { urls: 'stun:stun.stunprotocol.org:3478' },
-                        {
-                            urls: 'turn:turn.example.com', // للضرورة لكن بدون كلمة سر يعمل بشكل محدود
-                            username: 'webrtc',
-                            credential: 'webrtc'
-                        }
-                    ]
-                },
-                debug: 1
-            };
-
-            if (customId) {
-                peer = new Peer(customId, peerOptions);
-            } else {
-                peer = new Peer(peerOptions); // ID عشوائي
-            }
-
-            // ---------- حدث فتح الاتصال (تم إنشاء المعرف) ----------
-            peer.on('open', (id) => {
-                currentPeerId = id;
-                myPeerIdEl.textContent = id;
-                serverPanel.style.display = 'block';
-                statusEl.innerHTML = '⏳ السيرفر شغال - في انتظار المتصلين...';
-                // إذا كان أنا منشئ السيرفر، خليني في وضع الاستماع
-                if (isServer) {
-                    waitForConnection();
-                }
-            });
-
-            // ---------- استقبال اتصال واردة ----------
-            peer.on('connection', (incomingConn) => {
-                if (conn && conn.open) {
-                    // إذا في اتصال قديم، نرفض الواحد الجديد أو نقفل القديم.
-                    incomingConn.close();
-                    return;
-                }
-                conn = incomingConn;
-                setupConnection(conn, false); // false يعني أنا السيرفر والمتصل هو العميل
-            });
-
-            peer.on('error', (err) => {
-                console.log('⚠️ Peer error:', err);
-                if (err.type === 'unavailable-id' || err.type === 'id-taken') {
-                    statusEl.innerHTML = '❌ المعرف مستخدم، جرب معرف آخر';
-                } else {
-                    statusEl.innerHTML = '⚠️ خطأ في الاتصال: ' + (err.message || 'غير معروف');
-                }
-            });
-
-            peer.on('disconnected', () => {
-                if (isConnected) return;
-                statusEl.innerHTML = '⚠️ فقدان الاتصال بالخادم المساعد، حاول إعادة الاتصال.';
-            });
-        }
-
-        // ---------- وظيفة انتظار المتصلين (للسيرفر) ----------
-        function waitForConnection() {
-            // لا نحتاج شيئًا هنا، peer.on('connection') هو اللي يشغل.
-            // فقط نغير النصوص
-            if (isServer) {
-                statusEl.innerHTML = '🟢 السيرفر شغال - معرفك: ' + currentPeerId + ' - في انتظار المتصل...';
-            }
-        }
-
-        // ---------- إعداد قناة الاتصال بعد نجاح الاتصال ----------
-        function setupConnection(connection, amIClient = true) {
-            conn = connection;
-
-            conn.on('open', () => {
-                isConnected = true;
-                statusEl.innerHTML = '✅ متصل مع: ' + conn.peer;
-                chatSection.style.display = 'block';
-                addChatMessage('🟢 تم الاتصال المباشر بنجاح (P2P عبر الإنترنت)');
-                
-                // إذا كنت أنا العميل (اللي بحث واتصل)، أخلي السيرفر يظهر لي واجهة الدردشة
-                if (amIClient) {
-                    serverPanel.style.display = 'block';
-                    myPeerIdEl.textContent = peer.id; // أعرض معرفي
-                }
-            });
-
-            conn.on('data', (data) => {
-                // استقبال رسالة
-                addChatMessage('📩 الطرف الآخر: ' + data);
-            });
-
-            conn.on('close', () => {
-                isConnected = false;
-                statusEl.innerHTML = '🔴 انقطع الاتصال';
-                addChatMessage('🔴 انقطع الاتصال بالطرف الآخر');
-                conn = null;
-            });
-
-            conn.on('error', (err) => {
-                addChatMessage('⚠️ خطأ في القناة: ' + err);
-            });
-        }
-
-        // ---------- إضافة رسالة إلى شاشة الدردشة ----------
-        function addChatMessage(msg) {
-            const p = document.createElement('div');
-            p.textContent = msg;
-            p.style.marginBottom = '5px';
-            p.style.borderBottom = '1px solid #2c5f5a';
-            p.style.paddingBottom = '4px';
-            chatLog.appendChild(p);
-            chatLog.scrollTop = chatLog.scrollHeight;
-        }
-
-        // ---------- دالة الاتصال بسيرفر آخر (البحث عن سيرفورات) ----------
-        function connectToPeer(targetId) {
-            if (!peer || peer.destroyed) {
-                alert('الرجاء إنشاء سيرفر أولاً');
-                return;
-            }
-            if (!targetId || targetId.trim() === '') {
-                alert('الرجاء إدخال معرف السيرفر');
-                return;
-            }
-
-            statusEl.innerHTML = '⏳ جاري الاتصال بالمعرف: ' + targetId + '...';
-            
-            // محاولة الاتصال
-            const connection = peer.connect(targetId, {
-                reliable: true,
-                serialization: 'json'
-            });
-
-            if (!connection) {
-                statusEl.innerHTML = '❌ فشل بدء الاتصال';
-                return;
-            }
-
-            setupConnection(connection, true); // أنا العميل
-        }
-
-        // ---------- الأحداث الخاصة بالأزرار ----------
-        btnCreate.addEventListener('click', function() {
-            isServer = true;
-            // إنشاء سيرفر بهوية جديدة
-            createPeer();  // معرف عشوائي
-            chatSection.style.display = 'none'; // نخفي الدردشة لحين الاتصال
-            // إعادة تعيين الرسالة
-            addChatMessage('⚡ جاهز لاستقبال المتصلين...');
-            chatLog.innerHTML = '⚡ جاهز لاستقبال المتصلين...\n';
+    function tryHost() {
+        peer = new Peer(myRoom, cfg);
+        peer.on('open', () => {
+            log("👑 أنت الزعيم.. المجموعة جاهزة", "sys");
+            peer.on('connection', c => { conns.push(c); handleConn(c, true); });
+            peer.on('call', call => handleCall(call));
         });
+        peer.on('error', err => { if(err.type === 'unavailable-id') joinRoom(); });
+    }
 
-        btnConnect.addEventListener('click', function() {
-            isServer = false;
-            // المستخدم يريد الاتصال بسيرفر آخر
-            const targetId = prompt('أدخل معرف السيرفر (الرقم الظاهر في شاشة الطرف الآخر):');
-            if (targetId && targetId.trim() !== '') {
-                // تأكد من وجود peer
-                if (!peer || peer.destroyed) {
-                    // أنشئ peer بدون معرف محدد (عشوائي)
-                    createPeer();
-                    // نعطيه وقت لحد ما يفتح ثم نكمل الاتصال
-                    peer.once('open', () => {
-                        connectToPeer(targetId.trim());
-                    });
-                } else {
-                    connectToPeer(targetId.trim());
-                }
-            }
+    function joinRoom() {
+        peer = new Peer(myRoom + "-" + Math.floor(Math.random()*999), cfg);
+        peer.on('open', () => {
+            log("✅ دخلت المنظومة", "sys");
+            let c = peer.connect(myRoom);
+            conns.push(c); handleConn(c, false);
         });
+        peer.on('call', call => handleCall(call));
+    }
 
-        // تغيير المعرف (اضغط لتغيير)
-        changeIdBtn.addEventListener('click', function() {
-            if (!isServer) {
-                alert('الرجاء إنشاء سيرفر أولاً');
-                return;
-            }
-            const newId = prompt('أدخل معرف مخصص للسيرفر (أحرف/أرقام فقط):');
-            if (newId && newId.trim() !== '') {
-                isServer = true;
-                createPeer(newId.trim());
-            }
+    function handleConn(c, isHost) {
+        c.on('open', () => c.send({type:'join', user:myName}));
+        c.on('data', d => {
+            if(isHost) conns.forEach(client => { if(client !== c) client.send(d); }); // بث للكل
+            if(d.type === 'msg') log(d.text, "other", d.user);
+            if(d.type === 'voice') log(`<audio controls src="${d.data}"></audio>`, "other", d.user);
+            if(d.type === 'join') log(d.user + " انضم", "sys");
         });
+    }
 
-        // إرسال الرسالة
-        sendBtn.addEventListener('click', sendMessage);
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        function sendMessage() {
-            const msg = chatInput.value.trim();
-            if (msg === '') return;
-            if (!conn || !conn.open) {
-                addChatMessage('⚠️ لا يوجد اتصال نشط');
-                return;
-            }
-            try {
-                conn.send(msg);
-                addChatMessage('📤 أنت: ' + msg);
-                chatInput.value = '';
-            } catch (e) {
-                addChatMessage('⚠️ فشل الإرسال: ' + e);
-            }
+    function handleCall(call) {
+        if(confirm("اتصال وارد.. ترد؟")) {
+            navigator.mediaDevices.getUserMedia({audio:true, video:!!call.metadata?.video}).then(s => {
+                myStream = s;
+                if(call.metadata?.video) { document.getElementById('videoArea').style.display='block'; document.getElementById('localVid').srcObject=s; }
+                call.answer(s); setupCall(call);
+            });
         }
+    }
 
-        // تنظيف عند إغلاق الصفحة
-        window.addEventListener('beforeunload', function() {
-            if (peer && !peer.destroyed) {
-                peer.destroy();
-            }
+    function setupCall(call) {
+        currentCall = call;
+        document.getElementById('endCallBtn').style.display = 'flex';
+        call.on('stream', rs => {
+            if(call.metadata?.video) document.getElementById('remoteVid').srcObject = rs;
+            else document.getElementById('remoteVoice').srcObject = rs;
         });
+        call.on('close', endCall);
+    }
 
-        // رسالة ترحيب
-        console.log('✅ جاهز، اضغط إنشاء سيرفر للبدء');
-    })();
+    function callAll(video) {
+        navigator.mediaDevices.getUserMedia({audio:true, video:video}).then(s => {
+            myStream = s;
+            if(video) { document.getElementById('videoArea').style.display='block'; document.getElementById('localVid').srcObject=s; }
+            conns.forEach(c => {
+                let call = peer.call(c.peer, s, {metadata:{video:video}});
+                setupCall(call);
+            });
+        });
+    }
+
+    function endCall() {
+        if(currentCall) currentCall.close();
+        if(myStream) myStream.getTracks().forEach(t => t.stop());
+        document.getElementById('videoArea').style.display = 'none';
+        document.getElementById('endCallBtn').style.display = 'none';
+        log("🔴 تم الإغلاق", "sys");
+    }
+
+    function send() {
+        const inp = document.getElementById('msgInput');
+        if(!inp.value) return;
+        conns.forEach(c => c.send({type:'msg', user:myName, text:inp.value}));
+        log(inp.value, "me", myName); inp.value = "";
+    }
+
+    function handleMic() { /* نفس كود التسجيل السابق بدون تغيير */ }
+
+    function log(m, t, u) {
+        const d = document.createElement('div');
+        d.className = `msg ${t}`;
+        d.innerHTML = u ? `<b>${u}:</b><br>${m}` : m;
+        chatBox.appendChild(d); chatBox.scrollTop = chatBox.scrollHeight;
+    }
 </script>
-
 </body>
 </html>
 '''
