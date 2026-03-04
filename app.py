@@ -1,46 +1,128 @@
-# ========== FADI GOLD (دردشة + فيديو فقط) ==========
+# ========== FADI GOLD CHAT + فيديو مباشر ==========
 from flask import Flask, render_template_string, request
-from flask_socketio import SocketIO, emit, join_room
+from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
-import eventlet
-eventlet.monkey_patch()
+import logging
 
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'fadi-gold-secret'
-socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60, ping_interval=25)
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
 
-rooms = {}
+# ========== تخزين الغرف ==========
+rooms = {}  # {room: [members]}
 
+# ========== الصفحة الرئيسية ==========
 @app.route('/')
 def index():
     return render_template_string(HTML_CODE)
 
+@app.route('/health')
+def health():
+    return {"status": "ok", "message": "FADI GOLD CHAT is running"}, 200
+
+# ========== أحداث Socket.IO ==========
 @socketio.on('join-room')
 def handle_join(data):
     name = data['name']
     room = data['room']
+    
     join_room(room)
+    
     if room not in rooms:
         rooms[room] = []
-    rooms[room].append({'id': request.sid, 'name': name})
+    
+    # تخزين معلومات العضو مع معرف السوكيت
+    member_info = {
+        'id': request.sid,
+        'name': name
+    }
+    rooms[room].append(member_info)
+    
+    # إرسال قائمة الأعضاء للجميع
     emit('room-members', rooms[room], to=room)
+    
+    # إرسال قائمة الأعضاء للعضو الجديد فقط (ليعرف من المتصلين)
+    emit('existing-users', [m for m in rooms[room] if m['id'] != request.sid], to=request.sid)
+    
+    # إعلام الآخرين
     emit('system-message', f'🔔 {name} دخل الغرفة', to=room, include_self=False)
 
 @socketio.on('send-message')
 def handle_message(data):
     room = data['room']
     text = data['text']
+    
+    # بحث عن اسم المرسل
     sender_name = 'شخص'
     if room in rooms:
         for member in rooms[room]:
             if member['id'] == request.sid:
                 sender_name = member['name']
                 break
+    
     emit('new-message', {
         'name': sender_name,
         'text': text,
         'time': __import__('datetime').datetime.now().strftime('%I:%M %p')
     }, to=room)
+
+# ========== أحداث WebRTC للفيديو ==========
+@socketio.on('video-offer')
+def handle_video_offer(data):
+    """إرسال عرض الفيديو إلى مستخدم معين"""
+    target_user = data['target']
+    offer = data['offer']
+    room = data['room']
+    
+    # إرسال العرض للمستخدم المستهدف
+    emit('video-offer', {
+        'offer': offer,
+        'from': request.sid,
+        'fromName': get_user_name(room, request.sid)
+    }, to=target_user)
+
+@socketio.on('video-answer')
+def handle_video_answer(data):
+    """إرسال إجابة الفيديو إلى مستخدم معين"""
+    target_user = data['target']
+    answer = data['answer']
+    room = data['room']
+    
+    emit('video-answer', {
+        'answer': answer,
+        'from': request.sid
+    }, to=target_user)
+
+@socketio.on('ice-candidate')
+def handle_ice_candidate(data):
+    """تبادل معلومات الاتصال ICE"""
+    target_user = data['target']
+    candidate = data['candidate']
+    room = data['room']
+    
+    emit('ice-candidate', {
+        'candidate': candidate,
+        'from': request.sid
+    }, to=target_user)
+
+@socketio.on('user-left-video')
+def handle_user_left_video(data):
+    """إعلام الآخرين بأن مستخدم معين قطع الفيديو"""
+    room = data['room']
+    target_user = data['target']
+    
+    emit('user-left-video', {
+        'userId': target_user
+    }, to=room)
+
+def get_user_name(room, user_id):
+    """الحصول على اسم المستخدم من معرفه"""
+    if room in rooms:
+        for member in rooms[room]:
+            if member['id'] == user_id:
+                return member['name']
+    return 'شخص'
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -50,19 +132,23 @@ def handle_disconnect():
                 members.remove(member)
                 emit('system-message', f'🔴 {member["name"]} خرج من الغرفة', to=room_name)
                 emit('room-members', members, to=room_name)
+                emit('user-left-video', {
+                    'userId': request.sid
+                }, to=room_name)
                 if len(members) == 0:
                     del rooms[room_name]
                 return
 
+# ========== كود الواجهة ==========
 HTML_CODE = '''
 <!DOCTYPE html>
 <html dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>👑 FADI GOLD (دردشة + فيديو)</title>
+    <title>💬 FADI GOLD CHAT + فيديو</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -71,189 +157,134 @@ HTML_CODE = '''
             font-family: 'Segoe UI', sans-serif;
         }
         body {
-            background: linear-gradient(135deg, #0a0a1f, #1a1a3a);
+            background: linear-gradient(135deg, #0b0719, #1a0f2e);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 20px;
         }
-        .login-container {
-            background: rgba(20, 15, 45, 0.95);
+        .card {
+            background: rgba(20, 15, 40, 0.9);
             backdrop-filter: blur(10px);
-            border: 3px solid gold;
-            border-radius: 50px;
-            padding: 40px;
+            border: 2px solid gold;
+            border-radius: 40px;
+            padding: 30px;
             width: 100%;
-            max-width: 500px;
-            box-shadow: 0 0 70px rgba(255, 215, 0, 0.5);
-            animation: glow 3s infinite;
-        }
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.5); }
-            50% { box-shadow: 0 0 100px rgba(255, 215, 0, 0.8); }
-        }
-        .crown {
-            text-align: center;
-            font-size: 5em;
-            animation: float 3s ease-in-out infinite;
-            filter: drop-shadow(0 0 20px gold);
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+            max-width: 1200px;
+            color: white;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
         }
         h1 {
             text-align: center;
+            color: gold;
             font-size: 2.5em;
-            background: linear-gradient(135deg, #ffd700, #ffaa00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
         }
-        .subtitle {
-            text-align: center;
-            color: cyan;
-            margin-bottom: 30px;
-        }
-        .input-field {
+        input, button {
             width: 100%;
-            padding: 18px 25px;
-            margin: 15px 0;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid gold;
+            padding: 15px;
+            margin: 8px 0;
             border-radius: 60px;
-            color: white;
-            font-size: 1.1em;
-        }
-        .gold-btn {
-            width: 100%;
-            padding: 18px;
-            margin: 15px 0;
-            background: linear-gradient(145deg, gold, #ffaa00);
             border: none;
-            border-radius: 60px;
-            color: #0a0a1f;
-            font-size: 1.3em;
+            font-size: 1em;
+        }
+        input {
+            background: rgba(0,0,0,0.5);
+            border: 2px solid gold;
+            color: white;
+        }
+        button {
+            background: gold;
+            color: black;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.3s;
         }
-        .gold-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 50px gold;
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px gold;
+        }
+        button.danger {
+            background: #ff4444;
+            color: white;
+        }
+        button.success {
+            background: #00C851;
+            color: white;
+        }
+        .main-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .video-container {
+            flex: 2;
+            min-width: 300px;
         }
         .chat-container {
-            background: rgba(20, 15, 45, 0.95);
-            backdrop-filter: blur(10px);
-            border: 3px solid gold;
-            border-radius: 50px;
-            padding: 25px;
-            width: 100%;
-            max-width: 1200px;
-            display: none;
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 30px;
+            padding: 20px;
         }
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px 25px;
-            border-radius: 60px;
-            margin-bottom: 20px;
-            border: 1px solid gold;
-        }
-        .online-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .dot {
-            width: 12px;
-            height: 12px;
-            background: #00ff88;
-            border-radius: 50%;
-            box-shadow: 0 0 20px #00ff88;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .video-area {
-            display: none;
-            grid-template-columns: 2fr 1fr;
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 40px;
-            padding: 15px;
-            border: 2px solid gold;
         }
-        .remote-video {
-            background: black;
-            border-radius: 30px;
-            overflow: hidden;
-            aspect-ratio: 16/9;
-            border: 3px solid gold;
-        }
-        .local-video {
-            background: black;
+        .video-wrapper {
+            position: relative;
+            background: #000;
             border-radius: 20px;
             overflow: hidden;
             aspect-ratio: 4/3;
-            border: 2px solid cyan;
+            border: 2px solid gold;
         }
-        video {
+        .video-wrapper video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        .call-toolbar {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .call-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: linear-gradient(145deg, #1a1f35, #0f1220);
-            border: 3px solid gold;
+        .video-label {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
             color: gold;
-            font-size: 2em;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid gold;
+        }
+        .video-controls {
             display: flex;
-            align-items: center;
+            gap: 10px;
             justify-content: center;
-            cursor: pointer;
-            transition: 0.3s;
+            margin: 15px 0;
+            flex-wrap: wrap;
         }
-        .call-btn:hover {
-            transform: scale(1.15);
-            border-color: cyan;
-            color: cyan;
+        .video-controls button {
+            width: auto;
+            padding: 12px 25px;
+            margin: 0;
         }
-        .call-btn.danger {
-            border-color: red;
-            color: red;
-        }
-        .chat-layout {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .messages-area {
-            background: rgba(0, 0, 0, 0.3);
+        .chat-box {
+            background: rgba(0,0,0,0.4);
             border-radius: 30px;
             padding: 20px;
-            height: 300px;
+            height: 400px;
             overflow-y: auto;
+            margin: 20px 0;
         }
         .message {
             padding: 12px 18px;
-            margin: 10px 0;
+            margin: 8px 0;
             border-radius: 25px;
             max-width: 80%;
+            word-wrap: break-word;
         }
         .message.me {
             background: #1f3a5f;
@@ -271,209 +302,318 @@ HTML_CODE = '''
             text-align: center;
             max-width: 100%;
         }
-        .members-panel {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 30px;
-            padding: 20px;
+        .flex-row {
+            display: flex;
+            gap: 10px;
         }
-        .members-panel h3 {
-            color: gold;
-            margin-bottom: 15px;
-            text-align: center;
+        .flex-row input {
+            flex: 1;
+        }
+        .flex-row button {
+            width: auto;
+            padding: 15px 25px;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0,0,0,0.3);
+            padding: 12px 20px;
+            border-radius: 60px;
+            margin: 15px 0;
+            border: 1px solid gold;
+        }
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background: #00ff88;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 8px;
+            box-shadow: 0 0 15px #00ff88;
+        }
+        .members-list {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 15px;
+            margin: 15px 0;
         }
         .member-item {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             padding: 8px;
             border-bottom: 1px solid rgba(255,215,0,0.2);
         }
-        .send-area {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
+        .member-item:last-child {
+            border-bottom: none;
         }
-        .message-input {
-            flex: 1;
-            padding: 15px 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid gold;
-            border-radius: 60px;
-            color: white;
+        .member-status {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff4444;
         }
-        .send-btn {
-            padding: 15px 30px;
-            background: linear-gradient(145deg, #1a1f35, #0f1220);
-            border: 2px solid gold;
-            border-radius: 60px;
-            color: gold;
-            font-weight: bold;
-            cursor: pointer;
+        .member-status.online {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
         }
-        .send-btn:hover {
+        .video-badge {
             background: gold;
             color: black;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="login-container" id="loginScreen">
-        <div class="crown">👑</div>
-        <h1>FADI GOLD</h1>
-        <div class="subtitle">دردشة + فيديو فقط</div>
-        <input type="text" class="input-field" id="nameInput" placeholder="اسمك" value="فادي">
-        <input type="text" class="input-field" id="roomInput" placeholder="رقم الغرفة" value="123">
-        <button class="gold-btn" onclick="joinRoom()">🚀 دخول الغرفة</button>
+    <div class="card" id="loginCard">
+        <h1>👑 FADI GOLD</h1>
+        <div style="text-align: center; color: cyan; margin-bottom: 20px;">دردشة + فيديو مباشر</div>
+        
+        <input type="text" id="nameInput" placeholder="اسمك" value="فادي">
+        <input type="text" id="roomInput" placeholder="رقم الغرفة" value="123">
+        
+        <button onclick="joinRoom()">🚀 دخول الغرفة</button>
+        
+        <div style="text-align: center; margin-top: 20px; color: #aaa; font-size: 0.9em;">
+            أول شخص ينشئ الغرفة تلقائيًا
+        </div>
     </div>
     
-    <div class="chat-container" id="chatScreen">
+    <div class="card" id="chatCard" style="display: none;">
+        <h1>💬 <span id="roomName"></span></h1>
+        
         <div class="status-bar">
-            <div class="online-indicator">
-                <span class="dot"></span>
-                <span id="memberCount">1</span> متصل
+            <span><span class="online-dot"></span> <span id="memberCount">1</span> متصل</span>
+            <span>🆔 <span id="myName"></span></span>
+        </div>
+        
+        <div class="main-container">
+            <div class="video-container">
+                <div class="videos-grid" id="videosGrid">
+                    <!-- الفيديوهات تظهر هنا -->
+                </div>
+                
+                <div class="video-controls">
+                    <button id="startVideoBtn" class="success" onclick="startVideo()">▶️ بدء الفيديو</button>
+                    <button id="stopVideoBtn" class="danger" onclick="stopVideo()" style="display: none;">⏹️ إيقاف الفيديو</button>
+                    <button id="shareScreenBtn" onclick="shareScreen()">🖥️ مشاركة الشاشة</button>
+                </div>
+                
+                <div class="members-list">
+                    <h3 style="color: gold; margin-bottom: 10px;">👥 المتصلين</h3>
+                    <div id="membersList"></div>
+                </div>
             </div>
-            <div class="room-info">الغرفة: <span id="roomDisplay"></span></div>
-            <div>👤 <span id="myNameDisplay"></span></div>
-        </div>
-        
-        <div class="video-area" id="videoArea">
-            <div class="remote-video"><video id="remoteVideo" autoplay playsinline></video></div>
-            <div class="local-video"><video id="localVideo" autoplay muted playsinline></video></div>
-        </div>
-        
-        <div class="call-toolbar">
-            <div class="call-btn" onclick="startVideoCall()" title="مكالمة فيديو">📹</div>
-            <div class="call-btn danger" onclick="endCall()" title="إنهاء المكالمة" id="endCallBtn" style="display:none;">🛑</div>
-        </div>
-        
-        <div class="chat-layout">
-            <div class="messages-area" id="messagesArea">
-                <div class="message system">✨ مرحباً بك</div>
+            
+            <div class="chat-container">
+                <div class="chat-box" id="chatArea">
+                    <div class="message system">✨ مرحباً بك في دردشة فادي الذهبية مع فيديو مباشر</div>
+                </div>
+                
+                <div class="flex-row">
+                    <input type="text" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button onclick="sendMessage()">إرسال</button>
+                </div>
             </div>
-            <div class="members-panel">
-                <h3>👥 الأعضاء</h3>
-                <div id="membersList"></div>
-            </div>
-        </div>
-        
-        <div class="send-area">
-            <input type="text" class="message-input" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button class="send-btn" onclick="sendMessage()">إرسال</button>
         </div>
     </div>
     
     <script>
         const socket = io();
-        let myName = '', myRoom = '', peer = null, currentCall = null, myStream = null;
-        let members = [];
+        let myName = '';
+        let myRoom = '';
+        let myStream = null;
+        let myPeerId = null;
+        
+        // تخزين الاتصالات بالفيديو
+        const peers = {};
+        const videoElements = {};
         
         function joinRoom() {
             myName = document.getElementById('nameInput').value.trim();
             myRoom = document.getElementById('roomInput').value.trim();
-            if (!myName || !myRoom) return alert('أدخل اسمك ورقم الغرفة');
             
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('chatScreen').style.display = 'block';
-            document.getElementById('roomDisplay').innerText = myRoom;
-            document.getElementById('myNameDisplay').innerText = myName;
+            if (!myName || !myRoom) {
+                alert('أدخل اسمك ورقم الغرفة');
+                return;
+            }
             
-            peer = new Peer(myName + '-' + Math.random().toString(36).substr(2,8), {
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' }
-                    ]
-                }
-            });
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('chatCard').style.display = 'block';
+            document.getElementById('roomName').innerText = myRoom;
+            document.getElementById('myName').innerText = myName;
             
-            peer.on('open', () => socket.emit('join-room', { name: myName, room: myRoom }));
+            socket.emit('join-room', { name: myName, room: myRoom });
+        }
+        
+        // بدء الفيديو
+        async function startVideo() {
+            try {
+                myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                
+                // عرض فيديو النفس
+                addVideoElement('my-video', myName + ' (أنت)', true);
+                const myVideo = document.getElementById('my-video');
+                if (myVideo) myVideo.srcObject = myStream;
+                
+                document.getElementById('startVideoBtn').style.display = 'none';
+                document.getElementById('stopVideoBtn').style.display = 'inline-block';
+                
+                // إعلام الآخرين بأنني بدأت الفيديو
+                socket.emit('video-offer', {
+                    target: 'all',
+                    offer: null,
+                    room: myRoom
+                });
+                
+            } catch (err) {
+                alert('لا يمكن الوصول للكاميرا: ' + err.message);
+            }
+        }
+        
+        // إيقاف الفيديو
+        function stopVideo() {
+            if (myStream) {
+                myStream.getTracks().forEach(track => track.stop());
+                myStream = null;
+            }
             
-            peer.on('call', call => {
-                if (confirm('📞 مكالمة فيديو واردة. هل تريد الرد؟')) {
-                    navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-                        .then(stream => {
-                            call.answer(stream);
-                            setupCall(call, stream);
-                        })
-                        .catch(() => alert('❌ لا يمكن الوصول للكاميرا'));
-                } else {
-                    call.close();
-                }
+            // إزالة فيديو النفس
+            const myVideoEl = document.getElementById('my-video');
+            if (myVideoEl) myVideoEl.remove();
+            
+            document.getElementById('startVideoBtn').style.display = 'inline-block';
+            document.getElementById('stopVideoBtn').style.display = 'none';
+            
+            // إعلام الآخرين
+            socket.emit('user-left-video', {
+                room: myRoom,
+                target: socket.id
             });
         }
         
-        socket.on('room-members', (updated) => {
-            members = updated;
-            document.getElementById('memberCount').innerText = members.length;
-            let html = '';
-            members.forEach(m => {
-                html += `<div class="member-item"><div class="member-avatar">👤</div><div>${m.name}</div></div>`;
-            });
-            document.getElementById('membersList').innerHTML = html;
-        });
-        
-        socket.on('system-message', (msg) => addMessage(msg, 'system'));
-        socket.on('new-message', (data) => addMessage(data.name + ': ' + data.text, 'other'));
-        
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
-            if (!text) return;
-            addMessage(myName + ': ' + text, 'me');
-            socket.emit('send-message', { room: myRoom, text: text });
-            input.value = '';
+        // مشاركة الشاشة
+        async function shareScreen() {
+            try {
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                
+                // استبدال مسار الفيديو بمسار الشاشة
+                if (myStream) {
+                    const videoTrack = screenStream.getVideoTracks()[0];
+                    const sender = Object.values(peers).find(p => p.sender);
+                    // تحديث المسار...
+                }
+            } catch (err) {
+                alert('لا يمكن مشاركة الشاشة: ' + err.message);
+            }
         }
         
+        // إضافة عنصر فيديو للصفحة
+        function addVideoElement(id, label, isLocal = false) {
+            if (document.getElementById(id)) return;
+            
+            const videosGrid = document.getElementById('videosGrid');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-wrapper';
+            wrapper.id = id + '-wrapper';
+            
+            const video = document.createElement('video');
+            video.id = id;
+            video.autoplay = true;
+            video.playsInline = true;
+            if (isLocal) video.muted = true;
+            
+            const labelEl = document.createElement('div');
+            labelEl.className = 'video-label';
+            labelEl.innerText = label;
+            
+            wrapper.appendChild(video);
+            wrapper.appendChild(labelEl);
+            videosGrid.appendChild(wrapper);
+            
+            return video;
+        }
+        
+        // إضافة رسالة للشات
         function addMessage(text, type) {
             const div = document.createElement('div');
             div.className = 'message ' + type;
             div.innerText = text;
-            document.getElementById('messagesArea').appendChild(div);
-            document.getElementById('messagesArea').scrollTop = document.getElementById('messagesArea').scrollHeight;
+            document.getElementById('chatArea').appendChild(div);
+            document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
         }
         
-        function startVideoCall() {
-            navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-                .then(stream => {
-                    myStream = stream;
-                    document.getElementById('localVideo').srcObject = stream;
-                    document.getElementById('videoArea').style.display = 'grid';
-                    
-                    members.forEach(m => {
-                        if (m.id !== socket.id) {
-                            const call = peer.call(m.id, stream);
-                            setupCall(call, stream);
-                        }
-                    });
-                    
-                    document.getElementById('endCallBtn').style.display = 'flex';
-                })
-                .catch(() => alert('❌ لا يمكن الوصول للكاميرا'));
+        // إرسال رسالة
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            addMessage(myName + ': ' + text, 'me');
+            socket.emit('send-message', { room: myRoom, text: text });
+            
+            input.value = '';
         }
         
-        function setupCall(call, stream) {
-            currentCall = call;
-            call.on('stream', remoteStream => {
-                document.getElementById('remoteVideo').srcObject = remoteStream;
-                document.getElementById('videoArea').style.display = 'grid';
+        // ========== أحداث Socket.IO ==========
+        socket.on('room-members', (members) => {
+            document.getElementById('memberCount').innerText = members.length;
+            
+            // تحديث قائمة الأعضاء
+            const membersList = document.getElementById('membersList');
+            membersList.innerHTML = '';
+            members.forEach(member => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'member-item';
+                memberDiv.innerHTML = `
+                    <span class="member-status online"></span>
+                    <span>${member.name}</span>
+                    ${member.id === socket.id ? '(أنت)' : ''}
+                    <span class="video-badge" id="video-badge-${member.id}" style="display: none;">📹</span>
+                `;
+                membersList.appendChild(memberDiv);
             });
-            call.on('close', () => endCall());
-        }
+        });
         
-        function endCall() {
-            if (currentCall) currentCall.close();
-            if (myStream) myStream.getTracks().forEach(t => t.stop());
-            document.getElementById('videoArea').style.display = 'none';
-            document.getElementById('endCallBtn').style.display = 'none';
-            document.getElementById('localVideo').srcObject = null;
-            document.getElementById('remoteVideo').srcObject = null;
-        }
+        socket.on('existing-users', (users) => {
+            users.forEach(user => {
+                // طلب اتصال فيديو من المستخدمين الموجودين
+                if (myStream) {
+                    // TODO: إنشاء اتصال Peer-to-Peer
+                }
+            });
+        });
+        
+        socket.on('system-message', (msg) => {
+            addMessage(msg, 'system');
+        });
+        
+        socket.on('new-message', (data) => {
+            addMessage(data.name + ': ' + data.text, 'other');
+        });
+        
+        socket.on('user-left-video', (data) => {
+            // إزالة فيديو المستخدم الذي غادر
+            const videoEl = document.getElementById('user-' + data.userId);
+            if (videoEl) {
+                const wrapper = document.getElementById('user-' + data.userId + '-wrapper');
+                if (wrapper) wrapper.remove();
+            }
+            
+            // إخفاء badge الفيديو
+            const badge = document.getElementById('video-badge-' + data.userId);
+            if (badge) badge.style.display = 'none';
+        });
     </script>
 </body>
 </html>
 '''
 
+# ========== التشغيل ==========
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-    socketio.run(app, host='0.0.0.0', port=port, debug=False)
+    socketio.run(app, host='0.0.0.0', port=port, debug=False, allow_unsafe_werkzeug=True)
