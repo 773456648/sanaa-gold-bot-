@@ -1,21 +1,27 @@
-# ========== FADI GOLD CHAT ==========
+# ========== FADI GOLD CHAT + فيديو مباشر ==========
 from flask import Flask, render_template_string, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
+import logging
 
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'fadi-gold-secret'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True)
 
 # ========== تخزين الغرف ==========
-rooms = {}
+rooms = {}  # {room: [members]}
 
 # ========== الصفحة الرئيسية ==========
 @app.route('/')
 def index():
     return render_template_string(HTML_CODE)
 
-# ========== أحداث Socket.IO ==========
+@app.route('/health')
+def health():
+    return {"status": "ok", "message": "FADI GOLD CHAT is running"}, 200
+
+# ========== أحداث Socket.IO للشات ==========
 @socketio.on('join-room')
 def handle_join(data):
     name = data['name']
@@ -26,15 +32,14 @@ def handle_join(data):
     if room not in rooms:
         rooms[room] = []
     
-    rooms[room].append({
+    member_info = {
         'id': request.sid,
         'name': name
-    })
+    }
+    rooms[room].append(member_info)
     
-    # إرسال قائمة الأعضاء للجميع
     emit('room-members', rooms[room], to=room)
-    
-    # إعلام الآخرين
+    emit('existing-users', [m for m in rooms[room] if m['id'] != request.sid], to=request.sid)
     emit('system-message', f'🔔 {name} دخل الغرفة', to=room, include_self=False)
 
 @socketio.on('send-message')
@@ -42,7 +47,6 @@ def handle_message(data):
     room = data['room']
     text = data['text']
     
-    # بحث عن اسم المرسل
     sender_name = 'شخص'
     if room in rooms:
         for member in rooms[room]:
@@ -56,26 +60,67 @@ def handle_message(data):
         'time': __import__('datetime').datetime.now().strftime('%I:%M %p')
     }, to=room)
 
+# ========== أحداث WebRTC للفيديو ==========
+@socketio.on('video-offer')
+def handle_video_offer(data):
+    target = data['target']
+    offer = data['offer']
+    room = data['room']
+    
+    emit('video-offer', {
+        'offer': offer,
+        'from': request.sid,
+        'fromName': get_user_name(room, request.sid)
+    }, to=target)
+
+@socketio.on('video-answer')
+def handle_video_answer(data):
+    target = data['target']
+    answer = data['answer']
+    
+    emit('video-answer', {
+        'answer': answer,
+        'from': request.sid
+    }, to=target)
+
+@socketio.on('ice-candidate')
+def handle_ice_candidate(data):
+    target = data['target']
+    candidate = data['candidate']
+    
+    emit('ice-candidate', {
+        'candidate': candidate,
+        'from': request.sid
+    }, to=target)
+
+def get_user_name(room, user_id):
+    if room in rooms:
+        for member in rooms[room]:
+            if member['id'] == user_id:
+                return member['name']
+    return 'شخص'
+
 @socketio.on('disconnect')
 def handle_disconnect():
     for room_name, members in rooms.items():
-        for member in members[:]:  # نسخة من القائمة للتعديل الآمن
+        for member in members[:]:
             if member['id'] == request.sid:
                 members.remove(member)
                 emit('system-message', f'🔴 {member["name"]} خرج من الغرفة', to=room_name)
                 emit('room-members', members, to=room_name)
+                emit('user-left-video', {'userId': request.sid}, to=room_name)
                 if len(members) == 0:
                     del rooms[room_name]
                 return
 
-# ========== كود الواجهة ==========
+# ========== كود الواجهة مع فيديو ==========
 HTML_CODE = '''
 <!DOCTYPE html>
 <html dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💬 FADI GOLD CHAT</title>
+    <title>💬 FADI GOLD CHAT + فيديو</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         * {
@@ -99,7 +144,7 @@ HTML_CODE = '''
             border-radius: 40px;
             padding: 30px;
             width: 100%;
-            max-width: 600px;
+            max-width: 1200px;
             color: white;
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
         }
@@ -133,11 +178,77 @@ HTML_CODE = '''
             transform: translateY(-3px);
             box-shadow: 0 10px 30px gold;
         }
+        button.danger {
+            background: #ff4444;
+            color: white;
+        }
+        button.success {
+            background: #00C851;
+            color: white;
+        }
+        .main-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .video-container {
+            flex: 2;
+            min-width: 300px;
+        }
+        .chat-container {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 30px;
+            padding: 20px;
+        }
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .video-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            border: 2px solid gold;
+        }
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .video-label {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: gold;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid gold;
+        }
+        .video-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .video-controls button {
+            width: auto;
+            padding: 12px 25px;
+            margin: 0;
+        }
         .chat-box {
             background: rgba(0,0,0,0.4);
             border-radius: 30px;
             padding: 20px;
-            height: 350px;
+            height: 400px;
             overflow-y: auto;
             margin: 20px 0;
         }
@@ -198,16 +309,12 @@ HTML_CODE = '''
 <body>
     <div class="card" id="loginCard">
         <h1>👑 FADI GOLD</h1>
-        <div style="text-align: center; color: cyan; margin-bottom: 20px;">دردشة سحابية · كل الشبكات</div>
+        <div style="text-align: center; color: cyan; margin-bottom: 20px;">دردشة + فيديو مباشر</div>
         
         <input type="text" id="nameInput" placeholder="اسمك" value="فادي">
         <input type="text" id="roomInput" placeholder="رقم الغرفة" value="123">
         
         <button onclick="joinRoom()">🚀 دخول الغرفة</button>
-        
-        <div style="text-align: center; margin-top: 20px; color: #aaa; font-size: 0.9em;">
-            أول شخص ينشئ الغرفة تلقائيًا
-        </div>
     </div>
     
     <div class="card" id="chatCard" style="display: none;">
@@ -218,13 +325,28 @@ HTML_CODE = '''
             <span>🆔 <span id="myName"></span></span>
         </div>
         
-        <div class="chat-box" id="chatArea">
-            <div class="message system">✨ مرحباً بك في دردشة فادي الذهبية</div>
-        </div>
-        
-        <div class="flex-row">
-            <input type="text" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
-            <button onclick="sendMessage()">إرسال</button>
+        <div class="main-container">
+            <div class="video-container">
+                <div class="videos-grid" id="videosGrid">
+                    <!-- الفيديوهات تظهر هنا -->
+                </div>
+                
+                <div class="video-controls">
+                    <button id="startVideoBtn" class="success" onclick="startVideo()">▶️ بدء الفيديو</button>
+                    <button id="stopVideoBtn" class="danger" onclick="stopVideo()" style="display: none;">⏹️ إيقاف الفيديو</button>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-box" id="chatArea">
+                    <div class="message system">✨ مرحباً بك في دردشة فادي الذهبية</div>
+                </div>
+                
+                <div class="flex-row">
+                    <input type="text" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button onclick="sendMessage()">إرسال</button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -232,15 +354,14 @@ HTML_CODE = '''
         const socket = io();
         let myName = '';
         let myRoom = '';
+        let myStream = null;
+        const peers = {};
         
         function joinRoom() {
             myName = document.getElementById('nameInput').value.trim();
             myRoom = document.getElementById('roomInput').value.trim();
             
-            if (!myName || !myRoom) {
-                alert('أدخل اسمك ورقم الغرفة');
-                return;
-            }
+            if (!myName || !myRoom) return;
             
             document.getElementById('loginCard').style.display = 'none';
             document.getElementById('chatCard').style.display = 'block';
@@ -250,28 +371,55 @@ HTML_CODE = '''
             socket.emit('join-room', { name: myName, room: myRoom });
         }
         
-        socket.on('room-members', (members) => {
-            document.getElementById('memberCount').innerText = members.length;
-        });
+        async function startVideo() {
+            try {
+                myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                addVideoElement('my-video', myName + ' (أنت)', true);
+                const myVideo = document.getElementById('my-video');
+                if (myVideo) myVideo.srcObject = myStream;
+                
+                document.getElementById('startVideoBtn').style.display = 'none';
+                document.getElementById('stopVideoBtn').style.display = 'inline-block';
+            } catch (err) {
+                alert('لا يمكن الوصول للكاميرا: ' + err.message);
+            }
+        }
         
-        socket.on('system-message', (msg) => {
-            addMessage(msg, 'system');
-        });
+        function stopVideo() {
+            if (myStream) {
+                myStream.getTracks().forEach(track => track.stop());
+                myStream = null;
+            }
+            const myVideoEl = document.getElementById('my-video');
+            if (myVideoEl) myVideoEl.remove();
+            
+            document.getElementById('startVideoBtn').style.display = 'inline-block';
+            document.getElementById('stopVideoBtn').style.display = 'none';
+        }
         
-        socket.on('new-message', (data) => {
-            addMessage(data.name + ': ' + data.text, 'other');
-        });
-        
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const text = input.value.trim();
+        function addVideoElement(id, label, isLocal = false) {
+            if (document.getElementById(id)) return;
             
-            if (!text) return;
+            const videosGrid = document.getElementById('videosGrid');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'video-wrapper';
+            wrapper.id = id + '-wrapper';
             
-            addMessage(myName + ': ' + text, 'me');
-            socket.emit('send-message', { room: myRoom, text: text });
+            const video = document.createElement('video');
+            video.id = id;
+            video.autoplay = true;
+            video.playsInline = true;
+            if (isLocal) video.muted = true;
             
-            input.value = '';
+            const labelEl = document.createElement('div');
+            labelEl.className = 'video-label';
+            labelEl.innerText = label;
+            
+            wrapper.appendChild(video);
+            wrapper.appendChild(labelEl);
+            videosGrid.appendChild(wrapper);
+            
+            return video;
         }
         
         function addMessage(text, type) {
@@ -281,12 +429,28 @@ HTML_CODE = '''
             document.getElementById('chatArea').appendChild(div);
             document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
         }
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+            
+            addMessage(myName + ': ' + text, 'me');
+            socket.emit('send-message', { room: myRoom, text: text });
+            input.value = '';
+        }
+        
+        socket.on('room-members', (members) => {
+            document.getElementById('memberCount').innerText = members.length;
+        });
+        
+        socket.on('system-message', (msg) => addMessage(msg, 'system'));
+        socket.on('new-message', (data) => addMessage(data.name + ': ' + data.text, 'other'));
     </script>
 </body>
 </html>
 '''
 
-# ========== التشغيل ==========
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     socketio.run(app, host='0.0.0.0', port=port)
