@@ -1,505 +1,488 @@
-# ========== FADI UNIVERSE - النظام المتكامل ==========
-from flask import Flask, render_template_string, jsonify, request, session
-from flask_socketio import SocketIO, emit
+from flask import Flask, render_template_string
 import os
-import socket
-import threading
-import time
-import json
-import random
-import hashlib
-import secrets
-from datetime import datetime, timedelta
-from collections import defaultdict
-import platform
-import psutil
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = secrets.token_hex(32)
-app.config['SESSION_TYPE'] = 'filesystem'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
-# ========== النظام الأساسي ==========
-class FadiCore:
-    def __init__(self):
-        self.name = "FADI-CORE"
-        self.version = "3.0"
-        self.birth = time.time()
-        self.id = hashlib.sha256(f"{time.time()}{random.random()}".encode()).hexdigest()[:16]
-        self.nodes = {}
-        self.users = {}
-        self.files = {}
-        self.tasks = {}
-        self.stats = defaultdict(int)
-        self.blocks = []  # سلسلة الكتل
-        self.chain = []   # blockchain
-        self.ai_model = self.init_ai()
-        self.start_services()
-        
-    def init_ai(self):
-        """نظام ذكاء اصطناعي بسيط"""
-        return {
-            'model': 'neural-network',
-            'layers': 10,
-            'neurons': 1000,
-            'accuracy': random.uniform(0.85, 0.99),
-            'learning_rate': 0.001
-        }
-    
-    def start_services(self):
-        """تشغيل جميع الخدمات"""
-        self.services = {
-            'web': {'status': 'active', 'port': 80, 'connections': 0},
-            'database': {'status': 'active', 'type': 'distributed', 'nodes': 3},
-            'storage': {'status': 'active', 'size': '1TB', 'used': '0GB'},
-            'cache': {'status': 'active', 'type': 'redis', 'hits': 0},
-            'queue': {'status': 'active', 'jobs': 0, 'workers': 5},
-            'ai': {'status': 'active', **self.ai_model},
-            'blockchain': {'status': 'active', 'blocks': 0},
-            'p2p': {'status': 'active', 'peers': 0},
-            'cdn': {'status': 'active', 'edges': 10},
-            'dns': {'status': 'active', 'records': 100},
-            'load_balancer': {'status': 'active', 'servers': 3},
-            'monitor': {'status': 'active', 'alerts': 0}
-        }
-        
-        # بدء الخدمات في خلفية
-        threading.Thread(target=self.auto_scaler, daemon=True).start()
-        threading.Thread(target=self.blockchain_miner, daemon=True).start()
-        threading.Thread(target=self.ai_trainer, daemon=True).start()
-    
-    def create_node(self, node_type='worker'):
-        """إنشاء عقدة جديدة"""
-        node_id = hashlib.sha256(f"{time.time()}{random.random()}".encode()).hexdigest()[:8]
-        node = {
-            'id': node_id,
-            'type': node_type,
-            'created': time.time(),
-            'status': 'active',
-            'load': random.uniform(0, 100),
-            'tasks': 0,
-            'memory': f"{random.randint(1, 16)}GB",
-            'cpu': f"{random.randint(2, 32)} cores",
-            'location': random.choice(['US', 'EU', 'ASIA', 'ME'])
-        }
-        self.nodes[node_id] = node
-        self.services['p2p']['peers'] = len(self.nodes)
-        return node
-    
-    def add_user(self, username):
-        """إضافة مستخدم جديد"""
-        user_id = hashlib.md5(f"{username}{time.time()}".encode()).hexdigest()[:8]
-        user = {
-            'id': user_id,
-            'name': username,
-            'joined': time.time(),
-            'points': 1000,
-            'level': 1,
-            'files': 0,
-            'tasks': 0,
-            'tokens': random.randint(100, 1000)
-        }
-        self.users[user_id] = user
-        return user
-    
-    def create_block(self, data):
-        """إنشاء كتلة جديدة في blockchain"""
-        block = {
-            'index': len(self.blocks),
-            'timestamp': time.time(),
-            'data': data,
-            'previous_hash': self.blocks[-1]['hash'] if self.blocks else '0'*64,
-            'hash': hashlib.sha256(f"{data}{time.time()}{random.random()}".encode()).hexdigest(),
-            'nonce': random.randint(0, 1000000),
-            'miner': random.choice(list(self.nodes.keys())) if self.nodes else 'genesis'
-        }
-        self.blocks.append(block)
-        self.services['blockchain']['blocks'] = len(self.blocks)
-        return block
-    
-    def process_task(self, task_type, data):
-        """معالجة مهمة"""
-        task_id = hashlib.md5(f"{task_type}{time.time()}".encode()).hexdigest()[:8]
-        task = {
-            'id': task_id,
-            'type': task_type,
-            'data': data,
-            'status': 'processing',
-            'created': time.time(),
-            'completed': None,
-            'result': None,
-            'node': random.choice(list(self.nodes.keys())) if self.nodes else None
-        }
-        self.tasks[task_id] = task
-        
-        # محاكاة معالجة
-        def process():
-            time.sleep(random.uniform(0.1, 0.5))
-            task['status'] = 'completed'
-            task['completed'] = time.time()
-            task['result'] = hashlib.sha256(f"{data}{time.time()}".encode()).hexdigest()
-        
-        threading.Thread(target=process, daemon=True).start()
-        return task
-    
-    def auto_scaler(self):
-        """توسيع ذاتي"""
-        while True:
-            if len(self.nodes) < 10:
-                self.create_node()
-            time.sleep(60)
-    
-    def blockchain_miner(self):
-        """تعدين العملة"""
-        while True:
-            if len(self.blocks) % 10 == 0:
-                self.create_block(f"block-{len(self.blocks)}")
-            time.sleep(30)
-    
-    def ai_trainer(self):
-        """تدريب الذكاء الاصطناعي"""
-        while True:
-            self.ai_model['accuracy'] = min(0.99, self.ai_model['accuracy'] + 0.001)
-            time.sleep(300)
-    
-    def get_system_info(self):
-        """معلومات النظام"""
-        return {
-            'core': {
-                'name': self.name,
-                'version': self.version,
-                'id': self.id,
-                'uptime': int(time.time() - self.birth),
-                'birth': datetime.fromtimestamp(self.birth).isoformat()
-            },
-            'resources': {
-                'nodes': len(self.nodes),
-                'users': len(self.users),
-                'tasks': len(self.tasks),
-                'blocks': len(self.blocks),
-                'files': len(self.files)
-            },
-            'services': self.services,
-            'ai': self.ai_model,
-            'performance': {
-                'cpu': random.uniform(10, 90),
-                'memory': random.uniform(20, 80),
-                'network': f"{random.randint(1, 1000)} Mbps",
-                'load': random.uniform(0.1, 5.0)
-            },
-            'time': datetime.now().isoformat()
-        }
-
-core = FadiCore()
-
-# إنشاء عقد أولية
-for _ in range(5):
-    core.create_node()
-
-# إنشاء مستخدمين
-core.add_user("admin")
-core.add_user("user1")
-core.add_user("user2")
-
-# إنشاء كتل
-for i in range(3):
-    core.create_block(f"genesis-{i}")
-
-# ========== واجهات API ==========
 @app.route('/')
 def index():
-    info = core.get_system_info()
-    return render_template_string(HOME_TEMPLATE, info=info)
+    return render_template_string(HTML_CODE)
 
-@app.route('/api/info')
-def api_info():
-    return jsonify(core.get_system_info())
-
-@app.route('/api/nodes')
-def api_nodes():
-    return jsonify(list(core.nodes.values()))
-
-@app.route('/api/users')
-def api_users():
-    return jsonify(list(core.users.values()))
-
-@app.route('/api/blocks')
-def api_blocks():
-    return jsonify(core.blocks[-10:])
-
-@app.route('/api/tasks')
-def api_tasks():
-    return jsonify(list(core.tasks.values())[-10:])
-
-@app.route('/api/create_node')
-def api_create_node():
-    node = core.create_node()
-    return jsonify(node)
-
-@app.route('/api/process_task/<task_type>')
-def api_process_task(task_type):
-    data = request.args.get('data', 'default')
-    task = core.process_task(task_type, data)
-    return jsonify(task)
-
-@socketio.on('connect')
-def handle_connect():
-    emit('connected', {'id': request.sid, 'time': time.time()})
-
-@socketio.on('get_updates')
-def handle_updates():
-    while True:
-        socketio.sleep(5)
-        emit('update', core.get_system_info())
-
-# ========== قالب الواجهة ==========
-HOME_TEMPLATE = '''
+# هنا كودك الإمبراطوري حق فادي بدون أي تغيير
+HTML_CODE = '''
 <!DOCTYPE html>
-<html dir="rtl">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌌 FADI UNIVERSE CORE</title>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <title>FADI-DISCOVERY - ويب مباشر</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
         body {
-            background: linear-gradient(135deg, #0b0719, #1a0f2e, #2d1b4a);
+            background: linear-gradient(145deg, #0a0f1e 0%, #0d1425 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
             padding: 20px;
-            color: white;
         }
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255,215,0,0.1);
-            border: 2px solid gold;
-            border-radius: 40px;
-        }
-        h1 { color: gold; font-size: 3em; text-shadow: 0 0 20px gold; }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .card {
-            background: rgba(20,15,40,0.9);
+            max-width: 600px;
+            width: 100%;
+            background: rgba(18, 25, 40, 0.9);
             backdrop-filter: blur(10px);
-            border: 2px solid gold;
-            border-radius: 30px;
-            padding: 20px;
-            transition: 0.3s;
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            border-radius: 32px;
+            padding: 30px 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
         }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(255,215,0,0.3);
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #00ffff;
+            text-shadow: 0 0 10px cyan;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
         }
-        .card-title {
-            color: gold;
-            font-size: 1.5em;
-            margin-bottom: 15px;
-            border-bottom: 2px solid gold;
-            padding-bottom: 10px;
+        .sub {
+            color: #a0e7e0;
+            font-size: 14px;
+            border-bottom: 1px dashed #3f6e6b;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
-        .info-row {
+        .buttons {
             display: flex;
-            justify-content: space-between;
-            padding: 8px;
-            border-bottom: 1px solid rgba(255,215,0,0.2);
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
         }
-        .label { color: cyan; }
-        .value { color: gold; font-weight: bold; }
-        .status-badge {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-left: 8px;
-        }
-        .active { background: #00ff88; box-shadow: 0 0 10px #00ff88; }
-        .button {
-            background: gold;
-            color: black;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: bold;
+        .btn {
+            background: #0e1a26;
+            border: 1px solid #2c5f5a;
+            color: #b2f0e4;
+            padding: 14px 25px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
-            margin: 5px;
-            transition: 0.3s;
+            transition: 0.2s;
+            box-shadow: 0 5px 0 #071016;
+            flex: 1;
+            text-align: center;
         }
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px gold;
+        .btn:hover {
+            background: #1a3a44;
+            border-color: #4cd8c0;
+            color: white;
+            box-shadow: 0 0 15px #00ffe0;
         }
-        .nodes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            max-height: 300px;
+        .server-box {
+            background: #0b121f;
+            border-radius: 24px;
+            padding: 22px;
+            border: 1px solid #1e4a4a;
+            margin-top: 10px;
+            direction: rtl;
+        }
+        .server-title {
+            color: #bbffe0;
+            font-size: 20px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .server-id {
+            background: #010a14;
+            padding: 16px;
+            border-radius: 18px;
+            border: 2px solid #00ccb3;
+            color: #00ffe0;
+            font-size: 42px;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: 8px;
+            direction: ltr;
+            margin-bottom: 12px;
+            word-break: break-all;
+            font-family: monospace;
+            box-shadow: inset 0 0 15px #00554a;
+        }
+        .change-link {
+            color: #6fc9c0;
+            text-align: left;
+            font-size: 15px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            text-decoration: underline dotted;
+        }
+        .status {
+            background: #0d1a1f;
+            padding: 14px 18px;
+            border-radius: 40px;
+            color: #ffe69b;
+            font-size: 18px;
+            border-right: 6px solid #00ffc3;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        .chat-box {
+            background: #041016;
+            border-radius: 20px;
+            padding: 18px;
+            margin-top: 20px;
+        }
+        .chat-log {
+            background: #0a141c;
+            min-height: 90px;
+            max-height: 150px;
             overflow-y: auto;
+            padding: 12px;
+            border-radius: 14px;
+            color: #c6f0e6;
+            font-size: 15px;
+            border: 1px solid #24756b;
+            margin-bottom: 15px;
+            direction: ltr;
+            text-align: left;
         }
-        .node-item {
-            background: rgba(255,215,0,0.1);
-            border: 1px solid gold;
-            border-radius: 15px;
-            padding: 10px;
-            text-align: center;
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
         }
-        .footer {
+        #chatInput {
+            flex: 1;
+            background: #0e1e26;
+            border: 1px solid #178074;
+            border-radius: 30px;
+            padding: 12px 18px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        #chatInput::placeholder {
+            color: #6d9c96;
+        }
+        .send-btn {
+            background: #00b8a2;
+            border: none;
+            border-radius: 40px;
+            padding: 0 22px;
+            color: black;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .send-btn:hover {
+            background: #00ffe0;
+            box-shadow: 0 0 12px cyan;
+        }
+        small {
+            color: #7ba39e;
+            display: block;
+            margin-top: 15px;
             text-align: center;
-            margin-top: 30px;
-            color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🌌 FADI UNIVERSE CORE</h1>
-            <p>نظام سحابي متكامل مع ذكاء اصطناعي و blockchain</p>
-            <div style="margin-top: 10px;">
-                <span class="status-badge active"></span>
-                <span>النظام شغال</span>
+<div class="container">
+    <div class="logo">FADI-DISCOVERY</div>
+    <div class="sub">اكشف السيرفارات التربية - اتصل بضغطك</div>
+
+    <div class="buttons">
+        <div id="btnCreate" class="btn">➕ إنشاء سيرفر</div>
+        <div id="btnConnect" class="btn">🔍 البحث عن سيرفورات</div>
+    </div>
+
+    <!-- منطقة عرض المعرف والسيرفر -->
+    <div id="serverPanel" class="server-box" style="display: none;">
+        <div class="server-title">🖧 أنت الآن سيرفر مشغل</div>
+        <div id="myPeerId" class="server-id">...</div>
+        <div id="changeIdBtn" class="change-link">[ اضغط لتغيير ]</div>
+        <div id="statusMessage" class="status">⏳ السيرفر جاهز - في انتظار المتصلين...</div>
+    </div>
+
+    <!-- منطقة الاتصال والدردشة -->
+    <div id="chatSection" style="display: none;">
+        <div class="chat-box">
+            <div id="chatLog" class="chat-log">
+                ⚡ نظام الاتصال المباشر جاهز.
             </div>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="card">
-                <div class="card-title">🔧 معلومات أساسية</div>
-                <div class="info-row"><span class="label">الاسم:</span><span class="value" id="name">{{ info.core.name }}</span></div>
-                <div class="info-row"><span class="label">الإصدار:</span><span class="value">{{ info.core.version }}</span></div>
-                <div class="info-row"><span class="label">المعرف:</span><span class="value">{{ info.core.id[:8] }}...</span></div>
-                <div class="info-row"><span class="label">وقت التشغيل:</span><span class="value" id="uptime">0</span></div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="اكتب رسالة..." autocomplete="off">
+                <button id="sendBtn" class="send-btn">إرسال</button>
             </div>
-            
-            <div class="card">
-                <div class="card-title">📊 الموارد</div>
-                <div class="info-row"><span class="label">العقد:</span><span class="value">{{ info.resources.nodes }}</span></div>
-                <div class="info-row"><span class="label">المستخدمين:</span><span class="value">{{ info.resources.users }}</span></div>
-                <div class="info-row"><span class="label">المهام:</span><span class="value">{{ info.resources.tasks }}</span></div>
-                <div class="info-row"><span class="label">الكتل:</span><span class="value">{{ info.resources.blocks }}</span></div>
-                <div class="info-row"><span class="label">الملفات:</span><span class="value">{{ info.resources.files }}</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">🤖 الذكاء الاصطناعي</div>
-                <div class="info-row"><span class="label">النموذج:</span><span class="value">{{ info.ai.model }}</span></div>
-                <div class="info-row"><span class="label">الطبقات:</span><span class="value">{{ info.ai.layers }}</span></div>
-                <div class="info-row"><span class="label">الخلايا:</span><span class="value">{{ info.ai.neurons }}</span></div>
-                <div class="info-row"><span class="label">الدقة:</span><span class="value">{{ "%.2f"|format(info.ai.accuracy * 100) }}%</span></div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">⚡ الأداء</div>
-                <div class="info-row"><span class="label">المعالج:</span><span class="value">{{ "%.1f"|format(info.performance.cpu) }}%</span></div>
-                <div class="info-row"><span class="label">الذاكرة:</span><span class="value">{{ "%.1f"|format(info.performance.memory) }}%</span></div>
-                <div class="info-row"><span class="label">الشبكة:</span><span class="value">{{ info.performance.network }}</span></div>
-                <div class="info-row"><span class="label">الحمل:</span><span class="value">{{ "%.2f"|format(info.performance.load) }}</span></div>
-            </div>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="card">
-                <div class="card-title">🔗 الخدمات النشطة</div>
-                <div style="max-height: 300px; overflow-y: auto;">
-                    {% for name, service in info.services.items() %}
-                    <div class="info-row">
-                        <span class="label">{{ name }}:</span>
-                        <span class="value" style="color: {% if service.status == 'active' %}#00ff88{% else %}#ff4444{% endif %}">
-                            {{ service.status }}
-                        </span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">🌐 العقد النشطة</div>
-                <div class="nodes-grid" id="nodesGrid">
-                    {% for node in info.resources.nodes|range(5) %}
-                    <div class="node-item">
-                        <div>🖥️ عقدة {{ loop.index }}</div>
-                        <small style="color: cyan;">{{ random.choice(['US', 'EU', 'ASIA']) }}</small>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-        
-        <div style="text-align: center; margin: 20px 0;">
-            <button class="button" onclick="createNode()">➕ إنشاء عقدة جديدة</button>
-            <button class="button" onclick="processTask()">⚙️ معالجة مهمة</button>
-            <button class="button" onclick="refresh()">🔄 تحديث</button>
-        </div>
-        
-        <div class="footer">
-            <p>© 2026 FADI UNIVERSE - جميع الحقوق محفوظة للنظام الذاتي</p>
-            <p id="timestamp">{{ info.time }}</p>
         </div>
     </div>
-    
-    <script>
-        const socket = io();
-        
-        socket.on('connect', () => {
-            console.log('✅ متصل بالنظام');
+
+    <small>اتصال حقيقي P2P عبر الإنترنت - يشبه الزابيا بالضبط</small>
+</div>
+
+<!-- مكتبة PeerJS للاتصال المباشر -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+    (function(){
+        "use strict";
+
+        // ---------- عناصر الواجهة ----------
+        const btnCreate = document.getElementById('btnCreate');
+        const btnConnect = document.getElementById('btnConnect');
+        const serverPanel = document.getElementById('serverPanel');
+        const myPeerIdEl = document.getElementById('myPeerId');
+        const changeIdBtn = document.getElementById('changeIdBtn');
+        const statusEl = document.getElementById('statusMessage');
+        const chatSection = document.getElementById('chatSection');
+        const chatLog = document.getElementById('chatLog');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        // ---------- متغيرات الاتصال ----------
+        let peer = null;           // كائن PeerJS
+        let currentPeerId = '';    // معرفي الحقيقي
+        let conn = null;          // قناة الاتصال مع الطرف الآخر
+        let isServer = false;     // هل أنا منشئ السيرفر؟
+        let isConnected = false;  // هل تم الاتصال مع الطرف الآخر؟
+
+        // ---------- دالة إنشاء Peer جديد ----------
+        function createPeer(customId = null) {
+            if (peer && !peer.destroyed) {
+                peer.destroy();
+            }
+
+            // خيارات الاتصال - iceServers تساعد على الاتصال حتى خلف الشبكات الصعبة
+            const peerOptions = {
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' },
+                        { urls: 'stun:stun.services.mozilla.com' },
+                        { urls: 'stun:stun.stunprotocol.org:3478' },
+                        {
+                            urls: 'turn:turn.example.com', // للضرورة لكن بدون كلمة سر يعمل بشكل محدود
+                            username: 'webrtc',
+                            credential: 'webrtc'
+                        }
+                    ]
+                },
+                debug: 1
+            };
+
+            if (customId) {
+                peer = new Peer(customId, peerOptions);
+            } else {
+                peer = new Peer(peerOptions); // ID عشوائي
+            }
+
+            // ---------- حدث فتح الاتصال (تم إنشاء المعرف) ----------
+            peer.on('open', (id) => {
+                currentPeerId = id;
+                myPeerIdEl.textContent = id;
+                serverPanel.style.display = 'block';
+                statusEl.innerHTML = '⏳ السيرفر شغال - في انتظار المتصلين...';
+                // إذا كان أنا منشئ السيرفر، خليني في وضع الاستماع
+                if (isServer) {
+                    waitForConnection();
+                }
+            });
+
+            // ---------- استقبال اتصال واردة ----------
+            peer.on('connection', (incomingConn) => {
+                if (conn && conn.open) {
+                    // إذا في اتصال قديم، نرفض الواحد الجديد أو نقفل القديم.
+                    incomingConn.close();
+                    return;
+                }
+                conn = incomingConn;
+                setupConnection(conn, false); // false يعني أنا السيرفر والمتصل هو العميل
+            });
+
+            peer.on('error', (err) => {
+                console.log('⚠️ Peer error:', err);
+                if (err.type === 'unavailable-id' || err.type === 'id-taken') {
+                    statusEl.innerHTML = '❌ المعرف مستخدم، جرب معرف آخر';
+                } else {
+                    statusEl.innerHTML = '⚠️ خطأ في الاتصال: ' + (err.message || 'غير معروف');
+                }
+            });
+
+            peer.on('disconnected', () => {
+                if (isConnected) return;
+                statusEl.innerHTML = '⚠️ فقدان الاتصال بالخادم المساعد، حاول إعادة الاتصال.';
+            });
+        }
+
+        // ---------- وظيفة انتظار المتصلين (للسيرفر) ----------
+        function waitForConnection() {
+            // لا نحتاج شيئًا هنا، peer.on('connection') هو اللي يشغل.
+            // فقط نغير النصوص
+            if (isServer) {
+                statusEl.innerHTML = '🟢 السيرفر شغال - معرفك: ' + currentPeerId + ' - في انتظار المتصل...';
+            }
+        }
+
+        // ---------- إعداد قناة الاتصال بعد نجاح الاتصال ----------
+        function setupConnection(connection, amIClient = true) {
+            conn = connection;
+
+            conn.on('open', () => {
+                isConnected = true;
+                statusEl.innerHTML = '✅ متصل مع: ' + conn.peer;
+                chatSection.style.display = 'block';
+                addChatMessage('🟢 تم الاتصال المباشر بنجاح (P2P عبر الإنترنت)');
+                
+                // إذا كنت أنا العميل (اللي بحث واتصل)، أخلي السيرفر يظهر لي واجهة الدردشة
+                if (amIClient) {
+                    serverPanel.style.display = 'block';
+                    myPeerIdEl.textContent = peer.id; // أعرض معرفي
+                }
+            });
+
+            conn.on('data', (data) => {
+                // استقبال رسالة
+                addChatMessage('📩 الطرف الآخر: ' + data);
+            });
+
+            conn.on('close', () => {
+                isConnected = false;
+                statusEl.innerHTML = '🔴 انقطع الاتصال';
+                addChatMessage('🔴 انقطع الاتصال بالطرف الآخر');
+                conn = null;
+            });
+
+            conn.on('error', (err) => {
+                addChatMessage('⚠️ خطأ في القناة: ' + err);
+            });
+        }
+
+        // ---------- إضافة رسالة إلى شاشة الدردشة ----------
+        function addChatMessage(msg) {
+            const p = document.createElement('div');
+            p.textContent = msg;
+            p.style.marginBottom = '5px';
+            p.style.borderBottom = '1px solid #2c5f5a';
+            p.style.paddingBottom = '4px';
+            chatLog.appendChild(p);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // ---------- دالة الاتصال بسيرفر آخر (البحث عن سيرفورات) ----------
+        function connectToPeer(targetId) {
+            if (!peer || peer.destroyed) {
+                alert('الرجاء إنشاء سيرفر أولاً');
+                return;
+            }
+            if (!targetId || targetId.trim() === '') {
+                alert('الرجاء إدخال معرف السيرفر');
+                return;
+            }
+
+            statusEl.innerHTML = '⏳ جاري الاتصال بالمعرف: ' + targetId + '...';
+            
+            // محاولة الاتصال
+            const connection = peer.connect(targetId, {
+                reliable: true,
+                serialization: 'json'
+            });
+
+            if (!connection) {
+                statusEl.innerHTML = '❌ فشل بدء الاتصال';
+                return;
+            }
+
+            setupConnection(connection, true); // أنا العميل
+        }
+
+        // ---------- الأحداث الخاصة بالأزرار ----------
+        btnCreate.addEventListener('click', function() {
+            isServer = true;
+            // إنشاء سيرفر بهوية جديدة
+            createPeer();  // معرف عشوائي
+            chatSection.style.display = 'none'; // نخفي الدردشة لحين الاتصال
+            // إعادة تعيين الرسالة
+            addChatMessage('⚡ جاهز لاستقبال المتصلين...');
+            chatLog.innerHTML = '⚡ جاهز لاستقبال المتصلين...\n';
         });
-        
-        socket.on('update', (data) => {
-            console.log('📊 تحديث:', data);
-            updateUI(data);
+
+        btnConnect.addEventListener('click', function() {
+            isServer = false;
+            // المستخدم يريد الاتصال بسيرفر آخر
+            const targetId = prompt('أدخل معرف السيرفر (الرقم الظاهر في شاشة الطرف الآخر):');
+            if (targetId && targetId.trim() !== '') {
+                // تأكد من وجود peer
+                if (!peer || peer.destroyed) {
+                    // أنشئ peer بدون معرف محدد (عشوائي)
+                    createPeer();
+                    // نعطيه وقت لحد ما يفتح ثم نكمل الاتصال
+                    peer.once('open', () => {
+                        connectToPeer(targetId.trim());
+                    });
+                } else {
+                    connectToPeer(targetId.trim());
+                }
+            }
         });
-        
-        function updateUptime() {
-            const uptime = {{ info.core.uptime }};
-            const hours = Math.floor(uptime / 3600);
-            const minutes = Math.floor((uptime % 3600) / 60);
-            const secs = uptime % 60;
-            document.getElementById('uptime').textContent = 
-                `${hours}:${minutes.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+
+        // تغيير المعرف (اضغط لتغيير)
+        changeIdBtn.addEventListener('click', function() {
+            if (!isServer) {
+                alert('الرجاء إنشاء سيرفر أولاً');
+                return;
+            }
+            const newId = prompt('أدخل معرف مخصص للسيرفر (أحرف/أرقام فقط):');
+            if (newId && newId.trim() !== '') {
+                isServer = true;
+                createPeer(newId.trim());
+            }
+        });
+
+        // إرسال الرسالة
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const msg = chatInput.value.trim();
+            if (msg === '') return;
+            if (!conn || !conn.open) {
+                addChatMessage('⚠️ لا يوجد اتصال نشط');
+                return;
+            }
+            try {
+                conn.send(msg);
+                addChatMessage('📤 أنت: ' + msg);
+                chatInput.value = '';
+            } catch (e) {
+                addChatMessage('⚠️ فشل الإرسال: ' + e);
+            }
         }
-        
-        function createNode() {
-            fetch('/api/create_node')
-                .then(res => res.json())
-                .then(data => {
-                    alert(`✅ تم إنشاء عقدة جديدة: ${data.id}`);
-                    window.location.reload();
-                });
-        }
-        
-        function processTask() {
-            fetch('/api/process_task/test?data=' + Date.now())
-                .then(res => res.json())
-                .then(data => {
-                    alert(`⚙️ مهمة جديدة: ${data.id}`);
-                });
-        }
-        
-        function refresh() {
-            window.location.reload();
-        }
-        
-        function updateUI(data) {
-            // تحديث واجهة المستخدم
-        }
-        
-        setInterval(updateUptime, 1000);
-        setInterval(() => {
-            document.getElementById('timestamp').textContent = new Date().toLocaleString('ar-SA');
-        }, 1000);
-    </script>
+
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', function() {
+            if (peer && !peer.destroyed) {
+                peer.destroy();
+            }
+        });
+
+        // رسالة ترحيب
+        console.log('✅ جاهز، اضغط إنشاء سيرفر للبدء');
+    })();
+</script>
+
 </body>
 </html>
 '''
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
-    socketio.run(app, host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
