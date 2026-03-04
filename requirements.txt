@@ -3,3 +3,4 @@ Flask-SocketIO
 python-socketio
 python-engineio
 gunicorn
+eventlet
