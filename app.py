@@ -1,4 +1,4 @@
-# ========== FADI GOLD CHAT + فيديو مباشر ==========
+# ========== FADI GOLD CHAT + فيديو مباشر (كامل) ==========
 from flask import Flask, render_template_string, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import os
@@ -93,6 +93,14 @@ def handle_ice_candidate(data):
         'from': request.sid
     }, to=target)
 
+@socketio.on('request-video-users')
+def handle_request_video(data):
+    room = data['room']
+    # إرسال قائمة المستخدمين للطالب
+    if room in rooms:
+        users = [m for m in rooms[room] if m['id'] != request.sid]
+        emit('existing-users', users, to=request.sid)
+
 def get_user_name(room, user_id):
     if room in rooms:
         for member in rooms[room]:
@@ -113,7 +121,7 @@ def handle_disconnect():
                     del rooms[room_name]
                 return
 
-# ========== كود الواجهة مع فيديو ==========
+# ========== كود الواجهة مع فيديو كامل ==========
 HTML_CODE = '''
 <!DOCTYPE html>
 <html dir="rtl">
@@ -380,6 +388,8 @@ HTML_CODE = '''
                 
                 document.getElementById('startVideoBtn').style.display = 'none';
                 document.getElementById('stopVideoBtn').style.display = 'inline-block';
+                
+                socket.emit('request-video-users', { room: myRoom });
             } catch (err) {
                 alert('لا يمكن الوصول للكاميرا: ' + err.message);
             }
@@ -395,6 +405,11 @@ HTML_CODE = '''
             
             document.getElementById('startVideoBtn').style.display = 'inline-block';
             document.getElementById('stopVideoBtn').style.display = 'none';
+            
+            Object.keys(peers).forEach(key => {
+                peers[key].close();
+                delete peers[key];
+            });
         }
         
         function addVideoElement(id, label, isLocal = false) {
@@ -446,6 +461,109 @@ HTML_CODE = '''
         
         socket.on('system-message', (msg) => addMessage(msg, 'system'));
         socket.on('new-message', (data) => addMessage(data.name + ': ' + data.text, 'other'));
+        
+        socket.on('existing-users', (users) => {
+            if (!myStream) return;
+            users.forEach(user => {
+                if (!peers[user.id]) {
+                    createPeerConnection(user.id, true);
+                }
+            });
+        });
+        
+        socket.on('video-offer', async (data) => {
+            if (!myStream) return;
+            
+            if (!peers[data.from]) {
+                await createPeerConnection(data.from, false);
+            }
+            
+            const peer = peers[data.from];
+            await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await peer.createAnswer();
+            await peer.setLocalDescription(answer);
+            
+            socket.emit('video-answer', {
+                target: data.from,
+                answer: peer.localDescription,
+                room: myRoom
+            });
+        });
+        
+        socket.on('video-answer', async (data) => {
+            const peer = peers[data.from];
+            if (peer) {
+                await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+            }
+        });
+        
+        socket.on('ice-candidate', async (data) => {
+            const peer = peers[data.from];
+            if (peer) {
+                await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
+            }
+        });
+        
+        socket.on('user-left-video', (data) => {
+            const videoEl = document.getElementById('user-' + data.userId);
+            if (videoEl) {
+                const wrapper = document.getElementById('user-' + data.userId + '-wrapper');
+                if (wrapper) wrapper.remove();
+            }
+            
+            if (peers[data.userId]) {
+                peers[data.userId].close();
+                delete peers[data.userId];
+            }
+        });
+        
+        async function createPeerConnection(targetId, isInitiator) {
+            const peer = new RTCPeerConnection({
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            });
+            
+            peers[targetId] = peer;
+            
+            myStream.getTracks().forEach(track => {
+                peer.addTrack(track, myStream);
+            });
+            
+            peer.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('ice-candidate', {
+                        target: targetId,
+                        candidate: event.candidate,
+                        room: myRoom
+                    });
+                }
+            };
+            
+            peer.ontrack = (event) => {
+                const videoId = 'user-' + targetId;
+                let videoEl = document.getElementById(videoId);
+                if (!videoEl) {
+                    videoEl = addVideoElement(videoId, 'مستخدم', false);
+                }
+                if (videoEl) {
+                    videoEl.srcObject = event.streams[0];
+                }
+            };
+            
+            if (isInitiator) {
+                const offer = await peer.createOffer();
+                await peer.setLocalDescription(offer);
+                socket.emit('video-offer', {
+                    target: targetId,
+                    offer: peer.localDescription,
+                    room: myRoom
+                });
+            }
+            
+            return peer;
+        }
     </script>
 </body>
 </html>
