@@ -1,8 +1,12 @@
-# ========== FADI GOLD CHAT + فيديو مباشر (كامل) ==========
+# ========== FADI GOLD CHAT + فيديو عبر السيرفر ==========
 from flask import Flask, render_template_string, request
-from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_socketio import SocketIO, emit, join_room
 import os
 import logging
+import asyncio
+import threading
+import json
+import socket
 
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
@@ -10,18 +14,84 @@ app.config['SECRET_KEY'] = 'fadi-gold-secret'
 socketio = SocketIO(app, cors_allowed_origins="*", logger=True)
 
 # ========== تخزين الغرف ==========
-rooms = {}  # {room: [members]}
+rooms = {}
+
+# ========== الحصول على IP السيرفر ==========
+def get_server_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except:
+        return "localhost"
+
+SERVER_IP = get_server_ip()
+print(f"✅ IP السيرفر: {SERVER_IP}")
+
+# ========== TURN Server بسيط (aiortc) ==========
+try:
+    from aiohttp import web
+    from aiortc import RTCPeerConnection, RTCSessionDescription
+    from aiortc.contrib.media import MediaRelay
+    
+    TURN_AVAILABLE = True
+    pcs = set()
+    relay = MediaRelay()
+    
+    async def offer(request):
+        params = await request.json()
+        offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
+        
+        pc = RTCPeerConnection()
+        pcs.add(pc)
+        
+        @pc.on("iceconnectionstatechange")
+        async def on_iceconnectionstatechange():
+            if pc.iceConnectionState == "failed":
+                await pc.close()
+                pcs.discard(pc)
+        
+        await pc.setRemoteDescription(offer)
+        answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+        
+        return web.Response(
+            content_type="application/json",
+            text=json.dumps({
+                "sdp": pc.localDescription.sdp,
+                "type": pc.localDescription.type
+            })
+        )
+    
+    async def start_turn_server():
+        turn_app = web.Application()
+        turn_app.router.post("/offer", offer)
+        runner = web.AppRunner(turn_app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", 8080)
+        await site.start()
+        print("✅ TURN server شغال على port 8080")
+    
+    def run_turn_server():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(start_turn_server())
+        loop.run_forever()
+    
+    threading.Thread(target=run_turn_server, daemon=True).start()
+    
+except Exception as e:
+    print(f"❌ TURN server ما اشتغل: {e}")
+    TURN_AVAILABLE = False
 
 # ========== الصفحة الرئيسية ==========
 @app.route('/')
 def index():
-    return render_template_string(HTML_CODE)
+    return render_template_string(HTML_CODE.replace('{{SERVER_IP}}', SERVER_IP))
 
-@app.route('/health')
-def health():
-    return {"status": "ok", "message": "FADI GOLD CHAT is running"}, 200
-
-# ========== أحداث Socket.IO للشات ==========
+# ========== أحداث Socket.IO ==========
 @socketio.on('join-room')
 def handle_join(data):
     name = data['name']
@@ -32,10 +102,7 @@ def handle_join(data):
     if room not in rooms:
         rooms[room] = []
     
-    member_info = {
-        'id': request.sid,
-        'name': name
-    }
+    member_info = {'id': request.sid, 'name': name}
     rooms[room].append(member_info)
     
     emit('room-members', rooms[room], to=room)
@@ -60,53 +127,32 @@ def handle_message(data):
         'time': __import__('datetime').datetime.now().strftime('%I:%M %p')
     }, to=room)
 
-# ========== أحداث WebRTC للفيديو ==========
 @socketio.on('video-offer')
 def handle_video_offer(data):
-    target = data['target']
-    offer = data['offer']
-    room = data['room']
-    
     emit('video-offer', {
-        'offer': offer,
-        'from': request.sid,
-        'fromName': get_user_name(room, request.sid)
-    }, to=target)
+        'offer': data['offer'],
+        'from': request.sid
+    }, to=data['target'])
 
 @socketio.on('video-answer')
 def handle_video_answer(data):
-    target = data['target']
-    answer = data['answer']
-    
     emit('video-answer', {
-        'answer': answer,
+        'answer': data['answer'],
         'from': request.sid
-    }, to=target)
+    }, to=data['target'])
 
 @socketio.on('ice-candidate')
 def handle_ice_candidate(data):
-    target = data['target']
-    candidate = data['candidate']
-    
     emit('ice-candidate', {
-        'candidate': candidate,
+        'candidate': data['candidate'],
         'from': request.sid
-    }, to=target)
+    }, to=data['target'])
 
 @socketio.on('request-video-users')
 def handle_request_video(data):
-    room = data['room']
-    # إرسال قائمة المستخدمين للطالب
-    if room in rooms:
-        users = [m for m in rooms[room] if m['id'] != request.sid]
+    if data['room'] in rooms:
+        users = [m for m in rooms[data['room']] if m['id'] != request.sid]
         emit('existing-users', users, to=request.sid)
-
-def get_user_name(room, user_id):
-    if room in rooms:
-        for member in rooms[room]:
-            if member['id'] == user_id:
-                return member['name']
-    return 'شخص'
 
 @socketio.on('disconnect')
 def handle_disconnect():
@@ -121,7 +167,7 @@ def handle_disconnect():
                     del rooms[room_name]
                 return
 
-# ========== كود الواجهة مع فيديو كامل ==========
+# ========== كود الواجهة مع فيديو عبر السيرفر ==========
 HTML_CODE = '''
 <!DOCTYPE html>
 <html dir="rtl">
@@ -156,172 +202,40 @@ HTML_CODE = '''
             color: white;
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
         }
-        h1 {
-            text-align: center;
-            color: gold;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        input, button {
-            width: 100%;
-            padding: 15px;
-            margin: 8px 0;
-            border-radius: 60px;
-            border: none;
-            font-size: 1em;
-        }
-        input {
-            background: rgba(0,0,0,0.5);
-            border: 2px solid gold;
-            color: white;
-        }
-        button {
-            background: gold;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px gold;
-        }
-        button.danger {
-            background: #ff4444;
-            color: white;
-        }
-        button.success {
-            background: #00C851;
-            color: white;
-        }
-        .main-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .video-container {
-            flex: 2;
-            min-width: 300px;
-        }
-        .chat-container {
-            flex: 1;
-            min-width: 300px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 30px;
-            padding: 20px;
-        }
-        .videos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .video-wrapper {
-            position: relative;
-            background: #000;
-            border-radius: 20px;
-            overflow: hidden;
-            aspect-ratio: 4/3;
-            border: 2px solid gold;
-        }
-        .video-wrapper video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .video-label {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: gold;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            border: 1px solid gold;
-        }
-        .video-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin: 15px 0;
-            flex-wrap: wrap;
-        }
-        .video-controls button {
-            width: auto;
-            padding: 12px 25px;
-            margin: 0;
-        }
-        .chat-box {
-            background: rgba(0,0,0,0.4);
-            border-radius: 30px;
-            padding: 20px;
-            height: 400px;
-            overflow-y: auto;
-            margin: 20px 0;
-        }
-        .message {
-            padding: 12px 18px;
-            margin: 8px 0;
-            border-radius: 25px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-        .message.me {
-            background: #1f3a5f;
-            border-right: 5px solid cyan;
-            margin-left: auto;
-        }
-        .message.other {
-            background: #2f1f4a;
-            border-left: 5px solid gold;
-        }
-        .message.system {
-            background: rgba(255,215,0,0.1);
-            border: 1px dashed gold;
-            color: gold;
-            text-align: center;
-            max-width: 100%;
-        }
-        .flex-row {
-            display: flex;
-            gap: 10px;
-        }
-        .flex-row input {
-            flex: 1;
-        }
-        .flex-row button {
-            width: auto;
-            padding: 15px 25px;
-        }
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0,0,0,0.3);
-            padding: 12px 20px;
-            border-radius: 60px;
-            margin: 15px 0;
-            border: 1px solid gold;
-        }
-        .online-dot {
-            width: 10px;
-            height: 10px;
-            background: #00ff88;
-            border-radius: 50%;
-            display: inline-block;
-            margin-left: 8px;
-            box-shadow: 0 0 15px #00ff88;
-        }
+        h1 { text-align: center; color: gold; font-size: 2.5em; margin-bottom: 20px; }
+        input, button { width: 100%; padding: 15px; margin: 8px 0; border-radius: 60px; border: none; font-size: 1em; }
+        input { background: rgba(0,0,0,0.5); border: 2px solid gold; color: white; }
+        button { background: gold; color: black; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px gold; }
+        button.danger { background: #ff4444; color: white; }
+        button.success { background: #00C851; color: white; }
+        .main-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .video-container { flex: 2; min-width: 300px; }
+        .chat-container { flex: 1; min-width: 300px; background: rgba(0,0,0,0.3); border-radius: 30px; padding: 20px; }
+        .videos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .video-wrapper { position: relative; background: #000; border-radius: 20px; overflow: hidden; aspect-ratio: 4/3; border: 2px solid gold; }
+        .video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+        .video-label { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: gold; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; border: 1px solid gold; }
+        .video-controls { display: flex; gap: 10px; justify-content: center; margin: 15px 0; flex-wrap: wrap; }
+        .video-controls button { width: auto; padding: 12px 25px; margin: 0; }
+        .chat-box { background: rgba(0,0,0,0.4); border-radius: 30px; padding: 20px; height: 400px; overflow-y: auto; margin: 20px 0; }
+        .message { padding: 12px 18px; margin: 8px 0; border-radius: 25px; max-width: 80%; word-wrap: break-word; }
+        .message.me { background: #1f3a5f; border-right: 5px solid cyan; margin-left: auto; }
+        .message.other { background: #2f1f4a; border-left: 5px solid gold; }
+        .message.system { background: rgba(255,215,0,0.1); border: 1px dashed gold; color: gold; text-align: center; max-width: 100%; }
+        .flex-row { display: flex; gap: 10px; }
+        .flex-row input { flex: 1; }
+        .flex-row button { width: auto; padding: 15px 25px; }
+        .status-bar { display: flex; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px 20px; border-radius: 60px; margin: 15px 0; border: 1px solid gold; }
+        .online-dot { width: 10px; height: 10px; background: #00ff88; border-radius: 50%; display: inline-block; margin-left: 8px; box-shadow: 0 0 15px #00ff88; }
     </style>
 </head>
 <body>
     <div class="card" id="loginCard">
         <h1>👑 FADI GOLD</h1>
-        <div style="text-align: center; color: cyan; margin-bottom: 20px;">دردشة + فيديو مباشر</div>
-        
+        <div style="text-align: center; color: cyan; margin-bottom: 20px;">دردشة + فيديو عبر السيرفر</div>
         <input type="text" id="nameInput" placeholder="اسمك" value="فادي">
         <input type="text" id="roomInput" placeholder="رقم الغرفة" value="123">
-        
         <button onclick="joinRoom()">🚀 دخول الغرفة</button>
     </div>
     
@@ -335,10 +249,7 @@ HTML_CODE = '''
         
         <div class="main-container">
             <div class="video-container">
-                <div class="videos-grid" id="videosGrid">
-                    <!-- الفيديوهات تظهر هنا -->
-                </div>
-                
+                <div class="videos-grid" id="videosGrid"></div>
                 <div class="video-controls">
                     <button id="startVideoBtn" class="success" onclick="startVideo()">▶️ بدء الفيديو</button>
                     <button id="stopVideoBtn" class="danger" onclick="stopVideo()" style="display: none;">⏹️ إيقاف الفيديو</button>
@@ -349,7 +260,6 @@ HTML_CODE = '''
                 <div class="chat-box" id="chatArea">
                     <div class="message system">✨ مرحباً بك في دردشة فادي الذهبية</div>
                 </div>
-                
                 <div class="flex-row">
                     <input type="text" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter') sendMessage()">
                     <button onclick="sendMessage()">إرسال</button>
@@ -360,15 +270,12 @@ HTML_CODE = '''
     
     <script>
         const socket = io();
-        let myName = '';
-        let myRoom = '';
-        let myStream = null;
+        let myName = '', myRoom = '', myStream = null;
         const peers = {};
         
         function joinRoom() {
             myName = document.getElementById('nameInput').value.trim();
             myRoom = document.getElementById('roomInput').value.trim();
-            
             if (!myName || !myRoom) return;
             
             document.getElementById('loginCard').style.display = 'none';
@@ -383,8 +290,7 @@ HTML_CODE = '''
             try {
                 myStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 addVideoElement('my-video', myName + ' (أنت)', true);
-                const myVideo = document.getElementById('my-video');
-                if (myVideo) myVideo.srcObject = myStream;
+                document.getElementById('my-video').srcObject = myStream;
                 
                 document.getElementById('startVideoBtn').style.display = 'none';
                 document.getElementById('stopVideoBtn').style.display = 'inline-block';
@@ -400,22 +306,17 @@ HTML_CODE = '''
                 myStream.getTracks().forEach(track => track.stop());
                 myStream = null;
             }
-            const myVideoEl = document.getElementById('my-video');
-            if (myVideoEl) myVideoEl.remove();
-            
+            document.getElementById('my-video')?.remove();
             document.getElementById('startVideoBtn').style.display = 'inline-block';
             document.getElementById('stopVideoBtn').style.display = 'none';
             
-            Object.keys(peers).forEach(key => {
-                peers[key].close();
-                delete peers[key];
-            });
+            Object.values(peers).forEach(p => p.close());
+            Object.keys(peers).forEach(k => delete peers[k]);
         }
         
-        function addVideoElement(id, label, isLocal = false) {
+        function addVideoElement(id, label, isLocal) {
             if (document.getElementById(id)) return;
             
-            const videosGrid = document.getElementById('videosGrid');
             const wrapper = document.createElement('div');
             wrapper.className = 'video-wrapper';
             wrapper.id = id + '-wrapper';
@@ -432,8 +333,7 @@ HTML_CODE = '''
             
             wrapper.appendChild(video);
             wrapper.appendChild(labelEl);
-            videosGrid.appendChild(wrapper);
-            
+            document.getElementById('videosGrid').appendChild(wrapper);
             return video;
         }
         
@@ -465,52 +365,34 @@ HTML_CODE = '''
         socket.on('existing-users', (users) => {
             if (!myStream) return;
             users.forEach(user => {
-                if (!peers[user.id]) {
-                    createPeerConnection(user.id, true);
-                }
+                if (!peers[user.id]) createPeerConnection(user.id, true);
             });
         });
         
         socket.on('video-offer', async (data) => {
             if (!myStream) return;
-            
-            if (!peers[data.from]) {
-                await createPeerConnection(data.from, false);
-            }
+            if (!peers[data.from]) await createPeerConnection(data.from, false);
             
             const peer = peers[data.from];
             await peer.setRemoteDescription(new RTCSessionDescription(data.offer));
             const answer = await peer.createAnswer();
             await peer.setLocalDescription(answer);
             
-            socket.emit('video-answer', {
-                target: data.from,
-                answer: peer.localDescription,
-                room: myRoom
-            });
+            socket.emit('video-answer', { target: data.from, answer: peer.localDescription, room: myRoom });
         });
         
         socket.on('video-answer', async (data) => {
             const peer = peers[data.from];
-            if (peer) {
-                await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
-            }
+            if (peer) await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
         });
         
         socket.on('ice-candidate', async (data) => {
             const peer = peers[data.from];
-            if (peer) {
-                await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
-            }
+            if (peer) await peer.addIceCandidate(new RTCIceCandidate(data.candidate));
         });
         
         socket.on('user-left-video', (data) => {
-            const videoEl = document.getElementById('user-' + data.userId);
-            if (videoEl) {
-                const wrapper = document.getElementById('user-' + data.userId + '-wrapper');
-                if (wrapper) wrapper.remove();
-            }
-            
+            document.getElementById('user-' + data.userId)?.remove();
             if (peers[data.userId]) {
                 peers[data.userId].close();
                 delete peers[data.userId];
@@ -521,45 +403,36 @@ HTML_CODE = '''
             const peer = new RTCPeerConnection({
                 iceServers: [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { 
+                        urls: 'turn:' + window.location.hostname + ':8080',
+                        username: 'user',
+                        credential: 'pass'
+                    }
                 ]
             });
             
             peers[targetId] = peer;
             
-            myStream.getTracks().forEach(track => {
-                peer.addTrack(track, myStream);
-            });
+            myStream.getTracks().forEach(track => peer.addTrack(track, myStream));
             
             peer.onicecandidate = (event) => {
                 if (event.candidate) {
-                    socket.emit('ice-candidate', {
-                        target: targetId,
-                        candidate: event.candidate,
-                        room: myRoom
-                    });
+                    socket.emit('ice-candidate', { target: targetId, candidate: event.candidate, room: myRoom });
                 }
             };
             
             peer.ontrack = (event) => {
                 const videoId = 'user-' + targetId;
                 let videoEl = document.getElementById(videoId);
-                if (!videoEl) {
-                    videoEl = addVideoElement(videoId, 'مستخدم', false);
-                }
-                if (videoEl) {
-                    videoEl.srcObject = event.streams[0];
-                }
+                if (!videoEl) videoEl = addVideoElement(videoId, 'مستخدم', false);
+                if (videoEl) videoEl.srcObject = event.streams[0];
             };
             
             if (isInitiator) {
                 const offer = await peer.createOffer();
                 await peer.setLocalDescription(offer);
-                socket.emit('video-offer', {
-                    target: targetId,
-                    offer: peer.localDescription,
-                    room: myRoom
-                });
+                socket.emit('video-offer', { target: targetId, offer: peer.localDescription, room: myRoom });
             }
             
             return peer;
