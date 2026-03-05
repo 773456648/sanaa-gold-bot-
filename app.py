@@ -8,151 +8,504 @@ def index():
     return render_template_string(HTML_CODE)
 
 # هنا كودك الإمبراطوري حق فادي بدون أي تغيير
-HTML_CODE = '''
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 FADI SYSTEM PRO | منظومة فادي</title>
-    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <title>👑 FADI WORKFORCE - نظام الشركات والموظفين</title>
     <style>
-        :root { --fadi-gold: #ffcc00; --fadi-neon: #00ffe0; --fadi-bg: #05080a; }
-        body { background: var(--fadi-bg); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 15px; height: 100vh; display: flex; flex-direction: column; }
-        .header { text-align: center; border-bottom: 2px solid var(--fadi-gold); padding-bottom: 10px; margin-bottom: 15px; }
-        .header h1 { font-size: 22px; color: var(--fadi-gold); margin: 0; text-shadow: 0 0 10px var(--fadi-gold); }
-        .setup-box { background: #161b22; padding: 20px; border-radius: 15px; border: 1px solid var(--fadi-neon); box-shadow: 0 0 15px rgba(0,255,224,0.2); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: white; text-align: center; font-weight: bold; }
-        .btn-gold { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: linear-gradient(45deg, #ffcc00, #ffaa00); color: #000; font-size: 16px; transition: 0.3s; }
-        #chat { flex: 1; overflow-y: auto; background: rgba(0,0,0,0.5); border-radius: 12px; padding: 15px; border: 1px solid #1a2c38; margin: 15px 0; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 15px; border-radius: 12px; max-width: 85%; position: relative; font-size: 14px; }
-        .msg.me { background: #1d2a35; align-self: flex-start; border-right: 4px solid var(--fadi-neon); }
-        .msg.other { background: #21262d; align-self: flex-end; border-left: 4px solid #58a6ff; }
-        .input-row { display: flex; gap: 8px; align-items: center; }
-        .tool-btn { background: #222; border: 1px solid var(--fadi-gold); color: var(--fadi-gold); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
-        #videoArea { display: none; position: relative; width: 100%; height: 200px; background: #000; border-radius: 12px; border: 1px solid var(--fadi-gold); margin-bottom: 10px; overflow: hidden; }
-        #remoteVid { width: 100%; height: 100%; object-fit: cover; }
-        #localVid { width: 80px; height: 60px; position: absolute; bottom: 5px; right: 5px; border: 1px solid var(--fadi-neon); }
-        #endCallBtn { display: none; background: #ff4444 !important; border-color: #ff4444 !important; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 30% 10%, #1a1a2e, #0f0f1f);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        /* البطاقة الرئيسية */
+        .glass-card {
+            background: rgba(20, 20, 40, 0.7);
+            backdrop-filter: blur(15px);
+            border: 2px solid gold;
+            border-radius: 70px;
+            padding: 40px;
+            width: 100%;
+            max-width: 1300px;
+            box-shadow: 0 30px 70px rgba(255, 215, 0, 0.3);
+            transition: 0.5s;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            background: linear-gradient(145deg, gold, orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 20px gold);
+        }
+
+        .sub {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        /* شاشة الدخول */
+        .login-box {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 60px;
+            padding: 40px;
+            border: 1px solid gold;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 18px 25px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid gold;
+            border-radius: 60px;
+            color: white;
+            font-size: 1.1em;
+            transition: 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            box-shadow: 0 0 30px gold;
+            background: rgba(0, 0, 0, 0.7);
+            border-color: orange;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #2a1f4a, #1a1130);
+            border: 2px solid gold;
+            color: gold;
+            padding: 18px 30px;
+            border-radius: 60px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            margin: 15px 0;
+        }
+
+        .btn:hover {
+            background: gold;
+            color: black;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px gold;
+        }
+
+        /* لوحة التحكم الخاصة بالشركة */
+        .company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            background: rgba(0,0,0,0.4);
+            border-radius: 60px;
+            padding: 20px 30px;
+            border: 1px solid gold;
+        }
+
+        .stats {
+            display: flex;
+            gap: 25px;
+        }
+
+        .stat-badge {
+            background: rgba(255,215,0,0.1);
+            border-radius: 50px;
+            padding: 12px 25px;
+            border: 1px solid gold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-badge span {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: gold;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid gold;
+            border-radius: 50px;
+            padding: 25px;
+        }
+
+        .section-card h2 {
+            color: gold;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .list-container {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 40px;
+            padding: 15px;
+        }
+
+        .list-item {
+            background: linear-gradient(145deg, #1e1a3a, #14102a);
+            border: 1px solid gold;
+            border-radius: 40px;
+            padding: 18px 20px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-item .actions button {
+            background: transparent;
+            border: 1px solid gold;
+            color: gold;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .list-item .actions button:hover {
+            background: gold;
+            color: black;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 60px;
+            border: 2px solid gold;
+            background: rgba(0,0,0,0.5);
+            color: white;
+        }
+
+        .search-box button {
+            width: auto;
+            padding: 15px 30px;
+        }
+
+        .logout-btn {
+            background: rgba(255,0,0,0.2);
+            border: 1px solid red;
+            color: red;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: red;
+            color: white;
+        }
+
+        .footer {
+            text-align: center;
+            color: #aaa;
+            margin-top: 30px;
+            border-top: 1px dashed gold;
+            padding-top: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .stats { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
-    <div class="header"><h1>👑FADI SYSTEM PRO👑</h1></div>
-    <div class="setup-box" id="setup">
-        <input type="text" id="userName" placeholder="اكتب اسمك للمجموعة">
-        <input type="text" id="roomNum" placeholder="رقم الغرفة">
-        <button class="btn-gold" onclick="initFadi()">🚀 دخول المنظومة الآن</button>
-    </div>
-    <div id="videoArea"><video id="remoteVid" autoplay playsinline></video><video id="localVid" autoplay muted playsinline></video></div>
-    <div id="chat"></div>
-    <audio id="remoteVoice" autoplay></audio>
-    <div class="input-row" id="inputSection" style="display:none;">
-        <button class="tool-btn" id="micBtn" onclick="handleMic()">🎤</button>
-        <button class="tool-btn" onclick="callAll(false)">📞</button>
-        <button class="tool-btn" onclick="callAll(true)">🎥</button>
-        <button class="tool-btn" id="endCallBtn" onclick="endCall()">🛑</button>
-        <input type="text" id="msgInput" placeholder="اكتب للجميع..." onkeypress="if(event.key==='Enter') send()">
-        <button class="btn-gold" style="width: 70px; height: 40px;" onclick="send()">إرسال</button>
-    </div>
+
+<div class="glass-card" id="appContainer">
+    <!-- المحتوى يتم توليده بالجافاسكربت -->
+</div>
 
 <script>
-    let peer, myName, myRoom, conns = [], currentCall, myStream, mediaRec;
-    const chatBox = document.getElementById('chat');
-    const cfg = { config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }] } };
+    (function() {
+        // ==================== البيانات الأساسية ====================
+        // هيكل التخزين:
+        // companies = { id: "companyName", password: "secret", name: "الاسم الرسمي" }
+        // employees = { id (رقم تسلسلي), companyId, name, position, phone, ... }
+        // leaves = { id, employeeId, companyId, date, reason, status (pending/approved/rejected) }
 
-    function initFadi() {
-        myName = document.getElementById('userName').value;
-        myRoom = document.getElementById('roomNum').value;
-        if(!myName || !myRoom) return alert("يا فادي البيانات!");
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('inputSection').style.display = 'flex';
-        tryHost();
-    }
+        // تحميل البيانات من localStorage أو تهيئتها
+        let companies = JSON.parse(localStorage.getItem('fadi_companies')) || [
+            { id: "tech", password: "123", name: "شركة التقنية" },
+            { id: "build", password: "123", name: "شركة البناء" }
+        ];
+        let employees = JSON.parse(localStorage.getItem('fadi_employees')) || [
+            { id: 1001, companyId: "tech", name: "أحمد محمد", position: "مطور", phone: "0551111111" },
+            { id: 1002, companyId: "tech", name: "فاطمة علي", position: "محلل", phone: "0552222222" },
+            { id: 2001, companyId: "build", name: "خالد إبراهيم", position: "مهندس", phone: "0561111111" }
+        ];
+        let leaves = JSON.parse(localStorage.getItem('fadi_leaves')) || [
+            { id: 1, employeeId: 1001, companyId: "tech", date: "2026-03-10", reason: "إجازة سنوية", status: "معتمدة" },
+            { id: 2, employeeId: 1002, companyId: "tech", date: "2026-03-11", reason: "مرضية", status: "معلقة" }
+        ];
 
-    function tryHost() {
-        peer = new Peer(myRoom, cfg);
-        peer.on('open', () => {
-            log("👑 أنت الزعيم.. المجموعة جاهزة", "sys");
-            peer.on('connection', c => { conns.push(c); handleConn(c, true); });
-            peer.on('call', call => handleCall(call));
-        });
-        peer.on('error', err => { if(err.type === 'unavailable-id') joinRoom(); });
-    }
+        // المتغيرات الجلسة
+        let currentCompany = null;  // سيتم تعيينه بعد تسجيل الدخول
 
-    function joinRoom() {
-        peer = new Peer(myRoom + "-" + Math.floor(Math.random()*999), cfg);
-        peer.on('open', () => {
-            log("✅ دخلت المنظومة", "sys");
-            let c = peer.connect(myRoom);
-            conns.push(c); handleConn(c, false);
-        });
-        peer.on('call', call => handleCall(call));
-    }
-
-    function handleConn(c, isHost) {
-        c.on('open', () => c.send({type:'join', user:myName}));
-        c.on('data', d => {
-            if(isHost) conns.forEach(client => { if(client !== c) client.send(d); }); // بث للكل
-            if(d.type === 'msg') log(d.text, "other", d.user);
-            if(d.type === 'voice') log(`<audio controls src="${d.data}"></audio>`, "other", d.user);
-            if(d.type === 'join') log(d.user + " انضم", "sys");
-        });
-    }
-
-    function handleCall(call) {
-        if(confirm("اتصال وارد.. ترد؟")) {
-            navigator.mediaDevices.getUserMedia({audio:true, video:!!call.metadata?.video}).then(s => {
-                myStream = s;
-                if(call.metadata?.video) { document.getElementById('videoArea').style.display='block'; document.getElementById('localVid').srcObject=s; }
-                call.answer(s); setupCall(call);
-            });
+        // حفظ البيانات
+        function saveAll() {
+            localStorage.setItem('fadi_companies', JSON.stringify(companies));
+            localStorage.setItem('fadi_employees', JSON.stringify(employees));
+            localStorage.setItem('fadi_leaves', JSON.stringify(leaves));
         }
-    }
 
-    function setupCall(call) {
-        currentCall = call;
-        document.getElementById('endCallBtn').style.display = 'flex';
-        call.on('stream', rs => {
-            if(call.metadata?.video) document.getElementById('remoteVid').srcObject = rs;
-            else document.getElementById('remoteVoice').srcObject = rs;
-        });
-        call.on('close', endCall);
-    }
+        // ==================== واجهات المستخدم ====================
+        function renderApp() {
+            const container = document.getElementById('appContainer');
+            if (!currentCompany) {
+                container.innerHTML = renderLogin();
+            } else {
+                container.innerHTML = renderDashboard();
+            }
+        }
 
-    function callAll(video) {
-        navigator.mediaDevices.getUserMedia({audio:true, video:video}).then(s => {
-            myStream = s;
-            if(video) { document.getElementById('videoArea').style.display='block'; document.getElementById('localVid').srcObject=s; }
-            conns.forEach(c => {
-                let call = peer.call(c.peer, s, {metadata:{video:video}});
-                setupCall(call);
-            });
-        });
-    }
+        // شاشة تسجيل الدخول
+        function renderLogin() {
+            return `
+                <div>
+                    <h1>👑 FADI WORKFORCE</h1>
+                    <div class="sub">منصة إدارة الشركات والموظفين المتطورة</div>
+                    <div class="login-box">
+                        <h2 style="color: gold; text-align: center; margin-bottom: 25px;">🔐 دخول الشركة</h2>
+                        <input type="text" id="loginId" class="input-field" placeholder="اسم الشركة (مثال: tech)" value="tech">
+                        <input type="password" id="loginPassword" class="input-field" placeholder="كلمة السر" value="123">
+                        <button class="btn" onclick="login()">تسجيل الدخول</button>
+                        <div style="text-align: center; color: #aaa; margin-top: 20px;">
+                            شركة تجريبية: tech / 123
+                        </div>
+                    </div>
+                    <div class="footer">
+                        كل شركة لها عالمها الخاص وبياناتها المحفوظة
+                    </div>
+                </div>
+            `;
+        }
 
-    function endCall() {
-        if(currentCall) currentCall.close();
-        if(myStream) myStream.getTracks().forEach(t => t.stop());
-        document.getElementById('videoArea').style.display = 'none';
-        document.getElementById('endCallBtn').style.display = 'none';
-        log("🔴 تم الإغلاق", "sys");
-    }
+        // لوحة التحكم بعد الدخول
+        function renderDashboard() {
+            const company = companies.find(c => c.id === currentCompany);
+            const companyEmployees = employees.filter(e => e.companyId === currentCompany);
+            const companyLeaves = leaves.filter(l => l.companyId === currentCompany);
 
-    function send() {
-        const inp = document.getElementById('msgInput');
-        if(!inp.value) return;
-        conns.forEach(c => c.send({type:'msg', user:myName, text:inp.value}));
-        log(inp.value, "me", myName); inp.value = "";
-    }
+            return `
+                <div>
+                    <div class="company-header">
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <h2 style="color: gold;">🏢 ${company.name}</h2>
+                            <span class="stat-badge"><span>${companyEmployees.length}</span> موظف</span>
+                            <span class="stat-badge"><span>${companyLeaves.length}</span> حجة</span>
+                        </div>
+                        <button class="logout-btn" onclick="logout()">تسجيل خروج</button>
+                    </div>
 
-    function handleMic() { /* نفس كود التسجيل السابق بدون تغيير */ }
+                    <!-- البحث عن موظف بالرقم التسلسلي -->
+                    <div class="section-card" style="margin-bottom: 25px;">
+                        <h2>🔍 البحث عن موظف بالرقم التسلسلي</h2>
+                        <div class="search-box">
+                            <input type="number" id="searchEmpId" placeholder="أدخل الرقم التسلسلي للموظف">
+                            <button class="btn" onclick="searchEmployee()" style="width: auto;">بحث</button>
+                        </div>
+                        <div id="searchResult"></div>
+                    </div>
 
-    function log(m, t, u) {
-        const d = document.createElement('div');
-        d.className = `msg ${t}`;
-        d.innerHTML = u ? `<b>${u}:</b><br>${m}` : m;
-        chatBox.appendChild(d); chatBox.scrollTop = chatBox.scrollHeight;
-    }
+                    <div class="grid-2">
+                        <!-- قسم إضافة موظف -->
+                        <div class="section-card">
+                            <h2>➕ إضافة موظف جديد</h2>
+                            <input type="text" id="empName" class="input-field" placeholder="الاسم الكامل">
+                            <input type="text" id="empPosition" class="input-field" placeholder="المسمى الوظيفي">
+                            <input type="text" id="empPhone" class="input-field" placeholder="رقم الهاتف">
+                            <button class="btn" onclick="addEmployee()">إضافة موظف</button>
+                            <div style="color: cyan; margin-top: 15px;">سيتم إنشاء رقم تسلسلي تلقائي</div>
+                        </div>
+
+                        <!-- قائمة الموظفين -->
+                        <div class="section-card">
+                            <h2>📋 الموظفين</h2>
+                            <div class="list-container" id="employeeList">
+                                ${companyEmployees.map(emp => `
+                                    <div class="list-item">
+                                        <div>
+                                            <strong>${emp.name}</strong> - ${emp.position}<br>
+                                            <small style="color:gold;">رقم: ${emp.id}</small>
+                                        </div>
+                                        <div class="actions">
+                                            <button onclick="showAddLeaveForm(${emp.id})" title="إضافة حجة">📝</button>
+                                            <button onclick="viewEmployeeLeaves(${emp.id})" title="عرض الحجج">👁️</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- حجج الخروج الأخيرة -->
+                    <div class="section-card">
+                        <h2>📅 آخر الحجج المسجلة</h2>
+                        <div class="list-container">
+                            ${companyLeaves.slice(-5).reverse().map(l => {
+                                const emp = employees.find(e => e.id === l.employeeId);
+                                return `
+                                    <div class="list-item">
+                                        <div>
+                                            <strong>${emp ? emp.name : 'موظف'}</strong> - ${l.date}<br>
+                                            <span style="color: ${l.status === 'معتمدة' ? '#0f0' : (l.status === 'معلقة' ? 'gold' : '#f00')};">${l.status}</span>: ${l.reason}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        جميع البيانات محفوظة محلياً وآمنة
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==================== العمليات ====================
+        window.login = function() {
+            const id = document.getElementById('loginId').value.trim();
+            const pwd = document.getElementById('loginPassword').value.trim();
+            const company = companies.find(c => c.id === id && c.password === pwd);
+            if (company) {
+                currentCompany = company.id;
+                renderApp();
+            } else {
+                alert('اسم الشركة أو كلمة السر غير صحيحة');
+            }
+        };
+
+        window.logout = function() {
+            currentCompany = null;
+            renderApp();
+        };
+
+        window.addEmployee = function() {
+            const name = document.getElementById('empName')?.value.trim();
+            const pos = document.getElementById('empPosition')?.value.trim();
+            const phone = document.getElementById('empPhone')?.value.trim();
+            if (!name || !pos || !phone) {
+                alert('املأ جميع الحقول');
+                return;
+            }
+            // توليد رقم تسلسلي فريد: نأخذ أكبر رقم ونضيف 1
+            const maxId = employees.filter(e => e.companyId === currentCompany).reduce((max, e) => Math.max(max, e.id), 999) + 1;
+            const newEmp = {
+                id: maxId,
+                companyId: currentCompany,
+                name: name,
+                position: pos,
+                phone: phone
+            };
+            employees.push(newEmp);
+            saveAll();
+            renderApp();
+        };
+
+        // نافذة منبثقة لإضافة حجة
+        window.showAddLeaveForm = function(empId) {
+            const reason = prompt('أدخل سبب الحجة (مثال: إجازة سنوية، مرضية، مهمة رسمية):');
+            if (!reason) return;
+            const date = prompt('أدخل التاريخ (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!date) return;
+            const newLeave = {
+                id: Date.now(),
+                employeeId: empId,
+                companyId: currentCompany,
+                date: date,
+                reason: reason,
+                status: 'معلقة'  // يمكن تغييرها لاحقاً
+            };
+            leaves.push(newLeave);
+            saveAll();
+            renderApp();
+        };
+
+        window.viewEmployeeLeaves = function(empId) {
+            const empLeaves = leaves.filter(l => l.employeeId === empId);
+            const emp = employees.find(e => e.id === empId);
+            if (!emp) return;
+            let msg = `حجج الموظف ${emp.name} (رقم ${empId}):\n`;
+            if (empLeaves.length === 0) msg += 'لا توجد حجج مسجلة.';
+            else {
+                empLeaves.forEach(l => {
+                    msg += `- ${l.date}: ${l.reason} (${l.status})\n`;
+                });
+            }
+            alert(msg);
+        };
+
+        window.searchEmployee = function() {
+            const searchId = parseInt(document.getElementById('searchEmpId')?.value);
+            if (isNaN(searchId)) {
+                alert('أدخل رقماً صحيحاً');
+                return;
+            }
+            const emp = employees.find(e => e.id === searchId && e.companyId === currentCompany);
+            const resultDiv = document.getElementById('searchResult');
+            if (emp) {
+                const empLeaves = leaves.filter(l => l.employeeId === emp.id);
+                let html = `
+                    <div style="background: gold; color: black; border-radius: 40px; padding: 20px; margin-top: 15px;">
+                        <h3 style="margin-bottom: 10px;">✅ موظف موجود</h3>
+                        <p><strong>الاسم:</strong> ${emp.name}</p>
+                        <p><strong>الوظيفة:</strong> ${emp.position}</p>
+                        <p><strong>الهاتف:</strong> ${emp.phone}</p>
+                        <p><strong>عدد الحجج:</strong> ${empLeaves.length}</p>
+                        <button class="btn" onclick="viewEmployeeLeaves(${emp.id})" style="margin-top: 10px;">عرض الحجج</button>
+                    </div>
+                `;
+                resultDiv.innerHTML = html;
+            } else {
+                resultDiv.innerHTML = '<div style="background: #440000; border-radius: 40px; padding: 20px; color: white; margin-top: 15px;">❌ لا يوجد موظف بهذا الرقم التسلسلي في شركتك</div>';
+            }
+        };
+
+        // بدء التطبيق
+        window.onload = renderApp;
+        saveAll(); // تأكيد حفظ البيانات الأولية
+    })();
 </script>
 </body>
 </html>
