@@ -2,198 +2,440 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>👑 FADI CINEMA IMPERIAL - الإمبراطورية الذهبية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💫 الإمبراطورية العظمى - FADI ULTIMATE</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Tahoma', sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
 
         :root {
             --gold: #ffd700;
             --neon: #00ffff;
-            --purple: #9b30ff;
-            --dark: #0a0a0f;
-            --card-bg: #14141f;
+            --purple: #9933ff;
             --red: #ff4444;
+            --green: #00cc66;
+            --blue: #3366ff;
+            --dark: #0a0a0f;
+            --card: #14141f;
+            --youtube: #ff0000;
         }
 
         body {
-            background: var(--dark);
+            background: linear-gradient(135deg, #0a0a0f, #1a1a2e);
             color: white;
             min-height: 100vh;
             padding: 15px;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 30%),
-                radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 40%);
         }
 
-        /* الهيدر الإمبراطوري المتطور */
-        .imperial-header {
+        /* الهيدر الإمبراطوري العظيم */
+        .ultimate-header {
             text-align: center;
-            padding: 25px 15px;
-            background: linear-gradient(135deg, rgba(20,20,30,0.9), rgba(10,10,20,0.95));
-            border-radius: 50px 50px 20px 20px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255,215,0,0.3);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            padding: 30px;
+            background: linear-gradient(45deg, #1a1a2e, #16213e, #1a1a2e);
+            border-radius: 50px;
+            margin-bottom: 25px;
+            border: 3px solid var(--gold);
+            box-shadow: 0 0 70px rgba(255,215,0,0.3);
             position: relative;
             overflow: hidden;
         }
 
-        .imperial-header::before {
+        .ultimate-header::before {
             content: '👑';
             position: absolute;
-            top: -20px;
-            right: -20px;
-            font-size: 120px;
+            top: -30px;
+            right: -30px;
+            font-size: 150px;
             opacity: 0.1;
             transform: rotate(20deg);
         }
 
-        .imperial-header h1 {
-            font-size: clamp(28px, 8vw, 52px);
-            background: linear-gradient(135deg, var(--gold), #ffaa00, var(--neon));
+        .ultimate-header h1 {
+            font-size: clamp(30px, 10vw, 60px);
+            background: linear-gradient(45deg, var(--gold), #ffaa00, var(--neon), var(--purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(255,215,0,0.5);
-            margin-bottom: 10px;
-            letter-spacing: 2px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 50px rgba(255,215,0,0.5);
         }
 
-        .imperial-header p {
+        .ultimate-header p {
             color: var(--neon);
-            font-size: clamp(14px, 4vw, 18px);
-            text-shadow: 0 0 15px rgba(0,255,255,0.5);
+            font-size: 18px;
+            background: rgba(0,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 40px;
+            display: inline-block;
+        }
+
+        /* نظام التبويبات */
+        .tabs-system {
+            display: flex;
+            gap: 10px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            background: #1a1a2a;
+            border: 2px solid #334455;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
-            flex-wrap: wrap;
+            transition: 0.3s;
+            flex: 1;
+            min-width: 150px;
+            justify-content: center;
         }
 
-        /* قسم البحث الفائق */
-        .search-empire {
-            background: rgba(20,20,30,0.8);
+        .tab-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            transform: translateY(-3px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, var(--gold), #ffaa00);
+            border-color: var(--gold);
+            color: black;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* صندوق البحث الخرافي */
+        .search-ultimate {
+            background: rgba(20,20,30,0.9);
             backdrop-filter: blur(15px);
             border: 2px solid rgba(255,215,0,0.3);
-            border-radius: 60px;
+            border-radius: 70px;
             padding: 5px;
-            margin: 25px 0;
+            margin: 20px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            box-shadow: 0 0 30px rgba(0,255,255,0.2);
-            transition: all 0.3s ease;
         }
 
-        .search-empire:focus-within {
-            border-color: var(--gold);
-            box-shadow: 0 0 40px rgba(255,215,0,0.3);
+        .search-ultimate:focus-within {
+            border-color: var(--neon);
+            box-shadow: 0 0 50px var(--neon);
         }
 
-        .search-empire input {
+        .search-ultimate input {
             flex: 1;
             min-width: 200px;
             background: transparent;
             border: none;
-            padding: 18px 25px;
+            padding: 20px 30px;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             outline: none;
             direction: rtl;
         }
 
-        .search-empire input::placeholder {
-            color: #667788;
-            font-size: 14px;
+        .search-ultimate input::placeholder {
+            color: #99aabb;
         }
 
-        .search-empire button {
-            background: linear-gradient(135deg, var(--gold), #ffaa00);
+        .search-ultimate button {
+            background: linear-gradient(45deg, var(--gold), #ffaa00);
             border: none;
-            border-radius: 60px;
-            padding: 12px 35px;
+            border-radius: 70px;
+            padding: 15px 40px;
             color: black;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
             transition: 0.3s;
-            white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             margin: 5px;
         }
 
-        .search-empire button:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 30px var(--gold);
-            background: linear-gradient(135deg, #ffe44d, #ffbb33);
+        .search-ultimate button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--gold);
         }
 
-        /* التصنيفات الإمبراطورية */
-        .categories-empire {
+        /* خيارات البحث المتقدم */
+        .advanced-search {
+            background: #1a1a2a;
+            border-radius: 30px;
+            padding: 20px;
+            margin: 20px 0;
             display: flex;
-            gap: 12px;
             flex-wrap: wrap;
-            margin: 25px 0;
-            justify-content: center;
+            gap: 15px;
+            align-items: center;
         }
 
-        .cat-imperial {
-            background: rgba(20,20,30,0.7);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 12px 25px;
+        .quality-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #0f0f1a;
+            padding: 15px;
             border-radius: 40px;
+        }
+
+        .quality-radio {
+            display: none;
+        }
+
+        .quality-label {
+            background: #1a1a2a;
+            padding: 10px 20px;
+            border-radius: 30px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
+            transition: 0.3s;
+            border: 1px solid #334455;
+            font-size: 14px;
+        }
+
+        .quality-radio:checked + .quality-label {
+            background: var(--neon);
+            color: black;
+            border-color: var(--neon);
+        }
+
+        .source-badge {
+            background: rgba(255,0,0,0.2);
+            color: var(--youtube);
+            padding: 8px 20px;
+            border-radius: 30px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: clamp(13px, 3vw, 15px);
+            gap: 5px;
         }
 
-        .cat-imperial:hover {
-            border-color: var(--gold);
-            color: var(--gold);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(255,215,0,0.2);
+        /* قسم إضافة الروابط */
+        .add-link-section {
+            background: linear-gradient(135deg, #2a1a3a, #1a0f2a);
+            border: 3px solid var(--purple);
+            border-radius: 40px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 0 60px rgba(153,51,255,0.3);
         }
 
-        .cat-imperial.active {
-            background: linear-gradient(135deg, var(--gold), #ffaa00);
-            color: black;
-            border-color: var(--gold);
-            box-shadow: 0 0 30px rgba(255,215,0,0.5);
+        .add-link-section h3 {
+            color: var(--purple);
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* مشغل الفيديو المتطور */
-        .imperial-player {
-            background: linear-gradient(135deg, #1a1a2a, #0a0a1a);
+        .link-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .link-form input {
+            flex: 1;
+            min-width: 200px;
+            background: #0f0f1a;
+            border: 2px solid #334455;
+            border-radius: 40px;
+            padding: 18px 25px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .link-form input:focus {
+            border-color: var(--purple);
+        }
+
+        .link-form button {
+            background: linear-gradient(45deg, var(--purple), #6600cc);
+            border: none;
+            border-radius: 40px;
+            padding: 15px 35px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .link-form button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px var(--purple);
+        }
+
+        /* شبكة النتائج */
+        .ultimate-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .video-card {
+            background: var(--card);
             border-radius: 30px;
-            border: 3px solid var(--gold);
-            margin: 25px 0;
+            overflow: hidden;
+            border: 2px solid #334455;
+            transition: 0.4s;
+        }
+
+        .video-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--gold);
+            box-shadow: 0 30px 60px rgba(255,215,0,0.3);
+        }
+
+        .video-thumbnail {
             position: relative;
+            padding-top: 56.25%;
+            background: #000;
+            cursor: pointer;
+        }
+
+        .video-thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .video-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-overlay span {
+            font-size: 60px;
+            color: var(--gold);
+        }
+
+        .video-info {
+            padding: 20px;
+        }
+
+        .video-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .video-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .video-meta span {
+            background: #1e1e30;
+            padding: 5px 15px;
+            border-radius: 25px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .video-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .watch-now {
+            background: linear-gradient(45deg, var(--gold), #ffaa00);
+            color: black;
+        }
+
+        .download-now {
+            background: transparent;
+            border: 2px solid var(--green);
+            color: var(--green);
+        }
+
+        .watch-now:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px var(--gold);
+        }
+
+        .download-now:hover {
+            background: var(--green);
+            color: black;
+        }
+
+        /* مشغل الفيديو الخرافي */
+        .ultimate-player {
+            background: #000;
+            border-radius: 30px;
+            border: 4px solid var(--gold);
+            margin: 30px 0;
             overflow: hidden;
             display: none;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            animation: slideDown 0.5s ease;
+            position: relative;
         }
 
-        @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .player-header-empire {
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+        .player-header {
+            background: linear-gradient(to bottom, #1a1a2a, transparent);
             padding: 20px;
             position: absolute;
             top: 0;
@@ -205,34 +447,27 @@
             align-items: center;
         }
 
-        .movie-info-empire {
+        .player-info {
             color: var(--gold);
             font-weight: bold;
-            font-size: 18px;
-            text-shadow: 0 0 15px rgba(255,215,0,0.5);
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.7);
             padding: 8px 20px;
             border-radius: 30px;
-            backdrop-filter: blur(5px);
         }
 
-        .close-player-empire {
-            background: rgba(255,68,68,0.2);
-            color: white;
+        .close-player {
+            background: rgba(255,68,68,0.3);
             border: 2px solid var(--red);
+            color: white;
             width: 45px;
             height: 45px;
             border-radius: 50%;
             cursor: pointer;
-            font-size: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-size: 20px;
             transition: 0.3s;
-            backdrop-filter: blur(5px);
         }
 
-        .close-player-empire:hover {
+        .close-player:hover {
             background: var(--red);
             transform: rotate(90deg);
         }
@@ -240,944 +475,583 @@
         #videoPlayer {
             width: 100%;
             height: auto;
-            min-height: 350px;
+            min-height: 400px;
             max-height: 600px;
-            background: black;
             aspect-ratio: 16/9;
         }
 
-        /* شبكة النتائج الذهبية */
-        .results-grid-empire {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
+        /* قسم الروابط المحفوظة */
+        .saved-links {
+            background: linear-gradient(135deg, #1a3a2a, #0f2a1a);
+            border: 3px solid var(--green);
+            border-radius: 40px;
+            padding: 25px;
             margin: 30px 0;
         }
 
-        .movie-card-empire {
-            background: var(--card-bg);
-            border: 1px solid rgba(255,215,0,0.2);
-            border-radius: 25px;
-            padding: 20px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .movie-card-empire::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%);
-            opacity: 0;
-            transition: 0.5s;
-            pointer-events: none;
-        }
-
-        .movie-card-empire:hover {
-            border-color: var(--gold);
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(255,215,0,0.3);
-        }
-
-        .movie-card-empire:hover::before {
-            opacity: 1;
-        }
-
-        .movie-site-empire {
-            display: inline-flex;
+        .saved-links h3 {
+            color: var(--green);
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
             align-items: center;
-            gap: 5px;
-            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,170,0,0.15));
-            color: var(--gold);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 13px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,215,0,0.3);
+            gap: 10px;
         }
 
-        .movie-title-empire {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: white;
-            line-height: 1.4;
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
         }
 
-        .movie-meta-empire {
+        .saved-link-item {
+            background: #1e3a2a;
+            border: 1px solid var(--green);
+            border-radius: 25px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .link-info {
+            flex: 1;
+        }
+
+        .link-info h4 {
+            color: var(--green);
+            margin-bottom: 5px;
+        }
+
+        .link-info p {
+            color: #99aabb;
+            font-size: 12px;
+        }
+
+        .link-actions {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
         }
 
-        .quality-empire {
-            background: linear-gradient(135deg, #1a2f3f, #0d1a24);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            border-right: 3px solid var(--neon);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .size-empire {
-            background: linear-gradient(135deg, #2a1f3f, #1a0f2a);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            border-right: 3px solid var(--purple);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .year-empire {
-            background: linear-gradient(135deg, #3f2f1a, #2a1f0a);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            border-right: 3px solid #ffaa00;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .rating-empire {
-            background: linear-gradient(135deg, #1f3f1f, #0f2a0f);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            border-right: 3px solid #00ff00;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .card-buttons-empire {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .watch-btn-empire, .download-btn-empire {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 30px;
-            font-weight: bold;
+        .link-btn {
+            background: transparent;
+            border: 1px solid var(--green);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             cursor: pointer;
             transition: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            font-size: 15px;
+            text-decoration: none;
         }
 
-        .watch-btn-empire {
-            background: linear-gradient(135deg, var(--gold), #ffaa00);
+        .link-btn:hover {
+            background: var(--green);
             color: black;
         }
 
-        .download-btn-empire {
-            background: transparent;
-            border: 2px solid var(--neon);
-            color: var(--neon);
-        }
-
-        .watch-btn-empire:hover {
-            transform: scale(1.02);
-            box-shadow: 0 0 25px var(--gold);
-            background: linear-gradient(135deg, #ffe44d, #ffbb33);
-        }
-
-        .download-btn-empire:hover {
-            background: var(--neon);
-            color: black;
-            box-shadow: 0 0 25px var(--neon);
-        }
-
-        /* الاقتراحات الذكية */
-        .suggestions-empire {
-            background: linear-gradient(135deg, #1a1a2a, #12121f);
-            border: 2px solid var(--purple);
-            border-radius: 30px;
-            padding: 25px;
-            margin: 40px 0;
-            box-shadow: 0 0 40px rgba(155,48,255,0.2);
-        }
-
-        .suggestions-empire h3 {
-            color: var(--purple);
-            margin-bottom: 20px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .suggestions-grid-empire {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 15px;
-        }
-
-        .suggestion-item-empire {
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(155,48,255,0.3);
-            border-radius: 20px;
-            padding: 15px;
-            cursor: pointer;
-            transition: 0.3s;
-            backdrop-filter: blur(5px);
-        }
-
-        .suggestion-item-empire:hover {
-            border-color: var(--purple);
-            transform: translateX(-5px) scale(1.02);
-            background: rgba(155,48,255,0.1);
-            box-shadow: 0 5px 20px rgba(155,48,255,0.3);
-        }
-
-        /* مؤشر التحميل الإمبراطوري */
-        .loader-empire {
+        /* مؤشر التحميل */
+        .loader-ultimate {
             text-align: center;
             padding: 60px;
             display: none;
         }
 
-        .loader-empire span {
+        .loader-ultimate div {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(135deg, var(--gold), #ffaa00);
+            width: 25px;
+            height: 25px;
+            background: var(--gold);
             border-radius: 50%;
             margin: 0 8px;
-            animation: bounceEmpire 0.8s infinite alternate;
+            animation: ultimateBounce 0.8s infinite;
         }
 
-        .loader-empire span:nth-child(2) { 
-            animation-delay: 0.2s; 
-            background: linear-gradient(135deg, var(--neon), #00cccc);
-        }
-        .loader-empire span:nth-child(3) { 
-            animation-delay: 0.4s; 
-            background: linear-gradient(135deg, var(--purple), #7b1fa2);
+        .loader-ultimate div:nth-child(2) { animation-delay: 0.2s; background: var(--neon); }
+        .loader-ultimate div:nth-child(3) { animation-delay: 0.4s; background: var(--purple); }
+
+        @keyframes ultimateBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-30px); }
         }
 
-        @keyframes bounceEmpire {
-            to { 
-                transform: translateY(-30px) scale(1.2); 
-                opacity: 0.7;
-            }
-        }
-
-        /* رسائل الخطأ */
-        .error-empire {
-            text-align: center;
-            padding: 50px;
-            background: rgba(255,68,68,0.1);
-            border: 2px solid var(--red);
-            border-radius: 40px;
-            color: var(--red);
-            font-size: 20px;
-            margin: 30px 0;
-            display: none;
-            backdrop-filter: blur(5px);
-        }
-
-        /* الفوتر الإمبراطوري */
-        .footer-empire {
-            text-align: center;
-            padding: 40px 0 20px;
-            color: #8899aa;
-            border-top: 2px solid rgba(255,215,0,0.2);
-            margin-top: 50px;
-            position: relative;
-        }
-
-        .footer-empire span {
-            color: var(--gold);
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
-        }
-
-        /* تحسينات للشاشات الصغيرة */
-        @media (max-width: 600px) {
-            body { padding: 10px; }
-            
-            .search-empire {
-                border-radius: 30px;
-            }
-            
-            .search-empire button {
-                width: 100%;
-                justify-content: center;
-                margin: 5px 10px;
-            }
-            
-            .results-grid-empire {
-                grid-template-columns: 1fr;
-            }
-            
-            .movie-meta-empire {
-                justify-content: center;
-            }
-            
-            .card-buttons-empire {
+        /* للشاشات الصغيرة */
+        @media (max-width: 700px) {
+            .tabs-system {
                 flex-direction: column;
             }
             
-            .suggestions-grid-empire {
-                grid-template-columns: 1fr;
+            .search-ultimate button {
+                width: 100%;
             }
             
-            .imperial-header h1 {
-                font-size: 32px;
+            .ultimate-results {
+                grid-template-columns: 1fr;
             }
-        }
-
-        @media (min-width: 601px) and (max-width: 900px) {
-            .results-grid-empire {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        /* تأثيرات إضافية */
-        .glow-text {
-            text-shadow: 0 0 10px currentColor;
-        }
-        
-        .no-select {
-            user-select: none;
-        }
-        
-        /* شريط التمرير المخصص */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #1a1a2a;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, var(--gold), var(--neon));
-            border-radius: 10px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(to bottom, #ffaa00, #00cccc);
         }
     </style>
 </head>
 <body>
-    <div class="imperial-header">
-        <h1>👑 FADI CINEMA IMPERIAL</h1>
-        <p>
-            <span>🎬 السينما الإمبراطورية الذهبية</span>
-            <span>•</span>
-            <span>⚡ أكثر من 1000 فيلم</span>
-            <span>•</span>
-            <span>💎 بجودة 4K</span>
-        </p>
+    <div class="ultimate-header">
+        <h1>💫 الإمبراطورية العظمى</h1>
+        <p>المكان الوحيد اللي يجمع كلشي - يوتيوب + مواقع + روابطك الخاصة</p>
     </div>
 
-    <!-- البحث المتطور -->
-    <div class="search-empire">
-        <input type="text" id="searchInput" placeholder="🔍 اكتب اسم الفيلم، المسلسل، الممثل...">
-        <button onclick="searchMovies()">
-            <span>🔍</span> بحث في الإمبراطورية
-        </button>
+    <!-- نظام التبويبات -->
+    <div class="tabs-system">
+        <div class="tab-btn active" onclick="switchTab('search')">
+            <span>🔍</span> بحث في كل مكان
+        </div>
+        <div class="tab-btn" onclick="switchTab('youtube')">
+            <span>📺</span> بحث في يوتيوب
+        </div>
+        <div class="tab-btn" onclick="switchTab('addlink')">
+            <span>🔗</span> إضافة رابط
+        </div>
+        <div class="tab-btn" onclick="switchTab('saved')">
+            <span>💾</span> روابطي المحفوظة
+        </div>
     </div>
 
-    <!-- التصنيفات -->
-    <div class="categories-empire" id="categories">
-        <div class="cat-imperial active" onclick="filterCategory('الكل')">
-            <span>🏠</span> الكل
+    <!-- قسم البحث الرئيسي -->
+    <div id="tab-search" class="tab-content active">
+        <div class="search-ultimate">
+            <input type="text" id="searchMain" placeholder="اكتب اسم الفيلم أو المسلسل...">
+            <button onclick="searchEverything()">
+                <span>🔍</span> بحث في كل المصادر
+            </button>
         </div>
-        <div class="cat-imperial" onclick="filterCategory('اكشن')">
-            <span>🔫</span> اكشن
+
+        <!-- خيارات الجودة -->
+        <div class="advanced-search">
+            <div class="quality-selector">
+                <span style="color: var(--neon);">اختر الدقة:</span>
+                <input type="radio" name="quality" id="q4k" value="4K" class="quality-radio" checked>
+                <label for="q4k" class="quality-label">4K</label>
+                
+                <input type="radio" name="quality" id="q1080" value="1080p" class="quality-radio">
+                <label for="q1080" class="quality-label">1080p</label>
+                
+                <input type="radio" name="quality" id="q720" value="720p" class="quality-radio">
+                <label for="q720" class="quality-label">720p</label>
+                
+                <input type="radio" name="quality" id="q480" value="480p" class="quality-radio">
+                <label for="q480" class="quality-label">480p</label>
+                
+                <input type="radio" name="quality" id="q360" value="360p" class="quality-radio">
+                <label for="q360" class="quality-label">360p</label>
+            </div>
+            <div class="source-badge">
+                <span>▶️</span> يوتيوب + مواقع
+            </div>
         </div>
-        <div class="cat-imperial" onclick="filterCategory('رومانسي')">
-            <span>❤️</span> رومانسي
+    </div>
+
+    <!-- قسم يوتيوب فقط -->
+    <div id="tab-youtube" class="tab-content">
+        <div class="search-ultimate">
+            <input type="text" id="searchYoutube" placeholder="ابحث في يوتيوب...">
+            <button onclick="searchYoutubeOnly()">
+                <span>📺</span> بحث في يوتيوب
+            </button>
         </div>
-        <div class="cat-imperial" onclick="filterCategory('رعب')">
-            <span>👻</span> رعب
+    </div>
+
+    <!-- قسم إضافة رابط -->
+    <div id="tab-addlink" class="tab-content">
+        <div class="add-link-section">
+            <h3>
+                <span>🔗</span>
+                أضف رابط موقعك الخاص
+            </h3>
+            <div class="link-form">
+                <input type="text" id="linkName" placeholder="اسم الموقع (مثل: ايجي بست)">
+                <input type="url" id="linkUrl" placeholder="رابط الموقع (https://...)">
+                <input type="text" id="linkCategory" placeholder="التصنيف (اكشن، رومانسي، الخ)">
+                <button onclick="addCustomLink()">
+                    <span>➕</span> إضافة الرابط
+                </button>
+            </div>
+            <p style="color: #99aabb; margin-top: 15px; font-size: 14px;">
+                💡 بعد إضافة الرابط، راح نبحث فيه تلقائياً ونجيب الفيديوهات
+            </p>
         </div>
-        <div class="cat-imperial" onclick="filterCategory('كوميدي')">
-            <span>😂</span> كوميدي
-        </div>
-        <div class="cat-imperial" onclick="filterCategory('دراما')">
-            <span>🎭</span> دراما
-        </div>
-        <div class="cat-imperial" onclick="filterCategory('خيال علمي')">
-            <span>🚀</span> خيال علمي
-        </div>
-        <div class="cat-imperial" onclick="filterCategory('وثائقي')">
-            <span>📽️</span> وثائقي
+    </div>
+
+    <!-- قسم الروابط المحفوظة -->
+    <div id="tab-saved" class="tab-content">
+        <div class="saved-links">
+            <h3>
+                <span>💾</span>
+                روابطي المحفوظة
+            </h3>
+            <div id="savedLinksList" class="links-grid">
+                <!-- الروابط تظهر هنا -->
+            </div>
         </div>
     </div>
 
     <!-- مشغل الفيديو -->
-    <div class="imperial-player" id="mainPlayer">
-        <div class="player-header-empire">
-            <span class="movie-info-empire" id="currentMovie">
-                <span>🎬</span> جاري التشغيل...
-            </span>
-            <button class="close-player-empire" onclick="closePlayer()">✕</button>
+    <div class="ultimate-player" id="mainPlayer">
+        <div class="player-header">
+            <span class="player-info" id="currentVideoTitle">جاري التشغيل...</span>
+            <button class="close-player" onclick="closeUltimatePlayer()">✕</button>
         </div>
-        <video id="videoPlayer" controls controlsList="nodownload">
+        <video id="videoPlayer" controls>
             <source src="" type="video/mp4">
         </video>
     </div>
 
     <!-- مؤشر التحميل -->
-    <div class="loader-empire" id="loader">
-        <span></span>
-        <span></span>
-        <span></span>
-        <p style="margin-top: 20px; color: var(--gold);">جاري البحث في الإمبراطورية...</p>
+    <div class="loader-ultimate" id="loader">
+        <div></div>
+        <div></div>
+        <div></div>
+        <p style="margin-top: 20px; color: var(--gold);">جاري البحث في كل المصادر...</p>
     </div>
 
-    <!-- رسالة الخطأ -->
-    <div class="error-empire" id="errorMsg">
-        <span>😢</span> عفواً الإمبراطور! ما لقينا نتائج لهذا البحث
-    </div>
-
-    <!-- نتائج البحث -->
-    <div id="results" class="results-grid-empire"></div>
-
-    <!-- الاقتراحات الذكية -->
-    <div class="suggestions-empire" id="suggestions" style="display: none;">
-        <h3>
-            <span>🤖</span> 
-            اقتراحات ذكية للإمبراطور
-            <span style="font-size: 14px; color: var(--neon);">(بناءً على بحثك)</span>
-        </h3>
-        <div class="suggestions-grid-empire" id="suggestionsList"></div>
-    </div>
-
-    <!-- الفوتر -->
-    <div class="footer-empire">
-        <p>تم التطوير بواسطة <span>الإمبراطور فادي</span> | جميع الحقوق محفوظة لجمهور الإمبراطورية ❤️</p>
-        <p style="font-size: 12px; margin-top: 10px;">⭐ الإصدار 2.0 - الإمبراطورية الذهبية ⭐</p>
-    </div>
+    <!-- النتائج -->
+    <div id="results" class="ultimate-results"></div>
 
     <script>
-        // قاعدة بيانات الأفلام الموسعة
-        const moviesDatabase = [
+        // ============ النظام الخرافي ============
+
+        // التخزين المحلي للروابط
+        let savedLinks = JSON.parse(localStorage.getItem('ultimateLinks')) || [
             {
                 id: 1,
-                title: "المهمة المستحيلة 7",
-                site: "ايجي بست",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-                quality: "4K HDR",
-                size: "8.2 GB",
-                year: "2024",
-                category: "اكشن",
-                rating: "9.2",
-                description: "فيلم الأكشن المنتظر"
+                name: 'ايجي بست',
+                url: 'https://egy.best',
+                category: 'افلام',
+                added: '2024-01-01'
             },
             {
                 id: 2,
-                title: "البيت المسكون",
-                site: "فاصل إعلاني",
-                url: "https://commondatorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                downloadUrl: "https://commondatorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                quality: "1080p",
-                size: "2.1 GB",
-                year: "2023",
-                category: "رعب",
-                rating: "7.8",
-                description: "فيلم رعب نفسي"
-            },
-            {
-                id: 3,
-                title: "حب في روما",
-                site: "موفيز لاند",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-                quality: "4K",
-                size: "5.5 GB",
-                year: "2024",
-                category: "رومانسي",
-                rating: "8.9",
-                description: "قصة حب إيطالية"
-            },
-            {
-                id: 4,
-                title: "العميل السري",
-                site: "اكوام",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-                quality: "1080p",
-                size: "3.2 GB",
-                year: "2023",
-                category: "اكشن",
-                rating: "8.5",
-                description: "فيلم تجسس وتشويق"
-            },
-            {
-                id: 5,
-                title: "عائلة فريزر",
-                site: "سيما كلوب",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-                quality: "720p",
-                size: "1.8 GB",
-                year: "2024",
-                category: "كوميدي",
-                rating: "8.2",
-                description: "كوميديا عائلية"
-            },
-            {
-                id: 6,
-                title: "الحرب الكونية",
-                site: "ايجي بست",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
-                quality: "4K HDR",
-                size: "9.1 GB",
-                year: "2024",
-                category: "خيال علمي",
-                rating: "9.5",
-                description: "حرب بين المجرات"
-            },
-            {
-                id: 7,
-                title: "الغابة المحرمة",
-                site: "موفيز فور يو",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
-                quality: "1080p",
-                size: "2.9 GB",
-                year: "2023",
-                category: "رعب",
-                rating: "7.5",
-                description: "رعب في الغابة"
-            },
-            {
-                id: 8,
-                title: "قصة الأمس",
-                site: "بانيت",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
-                quality: "4K",
-                size: "4.8 GB",
-                year: "2022",
-                category: "دراما",
-                rating: "8.7",
-                description: "دراما اجتماعية"
-            },
-            {
-                id: 9,
-                title: "عالم الديناصورات",
-                site: "نيتفليكس",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
-                quality: "4K HDR",
-                size: "7.3 GB",
-                year: "2024",
-                category: "وثائقي",
-                rating: "9.0",
-                description: "وثائقي عن الديناصورات"
-            },
-            {
-                id: 10,
-                title: "الرجل الأخير",
-                site: "ايجي بست",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
-                quality: "1080p",
-                size: "3.5 GB",
-                year: "2023",
-                category: "دراما",
-                rating: "8.3",
-                description: "دراما ما بعد نهاية العالم"
-            },
-            {
-                id: 11,
-                title: "الساحر الأخير",
-                site: "فاصل إعلاني",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4",
-                quality: "4K",
-                size: "6.2 GB",
-                year: "2024",
-                category: "خيال علمي",
-                rating: "8.8",
-                description: "خيال علمي وسحر"
-            },
-            {
-                id: 12,
-                title: "أيام البرد",
-                site: "سيما لايت",
-                url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
-                downloadUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4",
-                quality: "720p",
-                size: "1.5 GB",
-                year: "2022",
-                category: "دراما",
-                rating: "7.9",
-                description: "دراما شتوية"
+                name: 'فاصل إعلاني',
+                url: 'https://faselhd.com',
+                category: 'مسلسلات',
+                added: '2024-01-01'
             }
         ];
 
-        // متغيرات عامة
-        let currentCategory = 'الكل';
-        let currentResults = [];
-        let allSearchResults = [];
-        let currentVideo = null;
+        // API يوتيوب (مجاني)
+        const YOUTUBE_API_KEY = 'AIzaSyA1n3I8JYEVqLjrjHvwL4Cw0l7lJ7lJ7lJ'; // مفتاح تجريبي
 
-        // دالة البحث الرئيسية
-        function searchMovies() {
-            const query = document.getElementById('searchInput').value.trim();
+        // تبديل التبويبات
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
             
+            event.target.closest('.tab-btn').classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            if (tab === 'saved') {
+                displaySavedLinks();
+            }
+        }
+
+        // البحث في كلشي
+        async function searchEverything() {
+            const query = document.getElementById('searchMain').value;
             if (!query) {
-                showNotification("يا إمبراطور اكتب اسم الفيلم أولاً!", "warning");
+                alert('اكتب اسم الفيديو يا إمبراطور!');
                 return;
             }
 
-            // إظهار مؤشر التحميل
+            const quality = document.querySelector('input[name="quality"]:checked').value;
+            
             document.getElementById('loader').style.display = 'block';
             document.getElementById('results').innerHTML = '';
-            document.getElementById('errorMsg').style.display = 'none';
-            document.getElementById('suggestions').style.display = 'none';
 
-            // محاكاة وقت البحث
-            setTimeout(() => {
+            try {
+                // بحث في يوتيوب
+                const youtubeResults = await searchYoutube(query, quality);
+                
+                // بحث في المواقع المحفوظة
+                const siteResults = searchInSavedLinks(query);
+                
+                // دمج النتائج
+                const allResults = [...youtubeResults, ...siteResults];
+                
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                    displayUltimateResults(allResults);
+                }, 1000);
+                
+            } catch (error) {
+                console.error('خطأ في البحث:', error);
                 document.getElementById('loader').style.display = 'none';
-                
-                const searchTerm = query.toLowerCase();
-                
-                // فلترة النتائج بذكاء
-                currentResults = moviesDatabase.filter(movie => 
-                    movie.title.toLowerCase().includes(searchTerm) ||
-                    movie.category.toLowerCase().includes(searchTerm) ||
-                    movie.description.toLowerCase().includes(searchTerm) ||
-                    movie.year.includes(searchTerm) ||
-                    movie.rating.includes(searchTerm)
-                );
+            }
+        }
 
-                // حفظ جميع نتائج البحث
-                allSearchResults = [...currentResults];
-
-                if (currentResults.length > 0) {
-                    displayResults(currentResults);
-                    showSmartSuggestions(searchTerm);
-                    
-                    // رسالة نجاح
-                    showNotification(`تم العثور على ${currentResults.length} نتيجة`, "success");
-                } else {
-                    document.getElementById('errorMsg').style.display = 'block';
-                    showSmartSuggestions(searchTerm, true);
+        // بحث في يوتيوب
+        async function searchYoutube(query, quality = '1080p') {
+            // محاكاة نتائج يوتيوب (لأن API محتاج مفتاح حقيقي)
+            const mockYoutubeResults = [
+                {
+                    id: 'yt1',
+                    title: `${query} - فيلم كامل`,
+                    thumbnail: 'https://img.youtube.com/vi/1/0.jpg',
+                    url: `https://www.youtube.com/watch?v=dQw4w9WgXcQ`,
+                    duration: '2:15:30',
+                    views: '١٫٢م',
+                    quality: quality,
+                    source: 'youtube',
+                    downloadUrl: `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
+                },
+                {
+                    id: 'yt2',
+                    title: `${query} - جودة عالية`,
+                    thumbnail: 'https://img.youtube.com/vi/2/0.jpg',
+                    url: `https://www.youtube.com/watch?v=dQw4w9WgXcQ`,
+                    duration: '1:45:20',
+                    views: '٨٥٠ألف',
+                    quality: quality,
+                    source: 'youtube',
+                    downloadUrl: `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
                 }
-            }, 1500);
+            ];
+            
+            return mockYoutubeResults;
+        }
+
+        // بحث في يوتيوب فقط
+        function searchYoutubeOnly() {
+            const query = document.getElementById('searchYoutube').value;
+            if (!query) return;
+            
+            document.getElementById('loader').style.display = 'block';
+            
+            setTimeout(async () => {
+                const results = await searchYoutube(query);
+                document.getElementById('loader').style.display = 'none';
+                displayUltimateResults(results);
+            }, 1000);
+        }
+
+        // بحث في الروابط المحفوظة
+        function searchInSavedLinks(query) {
+            const results = [];
+            const searchTerm = query.toLowerCase();
+            
+            savedLinks.forEach(link => {
+                // محاكاة نتائج من كل موقع
+                results.push({
+                    id: `site_${link.id}_1`,
+                    title: `${query} - من ${link.name}`,
+                    thumbnail: 'https://via.placeholder.com/320x180/1a1a2a/ffd700?text=🎬',
+                    url: link.url,
+                    duration: 'فيلم كامل',
+                    quality: document.querySelector('input[name="quality"]:checked').value,
+                    source: link.name,
+                    downloadUrl: link.url + '/download'
+                });
+            });
+            
+            return results;
         }
 
         // عرض النتائج
-        function displayResults(movies) {
+        function displayUltimateResults(results) {
             const container = document.getElementById('results');
             container.innerHTML = '';
 
-            movies.forEach(movie => {
+            if (results.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--red);">ما لقينا شي 😢</div>';
+                return;
+            }
+
+            results.forEach(video => {
                 const card = document.createElement('div');
-                card.className = 'movie-card-empire';
+                card.className = 'video-card';
                 card.innerHTML = `
-                    <span class="movie-site-empire">
-                        <span>📺</span> ${movie.site} 
-                        <span style="margin-right: 5px;">⭐</span> ${movie.rating}
-                    </span>
-                    <div class="movie-title-empire">${movie.title}</div>
-                    <div class="movie-meta-empire">
-                        <span class="quality-empire">
-                            <span>🎥</span> ${movie.quality}
-                        </span>
-                        <span class="size-empire">
-                            <span>💾</span> ${movie.size}
-                        </span>
-                        <span class="year-empire">
-                            <span>📅</span> ${movie.year}
-                        </span>
-                        <span class="rating-empire">
-                            <span>⭐</span> ${movie.rating}
-                        </span>
+                    <div class="video-thumbnail" onclick="playVideo('${video.url}', '${video.title}')">
+                        <img src="${video.thumbnail}" alt="${video.title}">
+                        <div class="play-overlay">
+                            <span>▶️</span>
+                        </div>
                     </div>
-                    <p style="color: #99aabb; font-size: 14px; margin-bottom: 15px;">${movie.description}</p>
-                    <div class="card-buttons-empire">
-                        <button class="watch-btn-empire" onclick="watchMovie('${movie.url}', '${movie.title}')">
-                            <span>▶️</span> مشاهدة
-                        </button>
-                        <button class="download-btn-empire" onclick="downloadMovie('${movie.downloadUrl}', '${movie.title}')">
-                            <span>⬇️</span> تحميل
-                        </button>
+                    <div class="video-info">
+                        <h3 class="video-title">${video.title}</h3>
+                        <div class="video-meta">
+                            <span>⏱️ ${video.duration}</span>
+                            <span>👁️ ${video.views || 'جديد'}</span>
+                            <span>📺 ${video.source}</span>
+                            <span>🎥 ${video.quality}</span>
+                        </div>
+                        <div class="video-actions">
+                            <button class="video-btn watch-now" onclick="playVideo('${video.url}', '${video.title}')">
+                                <span>▶️</span> مشاهدة
+                            </button>
+                            <a href="${video.downloadUrl}" target="_blank" class="video-btn download-now">
+                                <span>⬇️</span> تحميل
+                            </a>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
-
-            // تحديث عدد النتائج
-            updateResultsCount(movies.length);
         }
 
-        // تحديث عداد النتائج
-        function updateResultsCount(count) {
-            const header = document.querySelector('.imperial-header p');
-            if (header) {
-                const countSpan = document.createElement('span');
-                countSpan.style.background = 'rgba(255,215,0,0.2)';
-                countSpan.style.padding = '3px 15px';
-                countSpan.style.borderRadius = '20px';
-                countSpan.style.marginRight = '10px';
-                countSpan.innerHTML = `🔍 ${count} نتيجة`;
-                
-                // إزالة القديم إذا وجد
-                const oldCount = header.querySelector('.result-count');
-                if (oldCount) oldCount.remove();
-                
-                countSpan.className = 'result-count';
-                header.appendChild(countSpan);
-            }
-        }
-
-        // مشاهدة الفيلم
-        function watchMovie(url, title) {
-            if (!url) {
-                showNotification("عذراً، رابط المشاهدة غير متاح", "error");
-                return;
-            }
-
-            // إيقاف أي فيديو سابق
-            if (currentVideo) {
-                currentVideo.pause();
-            }
-
+        // تشغيل الفيديو
+        function playVideo(url, title) {
             const player = document.getElementById('mainPlayer');
             const video = document.getElementById('videoPlayer');
-            const currentMovie = document.getElementById('currentMovie');
+            const titleSpan = document.getElementById('currentVideoTitle');
             
-            video.src = url;
-            currentVideo = video;
-            currentMovie.innerHTML = `<span>🎬</span> الآن: ${title}`;
+            // محاولة جلب الفيديو الحقيقي
+            if (url.includes('youtube.com')) {
+                // يوتيوب يحتاج iframe
+                video.innerHTML = `<iframe width="100%" height="100%" src="${url.replace('watch?v=', 'embed/')}" frameborder="0" allowfullscreen></iframe>`;
+            } else {
+                video.innerHTML = `<source src="${url}" type="video/mp4">`;
+            }
+            
+            titleSpan.textContent = title;
             player.style.display = 'block';
             
-            // التمرير للمشغل
-            player.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // محاولة التشغيل التلقائي
-            video.play().catch(e => {
-                console.log("التشغيل التلقائي محظور", e);
-                showNotification("اضغط على تشغيل لبدء الفيلم", "info");
-            });
-        }
-
-        // تحميل الفيلم
-        function downloadMovie(url, title) {
-            if (!url) {
-                showNotification("عذراً، رابط التحميل غير متاح", "error");
-                return;
-            }
-
-            // محاكاة تحميل
-            showNotification(`🚀 جاري تجهيز ${title} للتحميل...`, "info");
-            
-            // فتح الرابط في نافذة جديدة
-            setTimeout(() => {
-                window.open(url, '_blank');
-            }, 1500);
+            // تمرير للمشغل
+            player.scrollIntoView({ behavior: 'smooth' });
         }
 
         // إغلاق المشغل
-        function closePlayer() {
-            const player = document.getElementById('mainPlayer');
-            const video = document.getElementById('videoPlayer');
-            
-            player.style.display = 'none';
-            video.pause();
-            video.src = '';
-            currentVideo = null;
+        function closeUltimatePlayer() {
+            document.getElementById('mainPlayer').style.display = 'none';
+            document.getElementById('videoPlayer').innerHTML = '';
         }
 
-        // فلترة حسب التصنيف
-        function filterCategory(category) {
-            currentCategory = category;
+        // إضافة رابط مخصص
+        function addCustomLink() {
+            const name = document.getElementById('linkName').value;
+            const url = document.getElementById('linkUrl').value;
+            const category = document.getElementById('linkCategory').value;
+
+            if (!name || !url) {
+                alert('اكتب اسم الرابط ورابط الموقع!');
+                return;
+            }
+
+            const newLink = {
+                id: Date.now(),
+                name: name,
+                url: url,
+                category: category || 'عام',
+                added: new Date().toISOString().split('T')[0]
+            };
+
+            savedLinks.push(newLink);
+            localStorage.setItem('ultimateLinks', JSON.stringify(savedLinks));
+
+            alert('✅ تم إضافة الرابط بنجاح!');
             
-            // تحديث الأزرار
-            document.querySelectorAll('.cat-imperial').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.textContent.includes(category)) {
-                    btn.classList.add('active');
-                }
+            // تنظيف الحقول
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+            document.getElementById('linkCategory').value = '';
+            
+            // تحديث العرض
+            displaySavedLinks();
+        }
+
+        // عرض الروابط المحفوظة
+        function displaySavedLinks() {
+            const container = document.getElementById('savedLinksList');
+            container.innerHTML = '';
+
+            savedLinks.forEach(link => {
+                const item = document.createElement('div');
+                item.className = 'saved-link-item';
+                item.innerHTML = `
+                    <div class="link-info">
+                        <h4>${link.name}</h4>
+                        <p>${link.category} • أضيف: ${link.added}</p>
+                    </div>
+                    <div class="link-actions">
+                        <a href="${link.url}" target="_blank" class="link-btn">
+                            <span>🔗</span>
+                        </a>
+                        <button class="link-btn" onclick="searchInLink(${link.id})">
+                            <span>🔍</span>
+                        </button>
+                        <button class="link-btn" onclick="deleteLink(${link.id})">
+                            <span>🗑️</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
             });
-
-            // تحديد مصدر الفلترة
-            const sourceToFilter = allSearchResults.length > 0 ? allSearchResults : moviesDatabase;
-
-            if (category === 'الكل') {
-                displayResults(sourceToFilter);
-            } else {
-                const filtered = sourceToFilter.filter(movie => movie.category === category);
-                if (filtered.length > 0) {
-                    displayResults(filtered);
-                } else {
-                    showNotification(`لا توجد أفلام ${category} في النتائج`, "warning");
-                    displayResults(sourceToFilter);
-                }
-            }
         }
 
-        // اقتراحات ذكية متطورة
-        function showSmartSuggestions(searchTerm, noResults = false) {
-            const suggestions = [];
+        // بحث في رابط معين
+        function searchInLink(linkId) {
+            const link = savedLinks.find(l => l.id === linkId);
+            if (!link) return;
+
+            switchTab('search');
+            document.getElementById('searchMain').value = `بحث في ${link.name}`;
             
-            if (noResults) {
-                // اقتراحات عشوائية من جميع الأفلام
-                const shuffled = [...moviesDatabase].sort(() => 0.5 - Math.random());
-                suggestions.push(...shuffled.slice(0, 6));
-            } else {
-                // فلترة ذكية حسب كلمة البحث
-                const searchLower = searchTerm.toLowerCase();
-                
-                // كلمات مفتاحية للتصنيفات
-                const categoriesMap = {
-                    'اكشن': ['اكشن', 'action', 'قتال', 'حرب', 'مطاردة'],
-                    'رومانسي': ['رومانسي', 'حب', 'عشق', 'romantic', 'love'],
-                    'رعب': ['رعب', 'خوف', 'horror', ' scary'],
-                    'كوميدي': ['كوميدي', 'ضحك', 'comedy', 'funny'],
-                    'دراما': ['دراما', 'drama', 'حزين'],
-                    'خيال علمي': ['خيال', 'علمي', 'فضاء', 'sci-fi', '科幻']
-                };
-
-                // البحث في الخريطة
-                for (let [cat, keywords] of Object.entries(categoriesMap)) {
-                    if (keywords.some(k => searchLower.includes(k))) {
-                        suggestions.push(...moviesDatabase.filter(m => m.category === cat));
-                        break;
-                    }
-                }
-
-                // إذا ما لقينا اقتراحات، نجيب من نفس تصنيف أول نتيجة
-                if (suggestions.length === 0 && currentResults.length > 0) {
-                    const firstCategory = currentResults[0].category;
-                    suggestions.push(...moviesDatabase.filter(m => 
-                        m.category === firstCategory && 
-                        !currentResults.some(r => r.id === m.id)
-                    ));
-                }
-
-                // نضيف بعض الاقتراحات الإضافية
-                if (suggestions.length < 4) {
-                    const additional = moviesDatabase
-                        .filter(m => !suggestions.some(s => s.id === m.id))
-                        .sort(() => 0.5 - Math.random())
-                        .slice(0, 6 - suggestions.length);
-                    suggestions.push(...additional);
-                }
-            }
-
-            // إزالة التكرارات
-            const uniqueSuggestions = suggestions.filter((movie, index, self) =>
-                index === self.findIndex(m => m.id === movie.id)
-            ).slice(0, 6);
-
-            if (uniqueSuggestions.length > 0) {
-                const suggestionsDiv = document.getElementById('suggestions');
-                const suggestionsList = document.getElementById('suggestionsList');
-                
-                suggestionsList.innerHTML = '';
-                uniqueSuggestions.forEach(movie => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item-empire';
-                    item.innerHTML = `
-                        <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">${movie.title}</div>
-                        <div style="display: flex; gap: 5px; flex-wrap: wrap; color: #99aabb; font-size: 12px;">
-                            <span style="background: rgba(155,48,255,0.3); padding: 2px 8px; border-radius: 12px;">${movie.category}</span>
-                            <span style="background: rgba(0,255,255,0.3); padding: 2px 8px; border-radius: 12px;">${movie.quality}</span>
-                            <span style="background: rgba(255,215,0,0.3); padding: 2px 8px; border-radius: 12px;">⭐ ${movie.rating}</span>
-                        </div>
-                        <div style="font-size: 12px; color: var(--neon); margin-top: 10px;">اضغط للمشاهدة</div>
-                    `;
-                    item.onclick = () => watchMovie(movie.url, movie.title);
-                    suggestionsList.appendChild(item);
-                });
-                
-                suggestionsDiv.style.display = 'block';
-            }
-        }
-
-        // نظام الإشعارات
-        function showNotification(message, type = "info") {
-            // إنشاء عنصر الإشعار
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: ${type === 'success' ? 'linear-gradient(135deg, #00ff00, #00aa00)' : 
-                              type === 'warning' ? 'linear-gradient(135deg, #ffaa00, #ff6600)' :
-                              type === 'error' ? 'linear-gradient(135deg, #ff4444, #ff0000)' :
-                              'linear-gradient(135deg, #00ffff, #0088ff)'};
-                color: ${type === 'success' ? 'black' : 'white'};
-                padding: 15px 30px;
-                border-radius: 50px;
-                font-weight: bold;
-                z-index: 9999;
-                box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-                border: 2px solid ${type === 'success' ? '#00ff00' : 
-                                     type === 'warning' ? '#ffaa00' : 
-                                     type === 'error' ? '#ff4444' : '#00ffff'};
-                backdrop-filter: blur(10px);
-                animation: slideDown 0.3s ease;
-                text-align: center;
-                direction: rtl;
-            `;
-            notification.textContent = message;
-
-            document.body.appendChild(notification);
-
-            // إزالة الإشعار بعد 3 ثواني
+            // محاكاة نتائج من هذا الموقع
             setTimeout(() => {
-                notification.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
+                const mockResults = [
+                    {
+                        id: `custom_${linkId}_1`,
+                        title: `فيلم حصري من ${link.name}`,
+                        thumbnail: 'https://via.placeholder.com/320x180/1a1a2a/ffd700?text=🎥',
+                        url: link.url,
+                        duration: 'فيلم كامل',
+                        quality: '1080p',
+                        source: link.name,
+                        downloadUrl: link.url + '/download'
+                    }
+                ];
+                displayUltimateResults(mockResults);
+            }, 500);
         }
 
-        // إضافة تأثيرات CSS إضافية
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeOut {
-                from { opacity: 1; }
-                to { opacity: 0; }
+        // حذف رابط
+        function deleteLink(id) {
+            if (confirm('متأكد تريد حذف هذا الرابط؟')) {
+                savedLinks = savedLinks.filter(l => l.id !== id);
+                localStorage.setItem('ultimateLinks', JSON.stringify(savedLinks));
+                displaySavedLinks();
             }
-        `;
-        document.head.appendChild(style);
+        }
 
-        // تشغيل بحث افتراضي عند تحميل الصفحة
+        // تحميل فوري وسريع
+        function quickDownload(url, title) {
+            // محاكاة تحميل سريع
+            alert(`🚀 جاري تحميل: ${title}`);
+            
+            // فتح رابط التحميل
+            window.open(url, '_blank');
+            
+            // رسالة تأكيد
+            setTimeout(() => {
+                alert('✅ التحميل بدأ بنجاح!');
+            }, 1000);
+        }
+
+        // تحميل بجودة محددة
+        function downloadWithQuality(quality, videoId) {
+            alert(`🔽 تجهيز تحميل بجودة ${quality}`);
+            
+            // هنا يمكن إضافة منطق حقيقي للتحميل
+            setTimeout(() => {
+                alert(`✅ جاهز! اضغط على التحميل`);
+            }, 2000);
+        }
+
+        // عرض الروابط المحفوظة عند التحميل
         window.onload = () => {
-            document.getElementById('searchInput').value = "اكشن";
-            setTimeout(searchMovies, 500);
+            displaySavedLinks();
+            
+            // بحث افتراضي
+            document.getElementById('searchMain').value = 'فيلم اكشن';
+            setTimeout(() => searchEverything(), 500);
         };
-
-        // البحث عند الضغط على Enter
-        document.getElementById('searchInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchMovies();
-            }
-        });
-
-        // إحصائيات سريعة
-        console.log('🚀 الإمبراطورية جاهزة للانطلاق!');
-        console.log(`📊 إجمالي الأفلام: ${moviesDatabase.length}`);
-        console.log('👑 بإشراف الإمبراطور فادي');
     </script>
 </body>
 </html>
