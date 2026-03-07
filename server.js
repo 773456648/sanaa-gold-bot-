@@ -6,8 +6,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // مخزن العقارات العالمي (في ذاكرة السيرفر)
-let sharedProperties = [
-    { title: "برج فادي الاستثماري", price: 1000000, space: 50, type: "للبيع", category: "building", owner: "المدير فادي", date: "2026-03-08" }
+let sharedProperties = 
 ];
 
 app.get('/api/properties', (req, res) => res.json(sharedProperties));
