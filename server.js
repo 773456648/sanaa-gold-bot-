@@ -10,20 +10,31 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', (socket) => {
-    console.log('مستخدم جديد اتصل: ' + socket.id);
-
-    // استقبال وإرسال الرسائل
-    socket.on('chat-message', (data) => {
-        io.emit('chat-message', data); 
+    socket.on('join-room', (data) => {
+        socket.join(data.roomID);
+        socket.roomID = data.roomID; // حفظ الغرفة في جلسة السوكيت
+        console.log(`مستخدم دخل الغرفة: ${data.roomID}`);
+        socket.to(data.roomID).emit('user-joined', socket.id);
     });
 
-    // إشارات الفيديو (WebRTC Signaling)
-    socket.on('offer', (data) => socket.broadcast.emit('offer', data));
-    socket.on('answer', (data) => socket.broadcast.emit('answer', data));
-    socket.on('candidate', (data) => socket.broadcast.emit('candidate', data));
+    socket.on('chat-message', (data) => {
+        io.to(data.roomID).emit('chat-message', data);
+    });
+
+    socket.on('offer', (data) => {
+        socket.to(data.roomID).emit('offer', data);
+    });
+
+    socket.on('answer', (data) => {
+        socket.to(data.roomID).emit('answer', data);
+    });
+
+    socket.on('candidate', (data) => {
+        socket.to(data.roomID).emit('candidate', data);
+    });
 
     socket.on('disconnect', () => {
-        console.log('مستخدم فصل الاتصال');
+        console.log('مستخدم فصل');
     });
 });
 
