@@ -12,70 +12,72 @@
         .gold-border { border-color: #e2b714; }
         .gold-text { color: #e2b714; }
         .gold-bg { background-color: #e2b714; }
-        .glass { background: rgba(22, 27, 34, 0.95); backdrop-filter: blur(10px); }
+        .glass { background: rgba(22, 27, 34, 0.98); backdrop-filter: blur(15px); }
+        input, select { background-color: #000 !important; color: #fff !important; border: 1px solid #30363d !important; }
+        input:focus { border-color: #e2b714 !important; }
     </style>
 </head>
 <body class="min-h-screen">
 
     <header class="sticky top-0 z-50 glass border-b-2 gold-border px-6 py-4 flex justify-between items-center shadow-2xl">
         <div class="text-2xl font-black gold-text flex items-center gap-2">
-            <i class="fas fa-gem"></i>
-            منظومة فادي برو
+            <i class="fas fa-city"></i>
+            <span>منظومة فادي برو</span>
         </div>
-        <div class="text-[10px] border border-dashed gold-border p-1 rounded gold-text">الإصدار المستقر</div>
+        <div class="text-[10px] gold-text opacity-70">نظام فصيح ومستقر</div>
     </header>
 
-    <!-- منطقة البحث -->
-    <div class="p-6 bg-[#0d1117] border-b border-[#30363d]">
-        <div class="max-w-3xl mx-auto space-y-4">
+    <!-- البحث -->
+    <div class="p-4 bg-[#0d1117] border-b border-[#30363d]">
+        <div class="max-w-2xl mx-auto space-y-4">
             <div class="relative">
                 <i class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 gold-text"></i>
-                <input type="text" id="searchInput" oninput="renderData()" placeholder="ابحث عن الموقع أو اسم المعلن..." 
-                    class="w-full bg-black border border-[#30363d] rounded-2xl py-4 pr-12 pl-4 focus:border-[#e2b714] outline-none text-white">
+                <input type="text" id="searchBar" placeholder="ابحث هنا..." class="w-full rounded-xl py-3 pr-12 pl-4 outline-none">
             </div>
             <div class="flex gap-2 overflow-x-auto justify-center">
-                <button onclick="setFilter('الكل')" class="filter-btn active bg-[#e2b714] text-black px-6 py-2 rounded-full text-sm font-bold">الكل</button>
-                <button onclick="setFilter('شقة')" class="filter-btn bg-[#161b22] border border-[#30363d] px-6 py-2 rounded-full text-sm">شقق</button>
-                <button onclick="setFilter('أرضية')" class="filter-btn bg-[#161b22] border border-[#30363d] px-6 py-2 rounded-full text-sm">أراضي</button>
+                <button onclick="applyFilter('الكل')" class="px-5 py-2 rounded-full bg-[#e2b714] text-black font-bold text-sm">الكل</button>
+                <button onclick="applyFilter('شقة')" class="px-5 py-2 rounded-full bg-[#161b22] border border-[#30363d] text-sm">شقق</button>
+                <button onclick="applyFilter('أرضية')" class="px-5 py-2 rounded-full bg-[#161b22] border border-[#30363d] text-sm">أراضي</button>
+                <button onclick="applyFilter('بيت')" class="px-5 py-2 rounded-full bg-[#161b22] border border-[#30363d] text-sm">بيوت</button>
             </div>
         </div>
     </div>
 
-    <!-- شبكة العروض -->
-    <main id="listingsGrid" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto pb-24">
-        <div class="col-span-full text-center py-20 text-gray-500 italic">جاري تحميل البيانات...</div>
+    <!-- الشبكة -->
+    <main id="gridBox" class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto pb-24">
+        <div class="col-span-full text-center py-20 text-gray-500">جاري الاتصال بالسحاب...</div>
     </main>
 
     <!-- زر الإضافة -->
-    <button onclick="showModal()" class="fixed bottom-8 left-8 w-16 h-16 gold-bg text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40">
+    <button onclick="document.getElementById('addModal').style.display='flex'" class="fixed bottom-8 left-8 w-16 h-16 gold-bg text-black rounded-full shadow-2xl flex items-center justify-center z-40">
         <i class="fas fa-plus text-2xl"></i>
     </button>
 
     <!-- نافذة الإضافة -->
     <div id="addModal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4">
-        <div class="bg-[#161b22] w-full max-w-lg border-2 gold-border rounded-3xl p-8 shadow-2xl">
+        <div class="bg-[#161b22] w-full max-w-lg border-2 gold-border rounded-3xl p-8">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold gold-text">إضافة عرض جديد</h2>
-                <button onclick="hideModal()"><i class="fas fa-times text-xl text-gray-500"></i></button>
+                <button onclick="document.getElementById('addModal').style.display='none'"><i class="fas fa-times text-xl text-gray-500"></i></button>
             </div>
             <div class="space-y-4">
-                <input type="text" id="advName" placeholder="اسم المعلن" class="w-full bg-black border border-[#30363d] p-4 rounded-xl outline-none focus:border-[#e2b714]">
-                <input type="number" id="advPhone" placeholder="رقم التواصل (واتساب)" class="w-full bg-black border border-[#30363d] p-4 rounded-xl outline-none focus:border-[#e2b714]">
-                <input type="text" id="propLoc" placeholder="موقع العقار" class="w-full bg-black border border-[#30363d] p-4 rounded-xl outline-none focus:border-[#e2b714]">
+                <input type="text" id="f_name" placeholder="اسم المعلن" class="w-full p-4 rounded-xl outline-none">
+                <input type="number" id="f_phone" placeholder="رقم التواصل" class="w-full p-4 rounded-xl outline-none">
+                <input type="text" id="f_loc" placeholder="موقع العقار (مهم جداً)" class="w-full p-4 rounded-xl outline-none">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="propPrice" placeholder="السعر" class="bg-black border border-[#30363d] p-4 rounded-xl outline-none focus:border-[#e2b714]">
-                    <input type="text" id="propArea" placeholder="المساحة" class="bg-black border border-[#30363d] p-4 rounded-xl outline-none focus:border-[#e2b714]">
+                    <input type="text" id="f_price" placeholder="السعر" class="w-full p-4 rounded-xl outline-none">
+                    <input type="text" id="f_area" placeholder="المساحة" class="w-full p-4 rounded-xl outline-none">
                 </div>
-                <select id="propCat" class="w-full bg-black border border-[#30363d] p-4 rounded-xl outline-none focus:border-[#e2b714]">
-                    <option>شقة</option>
-                    <option>أرضية</option>
-                    <option>بيت / فيلا</option>
+                <select id="f_cat" class="w-full p-4 rounded-xl outline-none">
+                    <option value="شقة">شقة</option>
+                    <option value="أرضية">أرضية</option>
+                    <option value="بيت">بيت</option>
                 </select>
                 <div class="pt-4 border-t border-[#30363d]">
-                    <label class="text-xs gold-text mb-2 block">رمز حماية الحذف (لصاحب الإعلان فقط)</label>
-                    <input type="password" id="delKey" placeholder="أدخل كلمة سر للحذف لاحقاً" class="w-full bg-black border gold-border/40 p-4 rounded-xl outline-none text-center">
+                    <label class="text-xs gold-text mb-2 block">رمز الحماية للحذف</label>
+                    <input type="password" id="f_pass" placeholder="أدخل كلمة سر" class="w-full p-4 rounded-xl outline-none text-center">
                 </div>
-                <button onclick="submitData()" class="w-full gold-bg text-black font-black py-4 rounded-xl shadow-lg">نشر العرض الآن</button>
+                <button id="saveBtn" class="w-full gold-bg text-black font-black py-4 rounded-xl shadow-lg">نشر الآن</button>
             </div>
         </div>
     </div>
@@ -83,11 +85,11 @@
     <!-- نافذة الحذف -->
     <div id="delModal" class="fixed inset-0 bg-black/95 z-[110] hidden items-center justify-center p-6">
         <div class="bg-[#161b22] border border-red-500 rounded-3xl p-8 w-full max-w-sm text-center">
-            <h3 class="text-xl font-bold mb-4">تأكيد الحذف</h3>
-            <input type="password" id="delConfirmKey" class="w-full bg-black border border-[#30363d] p-4 rounded-xl text-center mb-6 outline-none" placeholder="أدخل رمز الحماية">
+            <h3 class="text-xl font-bold mb-6 text-white">تأكيد الحذف</h3>
+            <input type="password" id="delInput" class="w-full p-4 rounded-xl text-center mb-6 outline-none" placeholder="أدخل رمز الحماية">
             <div class="flex gap-3">
-                <button onclick="confirmDelete()" class="flex-1 bg-red-600 py-3 rounded-xl font-bold">حذف</button>
-                <button onclick="hideDelModal()" class="flex-1 bg-gray-700 py-3 rounded-xl">إلغاء</button>
+                <button id="confirmDelBtn" class="flex-1 bg-red-600 py-3 rounded-xl font-bold">حذف</button>
+                <button onclick="document.getElementById('delModal').style.display='none'" class="flex-1 bg-gray-700 py-3 rounded-xl">إلغاء</button>
             </div>
         </div>
     </div>
@@ -101,100 +103,83 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fadi-pro-v2';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fadi_v3_final';
 
         let properties = [];
         let currentFilter = 'الكل';
-        let activeDeleteId = null;
-        let activeDeleteKey = null;
+        let deleteId = null;
+        let deleteKey = null;
 
-        // الدخول وتجهيز البيانات
         signInAnonymously(auth).then(() => {
             onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'listings'), (snap) => {
                 properties = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderData();
+                render();
             });
         });
 
-        window.renderData = () => {
-            const grid = document.getElementById('listingsGrid');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            
+        function render() {
+            const grid = document.getElementById('gridBox');
+            const search = document.getElementById('searchBar').value.toLowerCase();
             const filtered = properties.filter(p => {
-                const matchesSearch = (p.propLoc || "").toLowerCase().includes(search) || (p.advName || "").toLowerCase().includes(search);
-                const matchesCat = currentFilter === 'الكل' || p.propCat === currentFilter;
-                return matchesSearch && matchesCat;
+                const mSearch = (p.loc || "").toLowerCase().includes(search) || (p.name || "").toLowerCase().includes(search);
+                const mCat = currentFilter === 'الكل' || p.cat === currentFilter;
+                return mSearch && mCat;
             });
 
-            if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-600">لا توجد عروض متوفرة حالياً</div>`;
-                return;
-            }
-
             grid.innerHTML = filtered.map(p => `
-                <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-6 hover:border-[#e2b714] transition-all relative group">
-                    <button onclick="openDel('${p.id}', '${p.delKey}')" class="absolute top-4 left-4 text-gray-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="bg-[#161b22] border border-[#30363d] rounded-2xl p-6 relative group">
+                    <button onclick="window.initDel('${p.id}', '${p.pass}')" class="absolute top-4 left-4 text-gray-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                         <i class="fas fa-trash"></i>
                     </button>
-                    <div class="text-[#e2b714] text-xs font-bold mb-2"><i class="fas fa-user ml-1"></i> ${p.advName}</div>
-                    <h3 class="text-xl font-bold mb-4 text-white">${p.propLoc}</h3>
+                    <div class="text-[#e2b714] text-xs mb-2 font-bold">${p.name}</div>
+                    <h3 class="text-xl font-bold mb-4">${p.loc}</h3>
                     <div class="flex justify-between items-center mb-6 bg-black/40 p-3 rounded-xl border border-[#30363d]">
-                        <div><span class="text-[10px] text-gray-500 block">السعر</span><span class="gold-text font-bold">${p.propPrice || "اتفاق"}</span></div>
-                        <div class="text-left"><span class="text-[10px] text-gray-500 block">المساحة</span><span class="text-sm font-bold">${p.propArea || "--"}</span></div>
+                        <div><span class="text-[10px] text-gray-500 block">السعر</span><span class="gold-text font-bold">${p.price || "اتفاق"}</span></div>
+                        <div class="text-left"><span class="text-[10px] text-gray-500 block">المساحة</span><span class="text-sm font-bold">${p.area || "--"}</span></div>
                     </div>
-                    <a href="https://wa.me/967${p.advPhone}?text=استفسار عن عقار: ${p.propLoc}" target="_blank" class="w-full bg-[#238636] text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold hover:bg-[#2ea043]">
-                        <i class="fab fa-whatsapp"></i> مراسلة المعلن
+                    <a href="https://wa.me/967${p.phone}" target="_blank" class="w-full bg-[#238636] text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold">
+                        <i class="fab fa-whatsapp"></i> مراسلة
                     </a>
                 </div>
             `).join('');
-        };
+        }
 
-        window.submitData = async () => {
-            const btn = event.target;
+        // إضافة دالة الحفظ بشكل صحيح ومباشر
+        document.getElementById('saveBtn').addEventListener('click', async () => {
             const data = {
-                advName: document.getElementById('advName').value,
-                advPhone: document.getElementById('advPhone').value,
-                propLoc: document.getElementById('propLoc').value,
-                propPrice: document.getElementById('propPrice').value,
-                propArea: document.getElementById('propArea').value,
-                propCat: document.getElementById('propCat').value,
-                delKey: document.getElementById('delKey').value
+                name: document.getElementById('f_name').value,
+                phone: document.getElementById('f_phone').value,
+                loc: document.getElementById('f_loc').value,
+                price: document.getElementById('f_price').value,
+                area: document.getElementById('f_area').value,
+                cat: document.getElementById('f_cat').value,
+                pass: document.getElementById('f_pass').value
             };
 
-            if (!data.propLoc || !data.delKey) return alert("يرجى ملء موقع العقار ورمز الحماية!");
-            
-            btn.disabled = true;
-            btn.innerText = "جاري النشر...";
+            if(!data.loc || !data.pass) return alert("املا الموقع وكلمة السر!");
+
+            document.getElementById('saveBtn').innerText = "جاري الحفظ...";
             await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'listings'), data);
-            hideModal();
-            btn.disabled = false;
-            btn.innerText = "نشر العرض الآن";
-            // تصفير الحقول
-            ['advName','advPhone','propLoc','propPrice','propArea','delKey'].forEach(id => document.getElementById(id).value = '');
-        };
+            document.getElementById('addModal').style.display = 'none';
+            document.getElementById('saveBtn').innerText = "نشر الآن";
+            // تفريغ
+            ['f_name','f_phone','f_loc','f_price','f_area','f_pass'].forEach(id => document.getElementById(id).value='');
+        });
 
-        window.setFilter = (cat) => {
-            currentFilter = cat;
-            document.querySelectorAll('.filter-btn').forEach(b => {
-                const isActive = b.innerText === cat || (cat === 'الكل' && b.innerText === 'الكل');
-                b.className = isActive ? "filter-btn bg-[#e2b714] text-black px-6 py-2 rounded-full text-sm font-bold" : "filter-btn bg-[#161b22] border border-[#30363d] px-6 py-2 rounded-full text-sm";
-            });
-            renderData();
-        };
+        // دوال مساعدة في الـ window لتكون متاحة للـ HTML
+        window.applyFilter = (cat) => { currentFilter = cat; render(); };
+        window.initDel = (id, key) => { deleteId = id; deleteKey = key; document.getElementById('delModal').style.display='flex'; };
+        
+        document.getElementById('confirmDelBtn').addEventListener('click', async () => {
+            if(document.getElementById('delInput').value === deleteKey) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'listings', deleteId));
+                document.getElementById('delModal').style.display='none';
+                document.getElementById('delInput').value = '';
+            } else { alert("الرمز غلط!"); }
+        });
 
-        window.openDel = (id, key) => { activeDeleteId = id; activeDeleteKey = key; document.getElementById('delModal').style.display = 'flex'; };
-        window.hideDelModal = () => { document.getElementById('delModal').style.display = 'none'; };
-        window.confirmDelete = async () => {
-            const pass = document.getElementById('delConfirmKey').value;
-            if (pass === activeDeleteKey) {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'listings', activeDeleteId));
-                hideDelModal();
-                document.getElementById('delConfirmKey').value = '';
-            } else { alert("رمز الحماية خطأ!"); }
-        };
+        document.getElementById('searchBar').oninput = render;
 
-        window.showModal = () => document.getElementById('addModal').style.display = 'flex';
-        window.hideModal = () => document.getElementById('addModal').style.display = 'none';
     </script>
 </body>
 </html>
