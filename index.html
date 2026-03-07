@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏢 منصة الإيجارات الذكية</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', 'Tahoma', sans-serif;
+        }
+        body {
+            background: #0a1928;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(145deg, #1e3a5f, #0a1a2f);
+            border: 2px solid #ffd700;
+            border-radius: 40px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffd700;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #00ff88;
+            font-size: 1.2em;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 15px 30px;
+            background: #1e3a5f;
+            border: 2px solid #ffd700;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .tab.active {
+            background: #ffd700;
+            color: black;
+        }
+        .tab:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px #ffd700;
+        }
+        .card {
+            background: rgba(30,58,95,0.3);
+            border: 2px solid #ffd700;
+            border-radius: 40px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        .card h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        input, select {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: #0a1a2f;
+            border: 2px solid #ffd700;
+            border-radius: 60px;
+            color: white;
+            font-size: 1em;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #ffd700;
+            border: none;
+            border-radius: 60px;
+            color: black;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 40px #ffd700;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .stat-card {
+            background: #1e3a5f;
+            border: 2px solid #ffd700;
+            border-radius: 30px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.5em;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .item-card {
+            background: #0a1a2f;
+            border: 2px solid #ffd700;
+            border-radius: 30px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .badge {
+            background: #ffd700;
+            color: black;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ff4444;
+            font-weight: bold;
+        }
+        .success {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffd700;
+            color: black;
+            padding: 15px 40px;
+            border-radius: 60px;
+            font-weight: bold;
+            z-index: 9999;
+            box-shadow: 0 0 50px #ffd700;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🏢 منصة الإيجارات الذكية</h1>
+        <p>⚡ نظام متكامل لإدارة العقارات والإيجارات ⚡</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('register')">📝 تسجيل</div>
+        <div class="tab" onclick="showTab('owners')">👑 الملاك</div>
+        <div class="tab" onclick="showTab('tenants')">🏠 المستأجرين</div>
+        <div class="tab" onclick="showTab('properties')">🏘️ العقارات</div>
+        <div class="tab" onclick="showTab('payments')">💰 المدفوعات</div>
+    </div>
+
+    <!-- تبويب التسجيل -->
+    <div id="register-tab" class="card">
+        <h2>📝 تسجيل جديد</h2>
+        <div class="grid-2">
+            <div>
+                <h3 style="color:#ffd700; margin-bottom:15px;">👑 تسجيل مالك</h3>
+                <input type="text" id="ownerName" placeholder="الاسم كامل">
+                <input type="text" id="ownerPhone" placeholder="رقم الجوال">
+                <input type="password" id="ownerPass" placeholder="كلمة السر (اختياري)">
+                <button class="btn" onclick="registerOwner()">تسجيل مالك</button>
+            </div>
+            <div>
+                <h3 style="color:#ffd700; margin-bottom:15px;">🏠 تسجيل مستأجر</h3>
+                <input type="text" id="tenantName" placeholder="الاسم كامل">
+                <input type="text" id="tenantPhone" placeholder="رقم الجوال">
+                <input type="password" id="tenantPass" placeholder="كلمة السر (اختياري)">
+                <button class="btn" onclick="registerTenant()">تسجيل مستأجر</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- تبويب الملاك -->
+    <div id="owners-tab" class="card" style="display:none;">
+        <h2>👑 قائمة الملاك</h2>
+        <div id="ownersList"></div>
+    </div>
+
+    <!-- تبويب المستأجرين -->
+    <div id="tenants-tab" class="card" style="display:none;">
+        <h2>🏠 قائمة المستأجرين</h2>
+        <div id="tenantsList"></div>
+    </div>
+
+    <!-- تبويب العقارات -->
+    <div id="properties-tab" class="card" style="display:none;">
+        <h2>🏘️ إدارة العقارات</h2>
+        
+        <div style="margin-bottom:30px;">
+            <h3 style="color:#ffd700;">➕ إضافة عقار جديد</h3>
+            <input type="text" id="propName" placeholder="اسم العقار">
+            <input type="text" id="propAddress" placeholder="العنوان">
+            <input type="text" id="propType" placeholder="النوع (شقة - فيلا - محل)">
+            <input type="number" id="propRent" placeholder="الإيجار الشهري">
+            <input type="text" id="propOwner" placeholder="اسم المالك">
+            <button class="btn" onclick="addProperty()">إضافة عقار</button>
+        </div>
+
+        <h3 style="color:#ffd700;">📋 جميع العقارات</h3>
+        <div id="propertiesList"></div>
+    </div>
+
+    <!-- تبويب المدفوعات -->
+    <div id="payments-tab" class="card" style="display:none;">
+        <h2>💰 سجل المدفوعات</h2>
+        <div id="paymentsList"></div>
+    </div>
+</div>
+
+<script>
+    let currentTab = 'register';
+    let data = { owners: [], tenants: [], properties: [], payments: [] };
+
+    function showTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        document.getElementById('register-tab').style.display = tab === 'register' ? 'block' : 'none';
+        document.getElementById('owners-tab').style.display = tab === 'owners' ? 'block' : 'none';
+        document.getElementById('tenants-tab').style.display = tab === 'tenants' ? 'block' : 'none';
+        document.getElementById('properties-tab').style.display = tab === 'properties' ? 'block' : 'none';
+        document.getElementById('payments-tab').style.display = tab === 'payments' ? 'block' : 'none';
+        
+        if (tab !== 'register') loadData();
+    }
+
+    async function loadData() {
+        try {
+            const res = await fetch('/api/data');
+            data = await res.json();
+            displayOwners();
+            displayTenants();
+            displayProperties();
+            displayPayments();
+        } catch (e) {
+            showNotification('خطأ في تحميل البيانات');
+        }
+    }
+
+    async function registerOwner() {
+        const name = document.getElementById('ownerName').value.trim();
+        const phone = document.getElementById('ownerPhone').value.trim();
+        const pass = document.getElementById('ownerPass').value.trim();
+
+        if (!name || !phone) {
+            showNotification('❌ الاسم والجوال مطلوبان');
+            return;
+        }
+
+        // التحقق من الاسم
+        const check = await fetch('/api/check-username', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: name, type: 'owner' })
+        });
+        const checkRes = await check.json();
+
+        if (checkRes.exists) {
+            showNotification('❌ هذا الاسم موجود مسبقاً');
+            return;
+        }
+
+        const res = await fetch('/api/register-owner', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, phone, password: pass })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            showNotification('✅ تم تسجيل المالك بنجاح');
+            document.getElementById('ownerName').value = '';
+            document.getElementById('ownerPhone').value = '';
+            document.getElementById('ownerPass').value = '';
+        }
+    }
+
+    async function registerTenant() {
+        const name = document.getElementById('tenantName').value.trim();
+        const phone = document.getElementById('tenantPhone').value.trim();
+        const pass = document.getElementById('tenantPass').value.trim();
+
+        if (!name || !phone) {
+            showNotification('❌ الاسم والجوال مطلوبان');
+            return;
+        }
+
+        const check = await fetch('/api/check-username', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ username: name, type: 'tenant' })
+        });
+        const checkRes = await check.json();
+
+        if (checkRes.exists) {
+            showNotification('❌ هذا الاسم موجود مسبقاً');
+            return;
+        }
+
+        const res = await fetch('/api/register-tenant', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, phone, password: pass })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            showNotification('✅ تم تسجيل المستأجر بنجاح');
+            document.getElementById('tenantName').value = '';
+            document.getElementById('tenantPhone').value = '';
+            document.getElementById('tenantPass').value = '';
+        }
+    }
+
+    async function addProperty() {
+        const name = document.getElementById('propName').value.trim();
+        const address = document.getElementById('propAddress').value.trim();
+        const type = document.getElementById('propType').value.trim();
+        const rent = document.getElementById('propRent').value;
+        const owner = document.getElementById('propOwner').value.trim();
+
+        if (!name || !address || !type || !rent || !owner) {
+            showNotification('❌ املأ جميع الحقول');
+            return;
+        }
+
+        const res = await fetch('/api/add-property', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, address, type, rent, ownerName: owner })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            showNotification('✅ تم إضافة العقار');
+            document.getElementById('propName').value = '';
+            document.getElementById('propAddress').value = '';
+            document.getElementById('propType').value = '';
+            document.getElementById('propRent').value = '';
+            document.getElementById('propOwner').value = '';
+            loadData();
+        }
+    }
+
+    function displayOwners() {
+        const div = document.getElementById('ownersList');
+        div.innerHTML = '';
+        data.owners.forEach(o => {
+            div.innerHTML += `
+                <div class="item-card">
+                    <div class="item-header">
+                        <span class="badge">👑 مالك</span>
+                        <span>💰 الرصيد: ${o.balance || 0} ريال</span>
+                    </div>
+                    <h3>${o.name}</h3>
+                    <p>📱 ${o.phone}</p>
+                    <p>📅 تاريخ التسجيل: ${o.joinDate}</p>
+                </div>
+            `;
+        });
+    }
+
+    function displayTenants() {
+        const div = document.getElementById('tenantsList');
+        div.innerHTML = '';
+        data.tenants.forEach(t => {
+            div.innerHTML += `
+                <div class="item-card">
+                    <div class="item-header">
+                        <span class="badge">🏠 مستأجر</span>
+                        <span>💰 مدفوعات: ${t.totalPaid || 0} ريال</span>
+                    </div>
+                    <h3>${t.name}</h3>
+                    <p>📱 ${t.phone}</p>
+                    <p>📅 تاريخ التسجيل: ${t.joinDate}</p>
+                </div>
+            `;
+        });
+    }
+
+    function displayProperties() {
+        const div = document.getElementById('propertiesList');
+        div.innerHTML = '';
+        data.properties.forEach(p => {
+            const today = new Date();
+            const endDate = p.endDate ? new Date(p.endDate.split('/').reverse().join('-')) : null;
+            const daysLeft = endDate ? Math.ceil((endDate - today) / (1000*60*60*24)) : null;
+            
+            div.innerHTML += `
+                <div class="item-card">
+                    <div class="item-header">
+                        <span class="badge">${p.type}</span>
+                        <span>💰 ${p.rent} ريال/شهر</span>
+                    </div>
+                    <h3>${p.name}</h3>
+                    <p>📍 ${p.address}</p>
+                    <p>👑 مالك: ${p.owner}</p>
+                    ${p.tenant ? `
+                        <p>🏠 مستأجر: ${p.tenant}</p>
+                        <p>📅 من: ${p.startDate} إلى: ${p.endDate}</p>
+                        <p class="${daysLeft <= 7 ? 'warning' : 'success'}">
+                            ⏳ متبقي: ${daysLeft} يوم
+                        </p>
+                    ` : '<p class="success">✅ متاح للتأجير</p>'}
+                </div>
+            `;
+        });
+    }
+
+    function displayPayments() {
+        const div = document.getElementById('paymentsList');
+        div.innerHTML = '';
+        data.payments.slice().reverse().forEach(p => {
+            div.innerHTML += `
+                <div class="item-card">
+                    <div class="item-header">
+                        <span class="badge">💰 دفع</span>
+                        <span>${p.amount} ريال</span>
+                    </div>
+                    <p>🏠 عقار: ${p.propertyName}</p>
+                    <p>👤 مستأجر: ${p.tenantName}</p>
+                    <p>👑 مالك: ${p.ownerName}</p>
+                    <p>📅 ${p.date} - ${p.time}</p>
+                    <p>🗓️ شهر: ${p.month}</p>
+                </div>
+            `;
+        });
+    }
+
+    function showNotification(text) {
+        const notif = document.createElement('div');
+        notif.className = 'notification';
+        notif.innerText = text;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    // تحميل البيانات كل 30 ثانية
+    setInterval(loadData, 30000);
+</script>
+
+</body>
+</html>
