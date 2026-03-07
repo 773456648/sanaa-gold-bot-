@@ -7,40 +7,37 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// تشغيل الملفات من مجلد public
 app.use(express.static(path.join(__dirname, 'public')));
 
+let usersInRooms = {};
+
 io.on('connection', (socket) => {
-    // دخول المستخدم لغرفة خاصة
     socket.on('join-room', (data) => {
         socket.join(data.roomID);
         socket.roomID = data.roomID;
-        console.log(`مستخدم دخل الغرفة: ${data.roomID}`);
-        socket.to(data.roomID).emit('chat-message', { user: 'النظام', text: 'دخل مستخدم جديد للغرفة' });
+        socket.userName = data.user;
+
+        if (!usersInRooms[data.roomID]) usersInRooms[data.roomID] = [];
+        usersInRooms[data.roomID].push({ id: socket.id, name: data.user });
+
+        io.to(data.roomID).emit('update-users', usersInRooms[data.roomID]);
     });
 
-    // تبادل رسائل الشات
     socket.on('chat-message', (data) => {
         io.to(data.roomID).emit('chat-message', data);
     });
 
-    // إشارات الفيديو WebRTC
-    socket.on('offer', (data) => {
-        socket.to(data.roomID).emit('offer', data.offer);
-    });
-
-    socket.on('answer', (data) => {
-        socket.to(data.roomID).emit('answer', data.answer);
-    });
-
-    socket.on('candidate', (data) => {
-        socket.to(data.roomID).emit('candidate', data.candidate);
+    socket.on('request-call', (data) => {
+        io.to(data.to).emit('incoming-call', { fromName: socket.userName, fromId: socket.id });
     });
 
     socket.on('disconnect', () => {
-        console.log('مستخدم غادر');
+        if (socket.roomID && usersInRooms[socket.roomID]) {
+            usersInRooms[socket.roomID] = usersInRooms[socket.roomID].filter(u => u.id !== socket.id);
+            io.to(socket.roomID).emit('update-users', usersInRooms[socket.roomID]);
+        }
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`السيرفر شغال تمام على منفذ ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
