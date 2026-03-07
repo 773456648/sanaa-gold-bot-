@@ -8,15 +8,16 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', sans-serif; }
         body { background: #0f172a; color: #f8fafc; padding: 20px; }
         .container { max-width: 1000px; margin: auto; }
-        .header { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #fbbf24; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 30px; }
+        .header { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #fbbf24; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(251, 191, 36, 0.1); }
         .header h1 { color: #fbbf24; margin-bottom: 10px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: #1e293b; border: 1px solid #334155; border-radius: 15px; padding: 20px; text-align: center; cursor: pointer; }
-        .card h3 { color: #38bdf8; }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #475569; color: white; border-radius: 10px; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 15px; padding: 20px; transition: 0.3s; cursor: pointer; text-align: center; }
+        .card:hover { border-color: #fbbf24; transform: translateY(-5px); }
+        .card h3 { color: #38bdf8; margin-bottom: 10px; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #475569; border-radius: 10px; color: white; outline: none; }
         .btn { padding: 12px 20px; background: #fbbf24; border: none; border-radius: 10px; color: #0f172a; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; }
-        .modal-content { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid #fbbf24; }
         .post { background: #334155; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #38bdf8; text-align: right;}
         #pageView { display: none; }
     </style>
@@ -27,16 +28,17 @@
     <div id="mainHub">
         <div class="header">
             <h1>🌐 المجمع العام للمنصات</h1>
-            <button class="btn" style="width: auto;" onclick="showModal('createPageModal')">✨ إنشاء منصتي الخاصة</button>
+            <p>أنشئ صفحتك الخاصة وشاركها مع العالم</p>
+            <button class="btn" style="width: auto; margin-top: 20px;" onclick="showModal('createPageModal')">✨ إنشاء منصة جديدة</button>
         </div>
         <div class="grid" id="platformsGrid"></div>
     </div>
 
     <div id="pageView">
-        <button class="btn" style="width: auto; margin-bottom: 20px;" onclick="goBack()">🔙 العودة للمجمع</button>
+        <button class="btn" style="width: auto; background: transparent; border: 1px solid #fbbf24; color: #fbbf24; margin-bottom: 20px;" onclick="goBack()">🔙 العودة للمجمع</button>
         <div class="header">
-            <h1 id="currentPageTitle">...</h1>
-            <button class="btn" style="width: auto;" onclick="showModal('addPostModal')">➕ إضافة محتوى</button>
+            <h1 id="currentPageTitle">منصة</h1>
+            <button class="btn" style="width: auto;" onclick="showModal('addPostModal')">➕ إضافة منشور (للمالك)</button>
         </div>
         <div id="postsContainer"></div>
     </div>
@@ -44,21 +46,21 @@
 
 <div id="createPageModal" class="modal">
     <div class="modal-content">
-        <h2>🚀 إنشاء منصة</h2>
+        <h2 style="color: #fbbf24; margin-bottom: 15px;">🚀 إنشاء منصة</h2>
         <input type="text" id="pName" placeholder="اسم المنصة">
         <input type="password" id="pAdminPass" placeholder="كلمة سر المالك">
         <input type="password" id="pVisitorPass" placeholder="كلمة سر الزوار (اختياري)">
-        <button class="btn" onclick="createPlatform()">✅ إنشاء الآن</button>
-        <button class="btn" onclick="closeModal('createPageModal')">❌ إلغاء</button>
+        <button class="btn" onclick="createPlatform()">✅ إنشاء</button>
+        <button class="btn" style="background:#475569; color:white;" onclick="closeModal('createPageModal')">إلغاء</button>
     </div>
 </div>
 
 <div id="addPostModal" class="modal">
     <div class="modal-content">
-        <h2>✍️ إضافة محتوى</h2>
+        <h2 style="color: #fbbf24; margin-bottom: 15px;">✍️ إضافة منشور</h2>
         <textarea id="postContent" rows="4" placeholder="اكتب هنا..."></textarea>
         <button class="btn" onclick="addPost()">نشر</button>
-        <button class="btn" onclick="closeModal('addPostModal')">إلغاء</button>
+        <button class="btn" style="background:#475569; color:white;" onclick="closeModal('addPostModal')">إلغاء</button>
     </div>
 </div>
 
@@ -67,20 +69,23 @@
     let currentPlatformId = null;
 
     async function fetchPlatforms() {
-        const res = await fetch('/api/platforms');
-        platforms = await res.json();
-        renderGrid();
+        try {
+            const res = await fetch('/api/platforms');
+            platforms = await res.json();
+            renderGrid();
+        } catch (e) { console.error("السيرفر لسه ما رد"); }
     }
 
     function renderGrid() {
         const grid = document.getElementById('platformsGrid');
         grid.innerHTML = '';
         platforms.forEach(p => {
-            const isLocked = p.visitorPass.trim() !== '';
-            grid.innerHTML += `<div class="card" onclick="openPlatform(${p.id})">
-                <h3>${p.name}</h3>
-                <p>${isLocked ? '🔒 مقفلة' : '🌍 عامة'}</p>
-            </div>`;
+            const isLocked = p.visitorPass && p.visitorPass.trim() !== '';
+            grid.innerHTML += `
+                <div class="card" onclick="openPlatform(${p.id})">
+                    <h3>${p.name}</h3>
+                    <p>${isLocked ? '🔒 مقفلة' : '🌍 عامة'}</p>
+                </div>`;
         });
     }
 
@@ -88,26 +93,26 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     async function createPlatform() {
-        const pName = document.getElementById('pName').value;
-        const pAdminPass = document.getElementById('pAdminPass').value;
-        const pVisitorPass = document.getElementById('pVisitorPass').value;
-        
-        if(!pName || !pAdminPass) return alert("الاسم وكلمة السر للمالك ضرورية!");
+        const name = document.getElementById('pName').value.trim();
+        const adminPass = document.getElementById('pAdminPass').value;
+        const visitorPass = document.getElementById('pVisitorPass').value;
+        if(!name || !adminPass) return alert("الاسم وكلمة السر ضرورية!");
 
         await fetch('/api/platforms', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: Date.now(), name: pName, adminPass: pAdminPass, visitorPass: pVisitorPass, posts: [] })
+            body: JSON.stringify({ id: Date.now(), name, adminPass, visitorPass, posts: [] })
         });
-        
         closeModal('createPageModal');
         fetchPlatforms();
     }
 
     function openPlatform(id) {
         const p = platforms.find(x => x.id === id);
-        if(p.visitorPass && prompt("كلمة سر الزوار:") !== p.visitorPass && prompt("كلمة سر المالك:") !== p.adminPass) return alert("غلط!");
-        
+        if(p.visitorPass && p.visitorPass.trim() !== '') {
+            const pass = prompt("أدخل كلمة سر الزوار:");
+            if(pass !== p.visitorPass && pass !== p.adminPass) return alert("خطأ!");
+        }
         currentPlatformId = id;
         document.getElementById('mainHub').style.display = 'none';
         document.getElementById('pageView').style.display = 'block';
@@ -117,9 +122,10 @@
 
     async function addPost() {
         const p = platforms.find(x => x.id === currentPlatformId);
-        if(prompt("كلمة سر المالك:") !== p.adminPass) return alert("غلط!");
+        const pass = prompt("أدخل كلمة سر المالك للنشر:");
+        if(pass !== p.adminPass) return alert("خطأ!");
 
-        const text = document.getElementById('postContent').value;
+        const text = document.getElementById('postContent').value.trim();
         if(!text) return;
 
         await fetch('/api/posts', {
@@ -127,9 +133,9 @@
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ platformId: currentPlatformId, post: { text, date: new Date().toLocaleDateString('ar-EG') } })
         });
-
         closeModal('addPostModal');
-        fetchPlatforms().then(() => renderPosts());
+        document.getElementById('postContent').value = '';
+        fetchPlatforms().then(renderPosts);
     }
 
     function renderPosts() {
@@ -137,18 +143,14 @@
         const container = document.getElementById('postsContainer');
         container.innerHTML = '';
         [...p.posts].reverse().forEach(post => {
-            container.innerHTML += `<div class="post"><p>${post.text}</p><p style="font-size:0.8em; color:#94a3b8;">${post.date}</p></div>`;
+            container.innerHTML += `<div class="post"><p>${post.text}</p><p style="font-size:0.8em; color:#94a3b8;">📅 ${post.date}</p></div>`;
         });
     }
 
-    function goBack() {
-        document.getElementById('pageView').style.display = 'none';
-        document.getElementById('mainHub').style.display = 'block';
-        currentPlatformId = null;
-    }
+    function goBack() { document.getElementById('pageView').style.display = 'none'; document.getElementById('mainHub').style.display = 'block'; fetchPlatforms(); }
 
     fetchPlatforms();
-    setInterval(fetchPlatforms, 5000); // تحديث تلقائي كل 5 ثواني عشان الكل يشوف الجديد
+    setInterval(fetchPlatforms, 5000); 
 </script>
 </body>
 </html>
