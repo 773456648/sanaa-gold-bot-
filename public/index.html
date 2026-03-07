@@ -3,170 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏢 منصة الإيجارات الذكية - نظام فادي</title>
+    <title>🌐 مجمع المنصات الشامل</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-        body { background: #0a1928; color: white; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; }
-        .header { background: linear-gradient(145deg, #1e3a5f, #0a1a2f); border: 2px solid #ffd700; border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px; }
-        .header h1 { color: #ffd700; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
-        .tab { padding: 10px 20px; background: #1e3a5f; border: 1px solid #ffd700; border-radius: 30px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
-        .tab.active { background: #ffd700; color: black; font-weight: bold; }
-        .card { background: rgba(30,58,95,0.3); border: 2px solid #ffd700; border-radius: 20px; padding: 20px; backdrop-filter: blur(10px); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #0a1a2f; border: 1px solid #ffd700; border-radius: 10px; color: white; }
-        .btn { width: 100%; padding: 12px; background: #ffd700; border: none; border-radius: 10px; color: black; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .item-card { background: #0a1a2f; border: 1px solid #ffd700; border-radius: 15px; padding: 15px; margin-top: 15px; position: relative; }
-        .badge { background: #ffd700; color: black; padding: 3px 10px; border-radius: 5px; font-size: 0.8em; margin-left: 5px; }
-        .delete-btn { background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: left; }
-        .user-info { color: #00ff88; margin-bottom: 15px; text-align: center; font-weight: bold; }
-        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ffd700; color: black; padding: 10px 30px; border-radius: 20px; z-index: 1000; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tahoma', sans-serif; }
+        body { background: #0f172a; color: #f8fafc; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        
+        /* تصميم العناوين والبطاقات */
+        .header { background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid #fbbf24; border-radius: 20px; padding: 25px; text-align: center; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(251, 191, 36, 0.1); }
+        .header h1 { color: #fbbf24; margin-bottom: 10px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 15px; padding: 20px; transition: 0.3s; cursor: pointer; text-align: center; }
+        .card:hover { border-color: #fbbf24; transform: translateY(-5px); }
+        .card h3 { color: #38bdf8; margin-bottom: 10px; font-size: 1.5em; }
+        .lock-icon { font-size: 1.2em; }
+
+        /* الأزرار والحقول */
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #475569; border-radius: 10px; color: white; outline: none; }
+        input:focus { border-color: #fbbf24; }
+        .btn { padding: 12px 20px; background: #fbbf24; border: none; border-radius: 10px; color: #0f172a; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px; }
+        .btn:hover { background: #f59e0b; }
+        .btn-outline { background: transparent; border: 2px solid #fbbf24; color: #fbbf24; }
+        
+        /* النوافذ المنبثقة (Modal) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 100; align-items: center; justify-content: center; }
+        .modal-content { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; border: 1px solid #fbbf24; }
+        
+        /* داخل المنصة */
+        .post { background: #334155; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #38bdf8; text-align: right;}
+        .post-date { font-size: 0.8em; color: #94a3b8; }
+        
+        #pageView { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>🏢 منصة الإيجارات الذكية</h1>
-        <p id="welcomeMsg">سجل دخولك يا خبير</p>
+    <div id="mainHub">
+        <div class="header">
+            <h1>🌐 المجمع العام للمنصات</h1>
+            <p>اختر منصة للدخول، أو أنشئ مملكتك الخاصة!</p>
+            <button class="btn" style="width: auto; margin-top: 20px;" onclick="showModal('createPageModal')">✨ إنشاء منصتي الخاصة</button>
+        </div>
+        
+        <h2 style="margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px;">🏘️ المنصات المتاحة:</h2>
+        <div class="grid" id="platformsGrid"></div>
     </div>
 
-    <div id="loginArea">
-        <div class="card">
-            <h2 id="authTitle">🔐 دخول / تسجيل</h2>
-            <input type="text" id="userName" placeholder="الاسم الكامل">
-            <input type="password" id="userPass" placeholder="كلمة السر">
-            <select id="userRole">
-                <option value="owner">تاج الملك (مالك)</option>
-                <option value="tenant">ضيف الدار (مستأجر)</option>
-            </select>
-            <button class="btn" onclick="handleAuth()">دخول النظام</button>
+    <div id="pageView">
+        <button class="btn btn-outline" style="width: auto; margin-bottom: 20px;" onclick="goBack()">🔙 العودة للمجمع</button>
+        
+        <div class="header">
+            <h1 id="currentPageTitle">منصة ...</h1>
+            <button class="btn" style="width: auto;" onclick="showModal('addPostModal')">➕ إضافة محتوى (للمالك فقط)</button>
         </div>
+
+        <div id="postsContainer"></div>
     </div>
+</div>
 
-    <div id="mainSystem" style="display:none;">
-        <div class="user-info" id="currentUserDisplay"></div>
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('properties')">🏘️ العقارات</div>
-            <div id="ownerOnlyTab" class="tab" onclick="switchTab('add')">➕ إضافة عقار</div>
-            <div class="tab" onclick="logout()">🚪 خروج</div>
-        </div>
+<div id="createPageModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color: #fbbf24; margin-bottom: 15px;">🚀 إنشاء منصة جديدة</h2>
+        <input type="text" id="pName" placeholder="اسم منصتك (مثال: عقارات فادي)">
+        <input type="password" id="pAdminPass" placeholder="كلمة سر المالك (مهمة للتعديل)">
+        <input type="password" id="pVisitorPass" placeholder="كلمة سر للزوار (اتركها فارغة لتكون عامة)">
+        <button class="btn" onclick="createPlatform()">✅ إنشاء الآن</button>
+        <button class="btn btn-outline" onclick="closeModal('createPageModal')">❌ إلغاء</button>
+    </div>
+</div>
 
-        <div id="properties-view" class="card">
-            <h2>📋 قائمة العقارات المتاحة</h2>
-            <div id="listContainer"></div>
-        </div>
-
-        <div id="add-view" class="card" style="display:none;">
-            <h2>➕ عقار جديد</h2>
-            <input type="text" id="pName" placeholder="اسم العقار (مثلاً: شقة الأمل)">
-            <input type="text" id="pAddress" placeholder="الموقع">
-            <input type="number" id="pRent" placeholder="الإيجار (ريال)">
-            <button class="btn" onclick="createNewProperty()">نشر العقار</button>
-        </div>
+<div id="addPostModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color: #fbbf24; margin-bottom: 15px;">✍️ إضافة محتوى جديد</h2>
+        <textarea id="postContent" rows="4" style="width: 100%; padding: 10px; background: #0f172a; color: white; border-radius: 10px; margin-bottom: 10px;" placeholder="اكتب عرضك، عقارك، أو فكرتك هنا..."></textarea>
+        <button class="btn" onclick="addPost()">نشر المحتوى</button>
+        <button class="btn btn-outline" onclick="closeModal('addPostModal')">إلغاء</button>
     </div>
 </div>
 
 <script>
-    let users = JSON.parse(localStorage.getItem('users')) || [];
-    let properties = JSON.parse(localStorage.getItem('properties')) || [];
-    let currentUser = null;
+    // قاعدة البيانات المصغرة
+    let platforms = JSON.parse(localStorage.getItem('fadi_platforms')) || [];
+    let currentPlatformId = null;
 
-    function handleAuth() {
-        const name = document.getElementById('userName').value.trim();
-        const pass = document.getElementById('userPass').value;
-        const role = document.getElementById('userRole').value;
-
-        if(!name || !pass) return toast("أدخل بياناتك كاملة!");
-
-        let user = users.find(u => u.name === name);
+    // تهيئة الصفحة
+    function init() {
+        const grid = document.getElementById('platformsGrid');
+        grid.innerHTML = '';
         
-        if(user) {
-            if(user.pass !== pass) return toast("كلمة السر غلط!");
-            currentUser = user;
-        } else {
-            currentUser = { name, pass, role };
-            users.push(currentUser);
-            localStorage.setItem('users', JSON.stringify(users));
-            toast("تم تسجيلك بنجاح");
+        if(platforms.length === 0) {
+            grid.innerHTML = '<p style="color:#94a3b8; text-align:center; width:100%;">مابش منصات للحين، كن أول من ينشئ منصة!</p>';
+            return;
         }
-        enterSystem();
-    }
 
-    function enterSystem() {
-        document.getElementById('loginArea').style.display = 'none';
-        document.getElementById('mainSystem').style.display = 'block';
-        document.getElementById('currentUserDisplay').innerText = `أهلاً بك يا ${currentUser.name} (${currentUser.role === 'owner' ? 'مالك' : 'مستأجر'})`;
-        
-        if(currentUser.role !== 'owner') {
-            document.getElementById('ownerOnlyTab').style.display = 'none';
-        }
-        renderProperties();
-    }
-
-    function createNewProperty() {
-        const name = document.getElementById('pName').value;
-        const address = document.getElementById('pAddress').value;
-        const rent = document.getElementById('pRent').value;
-
-        if(!name || !rent) return toast("املأ الحقول يا بطل");
-
-        const newP = {
-            id: Date.now(),
-            name, address, rent,
-            owner: currentUser.name
-        };
-
-        properties.push(newP);
-        localStorage.setItem('properties', JSON.stringify(properties));
-        toast("تمت إضافة العقار");
-        switchTab('properties');
-        renderProperties();
-    }
-
-    function renderProperties() {
-        const container = document.getElementById('listContainer');
-        container.innerHTML = properties.length === 0 ? '<p>لا توجد عقارات حالياً</p>' : '';
-        
-        properties.forEach(p => {
-            const div = document.createElement('div');
-            div.className = 'item-card';
-            div.innerHTML = `
-                <h3>${p.name} <span class="badge">${p.rent} ريال</span></h3>
-                <p>📍 الموقع: ${p.address}</p>
-                <p>👑 المالك: ${p.owner}</p>
-                ${p.owner === currentUser.name ? `<button class="delete-btn" onclick="deleteProp(${p.id})">حذف</button>` : ''}
-                <div style="clear:both"></div>
+        platforms.forEach(p => {
+            const isLocked = p.visitorPass.trim() !== '';
+            grid.innerHTML += `
+                <div class="card" onclick="openPlatform(${p.id})">
+                    <h3>${p.name}</h3>
+                    <div class="lock-icon">${isLocked ? '🔒 منصة مقفلة' : '🌍 منصة عامة'}</div>
+                    <p style="font-size:0.9em; color:#94a3b8; margin-top:10px;">المنشورات: ${p.posts.length}</p>
+                </div>
             `;
-            container.appendChild(div);
         });
     }
 
-    function deleteProp(id) {
-        properties = properties.filter(p => p.id !== id);
-        localStorage.setItem('properties', JSON.stringify(properties));
-        renderProperties();
-        toast("تم الحذف");
+    // دوال النوافذ المنبثقة
+    function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // إنشاء منصة
+    function createPlatform() {
+        const name = document.getElementById('pName').value.trim();
+        const adminPass = document.getElementById('pAdminPass').value;
+        const visitorPass = document.getElementById('pVisitorPass').value;
+
+        if(!name || !adminPass) return alert("يا فادي، اسم المنصة وكلمة سر المالك ضرورية!");
+
+        const newPlatform = {
+            id: Date.now(),
+            name: name,
+            adminPass: adminPass,
+            visitorPass: visitorPass,
+            posts: []
+        };
+
+        platforms.push(newPlatform);
+        localStorage.setItem('fadi_platforms', JSON.stringify(platforms));
+        
+        closeModal('createPageModal');
+        init();
     }
 
-    function switchTab(tab) {
-        document.getElementById('properties-view').style.display = tab === 'properties' ? 'block' : 'none';
-        document.getElementById('add-view').style.display = tab === 'add' ? 'block' : 'none';
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
+    // فتح منصة
+    function openPlatform(id) {
+        const platform = platforms.find(p => p.id === id);
+        
+        // فحص قفل الزوار
+        if(platform.visitorPass.trim() !== '') {
+            const pass = prompt("🛑 هذه المنصة مقفلة! أدخل كلمة سر الزوار للدخول:");
+            if(pass !== platform.visitorPass && pass !== platform.adminPass) {
+                alert("كلمة السر غلط يا طيب! راجع صاحب المنصة.");
+                return;
+            }
+        }
+
+        currentPlatformId = id;
+        document.getElementById('mainHub').style.display = 'none';
+        document.getElementById('pageView').style.display = 'block';
+        document.getElementById('currentPageTitle').innerText = 'منصة: ' + platform.name;
+        
+        renderPosts();
     }
 
-    function logout() {
-        location.reload();
+    // إضافة منشور
+    function addPost() {
+        const platform = platforms.find(p => p.id === currentPlatformId);
+        const pass = prompt("🔑 أدخل كلمة سر المالك للتأكيد أنك صاحب المنصة:");
+        
+        if(pass !== platform.adminPass) {
+            return alert("كلمة سر المالك غلط! ما تقدر تنشر هنا.");
+        }
+
+        const content = document.getElementById('postContent').value.trim();
+        if(!content) return;
+
+        platform.posts.push({
+            text: content,
+            date: new Date().toLocaleDateString('ar-EG')
+        });
+
+        localStorage.setItem('fadi_platforms', JSON.stringify(platforms));
+        closeModal('addPostModal');
+        document.getElementById('postContent').value = '';
+        renderPosts();
     }
 
-    function toast(msg) {
-        const div = document.createElement('div');
-        div.className = 'notification';
-        div.innerText = msg;
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 2000);
+    // عرض المنشورات
+    function renderPosts() {
+        const platform = platforms.find(p => p.id === currentPlatformId);
+        const container = document.getElementById('postsContainer');
+        container.innerHTML = '';
+
+        if(platform.posts.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#94a3b8;">الصفحة بيضاء مابش فيها شيء للآن.</p>';
+        } else {
+            // نعرض أحدث المنشورات أولاً
+            [...platform.posts].reverse().forEach(post => {
+                container.innerHTML += `
+                    <div class="post">
+                        <p>${post.text}</p>
+                        <p class="post-date">📅 ${post.date}</p>
+                    </div>
+                `;
+            });
+        }
     }
+
+    // الرجوع للمجمع
+    function goBack() {
+        document.getElementById('pageView').style.display = 'none';
+        document.getElementById('mainHub').style.display = 'block';
+        currentPlatformId = null;
+        init();
+    }
+
+    // تشغيل التطبيق أول مرة
+    init();
 </script>
+
 </body>
 </html>
