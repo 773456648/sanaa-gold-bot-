@@ -9,43 +9,46 @@ const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-let usersMap = {}; 
+// مخزن لبيانات المستخدمين في كل غرفة
+let rooms = {};
 
 io.on('connection', (socket) => {
+    console.log('مستخدم جديد اتصل: ' + socket.id);
+
     socket.on('join-room', (data) => {
-        socket.join(data.roomID);
-        socket.roomID = data.roomID;
-        socket.userName = data.user;
+        const { roomID, user, pId } = data;
+        
+        socket.join(roomID);
+        socket.roomID = roomID;
+        socket.userName = user;
+        socket.peerId = pId; // هذا هو المفتاح العالمي للاتصال
 
-        if (!usersMap[data.roomID]) usersMap[data.roomID] = [];
-        usersMap[data.roomID].push({ id: socket.id, name: data.user });
+        if (!rooms[roomID]) {
+            rooms[roomID] = [];
+        }
 
-        io.to(data.roomID).emit('update-users', usersMap[data.roomID]);
-    });
+        // إضافة المستخدم مع الـ Peer ID الخاص به
+        rooms[roomID].push({
+            id: socket.id,
+            name: user,
+            peerId: pId
+        });
 
-    socket.on('chat-message', (data) => {
-        io.to(data.roomID).emit('chat-message', data);
-    });
-
-    socket.on('call-request', (data) => {
-        io.to(data.to).emit('incoming-call', { fromName: socket.userName, fromId: socket.id });
-    });
-
-    socket.on('call-accept', (data) => {
-        io.to(data.to).emit('call-accepted', { fromId: socket.id });
-    });
-
-    socket.on('webrtc-signal', (data) => {
-        io.to(data.to).emit('webrtc-signal', { signal: data.signal, fromId: socket.id });
+        // تحديث القائمة لكل اللي في الغرفة
+        io.to(roomID).emit('update-users', rooms[roomID]);
+        console.log(`فادي، ${user} دخل الغرفة ${roomID} بمفتاح: ${pId}`);
     });
 
     socket.on('disconnect', () => {
-        if (socket.roomID && usersMap[socket.roomID]) {
-            usersMap[socket.roomID] = usersMap[socket.roomID].filter(u => u.id !== socket.id);
-            io.to(socket.roomID).emit('update-users', usersMap[socket.roomID]);
+        if (socket.roomID && rooms[socket.roomID]) {
+            rooms[socket.roomID] = rooms[socket.roomID].filter(u => u.id !== socket.id);
+            io.to(socket.roomID).emit('update-users', rooms[socket.roomID]);
         }
+        console.log('مستخدم غادر المنظومة');
     });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Fadi Pro System is running on ${PORT}`));
+server.listen(PORT, () => {
+    console.log(`💎 Fadi Pro System is Live on Port ${PORT}`);
+});
