@@ -1,136 +1,42 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ منصة فادي للاتصال الذكي</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: #0a1928; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        /* الهيدر */
-        .header { background: linear-gradient(145deg, #1e3a5f, #0a1a2f); padding: 15px; text-align: center; border-bottom: 2px solid #ffd700; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .header h1 { color: #ffd700; font-size: 1.5rem; text-shadow: 0 0 10px #ffd700; }
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 
-        /* منطقة الفيديو */
-        .video-section { display: flex; flex-direction: column; align-items: center; padding: 10px; gap: 10px; background: rgba(0,0,0,0.2); }
-        #video-grid { display: flex; gap: 10px; width: 100%; justify-content: center; }
-        video { width: 45%; max-width: 400px; border: 2px solid #ffd700; border-radius: 15px; background: #000; box-shadow: 0 0 20px rgba(255, 215, 0, 0.2); }
-        .controls { margin-top: 10px; }
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-        /* منطقة الشات */
-        #chat-box { flex: 1; overflow-y: auto; padding: 15px; background: rgba(30, 58, 95, 0.1); margin: 10px; border-radius: 15px; border: 1px solid #1e3a5f; }
-        .msg { margin-bottom: 10px; padding: 8px 12px; border-radius: 10px; background: #1e3a5f; width: fit-content; max-width: 80%; }
-        .msg b { color: #ffd700; display: block; font-size: 0.8rem; }
+app.use(express.static(path.join(__dirname, 'public')));
 
-        /* منطقة الإدخال */
-        .input-area { padding: 15px; display: flex; gap: 10px; background: #1e3a5f; border-top: 2px solid #ffd700; }
-        input { flex: 1; padding: 12px 20px; border-radius: 30px; border: none; outline: none; font-size: 1rem; }
-        button { padding: 10px 25px; border-radius: 30px; border: none; background: #ffd700; color: #0a1928; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { transform: scale(1.05); box-shadow: 0 0 15px #ffd700; }
-        .call-btn { background: #00ff88; }
-    </style>
-</head>
-<body>
-
-<div class="header">
-    <h1>⚡ منصة اتصالات فادي ⚡</h1>
-</div>
-
-<div class="video-section">
-    <div id="video-grid">
-        <video id="localVideo" autoplay muted playsinline title="أنت"></video>
-        <video id="remoteVideo" autoplay playsinline title="الطرف الآخر"></video>
-    </div>
-    <div class="controls">
-        <button class="call-btn" onclick="startCall()">📞 ابدأ اتصال فيديو</button>
-    </div>
-</div>
-
-<div id="chat-box">
-    <div class="msg"><b>نظام:</b> أهلاً بك في منصة فادي.. اكتب خبرك وابدأ الاتصال!</div>
-</div>
-
-<div class="input-area">
-    <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') sendMsg()">
-    <button onclick="sendMsg()">إرسال 🚀</button>
-</div>
-
-<script>
-    const socket = io();
-    let localStream;
-    let peerConnection;
-    const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-
-    // --- وظائف الشات ---
-    function sendMsg() {
-        const input = document.getElementById('msgInput');
-        if(input.value.trim() !== "") {
-            socket.emit('chat-message', { user: 'فادي', text: input.value });
-            input.value = '';
-        }
-    }
+io.on('connection', (socket) => {
+    socket.on('join-room', (data) => {
+        socket.join(data.roomID);
+        socket.roomID = data.roomID; // حفظ الغرفة في جلسة السوكيت
+        console.log(`مستخدم دخل الغرفة: ${data.roomID}`);
+        socket.to(data.roomID).emit('user-joined', socket.id);
+    });
 
     socket.on('chat-message', (data) => {
-        const chatBox = document.getElementById('chat-box');
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'msg';
-        msgDiv.innerHTML = `<b>${data.user}</b> ${data.text}`;
-        chatBox.appendChild(msgDiv);
-        chatBox.scrollTop = chatBox.scrollHeight;
+        io.to(data.roomID).emit('chat-message', data);
     });
 
-    // --- وظائف الفيديو (WebRTC) ---
-    async function startCall() {
-        try {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('localVideo').srcObject = localStream;
-
-            peerConnection = new RTCPeerConnection(config);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.onicecandidate = e => {
-                if(e.candidate) socket.emit('candidate', e.candidate);
-            };
-
-            peerConnection.ontrack = e => {
-                document.getElementById('remoteVideo').srcObject = e.streams[0];
-            };
-
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.emit('offer', offer);
-        } catch (err) {
-            alert("يا فادي افتح الكاميرا والميكروفون أولاً!");
-        }
-    }
-
-    socket.on('offer', async (offer) => {
-        if(!peerConnection) {
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('localVideo').srcObject = localStream;
-            peerConnection = new RTCPeerConnection(config);
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-            
-            peerConnection.onicecandidate = e => { if(e.candidate) socket.emit('candidate', e.candidate); };
-            peerConnection.ontrack = e => { document.getElementById('remoteVideo').srcObject = e.streams[0]; };
-        }
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        socket.emit('answer', answer);
+    socket.on('offer', (data) => {
+        socket.to(data.roomID).emit('offer', data);
     });
 
-    socket.on('answer', async (answer) => {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+    socket.on('answer', (data) => {
+        socket.to(data.roomID).emit('answer', data);
     });
 
-    socket.on('candidate', async (candidate) => {
-        try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } 
-        catch(e) {}
+    socket.on('candidate', (data) => {
+        socket.to(data.roomID).emit('candidate', data);
     });
-</script>
 
-</body>
-</html>
+    socket.on('disconnect', () => {
+        console.log('مستخدم فصل');
+    });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`السيرفر شغال على منفذ ${PORT}`));
