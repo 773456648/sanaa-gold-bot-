@@ -13,41 +13,35 @@
         .logo { font-size: 1.5rem; font-weight: 900; color: var(--gold); }
         .search-container { padding: 20px 5%; background: #0d1117; border-bottom: 1px solid var(--border); }
         .search-box { width: 100%; max-width: 600px; margin: 0 auto; position: relative; }
-        .search-box input { width: 100%; padding: 15px 45px 15px 15px; background: #000; border: 1px solid var(--gold); border-radius: 30px; color: #fff; font-size: 1rem; }
+        .search-box input { width: 100%; padding: 15px 45px 15px 15px; background: #000; border: 1px solid var(--gold); border-radius: 30px; color: #fff; }
         .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
         .filters { display: flex; justify-content: center; gap: 10px; padding: 15px; flex-wrap: wrap; }
-        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
+        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 8px 18px; border-radius: 20px; cursor: pointer; }
         .filter-btn.active { background: var(--gold); color: #000; font-weight: bold; }
         .container { padding: 20px 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; position: relative; transition: 0.3s; }
-        .card:hover { border-color: var(--gold); transform: translateY(-5px); }
-        .badge { position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.75rem; }
+        .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; position: relative; }
         .card-body { padding: 20px; }
-        .price { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
-        .owner-info { font-size: 0.85rem; color: var(--gold); margin-bottom: 10px; display: block; }
-        .details { background: #0d1117; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #8b949e; display: flex; justify-content: space-between; }
-        .btn-group { display: flex; flex-direction: column; gap: 8px; }
+        .price { font-size: 1.4rem; font-weight: 800; color: var(--gold); }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
         .contact-btn { padding: 12px; border-radius: 10px; background: var(--success); color: #fff; text-decoration: none; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .delete-btn { background: transparent; color: #8b949e; border: none; font-size: 0.8rem; cursor: pointer; margin-top: 10px; transition: 0.3s; }
-        .delete-btn:hover { color: var(--danger); }
-        .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; color: #000; border: none; cursor: pointer; z-index: 999; box-shadow: 0 5px 15px rgba(226, 183, 20, 0.3); }
+        .delete-btn { background: transparent; color: #8b949e; border: none; font-size: 0.8rem; cursor: pointer; padding-top: 10px; }
+        .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; color: #000; border: none; cursor: pointer; z-index: 999; }
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
         .modal-box { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); width: 100%; max-width: 450px; }
         input, select { width: 100%; padding: 12px; margin-bottom: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; }
-        input:focus { border-color: var(--gold); outline: none; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo"><i class="fas fa-gem"></i> فادي برو للعقارات</div>
-    <span style="font-size: 0.8rem; color: #8b949e;">نظام التشفير والحذف مفعّل 🔒</span>
+    <div class="logo">💎 فادي برو</div>
+    <div style="font-size: 0.8rem; color: var(--gold);">المنظومة العالمية الموحدة</div>
 </header>
 
 <div class="search-container">
     <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="ابحث عن عقار أو منطقة..." onkeyup="searchProps()">
+        <input type="text" id="searchInput" placeholder="ابحث في كل المحافظات..." onkeyup="searchProps()">
     </div>
 </div>
 
@@ -55,7 +49,6 @@
     <button class="filter-btn active" onclick="filterData('all', this)">الكل</button>
     <button class="filter-btn" onclick="filterData('apt', this)">شقق</button>
     <button class="filter-btn" onclick="filterData('land', this)">أراضي</button>
-    <button class="filter-btn" onclick="filterData('villa', this)">فلل</button>
 </div>
 
 <div class="container" id="mainGrid"></div>
@@ -64,125 +57,107 @@
 
 <div id="modal">
     <div class="modal-box">
-        <h3 style="text-align:center; color:var(--gold); margin-bottom:15px;">إضافة عرض جديد</h3>
-        <input type="text" id="pOwner" placeholder="اسمك الكريم">
-        <input type="number" id="pPhone" placeholder="رقم واتساب">
-        <input type="text" id="pTitle" placeholder="عنوان العقار (مثلاً: أرض في حدة)">
+        <h3 style="text-align:center; color:var(--gold); margin-bottom:15px;">إضافة عرض للسوق</h3>
+        <input type="text" id="pOwner" placeholder="اسم المعلن">
+        <input type="number" id="pPhone" placeholder="رقم الواتساب">
+        <input type="text" id="pTitle" placeholder="الموقع / النوع">
         <input type="text" id="pPrice" placeholder="السعر">
         <input type="text" id="pSpace" placeholder="المساحة">
         <select id="pCat">
             <option value="apt">شقة</option>
             <option value="land">أرضية</option>
-            <option value="villa">بيت / فيلا</option>
         </select>
-        <div style="background: #0d1117; padding: 10px; border-radius: 8px; border: 1px solid #30363d; margin-bottom: 12px;">
-            <p style="font-size: 0.75rem; color: var(--gold); margin-bottom: 5px;">⚠️ كلمة سر لحذف العرض لاحقاً:</p>
-            <input type="password" id="pPass" placeholder="كلمة السر" style="margin-bottom: 0;">
-        </div>
-        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر الآن 🚀</button>
+        <input type="password" id="pPass" placeholder="كلمة سر الحذف (خاصة بك)" style="border-color: var(--danger);">
+        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر للجميع الآن 🚀</button>
         <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:10px; cursor:pointer;">إلغاء</button>
     </div>
 </div>
 
 <script>
-    // استخدمت LocalStorage عشان البيانات ما تضيعش لما تحدد الصفحة
-    let allProps = JSON.parse(localStorage.getItem('fadi_properties')) || [];
+    let allProps = [];
+
+    async function loadData() {
+        try {
+            const res = await fetch('/api/properties');
+            allProps = await res.json();
+            render(allProps);
+        } catch (e) { console.error("فشل الاتصال بالسيرفر"); }
+    }
 
     function render(data) {
         const grid = document.getElementById('mainGrid');
-        if(data.length === 0) {
-            grid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #8b949e; padding: 50px;">لا توجد نتائج مطابقة..</p>`;
-            return;
-        }
         grid.innerHTML = data.map(p => `
             <div class="card">
-                <div class="badge">${p.category === 'land' ? 'أرض' : 'عقار'}</div>
                 <div class="card-body">
-                    <span class="owner-info"><i class="fas fa-user"></i> ${p.owner}</span>
-                    <h3 style="color:#fff; margin-bottom:10px;">${p.title}</h3>
-                    <div class="price" style="color:var(--gold)">${p.price}</div>
-                    <div class="details">
-                        <span><i class="fas fa-ruler-combined"></i> ${p.space}</span>
-                    </div>
+                    <span style="color:var(--gold); font-size:0.8rem;">👤 ${p.owner}</span>
+                    <h3 style="margin: 10px 0;">${p.title}</h3>
+                    <div class="price">${p.price}</div>
+                    <p style="color:#8b949e; font-size:0.9rem;">المساحة: ${p.space}</p>
                     <div class="btn-group">
-                        <a href="https://wa.me/967${p.phone}?text=${encodeURIComponent('حياك الله، استفسار عن: ' + p.title)}" class="contact-btn">
-                            <i class="fab fa-whatsapp"></i> تواصل مع المعلن
-                        </a>
-                        <button onclick="deleteProp('${p.id}')" class="delete-btn">
-                            <i class="fas fa-trash-alt"></i> حذف الإعلان
-                        </button>
+                        <a href="https://wa.me/967${p.phone}" class="contact-btn"><i class="fab fa-whatsapp"></i> تواصل</a>
+                        <button onclick="deleteProp('${p.id}')" class="delete-btn"><i class="fas fa-lock"></i> حذف الإعلان</button>
                     </div>
                 </div>
             </div>
         `).join('');
     }
 
-    function publish() {
-        const title = document.getElementById('pTitle').value;
-        const pass = document.getElementById('pPass').value;
-        
-        if(!title || !pass) return alert("يا صاحبي، لازم تكتب العنوان وكلمة السر!");
-
-        const newProp = {
-            id: Date.now().toString(), // معرف فريد
-            owner: document.getElementById('pOwner').value || "فاعل خير",
-            phone: document.getElementById('pPhone').value || "777777777",
-            title: title,
-            price: document.getElementById('pPrice').value || "غير محدد",
-            space: document.getElementById('pSpace').value || "غير محدد",
+    async function publish() {
+        const prop = {
+            owner: document.getElementById('pOwner').value,
+            phone: document.getElementById('pPhone').value,
+            title: document.getElementById('pTitle').value,
+            price: document.getElementById('pPrice').value,
+            space: document.getElementById('pSpace').value,
             category: document.getElementById('pCat').value,
-            password: pass // تخزين كلمة السر
+            password: document.getElementById('pPass').value
         };
+        if(!prop.title || !prop.password) return alert("أدخل العنوان وكلمة السر!");
 
-        allProps.push(newProp);
-        saveAndRender();
+        await fetch('/api/properties', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(prop)
+        });
         hideModal();
-        // تصفير الحقول
-        document.querySelectorAll('#modal input').forEach(i => i.value = '');
+        loadData();
     }
 
-    function deleteProp(id) {
-        const target = allProps.find(p => p.id === id);
-        const userPass = prompt("أدخل كلمة السر لحذف هذا العرض:");
-        
-        if (userPass === null) return; // إلغاء
+    async function deleteProp(id) {
+        const password = prompt("أدخل كلمة سر الحذف:");
+        if(!password) return;
 
-        if (userPass === target.password) {
-            allProps = allProps.filter(p => p.id !== id);
-            saveAndRender();
-            alert("تم الحذف بنجاح ✅");
+        const res = await fetch('/api/delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id, password })
+        });
+
+        const result = await res.json();
+        if(result.success) {
+            alert("تم الحذف بنجاح");
+            loadData();
         } else {
-            alert("كلمة السر غلط! لا تحاول تحذف عروض غيرك يا حريف 😉");
+            alert("كلمة السر غلط يا خبير!");
         }
-    }
-
-    function saveAndRender() {
-        localStorage.setItem('fadi_properties', JSON.stringify(allProps));
-        render(allProps);
     }
 
     function searchProps() {
         const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allProps.filter(p => 
-            p.title.toLowerCase().includes(term) || 
-            p.owner.toLowerCase().includes(term)
-        );
-        render(filtered);
+        render(allProps.filter(p => p.title.toLowerCase().includes(term) || p.owner.toLowerCase().includes(term)));
     }
 
     function filterData(cat, btn) {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        if(cat === 'all') return render(allProps);
-        render(allProps.filter(p => p.category === cat));
+        render(cat === 'all' ? allProps : allProps.filter(p => p.category === cat));
     }
 
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
 
-    // تشغيل العرض عند فتح الصفحة
-    window.onload = () => render(allProps);
+    setInterval(loadData, 5000); // تحديث تلقائي كل 5 ثواني
+    window.onload = loadData;
 </script>
-
 </body>
 </html>
