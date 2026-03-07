@@ -3,66 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 فادي برو للعقارات VIP</title>
+    <title>💎 منظومة فادي برو للعقارات | VIP</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --gold: #e2b714; --bg: #05070a; --glass: rgba(22, 27, 34, 0.8); --border: #30363d; }
-        body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', sans-serif; margin: 0; }
+        :root { --gold: #e2b714; --bg: #05070a; --glass: rgba(22, 27, 34, 0.9); --border: #30363d; --success: #238636; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; }
         
-        /* الهيدر الملكي */
-        header { background: var(--glass); backdrop-filter: blur(10px); padding: 15px 5%; border-bottom: 1px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.6rem; font-weight: 900; color: var(--gold); letter-spacing: 1px; }
+        header { background: var(--glass); backdrop-filter: blur(10px); padding: 15px 5%; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.5rem; font-weight: 900; color: var(--gold); }
 
-        /* منطقة الإحصائيات */
-        .hero { padding: 40px 5%; text-align: center; background: radial-gradient(circle at center, #161b22 0%, #05070a 100%); }
-        .hero h1 { font-size: 2.5rem; margin-bottom: 10px; color: #fff; }
+        .hero { padding: 40px 5%; text-align: center; background: radial-gradient(circle at center, #161b22 0%, #05070a 100%); border-bottom: 1px solid var(--border); }
+        .hero h1 { font-size: 2rem; color: #fff; margin-bottom: 10px; }
 
-        /* الفلاتر */
-        .filters { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 10px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; }
+        .filters { display: flex; justify-content: center; gap: 10px; padding: 20px 5%; flex-wrap: wrap; }
+        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.3s; }
         .filter-btn.active, .filter-btn:hover { background: var(--gold); color: #000; border-color: var(--gold); }
 
-        /* شبكة العقارات */
-        .container { padding: 0 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
-        .card { background: var(--glass); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; position: relative; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .card:hover { transform: scale(1.03); border-color: var(--gold); box-shadow: 0 10px 30px rgba(226, 183, 20, 0.1); }
+        .container { padding: 20px 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; transition: 0.3s; position: relative; }
+        .card:hover { transform: translateY(-5px); border-color: var(--gold); }
         
-        .card-img { height: 180px; background: linear-gradient(45deg, #161b22, #0d1117); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; color: var(--gold); opacity: 0.7; }
-        .badge { position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; }
+        .badge { position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.75rem; z-index: 1; }
+        .card-img { height: 160px; background: #0d1117; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--gold); opacity: 0.5; }
         
-        .card-content { padding: 20px; }
-        .price { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
-        .owner-tag { font-size: 0.8rem; color: var(--gold); margin-bottom: 15px; display: block; }
-        .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; color: #8b949e; margin-bottom: 20px; }
-        
-        .contact-btn { width: 100%; padding: 12px; border-radius: 12px; background: #238636; color: #fff; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .card-body { padding: 20px; }
+        .price { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
+        .owner-info { font-size: 0.85rem; color: var(--gold); margin-bottom: 10px; display: block; }
+        .details { display: flex; justify-content: space-between; font-size: 0.85rem; color: #8b949e; margin-bottom: 15px; background: #0d1117; padding: 10px; border-radius: 8px; }
 
-        /* الزر العائم */
-        .fab { position: fixed; bottom: 30px; left: 30px; background: var(--gold); width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: #000; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: none; z-index: 1001; }
+        .btn-group { display: flex; gap: 10px; }
+        .contact-btn { flex: 1; padding: 10px; border-radius: 8px; background: var(--success); color: #fff; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; text-decoration: none; }
+        .call-btn { padding: 10px; border-radius: 8px; background: #1f6feb; color: white; text-decoration: none; }
 
-        /* المودال (نافذة الإضافة) */
-        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .modal-box { background: #161b22; padding: 30px; border-radius: 25px; border: 1px solid var(--gold); width: 100%; max-width: 500px; }
-        input, select { width: 100%; padding: 15px; margin-bottom: 15px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 12px; }
+        .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #000; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 999; }
+
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal-box { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="logo"><i class="fas fa-crown"></i> FADI ESTATE VIP</div>
-    <div id="userDisplayName" style="font-size: 0.9rem; color: #8b949e;"></div>
+    <div class="logo"><i class="fas fa-crown"></i> فادي برو للعقارات</div>
+    <div style="font-size: 0.8rem; color: #8b949e;">صنعاء، اليمن</div>
 </header>
 
 <div class="hero">
-    <h1>سوق العقارات العالمي</h1>
-    <p>بإشراف المبرمج فادي - كل ما يُنشر يظهر للجميع لحظياً</p>
+    <h1>سوق العقارات المفتوح</h1>
+    <p>أضف عقارك الآن ليظهر عند الجميع فوراً</p>
 </div>
 
 <div class="filters">
     <button class="filter-btn active" onclick="filterData('all')">الكل</button>
     <button class="filter-btn" onclick="filterData('apt')">شقق</button>
     <button class="filter-btn" onclick="filterData('land')">أراضي</button>
-    <button class="filter-btn" onclick="filterData('villa')">بيوت/فيلات</button>
+    <button class="filter-btn" onclick="filterData('villa')">بيوت</button>
 </div>
 
 <div class="container" id="mainGrid">
@@ -72,11 +69,12 @@
 
 <div id="modal">
     <div class="modal-box">
-        <h2 style="color:var(--gold); margin-bottom:20px;">إضافة عقار جديد للكل</h2>
-        <input type="text" id="pOwner" placeholder="اسمك (المعلن)">
-        <input type="text" id="pTitle" placeholder="اسم العقار (مثلاً: شقة حدة)">
-        <input type="number" id="pPrice" placeholder="السعر (بالريال أو الدولار)">
-        <input type="number" id="pSpace" placeholder="المساحة (باللبنة الصنعانية)">
+        <h3 style="color:var(--gold); margin-bottom:15px; text-align:center;">إضافة عرض جديد</h3>
+        <input type="text" id="pOwner" placeholder="اسمك الكريم">
+        <input type="number" id="pPhone" placeholder="رقم هاتفك (واتساب)">
+        <input type="text" id="pTitle" placeholder="عنوان العقار (مثلاً: أرض في بيت بوس)">
+        <input type="number" id="pPrice" placeholder="السعر الإجمالي">
+        <input type="number" id="pSpace" placeholder="المساحة (باللبنة)">
         <select id="pCat">
             <option value="apt">شقة</option>
             <option value="land">أرضية</option>
@@ -87,19 +85,21 @@
             <option value="للإيجار">للإيجار</option>
             <option value="للبيع">للبيع</option>
         </select>
-        <button class="contact-btn" onclick="publish()" style="background:var(--gold); color:#000;">نشر في المنظومة الآن 🚀</button>
-        <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:15px; cursor:pointer;">إلغاء</button>
+        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر العرض الآن 🚀</button>
+        <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:10px; cursor:pointer;">إلغاء</button>
     </div>
 </div>
 
 <script>
     let allProps = [];
+    const MY_PHONE = "779847980"; // رقمك الأساسي يا فادي
 
-    // جلب البيانات من السيرفر
     async function loadData() {
-        const res = await fetch('/api/properties');
-        allProps = await res.json();
-        render(allProps);
+        try {
+            const res = await fetch('/api/properties');
+            allProps = await res.json();
+            render(allProps);
+        } catch (e) { console.log("السيرفر لسه ما اشتغلش تمام"); }
     }
 
     function render(data) {
@@ -108,32 +108,34 @@
             <div class="card">
                 <div class="badge">${p.type}</div>
                 <div class="card-img"><i class="fas ${getIcon(p.category)}"></i></div>
-                <div class="card-content">
-                    <span class="owner-tag"><i class="fas fa-user-tie"></i> المعلن: ${p.owner}</span>
-                    <div class="price">${Number(p.price).toLocaleString()} <small style="font-size:0.8rem">${p.price > 100000 ? 'ريال' : '$'}</small></div>
-                    <h3 style="margin-bottom:15px;">${p.title}</h3>
+                <div class="card-body">
+                    <span class="owner-info"><i class="fas fa-user-circle"></i> المعلن: ${p.owner}</span>
+                    <div class="price">${Number(p.price).toLocaleString()} <small style="font-size:0.7rem">${p.price < 500000 ? '$' : 'ريال'}</small></div>
+                    <h4 style="margin-bottom:12px;">${p.title}</h4>
                     <div class="details">
                         <span><i class="fas fa-ruler-combined"></i> ${p.space} لبنة</span>
-                        <span><i class="fas fa-calculator"></i> ${(p.price/p.space).toFixed(0)} للبنة</span>
+                        <span><i class="fas fa-tag"></i> ${(p.price/p.space).toFixed(0)} / للبنة</span>
                     </div>
-                    <button class="contact-btn" onclick="contact('${p.owner}', '${p.title}')">
-                        <i class="fab fa-whatsapp"></i> تواصل مع المعلن
-                    </button>
+                    <div class="btn-group">
+                        <a href="https://wa.me/967${p.phone || MY_PHONE}?text=${encodeURIComponent('حياك الله، استفسار عن: ' + p.title)}" target="_blank" class="contact-btn">
+                            <i class="fab fa-whatsapp"></i> واتساب
+                        </a>
+                        <a href="tel:967${p.phone || MY_PHONE}" class="call-btn"><i class="fas fa-phone"></i></a>
+                    </div>
                 </div>
             </div>
         `).join('');
     }
 
     function getIcon(cat) {
-        if(cat === 'apt') return 'fa-door-open';
-        if(cat === 'land') return 'fa-mountain-sun';
-        if(cat === 'building') return 'fa-city';
-        return 'fa-home';
+        const icons = { apt: 'fa-door-open', land: 'fa-mountain-sun', building: 'fa-city' };
+        return icons[cat] || 'fa-home';
     }
 
     async function publish() {
         const prop = {
             owner: document.getElementById('pOwner').value || "فاعل خير",
+            phone: document.getElementById('pPhone').value || MY_PHONE,
             title: document.getElementById('pTitle').value,
             price: document.getElementById('pPrice').value,
             space: document.getElementById('pSpace').value,
@@ -141,7 +143,7 @@
             type: document.getElementById('pType').value
         };
 
-        if(!prop.title || !prop.price) return alert("أكمل البيانات يا خبير!");
+        if(!prop.title || !prop.price) return alert("يا خبير، املأ البيانات!");
 
         await fetch('/api/properties', {
             method: 'POST',
@@ -160,17 +162,12 @@
         render(allProps.filter(p => p.category === cat));
     }
 
-    function contact(owner, title) {
-        const msg = encodeURIComponent(`حياك الله يا ${owner}، استفسار بخصوص: ${title}`);
-        window.open(`https://wa.me/967770000000?text=${msg}`);
-    }
-
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
 
-    // تحديث تلقائي كل 15 ثانية لجلب جديد الآخرين
+    // تحديث كل 15 ثانية لجلب أي جديد من الناس
     setInterval(loadData, 15000);
-    loadData();
+    window.onload = loadData;
 </script>
 
 </body>
