@@ -3,270 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام - فادي</title>
+    <title>🏢 منصة الإيجارات الذكية - نظام فادي</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 30px;
-            padding: 30px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border-radius: 20px;
-            color: white;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .fadi-badge {
-            background: white;
-            color: #667eea;
-            padding: 15px 50px;
-            border-radius: 50px;
-            display: inline-block;
-            font-weight: bold;
-            font-size: 1.5em;
-            margin: 15px 0;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            border: 3px solid gold;
-        }
-        
-        .users-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin: 30px 0;
-        }
-        
-        .user-card {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 25px;
-            border-right: 5px solid gold;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-        }
-        
-        .user-icon {
-            font-size: 4em;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
-        .user-name {
-            font-size: 2em;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .rooms-section {
-            margin-top: 20px;
-        }
-        
-        .room-item {
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            color: white;
-        }
-        
-        .room-item.public {
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-        }
-        
-        .room-item.private {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-        }
-        
-        .room-item:hover {
-            transform: translateX(-5px);
-        }
-        
-        .room-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .room-name {
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        
-        .room-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 3px 12px;
-            border-radius: 50px;
-            font-size: 0.8em;
-        }
-        
-        .room-description {
-            font-size: 0.9em;
-            opacity: 0.9;
-            margin-bottom: 10px;
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 25px;
-            background: #f8f9fa;
-            border-radius: 20px;
-            color: #666;
-        }
-        
-        .fadi-signature {
-            font-size: 1.5em;
-            color: #667eea;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: #0a1928; color: white; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        .header { background: linear-gradient(145deg, #1e3a5f, #0a1a2f); border: 2px solid #ffd700; border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px; }
+        .header h1 { color: #ffd700; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 10px; }
+        .tab { padding: 10px 20px; background: #1e3a5f; border: 1px solid #ffd700; border-radius: 30px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .tab.active { background: #ffd700; color: black; font-weight: bold; }
+        .card { background: rgba(30,58,95,0.3); border: 2px solid #ffd700; border-radius: 20px; padding: 20px; backdrop-filter: blur(10px); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #0a1a2f; border: 1px solid #ffd700; border-radius: 10px; color: white; }
+        .btn { width: 100%; padding: 12px; background: #ffd700; border: none; border-radius: 10px; color: black; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .item-card { background: #0a1a2f; border: 1px solid #ffd700; border-radius: 15px; padding: 15px; margin-top: 15px; position: relative; }
+        .badge { background: #ffd700; color: black; padding: 3px 10px; border-radius: 5px; font-size: 0.8em; margin-left: 5px; }
+        .delete-btn { background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; float: left; }
+        .user-info { color: #00ff88; margin-bottom: 15px; text-align: center; font-weight: bold; }
+        .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #ffd700; color: black; padding: 10px 30px; border-radius: 20px; z-index: 1000; }
     </style>
 </head>
 <body>
-    <!-- 
-        ============================================
-        تم التطوير بواسطة: فادي
-        النظام الحصري للغرف الخاصة
-        جميع الحقوق محفوظة © 2024
-        ============================================
-    -->
 
-    <div class="container">
-        <div class="header">
-            <h1>نظام الغرف الخاص</h1>
-            <div class="fadi-badge">⭐ فادي ⭐</div>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>🏢 منصة الإيجارات الذكية</h1>
+        <p id="welcomeMsg">سجل دخولك يا خبير</p>
+    </div>
 
-        <div class="users-grid">
-            <!-- الملك فادي -->
-            <div class="user-card">
-                <div class="user-icon">👑</div>
-                <div class="user-name">فادي</div>
-                
-                <div class="rooms-section">
-                    <div class="room-item public" onclick="handleRoom('public', 'فادي')">
-                        <div class="room-header">
-                            <span class="room-name">🏰 الغرفة العامة</span>
-                            <span class="room-badge">🌐 عامة</span>
-                        </div>
-                        <div class="room-description">الغرفة العامة للجميع</div>
-                    </div>
-                    
-                    <div class="room-item private" onclick="handleRoom('private', 'فادي')">
-                        <div class="room-header">
-                            <span class="room-name">🔐 الغرفة الخاصة جداً</span>
-                            <span class="room-badge">🔒 خاصة</span>
-                        </div>
-                        <div class="room-description">فقط فادي يقدر يدخل هنا</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- مشرف -->
-            <div class="user-card">
-                <div class="user-icon">⚔️</div>
-                <div class="user-name">مشرف</div>
-                
-                <div class="rooms-section">
-                    <div class="room-item public" onclick="handleRoom('public', 'مشرف')">
-                        <div class="room-header">
-                            <span class="room-name">🌐 غرفة المشرفين</span>
-                            <span class="room-badge">🌐 عامة</span>
-                        </div>
-                        <div class="room-description">غرفة عامة للمشرفين</div>
-                    </div>
-                    
-                    <div class="room-item private" onclick="handleRoom('private', 'مشرف')">
-                        <div class="room-header">
-                            <span class="room-name">🔒 غرفة المشرف الخاصة</span>
-                            <span class="room-badge">🔒 خاصة</span>
-                        </div>
-                        <div class="room-description">خاصة بالمشرف فقط</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- مستخدم -->
-            <div class="user-card">
-                <div class="user-icon">🧑</div>
-                <div class="user-name">مستخدم</div>
-                
-                <div class="rooms-section">
-                    <div class="room-item public" onclick="handleRoom('public', 'مستخدم')">
-                        <div class="room-header">
-                            <span class="room-name">👥 الغرفة العامة</span>
-                            <span class="room-badge">🌐 عامة</span>
-                        </div>
-                        <div class="room-description">مساحة عامة للجميع</div>
-                    </div>
-                    
-                    <div class="room-item private" onclick="handleRoom('private', 'مستخدم')">
-                        <div class="room-header">
-                            <span class="room-name">🔏 ركن المستخدم الخاص</span>
-                            <span class="room-badge">🔒 خاصة</span>
-                        </div>
-                        <div class="room-description">مساحته الخاصة</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <div class="fadi-signature">تم التطوير بواسطة: فادي</div>
-            <p>جميع الحقوق محفوظة © 2024</p>
+    <div id="loginArea">
+        <div class="card">
+            <h2 id="authTitle">🔐 دخول / تسجيل</h2>
+            <input type="text" id="userName" placeholder="الاسم الكامل">
+            <input type="password" id="userPass" placeholder="كلمة السر">
+            <select id="userRole">
+                <option value="owner">تاج الملك (مالك)</option>
+                <option value="tenant">ضيف الدار (مستأجر)</option>
+            </select>
+            <button class="btn" onclick="handleAuth()">دخول النظام</button>
         </div>
     </div>
 
-    <script>
-        // ============================================
-        // تم التطوير بواسطة: فادي
-        // النظام الحصري للغرف الخاصة
-        // ============================================
+    <div id="mainSystem" style="display:none;">
+        <div class="user-info" id="currentUserDisplay"></div>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('properties')">🏘️ العقارات</div>
+            <div id="ownerOnlyTab" class="tab" onclick="switchTab('add')">➕ إضافة عقار</div>
+            <div class="tab" onclick="logout()">🚪 خروج</div>
+        </div>
 
-        function handleRoom(type, owner) {
-            if (type === 'private') {
-                if (owner === 'فادي') {
-                    alert('✨ مرحباً فادي! أهلًا بك في غرفتك الخاصة');
-                } else {
-                    let password = prompt('🔐 هذه الغرفة خاصة. الرجاء إدخال كلمة السر:');
-                    if (password === '1234') {
-                        alert('✅ تم الدخول بنجاح');
-                    } else {
-                        alert('❌ كلمة السر خطأ! لا يمكنك الدخول');
-                    }
-                }
-            } else {
-                alert('🚪 تم الدخول إلى الغرفة العامة');
-            }
+        <div id="properties-view" class="card">
+            <h2>📋 قائمة العقارات المتاحة</h2>
+            <div id="listContainer"></div>
+        </div>
+
+        <div id="add-view" class="card" style="display:none;">
+            <h2>➕ عقار جديد</h2>
+            <input type="text" id="pName" placeholder="اسم العقار (مثلاً: شقة الأمل)">
+            <input type="text" id="pAddress" placeholder="الموقع">
+            <input type="number" id="pRent" placeholder="الإيجار (ريال)">
+            <button class="btn" onclick="createNewProperty()">نشر العقار</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    let properties = JSON.parse(localStorage.getItem('properties')) || [];
+    let currentUser = null;
+
+    function handleAuth() {
+        const name = document.getElementById('userName').value.trim();
+        const pass = document.getElementById('userPass').value;
+        const role = document.getElementById('userRole').value;
+
+        if(!name || !pass) return toast("أدخل بياناتك كاملة!");
+
+        let user = users.find(u => u.name === name);
+        
+        if(user) {
+            if(user.pass !== pass) return toast("كلمة السر غلط!");
+            currentUser = user;
+        } else {
+            currentUser = { name, pass, role };
+            users.push(currentUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            toast("تم تسجيلك بنجاح");
         }
-    </script>
+        enterSystem();
+    }
+
+    function enterSystem() {
+        document.getElementById('loginArea').style.display = 'none';
+        document.getElementById('mainSystem').style.display = 'block';
+        document.getElementById('currentUserDisplay').innerText = `أهلاً بك يا ${currentUser.name} (${currentUser.role === 'owner' ? 'مالك' : 'مستأجر'})`;
+        
+        if(currentUser.role !== 'owner') {
+            document.getElementById('ownerOnlyTab').style.display = 'none';
+        }
+        renderProperties();
+    }
+
+    function createNewProperty() {
+        const name = document.getElementById('pName').value;
+        const address = document.getElementById('pAddress').value;
+        const rent = document.getElementById('pRent').value;
+
+        if(!name || !rent) return toast("املأ الحقول يا بطل");
+
+        const newP = {
+            id: Date.now(),
+            name, address, rent,
+            owner: currentUser.name
+        };
+
+        properties.push(newP);
+        localStorage.setItem('properties', JSON.stringify(properties));
+        toast("تمت إضافة العقار");
+        switchTab('properties');
+        renderProperties();
+    }
+
+    function renderProperties() {
+        const container = document.getElementById('listContainer');
+        container.innerHTML = properties.length === 0 ? '<p>لا توجد عقارات حالياً</p>' : '';
+        
+        properties.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'item-card';
+            div.innerHTML = `
+                <h3>${p.name} <span class="badge">${p.rent} ريال</span></h3>
+                <p>📍 الموقع: ${p.address}</p>
+                <p>👑 المالك: ${p.owner}</p>
+                ${p.owner === currentUser.name ? `<button class="delete-btn" onclick="deleteProp(${p.id})">حذف</button>` : ''}
+                <div style="clear:both"></div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function deleteProp(id) {
+        properties = properties.filter(p => p.id !== id);
+        localStorage.setItem('properties', JSON.stringify(properties));
+        renderProperties();
+        toast("تم الحذف");
+    }
+
+    function switchTab(tab) {
+        document.getElementById('properties-view').style.display = tab === 'properties' ? 'block' : 'none';
+        document.getElementById('add-view').style.display = tab === 'add' ? 'block' : 'none';
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function logout() {
+        location.reload();
+    }
+
+    function toast(msg) {
+        const div = document.createElement('div');
+        div.className = 'notification';
+        div.innerText = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 2000);
+    }
+</script>
 </body>
 </html>
