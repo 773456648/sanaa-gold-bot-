@@ -6,7 +6,7 @@
     <title>💎 منظومة فادي برو للعقارات</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --gold: #e2b714; --bg: #05070a; --glass: rgba(22, 27, 34, 0.9); --border: #30363d; --success: #238636; --danger: #da3633; }
+        :root { --gold: #e2b714; --bg: #05070a; --glass: rgba(22, 27, 34, 0.9); --border: #30363d; --success: #238636; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', sans-serif; }
         header { background: var(--glass); backdrop-filter: blur(10px); padding: 15px 5%; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
@@ -15,16 +15,13 @@
         .search-box { width: 100%; max-width: 600px; margin: 0 auto; position: relative; }
         .search-box input { width: 100%; padding: 15px 45px 15px 15px; background: #000; border: 1px solid var(--gold); border-radius: 30px; color: #fff; }
         .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
-        .filters { display: flex; justify-content: center; gap: 10px; padding: 15px; flex-wrap: wrap; }
-        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 8px 18px; border-radius: 20px; cursor: pointer; }
-        .filter-btn.active { background: var(--gold); color: #000; font-weight: bold; }
         .container { padding: 20px 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
         .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; position: relative; }
         .card-body { padding: 20px; }
-        .price { font-size: 1.4rem; font-weight: 800; color: var(--gold); }
-        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .price { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; }
         .contact-btn { padding: 12px; border-radius: 10px; background: var(--success); color: #fff; text-decoration: none; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .delete-btn { background: transparent; color: #8b949e; border: none; font-size: 0.8rem; cursor: pointer; padding-top: 10px; }
+        .delete-btn { background: none; border: none; color: #555; cursor: pointer; font-size: 0.75rem; margin-top: 10px; }
         .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; color: #000; border: none; cursor: pointer; z-index: 999; }
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
         .modal-box { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); width: 100%; max-width: 450px; }
@@ -34,21 +31,15 @@
 <body>
 
 <header>
-    <div class="logo">💎 فادي برو</div>
-    <div style="font-size: 0.8rem; color: var(--gold);">المنظومة العالمية الموحدة</div>
+    <div class="logo"><i class="fas fa-gem"></i> فادي برو للعقارات</div>
+    <div style="font-size: 0.8rem; color: var(--gold);">نظام عالمي آمن 🔒</div>
 </header>
 
 <div class="search-container">
     <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="ابحث في كل المحافظات..." onkeyup="searchProps()">
+        <input type="text" id="searchInput" placeholder="ابحث عن عقار..." onkeyup="searchProps()">
     </div>
-</div>
-
-<div class="filters">
-    <button class="filter-btn active" onclick="filterData('all', this)">الكل</button>
-    <button class="filter-btn" onclick="filterData('apt', this)">شقق</button>
-    <button class="filter-btn" onclick="filterData('land', this)">أراضي</button>
 </div>
 
 <div class="container" id="mainGrid"></div>
@@ -57,18 +48,18 @@
 
 <div id="modal">
     <div class="modal-box">
-        <h3 style="text-align:center; color:var(--gold); margin-bottom:15px;">إضافة عرض للسوق</h3>
-        <input type="text" id="pOwner" placeholder="اسم المعلن">
+        <input type="text" id="pOwner" placeholder="الاسم">
         <input type="number" id="pPhone" placeholder="رقم الواتساب">
-        <input type="text" id="pTitle" placeholder="الموقع / النوع">
+        <input type="text" id="pTitle" placeholder="الموقع">
         <input type="text" id="pPrice" placeholder="السعر">
         <input type="text" id="pSpace" placeholder="المساحة">
         <select id="pCat">
             <option value="apt">شقة</option>
             <option value="land">أرضية</option>
         </select>
-        <input type="password" id="pPass" placeholder="كلمة سر الحذف (خاصة بك)" style="border-color: var(--danger);">
-        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر للجميع الآن 🚀</button>
+        <input type="password" id="pPass" placeholder="كلمة سر لحذف إعلانك (ضرورية)">
+        
+        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر العرض 🚀</button>
         <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:10px; cursor:pointer;">إلغاء</button>
     </div>
 </div>
@@ -81,7 +72,7 @@
             const res = await fetch('/api/properties');
             allProps = await res.json();
             render(allProps);
-        } catch (e) { console.error("فشل الاتصال بالسيرفر"); }
+        } catch (e) { console.error("خطأ في الاتصال"); }
     }
 
     function render(data) {
@@ -89,13 +80,12 @@
         grid.innerHTML = data.map(p => `
             <div class="card">
                 <div class="card-body">
-                    <span style="color:var(--gold); font-size:0.8rem;">👤 ${p.owner}</span>
-                    <h3 style="margin: 10px 0;">${p.title}</h3>
-                    <div class="price">${p.price}</div>
-                    <p style="color:#8b949e; font-size:0.9rem;">المساحة: ${p.space}</p>
+                    <span style="color:var(--gold); font-size:0.8rem;">👤 المعلن: ${p.owner}</span>
+                    <h3 style="color:#fff; margin: 10px 0;">${p.title}</h3>
+                    <div class="price" style="color:var(--gold)">${p.price}</div>
                     <div class="btn-group">
-                        <a href="https://wa.me/967${p.phone}" class="contact-btn"><i class="fab fa-whatsapp"></i> تواصل</a>
-                        <button onclick="deleteProp('${p.id}')" class="delete-btn"><i class="fas fa-lock"></i> حذف الإعلان</button>
+                        <a href="https://wa.me/967${p.phone}" class="contact-btn">تواصل الآن</a>
+                        <button onclick="deleteProp('${p.id}')" class="delete-btn">حذف إعلاني 🗑️</button>
                     </div>
                 </div>
             </div>
@@ -112,33 +102,37 @@
             category: document.getElementById('pCat').value,
             password: document.getElementById('pPass').value
         };
-        if(!prop.title || !prop.password) return alert("أدخل العنوان وكلمة السر!");
+        
+        if(!prop.title || !prop.password) return alert("يا خبير، لازم تكتب الموقع وكلمة السر!");
 
         await fetch('/api/properties', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(prop)
         });
+        
+        // تصفير الحقول وإخفاء المودال
+        document.querySelectorAll('#modal input').forEach(i => i.value = '');
         hideModal();
         loadData();
     }
 
     async function deleteProp(id) {
-        const password = prompt("أدخل كلمة سر الحذف:");
+        const password = prompt("أدخل كلمة سر الحذف الخاصة بهذا الإعلان:");
         if(!password) return;
 
         const res = await fetch('/api/delete', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id, password })
+            body: JSON.stringify({ id: id, password: password })
         });
 
         const result = await res.json();
         if(result.success) {
-            alert("تم الحذف بنجاح");
+            alert("تم الحذف بنجاح ✅");
             loadData();
         } else {
-            alert("كلمة السر غلط يا خبير!");
+            alert("كلمة السر غلط! لا تحاول تحذف حق غيرك 😉");
         }
     }
 
@@ -147,16 +141,10 @@
         render(allProps.filter(p => p.title.toLowerCase().includes(term) || p.owner.toLowerCase().includes(term)));
     }
 
-    function filterData(cat, btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render(cat === 'all' ? allProps : allProps.filter(p => p.category === cat));
-    }
-
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
 
-    setInterval(loadData, 5000); // تحديث تلقائي كل 5 ثواني
+    setInterval(loadData, 5000); // تحديث كل 5 ثواني
     window.onload = loadData;
 </script>
 </body>
