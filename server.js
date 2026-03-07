@@ -1,54 +1,31 @@
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
+const app = express();
 const path = require('path');
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+app.use(express.json());
+app.use(express.static('public'));
 
-app.use(express.static(path.join(__dirname, 'public')));
+// مخزن العقارات العام (أي واحد يضيف يظهر هنا)
+let globalProperties = [
+    { title: "عمارة فادي برو - المركز الرئيسي", price: "مساحة واسعة", space: "100 لبنة", type: "للإيجار", icon: "fa-city", color: "#ffd700" }
+];
 
-// مخزن لبيانات المستخدمين في كل غرفة
-let rooms = {};
-
-io.on('connection', (socket) => {
-    console.log('مستخدم جديد اتصل: ' + socket.id);
-
-    socket.on('join-room', (data) => {
-        const { roomID, user, pId } = data;
-        
-        socket.join(roomID);
-        socket.roomID = roomID;
-        socket.userName = user;
-        socket.peerId = pId; // هذا هو المفتاح العالمي للاتصال
-
-        if (!rooms[roomID]) {
-            rooms[roomID] = [];
-        }
-
-        // إضافة المستخدم مع الـ Peer ID الخاص به
-        rooms[roomID].push({
-            id: socket.id,
-            name: user,
-            peerId: pId
-        });
-
-        // تحديث القائمة لكل اللي في الغرفة
-        io.to(roomID).emit('update-users', rooms[roomID]);
-        console.log(`فادي، ${user} دخل الغرفة ${roomID} بمفتاح: ${pId}`);
-    });
-
-    socket.on('disconnect', () => {
-        if (socket.roomID && rooms[socket.roomID]) {
-            rooms[socket.roomID] = rooms[socket.roomID].filter(u => u.id !== socket.id);
-            io.to(socket.roomID).emit('update-users', rooms[socket.roomID]);
-        }
-        console.log('مستخدم غادر المنظومة');
-    });
+// طريق لجلب كل العقارات
+app.get('/api/properties', (req, res) => {
+    res.json(globalProperties);
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`💎 Fadi Pro System is Live on Port ${PORT}`);
+// طريق لإضافة عقار جديد يظهر للكل
+app.post('/api/properties', (req, res) => {
+    const newProp = req.body;
+    globalProperties.push(newProp);
+    res.json({ success: true });
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.listen(10000, () => {
+    console.log('سيرفر منظومة فادي العالمية شغال على منفذ 10000');
 });
