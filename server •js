@@ -1,0 +1,89 @@
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// ملف البيانات
+const DATA_FILE = path.join(__dirname, 'data.json');
+
+// البيانات الافتراضية
+let database = {
+    members: [
+        {id: 1, name: "أحمد محمد", phone: "0551111111", role: "مالك", password: "1234", date: "2026-01-01"},
+        {id: 2, name: "سارة علي", phone: "0562222222", role: "مستأجر", password: "5678", date: "2026-01-15"},
+        {id: 3, name: "خالد عمر", phone: "0573333333", role: "مالك ومستأجر", password: "0000", date: "2026-02-01"}
+    ],
+    properties: [
+        {id: 101, name: "شقة البحر", address: "الكورنيش", type: "شقة", rent: 2500, owner: "أحمد محمد", tenant: null},
+        {id: 102, name: "فيلا النخيل", address: "حي النخيل", type: "فيلا", rent: 5000, owner: "أحمد محمد", tenant: "سارة علي"},
+        {id: 103, name: "محل تجاري", address: "الشارع الرئيسي", type: "محل", rent: 3000, owner: "خالد عمر", tenant: null}
+    ]
+};
+
+// تحميل البيانات إذا كان الملف موجود
+if (fs.existsSync(DATA_FILE)) {
+    try {
+        const savedData = fs.readFileSync(DATA_FILE, 'utf8');
+        database = JSON.parse(savedData);
+        console.log('✅ تم تحميل البيانات المحفوظة');
+    } catch (e) {
+        console.log('❌ خطأ في تحميل البيانات، نستخدم الافتراضية');
+    }
+}
+
+// حفظ البيانات في الملف
+function saveData() {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(database, null, 2));
+    console.log('💾 تم حفظ البيانات في', new Date().toLocaleTimeString());
+}
+
+// ========== إعدادات السيرفر ==========
+app.use(express.json());
+app.use(express.static('public'));
+
+// ========== API ==========
+app.get('/api/data', (req, res) => {
+    res.json(database);
+});
+
+app.post('/api/members', (req, res) => {
+    const { name, phone, role, password } = req.body;
+    
+    const newMember = {
+        id: database.members.length + 1,
+        name: name,
+        phone: phone,
+        role: role,
+        password: password,
+        date: new Date().toLocaleDateString('ar-EG')
+    };
+    
+    database.members.push(newMember);
+    saveData();
+    
+    res.json({ success: true, member: newMember });
+});
+
+app.post('/api/properties', (req, res) => {
+    const { name, address, type, rent, owner } = req.body;
+    
+    const newProperty = {
+        id: database.properties.length + 101,
+        name: name,
+        address: address,
+        type: type,
+        rent: parseInt(rent),
+        owner: owner,
+        tenant: null
+    };
+    
+    database.properties.push(newProperty);
+    saveData();
+    
+    res.json({ success: true, property: newProperty });
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 السيرفر شغال على http://localhost:${PORT}`);
+});
