@@ -1,169 +1,263 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 منظومة فادي برو للعقارات</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --gold: #e2b714; --bg: #05070a; --glass: rgba(22, 27, 34, 0.9); --border: #30363d; --success: #238636; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', sans-serif; }
-        
-        header { background: var(--glass); backdrop-filter: blur(10px); padding: 15px 5%; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.5rem; font-weight: 900; color: var(--gold); }
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc } from 'firebase/firestore';
+import { Search, Plus, X, Phone, User, Home, MapPin, Trash2, Lock, ShieldCheck } from 'lucide-react';
 
-        /* منطقة البحث */
-        .search-container { padding: 20px 5%; background: #0d1117; border-bottom: 1px solid var(--border); }
-        .search-box { width: 100%; max-width: 600px; margin: 0 auto; position: relative; }
-        .search-box input { width: 100%; padding: 15px 45px 15px 15px; background: #000; border: 1px solid var(--gold); border-radius: 30px; color: #fff; font-size: 1rem; }
-        .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
+// إعدادات Firebase
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'fadi-pro-realestate-v2';
 
-        .filters { display: flex; justify-content: center; gap: 10px; padding: 15px; flex-wrap: wrap; }
-        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 8px 18px; border-radius: 20px; cursor: pointer; }
-        .filter-btn.active { background: var(--gold); color: #000; }
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [properties, setProperties] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('الكل');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedProp, setSelectedProp] = useState(null);
+  const [deletePass, setDeletePass] = useState('');
+  const [loading, setLoading] = useState(true);
 
-        .container { padding: 20px 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; position: relative; }
-        .card:hover { border-color: var(--gold); }
-        
-        .badge { position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.75rem; }
-        .card-body { padding: 20px; }
-        .price { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
-        .owner-info { font-size: 0.85rem; color: var(--gold); margin-bottom: 10px; display: block; }
-        .details { background: #0d1117; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #8b949e; display: flex; justify-content: space-between; }
+  // بيانات النموذج الجديد
+  const [formData, setFormData] = useState({
+    advertiserName: '',
+    contactNumber: '',
+    propertyLocation: '',
+    price: '',
+    area: '',
+    category: 'شقة',
+    deletePassword: '' // رمز الحماية للحذف
+  });
 
-        .btn-group { display: flex; flex-direction: column; gap: 8px; }
-        .contact-btn { padding: 12px; border-radius: 10px; background: var(--success); color: #fff; text-decoration: none; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .dev-btn { padding: 8px; border-radius: 8px; background: transparent; border: 1px dashed var(--gold); color: var(--gold); text-decoration: none; text-align: center; font-size: 0.8rem; }
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      } else {
+        await signInAnonymously(auth);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
 
-        .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; color: #000; border: none; cursor: pointer; z-index: 999; }
+  useEffect(() => {
+    if (!user) return;
+    const q = collection(db, 'artifacts', appId, 'public', 'data', 'listings');
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setProperties(data);
+      setLoading(false);
+    }, () => setLoading(false));
+    return () => unsubscribe();
+  }, [user]);
 
-        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .modal-box { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); width: 100%; max-width: 450px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; }
-    </style>
-</head>
-<body>
+  const handlePublish = async (e) => {
+    e.preventDefault();
+    if (!formData.propertyLocation || !formData.deletePassword) return;
+    try {
+      await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'listings'), {
+        ...formData,
+        timestamp: new Date().toISOString()
+      });
+      setIsModalOpen(false);
+      setFormData({ advertiserName: '', contactNumber: '', propertyLocation: '', price: '', area: '', category: 'شقة', deletePassword: '' });
+    } catch (err) { console.error(err); }
+  };
 
-<header>
-    <div class="logo"><i class="fas fa-gem"></i> فادي برو للعقارات</div>
-    <a href="https://wa.me/967779847980?text=حياك الله يا مصمم المنظومة" class="dev-btn">تواصل مع صاحب التصميم 👤</a>
-</header>
-
-<div class="search-container">
-    <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="ابحث عن منطقة، اسم، أو نوع العقار..." onkeyup="searchProps()">
-    </div>
-</div>
-
-<div class="filters">
-    <button class="filter-btn active" onclick="filterData('all')">الكل</button>
-    <button class="filter-btn" onclick="filterData('apt')">شقق</button>
-    <button class="filter-btn" onclick="filterData('land')">أراضي</button>
-</div>
-
-<div class="container" id="mainGrid">
-    </div>
-
-<button class="fab" onclick="showModal()"><i class="fas fa-plus"></i></button>
-
-<div id="modal">
-    <div class="modal-box">
-        <h3 style="text-align:center; color:var(--gold); margin-bottom:15px;">إضافة عرض جديد</h3>
-        <input type="text" id="pOwner" placeholder="اسم المعلن">
-        <input type="number" id="pPhone" placeholder="رقم التواصل">
-        <input type="text" id="pTitle" placeholder="اسم العقار أو موقعه">
-        <input type="text" id="pPrice" placeholder="السعر (مثلاً: 100 ألف دولار)">
-        <input type="text" id="pSpace" placeholder="المساحة (مثلاً: 5 لبن)">
-        <select id="pCat">
-            <option value="apt">شقة</option>
-            <option value="land">أرضية</option>
-            <option value="villa">بيت / فيلا</option>
-        </select>
-        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر الآن 🚀</button>
-        <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:10px; cursor:pointer;">إلغاء</button>
-    </div>
-</div>
-
-<script>
-    let allProps = [];
-    const MY_PHONE = "779847980";
-
-    async function loadData() {
-        try {
-            const res = await fetch('/api/properties');
-            allProps = await res.json();
-            render(allProps);
-        } catch (e) { console.log("خطأ في التحميل"); }
+  const confirmDelete = async () => {
+    if (deletePass === selectedProp.deletePassword) {
+      await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'listings', selectedProp.id));
+      setIsDeleteModalOpen(false);
+      setDeletePass('');
+    } else {
+      alert("رمز الحماية غير صحيح!");
     }
+  };
 
-    function render(data) {
-        const grid = document.getElementById('mainGrid');
-        grid.innerHTML = data.map(p => `
-            <div class="card">
-                <div class="badge">عقار</div>
-                <div class="card-body">
-                    <span class="owner-info"><i class="fas fa-user"></i> المعلن: ${p.owner}</span>
-                    <h3 style="color:#fff; margin-bottom:10px;">${p.title}</h3>
-                    <div class="price" style="color:var(--gold)">${p.price}</div>
-                    <div class="details">
-                        <span>المساحة: ${p.space}</span>
-                    </div>
-                    <div class="btn-group">
-                        <a href="https://wa.me/967${p.phone || MY_PHONE}?text=${encodeURIComponent('استفسار عن: ' + p.title)}" class="contact-btn">
-                            <i class="fab fa-whatsapp"></i> تواصل مع المعلن
-                        </a>
-                    </div>
-                </div>
+  const filteredData = properties.filter(p => {
+    const matchesSearch = p.propertyLocation.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          p.advertiserName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCat = categoryFilter === 'الكل' || p.category === categoryFilter;
+    return matchesSearch && matchesCat;
+  });
+
+  return (
+    <div className="min-h-screen bg-[#05070a] text-[#e6edf3] font-sans" dir="rtl">
+      {/* الرأس */}
+      <header className="sticky top-0 z-50 bg-[#161b22]/95 border-b-2 border-[#e2b714] px-6 py-4 flex justify-between items-center shadow-lg">
+        <div className="text-2xl font-bold text-[#e2b714] flex items-center gap-2">
+          <ShieldCheck className="w-8 h-8" />
+          منظومة فادي برو العقارية
+        </div>
+        <a href="https://wa.me/967779847980" className="text-xs border border-[#e2b714] px-3 py-1 rounded-md text-[#e2b714]">تواصل مع الإدارة</a>
+      </header>
+
+      {/* البحث والتصنيفات */}
+      <div className="p-4 md:p-8 bg-[#0d1117] border-b border-[#30363d]">
+        <div className="max-w-3xl mx-auto space-y-4">
+          <div className="relative">
+            <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-[#e2b714]" />
+            <input 
+              type="text" placeholder="ابحث عن الموقع أو المعلن..."
+              className="w-full bg-black border border-[#30363d] rounded-xl py-4 pr-12 pl-4 focus:border-[#e2b714] outline-none transition-all"
+              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar justify-center">
+            {['الكل', 'شقة', 'أرضية', 'بيت / '].map(cat => (
+              <button
+                key={cat} onClick={() => setCategoryFilter(cat)}
+                className={`px-6 py-2 rounded-full border text-sm transition-all whitespace-nowrap ${
+                  categoryFilter === cat ? 'bg-[#e2b714] text-black border-[#e2b714]' : 'bg-[#161b22] border-[#30363d]'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* قائمة العروض */}
+      <main className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto pb-24">
+        {loading ? (
+          <div className="col-span-full text-center py-20 text-gray-500">جاري جلب البيانات من المنظومة...</div>
+        ) : filteredData.map(p => (
+          <div key={p.id} className="bg-[#161b22] border border-[#30363d] rounded-2xl p-5 hover:border-[#e2b714] transition-all relative">
+            <div className="absolute top-4 left-4 flex gap-2">
+               <button onClick={() => { setSelectedProp(p); setIsDeleteModalOpen(true); }} className="text-gray-600 hover:text-red-500 transition-colors">
+                <Trash2 size={18} />
+              </button>
             </div>
-        `).join('');
-    }
+            
+            <div className="flex items-center gap-2 text-[#e2b714] text-sm mb-2">
+              <User size={14} /> <span>المعلن: {p.advertiserName || "غير محدد"}</span>
+            </div>
+            
+            <h3 className="text-xl font-bold mb-4">{p.propertyLocation}</h3>
+            
+            <div className="flex justify-between items-end mb-6">
+              <div>
+                <p className="text-gray-400 text-xs mb-1">السعر المطلوب</p>
+                <p className="text-2xl font-black text-white">{p.price || "اتفاق"}</p>
+              </div>
+              <div className="text-left">
+                <p className="text-gray-400 text-xs mb-1">المساحة</p>
+                <p className="text-sm font-bold">{p.area || "غير محدد"}</p>
+              </div>
+            </div>
 
-    // --- ميزة البحث الذكي ---
-    function searchProps() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allProps.filter(p => 
-            p.title.toLowerCase().includes(term) || 
-            p.owner.toLowerCase().includes(term) ||
-            p.price.toString().toLowerCase().includes(term)
-        );
-        render(filtered);
-    }
+            <a 
+              href={`https://wa.me/967${p.contactNumber || '779847980'}?text=${encodeURIComponent(`أنا مهتم بعرضكم: ${p.propertyLocation}`)}`}
+              target="_blank"
+              className="w-full bg-[#238636] text-white py-3 rounded-xl flex items-center justify-center gap-2 font-bold hover:bg-[#2ea043]"
+            >
+              <Phone size={18} /> مراسلة المعلن
+            </a>
+          </div>
+        ))}
+      </main>
 
-    async function publish() {
-        const prop = {
-            owner: document.getElementById('pOwner').value || "معلن",
-            phone: document.getElementById('pPhone').value || MY_PHONE,
-            title: document.getElementById('pTitle').value,
-            price: document.getElementById('pPrice').value,
-            space: document.getElementById('pSpace').value,
-            category: document.getElementById('pCat').value
-        };
-        if(!prop.title) return alert("أدخل اسم العقار!");
-        await fetch('/api/properties', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(prop)
-        });
-        hideModal();
-        loadData();
-    }
+      {/* زر الإضافة العائم */}
+      <button 
+        onClick={() => setIsModalOpen(true)}
+        className="fixed bottom-8 left-8 w-16 h-16 bg-[#e2b714] text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40"
+      >
+        <Plus size={32} />
+      </button>
 
-    function filterData(cat) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
-        if(cat === 'all') return render(allProps);
-        render(allProps.filter(p => p.category === cat));
-    }
+      {/* نافذة إضافة عرض جديد */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-[#161b22] w-full max-w-lg border border-[#e2b714] rounded-3xl p-8 overflow-y-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-[#e2b714]">إضافة عرض عقاري جديد</h2>
+              <X className="cursor-pointer" onClick={() => setIsModalOpen(false)} />
+            </div>
+            
+            <form onSubmit={handlePublish} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">بيانات المعلن</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input 
+                    type="text" placeholder="اسم المعلن" className="bg-black border border-[#30363d] p-3 rounded-xl w-full focus:border-[#e2b714] outline-none"
+                    value={formData.advertiserName} onChange={e => setFormData({...formData, advertiserName: e.target.value})}
+                  />
+                  <input 
+                    type="number" placeholder="رقم التواصل" className="bg-black border border-[#30363d] p-3 rounded-xl w-full focus:border-[#e2b714] outline-none"
+                    value={formData.contactNumber} onChange={e => setFormData({...formData, contactNumber: e.target.value})}
+                  />
+                </div>
+              </div>
 
-    function showModal() { document.getElementById('modal').style.display = 'flex'; }
-    function hideModal() { document.getElementById('modal').style.display = 'none'; }
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">بيانات العقار</label>
+                <input 
+                  type="text" placeholder="موقع العقار (مثال: صنعاء - حي الروضة)" className="bg-black border border-[#30363d] p-3 rounded-xl w-full focus:border-[#e2b714] outline-none"
+                  required value={formData.propertyLocation} onChange={e => setFormData({...formData, propertyLocation: e.target.value})}
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <input 
+                    type="text" placeholder="السعر المطلوب" className="bg-black border border-[#30363d] p-3 rounded-xl w-full focus:border-[#e2b714] outline-none"
+                    value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})}
+                  />
+                  <input 
+                    type="text" placeholder="المساحة الكلية" className="bg-black border border-[#30363d] p-3 rounded-xl w-full focus:border-[#e2b714] outline-none"
+                    value={formData.area} onChange={e => setFormData({...formData, area: e.target.value})}
+                  />
+                </div>
+                <select 
+                  className="bg-black border border-[#30363d] p-3 rounded-xl w-full focus:border-[#e2b714] outline-none"
+                  value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}
+                >
+                  <option>شقة</option>
+                  <option>أرضية</option>
+                  <option>بيت / </option>
+                </select>
+              </div>
 
-    setInterval(loadData, 15000);
-    window.onload = loadData;
-</script>
+              <div className="space-y-2 pt-4 border-t border-[#30363d]">
+                <label className="text-sm text-[#e2b714] flex items-center gap-1"><Lock size={14}/> رمز حماية الحذف (سري)</label>
+                <input 
+                  type="password" placeholder="أدخل كلمة سر لتتمكن من حذف الإعلان لاحقاً" 
+                  className="bg-black border border-[#e2b714]/30 p-3 rounded-xl w-full focus:border-[#e2b714] outline-none text-center"
+                  required value={formData.deletePassword} onChange={e => setFormData({...formData, deletePassword: e.target.value})}
+                />
+              </div>
 
-</body>
-</html>
+              <button type="submit" className="w-full bg-[#e2b714] text-black font-black py-4 rounded-xl hover:bg-white transition-all">
+                نشر العرض الآن
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* نافذة التأكيد قبل الحذف */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 bg-black/95 z-[110] flex items-center justify-center p-6">
+          <div className="bg-[#161b22] border border-red-500 rounded-2xl p-6 w-full max-w-sm text-center">
+            <h3 className="text-xl font-bold mb-4">تأكيد الحذف</h3>
+            <p className="text-sm text-gray-400 mb-6">يرجى إدخال رمز الحماية الذي وضعته عند إضافة هذا الإعلان ليتم الحذف:</p>
+            <input 
+              type="password" 
+              className="bg-black border border-[#30363d] p-3 rounded-xl w-full text-center mb-4 outline-none focus:border-red-500"
+              value={deletePass} onChange={e => setDeletePass(e.target.value)}
+              placeholder="رمز الحماية"
+            />
+            <div className="flex gap-2">
+              <button onClick={confirmDelete} className="flex-1 bg-red-600 py-3 rounded-xl font-bold">حذف نهائي</button>
+              <button onClick={() => setIsDeleteModalOpen(false)} className="flex-1 bg-gray-700 py-3 rounded-xl">إلغاء</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
