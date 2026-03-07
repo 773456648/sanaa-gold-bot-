@@ -7,70 +7,75 @@
     <script src="/socket.io/socket.io.js"></script>
     <style>
         :root { --gold: #ffd700; --dark: #050c16; --card: #101e30; --blue: #1e3a5f; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--dark); color: white; height: 100vh; display: flex; overflow: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: var(--dark); color: white; height: 100vh; display: flex; flex-direction: column; }
 
         /* شاشة الدخول */
-        #login { position: fixed; inset: 0; background: radial-gradient(circle, var(--blue), var(--dark)); z-index: 1000; display: flex; align-items: center; justify-content: center; }
-        .login-card { background: var(--card); padding: 40px; border: 2px solid var(--gold); border-radius: 25px; text-align: center; width: 90%; max-width: 400px; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--blue); background: #000; color: white; text-align: center; }
+        #login { position: fixed; inset: 0; background: var(--dark); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--card); padding: 30px; border: 2px solid var(--gold); border-radius: 20px; text-align: center; width: 100%; max-width: 350px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid var(--blue); background: #000; color: white; text-align: center; }
         
-        /* الواجهة الرئيسية */
-        .sidebar { width: 300px; background: var(--card); border-left: 1px solid var(--gold); display: flex; flex-direction: column; }
-        .main { flex: 1; display: flex; flex-direction: column; position: relative; }
+        /* الهيكل الرئيسي */
+        .container { display: flex; flex: 1; overflow: hidden; }
         
-        /* قائمة الأسماء */
-        .user-item { padding: 15px; margin: 10px; background: var(--blue); border-radius: 15px; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; transition: 0.3s; }
-        .user-item:hover { border-color: var(--gold); transform: scale(1.02); }
-        .call-btn { background: var(--gold); border: none; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; }
-
-        /* شاشة الفيديو */
-        #video-overlay { position: absolute; inset: 0; background: #000; display: none; flex-direction: column; z-index: 500; }
-        .v-grid { flex: 1; display: flex; gap: 10px; padding: 20px; align-items: center; justify-content: center; }
-        video { width: 45%; border-radius: 20px; border: 2px solid var(--gold); background: #111; box-shadow: 0 0 20px rgba(255,215,0,0.3); }
-        .v-tools { height: 100px; display: flex; justify-content: center; gap: 20px; align-items: center; background: rgba(0,0,0,0.8); }
-        .tool-btn { width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
-
-        /* الشات */
-        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 12px 18px; border-radius: 18px; max-width: 75%; font-size: 0.95rem; line-height: 1.4; }
+        /* قائمة المتواجدين */
+        .sidebar { width: 80px; background: var(--card); border-left: 1px solid var(--gold); display: flex; flex-direction: column; align-items: center; padding: 10px 0; transition: 0.3s; }
+        .user-avatar { width: 50px; height: 50px; background: var(--blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; border: 1px solid var(--gold); cursor: pointer; font-size: 0.8rem; overflow: hidden; text-align: center; }
+        
+        /* منطقة الشات */
+        .chat-area { flex: 1; display: flex; flex-direction: column; position: relative; background: #08121d; }
+        #chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { padding: 10px 15px; border-radius: 15px; max-width: 80%; line-height: 1.4; font-size: 0.95rem; position: relative; }
         .me { background: var(--gold); color: black; align-self: flex-start; border-bottom-right-radius: 2px; }
         .them { background: var(--blue); color: white; align-self: flex-end; border-bottom-left-radius: 2px; }
+        
+        /* منطقة الفيديو */
+        #video-overlay { position: absolute; inset: 0; background: #000; display: none; flex-direction: column; z-index: 500; }
+        .v-grid { flex: 1; display: flex; flex-direction: column; gap: 5px; padding: 5px; }
+        video { width: 100%; height: 48%; border-radius: 10px; border: 1px solid var(--gold); object-fit: cover; }
+        .v-tools { height: 70px; display: flex; justify-content: center; gap: 15px; align-items: center; background: rgba(0,0,0,0.9); }
+        .btn-round { width: 50px; height: 50px; border-radius: 50%; border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        /* منطقة الإرسال */
+        .input-bar { padding: 10px; background: var(--card); display: flex; gap: 10px; align-items: center; }
+        .input-bar input { margin: 0; flex: 1; text-align: right; }
+        .btn-send { background: var(--gold); color: black; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="login">
     <div class="login-card">
-        <h1 style="color:var(--gold); margin-bottom:15px;">💎 FADI PRO</h1>
-        <input type="text" id="uName" placeholder="اسمك المستعار">
-        <input type="text" id="rID" placeholder="رقم الديوان">
-        <button onclick="enter()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:12px; font-weight:bold; cursor:pointer;">دخول المنظومة 🚀</button>
+        <h2 style="color:var(--gold)">💎 FADI PRO</h2>
+        <input type="text" id="uName" placeholder="اسمك">
+        <input type="text" id="rID" placeholder="رقم الغرفة">
+        <button onclick="enter()" class="btn-send" style="width:100%">دخول 🚀</button>
     </div>
 </div>
 
-<div class="sidebar">
-    <div style="padding:20px; border-bottom:1px solid var(--gold); text-align:center; color:var(--gold); font-weight:bold;">المتواجدون الآن 👥</div>
-    <div id="user-list"></div>
-</div>
-
-<div class="main">
-    <div id="video-overlay">
-        <div class="v-grid">
-            <video id="local" autoplay muted playsinline></video>
-            <video id="remote" autoplay playsinline></video>
+<div class="container">
+    <div class="sidebar" id="user-list">
         </div>
-        <div class="v-tools">
-            <button class="tool-btn" style="background:#444" onclick="toggleMic()">🎤</button>
-            <button class="tool-btn" style="background:red" onclick="location.reload()">🛑</button>
-            <button class="tool-btn" style="background:#444" onclick="toggleCam()">📹</button>
-        </div>
-    </div>
 
-    <div id="chat"></div>
-    <div style="padding:20px; background:var(--card); display:flex; gap:10px;">
-        <input type="text" id="msgIn" style="flex:1; margin:0; text-align:right;" placeholder="اكتب خبرك هنا...">
-        <button onclick="sendMsg()" style="background:var(--gold); border:none; padding:10px 25px; border-radius:12px; font-weight:bold;">إرسال</button>
+    <div class="chat-area">
+        <div id="video-overlay">
+            <div class="v-grid">
+                <video id="local" autoplay muted playsinline></video>
+                <video id="remote" autoplay playsinline></video>
+            </div>
+            <div class="v-tools">
+                <button class="btn-round" style="background:#444" onclick="toggleMic()">🎤</button>
+                <button class="btn-round" style="background:red; color:white;" onclick="location.reload()">🛑</button>
+                <button class="btn-round" style="background:#444" onclick="toggleCam()">📹</button>
+            </div>
+        </div>
+
+        <div id="chat-messages"></div>
+
+        <div class="input-bar">
+            <input type="text" id="msgIn" placeholder="اكتب رسالتك...">
+            <button class="btn-send" onclick="sendMsg()">إرسال</button>
+        </div>
     </div>
 </div>
 
@@ -89,13 +94,10 @@
 
     socket.on('update-users', users => {
         const list = document.getElementById('user-list');
-        list.innerHTML = '';
+        list.innerHTML = '<span style="font-size:10px; color:var(--gold)">الكل</span>';
         users.forEach(u => {
             if(u.id !== socket.id) {
-                list.innerHTML += `<div class="user-item">
-                    <span>👤 ${u.name}</span>
-                    <button class="call-btn" onclick="requestCall('${u.id}')">اتصال 📞</button>
-                </div>`;
+                list.innerHTML += `<div class="user-avatar" onclick="requestCall('${u.id}')">${u.name.substring(0,5)}<br>📞</div>`;
             }
         });
     });
@@ -111,19 +113,19 @@
     socket.on('chat-message', d => {
         const div = document.createElement('div');
         div.className = `bubble ${d.user === myName ? 'me' : 'them'}`;
-        div.innerHTML = `<b>${d.user}:</b><br>${d.text}`;
-        document.getElementById('chat').appendChild(div);
-        document.getElementById('chat').scrollTop = 99999;
+        div.innerHTML = `<b>${d.user}</b><br>${d.text}`;
+        document.getElementById('chat-messages').appendChild(div);
+        document.getElementById('chat-messages').scrollTop = 99999;
     });
 
     function requestCall(id) {
         targetId = id;
-        alert("يتم الآن طلب الاتصال من الطرف الآخر...");
+        alert("جاري طلب الاتصال..");
         socket.emit('call-request', { to: id });
     }
 
     socket.on('incoming-call', async d => {
-        if(confirm(`📞 ${d.fromName} يطلب اتصال فيديو.. هل توافق؟`)) {
+        if(confirm(`📞 ${d.fromName} يطلب اتصال فيديو.. توافق؟`)) {
             targetId = d.fromId;
             socket.emit('call-accept', { to: d.fromId });
             initWebRTC(true);
@@ -136,12 +138,10 @@
         document.getElementById('video-overlay').style.display = 'flex';
         localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
         document.getElementById('local').srcObject = localStream;
-
         pc = new RTCPeerConnection({ iceServers: [{urls:'stun:stun.l.google.com:19302'}] });
         localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
         pc.onicecandidate = e => e.candidate && socket.emit('webrtc-signal', {to:targetId, signal: {candidate: e.candidate}});
         pc.ontrack = e => document.getElementById('remote').srcObject = e.streams[0];
-
         if(!isSecond) {
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
@@ -155,11 +155,8 @@
             const ans = await pc.createAnswer();
             await pc.setLocalDescription(ans);
             socket.emit('webrtc-signal', {to: d.fromId, signal: {answer: ans}});
-        } else if(d.signal.answer) {
-            await pc.setRemoteDescription(new RTCSessionDescription(d.signal.answer));
-        } else if(d.signal.candidate) {
-            await pc.addIceCandidate(new RTCIceCandidate(d.signal.candidate));
-        }
+        } else if(d.signal.answer) { pc.setRemoteDescription(new RTCSessionDescription(d.signal.answer)); }
+        else if(d.signal.candidate) { pc.addIceCandidate(new RTCIceCandidate(d.signal.candidate)); }
     });
 
     function toggleMic() { localStream.getAudioTracks()[0].enabled = !localStream.getAudioTracks()[0].enabled; }
