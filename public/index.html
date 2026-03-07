@@ -2,192 +2,106 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 FADI SYSTEM PRO 💎</title>
+    <title>💎 FADI PRO SYSTEM 💎</title>
     <script src="/socket.io/socket.io.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #050c16; --card: #101e30; --accent: #ffd700; --text: #e0e0e0; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
-        body { background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
-
-        /* شاشة الدخول */
-        #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-        .card { background: var(--card); padding: 30px; border-radius: 25px; border: 2px solid var(--accent); width: 90%; max-width: 400px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid #1e3a5f; background: #050c16; color: white; text-align: center; }
-        .btn-gold { background: var(--accent); color: black; padding: 12px 25px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; width: 100%; }
-
-        /* الواجهة الرئيسية */
-        #main-app { display: none; grid-template-columns: 300px 1fr; height: 100vh; }
-        
-        /* القائمة الجانبية (الناس اللي داخلين) */
-        .sidebar { background: var(--card); border-left: 2px solid var(--accent); display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; border-bottom: 1px solid #1e3a5f; text-align: center; color: var(--accent); font-weight: bold; }
-        #users-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .user-item { padding: 15px; background: rgba(255,255,255,0.05); margin-bottom: 10px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid transparent; }
-        .user-item:hover { border-color: var(--accent); }
-        .call-icon { cursor: pointer; font-size: 1.2rem; }
-
-        /* منطقة المحادثة والاتصال */
-        .content { display: flex; flex-direction: column; position: relative; }
-        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px 15px; border-radius: 15px; max-width: 70%; font-size: 0.9rem; }
-        .msg-me { background: var(--accent); color: black; align-self: flex-start; }
-        .msg-them { background: #1e3a5f; align-self: flex-end; }
-
-        /* شاشة الفيديو (تظهر عند الاتصال فقط) */
-        #video-overlay { position: absolute; inset: 0; background: #000; display: none; flex-direction: column; z-index: 100; }
-        .v-grid { flex: 1; display: flex; gap: 10px; padding: 10px; align-items: center; justify-content: center; }
-        video { width: 45%; border-radius: 15px; border: 2px solid var(--accent); background: #222; }
-        .v-tools { height: 80px; display: flex; justify-content: center; gap: 20px; align-items: center; }
-        .circle-btn { width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-
-        /* منطقة الإرسال */
-        .input-area { padding: 15px; background: var(--card); display: flex; gap: 10px; }
-        
-        /* نافذة الطلب (موافق/رفض) */
-        #call-request { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: black; padding: 15px 25px; border-radius: 50px; display: none; z-index: 3000; box-shadow: 0 0 20px rgba(0,0,0,0.5); font-weight: bold; align-items: center; gap: 15px; }
-        
-        @media (max-width: 768px) { #main-app { grid-template-columns: 1fr; } .sidebar { display: none; } }
+        :root { --gold: #ffd700; --dark: #050c16; --card: #101e30; }
+        body { background: var(--dark); color: white; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; margin: 0; }
+        #login { position: fixed; inset: 0; background: var(--dark); z-index: 10; display: flex; align-items: center; justify-content: center; }
+        .box { background: var(--card); padding: 30px; border: 2px solid var(--gold); border-radius: 20px; text-align: center; }
+        input { width: 80%; padding: 10px; margin: 10px; border-radius: 10px; border: none; }
+        #main { display: none; grid-template-columns: 250px 1fr; height: 100vh; }
+        .side { background: var(--card); border-left: 2px solid var(--gold); padding: 10px; }
+        .chat { display: flex; flex-direction: column; flex: 1; position: relative; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; }
+        .msg { background: #1e3a5f; padding: 10px; border-radius: 10px; margin-bottom: 5px; width: fit-content; }
+        #video-view { position: absolute; inset: 0; background: black; display: none; flex-direction: column; z-index: 5; }
+        video { width: 45%; border: 1px solid var(--gold); border-radius: 10px; margin: 5px; }
+        .user-link { cursor: pointer; color: var(--gold); padding: 10px; display: block; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
-<div id="call-request">
-    <span id="caller-name">شخص ما يتصل بك...</span>
-    <button onclick="acceptCall()" style="background:green; color:white; border:none; padding:5px 15px; border-radius:10px;">موافق</button>
-    <button onclick="rejectCall()" style="background:red; color:white; border:none; padding:5px 15px; border-radius:10px;">رفض</button>
-</div>
-
-<div id="login-screen">
-    <div class="card">
-        <h2 style="color:var(--accent)">💎 FADI PRO 💎</h2>
-        <input type="text" id="username" placeholder="اكتب اسمك الفخم">
-        <input type="text" id="room" placeholder="رقم الديوان (الغرفة)">
-        <button class="btn-gold" onclick="enterRoom()">دخول المنظومة 🚀</button>
+<div id="login">
+    <div class="box">
+        <h2 style="color:var(--gold)">💎 فادي برو</h2>
+        <input type="text" id="u" placeholder="اسمك">
+        <input type="text" id="r" placeholder="رقم الغرفة">
+        <button onclick="enter()" style="background:var(--gold); padding:10px 30px; border-radius:10px; cursor:pointer;">دخول</button>
     </div>
 </div>
 
-<div id="main-app">
-    <div class="sidebar">
-        <div class="sidebar-header">المتواجدون الآن 👥</div>
-        <div id="users-list"></div>
+<div id="main">
+    <div class="side">
+        <h4 style="color:var(--gold)">المتواجدون 👤</h4>
+        <div id="u-list"></div>
     </div>
-
-    <div class="content">
-        <div id="video-overlay">
-            <div class="v-grid">
-                <video id="localVid" autoplay muted playsinline></video>
-                <video id="remoteVid" autoplay playsinline></video>
+    <div class="chat">
+        <div id="video-view">
+            <div style="flex:1; display:flex; align-items:center; justify-content:center;">
+                <video id="lv" autoplay muted playsinline></video>
+                <video id="rv" autoplay playsinline></video>
             </div>
-            <div class="v-tools">
-                <button class="circle-btn" style="background:#444" onclick="toggleMic()">🎤</button>
-                <button class="circle-btn" style="background:red" onclick="endCall()">🛑</button>
-                <button class="circle-btn" style="background:#444" onclick="toggleCam()">📹</button>
-            </div>
+            <button onclick="location.reload()" style="background:red; color:white; padding:15px;">إنهاء الاتصال 🛑</button>
         </div>
-
-        <div id="chat-box"></div>
-        
-        <div class="input-area">
-            <input type="text" id="msgInput" placeholder="اكتب خبرك هنا..." style="margin:0">
-            <button class="btn-gold" style="width:auto" onclick="sendMsg()">إرسال 🚀</button>
+        <div id="messages"></div>
+        <div style="padding:15px; display:flex; gap:10px; background:var(--card);">
+            <input type="text" id="m" placeholder="اكتب رسالتك..." style="flex:1; margin:0;">
+            <button onclick="send()" style="background:var(--gold); border:none; padding:10px 20px; border-radius:10px;">إرسال</button>
         </div>
     </div>
 </div>
 
 <script>
     const socket = io();
-    let myName, myRoom, localStream, peerConnection;
-    let pendingCallerId = null;
+    let name, room;
 
-    function enterRoom() {
-        myName = document.getElementById('username').value;
-        myRoom = document.getElementById('room').value;
-        if(!myName || !myRoom) return alert("سجل اسمك ورقم الغرفة يا ذيب!");
-
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'grid';
-        
-        socket.emit('join-room', { roomID: myRoom, user: myName });
+    function enter() {
+        name = document.getElementById('u').value;
+        room = document.getElementById('r').value;
+        if(name && room) {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('main').style.display = 'grid';
+            socket.emit('join-room', { roomID: room, user: name });
+        }
     }
 
-    // تحديث قائمة المستخدمين
-    socket.on('update-users', (users) => {
-        const list = document.getElementById('users-list');
+    socket.on('update-users', users => {
+        const list = document.getElementById('u-list');
         list.innerHTML = '';
         users.forEach(u => {
             if(u.id !== socket.id) {
-                list.innerHTML += `
-                    <div class="user-item">
-                        <span>👤 ${u.name}</span>
-                        <span class="call-icon" onclick="makeCall('${u.id}')">📞</span>
-                    </div>
-                `;
+                list.innerHTML += `<div class="user-link" onclick="call('${u.id}')">📞 ${u.name}</div>`;
             }
         });
     });
 
-    // إرسال رسالة شات
-    function sendMsg() {
-        const txt = document.getElementById('msgInput').value;
-        if(txt) {
-            socket.emit('chat-message', { roomID: myRoom, user: myName, text: txt });
-            document.getElementById('msgInput').value = '';
+    function send() {
+        const t = document.getElementById('m').value;
+        if(t) {
+            socket.emit('chat-message', { roomID: room, user: name, text: t });
+            document.getElementById('m').value = '';
         }
     }
 
     socket.on('chat-message', d => {
-        const box = document.getElementById('chat-box');
         const div = document.createElement('div');
-        div.className = `message ${d.user === myName ? 'msg-me' : 'msg-them'}`;
-        div.innerHTML = `<b>${d.user}:</b><br>${d.text}`;
-        box.appendChild(div);
-        box.scrollTop = box.scrollHeight;
+        div.className = 'msg';
+        div.innerHTML = `<b>${d.user}:</b> ${d.text}`;
+        document.getElementById('messages').appendChild(div);
     });
 
-    // نظام الاتصال بطلب
-    function makeCall(targetId) {
-        alert("جاري إرسال طلب اتصال...");
-        socket.emit('request-call', { to: targetId, fromName: myName, fromId: socket.id });
+    function call(id) {
+        alert("جاري طلب الاتصال...");
+        socket.emit('request-call', { to: id });
     }
 
-    socket.on('incoming-call', data => {
-        pendingCallerId = data.fromId;
-        document.getElementById('caller-name').innerText = `📞 ${data.fromName} يطلب اتصال فيديو...`;
-        document.getElementById('call-request').style.display = 'flex';
+    socket.on('incoming-call', d => {
+        if(confirm(d.fromName + " يشتي يتصل بك، توافق؟")) {
+            document.getElementById('video-view').style.display = 'flex';
+            // هنا يكمل كود الـ WebRTC للاتصال
+        }
     });
-
-    async function acceptCall() {
-        document.getElementById('call-request').style.display = 'none';
-        document.getElementById('video-overlay').style.display = 'flex';
-        
-        localStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
-        document.getElementById('localVid').srcObject = localStream;
-        
-        setupWebRTC(pendingCallerId);
-    }
-
-    function rejectCall() {
-        document.getElementById('call-request').style.display = 'none';
-        socket.emit('call-rejected', { to: pendingCallerId });
-    }
-
-    // إعداد WebRTC (نفس المنطق السابق مع تحسين التوجيه)
-    function setupWebRTC(targetId) {
-        peerConnection = new RTCPeerConnection({ iceServers: [{urls:'stun:stun.l.google.com:19302'}] });
-        localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-        
-        peerConnection.onicecandidate = e => e.candidate && socket.emit('ice-candidate', { to: targetId, candidate: e.candidate });
-        peerConnection.ontrack = e => document.getElementById('remoteVid').srcObject = e.streams[0];
-        
-        // إذا كنت أنا المستقبل، أنشئ Answer، إذا كنت المتصل أنشئ Offer
-        // (يتم التعامل مع هذا عبر السوكيت)
-    }
-
-    function endCall() {
-        location.reload(); // أسهل طريقة لإنهاء كل شيء وتصفية الذاكرة
-    }
 </script>
 </body>
 </html>
