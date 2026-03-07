@@ -9,118 +9,141 @@
         :root { --gold: #e2b714; --bg: #05070a; --glass: rgba(22, 27, 34, 0.9); --border: #30363d; --success: #238636; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', sans-serif; }
+        
         header { background: var(--glass); backdrop-filter: blur(10px); padding: 15px 5%; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
         .logo { font-size: 1.5rem; font-weight: 900; color: var(--gold); }
+
         .search-container { padding: 20px 5%; background: #0d1117; border-bottom: 1px solid var(--border); }
         .search-box { width: 100%; max-width: 600px; margin: 0 auto; position: relative; }
-        .search-box input { width: 100%; padding: 15px 45px 15px 15px; background: #000; border: 1px solid var(--gold); border-radius: 30px; color: #fff; }
+        .search-box input { width: 100%; padding: 15px 45px 15px 15px; background: #000; border: 1px solid var(--gold); border-radius: 30px; color: #fff; font-size: 1rem; }
         .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
+
+        .filters { display: flex; justify-content: center; gap: 10px; padding: 15px; flex-wrap: wrap; }
+        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 8px 18px; border-radius: 20px; cursor: pointer; }
+        .filter-btn.active { background: var(--gold); color: #000; }
+
         .container { padding: 20px 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; position: relative; }
+        .card:hover { border-color: var(--gold); }
         
-        /* حركة ظهور فخمة للكروت */
-        .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; animation: fadeIn 0.6s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
+        .badge { position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.75rem; }
         .card-body { padding: 20px; }
         .price { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
-        .time-badge { font-size: 0.75rem; color: #8b949e; margin-bottom: 10px; display: block; }
-        
-        .btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-        .contact-btn { padding: 12px; border-radius: 10px; background: var(--success); color: #fff; text-decoration: none; text-align: center; font-weight: bold; }
-        .action-btns { display: flex; gap: 10px; }
-        .action-btns button { flex: 1; padding: 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
-        .btn-share { background: #1f6feb; color: #fff; }
-        .btn-del { background: #da3633; color: #fff; }
+        .owner-info { font-size: 0.85rem; color: var(--gold); margin-bottom: 10px; display: block; }
+        .details { background: #0d1117; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #8b949e; display: flex; justify-content: space-between; }
 
-        .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; color: #000; border: none; cursor: pointer; z-index: 999; box-shadow: 0 0 15px var(--gold); }
+        .btn-group { display: flex; flex-direction: column; gap: 8px; }
+        .contact-btn { padding: 12px; border-radius: 10px; background: var(--success); color: #fff; text-decoration: none; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .dev-btn { padding: 8px; border-radius: 8px; background: transparent; border: 1px dashed var(--gold); color: var(--gold); text-decoration: none; text-align: center; font-size: 0.8rem; }
+
+        /* زر الحذف القوي حقك */
+        .del-btn { padding: 10px; border-radius: 10px; background: transparent; border: 1px solid #da3633; color: #da3633; cursor: pointer; text-align: center; font-weight: bold; }
+        .del-btn:hover { background: #da3633; color: #fff; }
+
+        .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; color: #000; border: none; cursor: pointer; z-index: 999; }
+
         #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
         .modal-box { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); width: 100%; max-width: 450px; }
         input, select { width: 100%; padding: 12px; margin-bottom: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; }
-
-        /* ستايل التنبيهات الفخم */
-        #toast { visibility: hidden; min-width: 250px; background-color: var(--gold); color: #000; text-align: center; border-radius: 10px; padding: 15px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%); font-weight: bold; }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo"><i class="fas fa-gem"></i> فادي برو للعقارات</div>
+    <a href="https://wa.me/967779847980?text=حياك الله يا مصمم المنظومة" class="dev-btn">تواصل مع صاحب التصميم 👤</a>
 </header>
 
 <div class="search-container">
     <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="ابحث عن عقار..." onkeyup="searchProps()">
+        <input type="text" id="searchInput" placeholder="ابحث عن منطقة، اسم، أو نوع العقار..." onkeyup="searchProps()">
     </div>
 </div>
 
-<div class="container" id="mainGrid"></div>
+<div class="filters">
+    <button class="filter-btn active" onclick="filterData('all')">الكل</button>
+    <button class="filter-btn" onclick="filterData('apt')">شقق</button>
+    <button class="filter-btn" onclick="filterData('land')">أراضي</button>
+</div>
+
+<div class="container" id="mainGrid">
+</div>
 
 <button class="fab" onclick="showModal()"><i class="fas fa-plus"></i></button>
 
-<div id="toast">تمت العملية بنجاح!</div>
-
 <div id="modal">
     <div class="modal-box">
-        <input type="text" id="pOwner" placeholder="الاسم">
-        <input type="number" id="pPhone" placeholder="رقم الواتساب">
-        <input type="text" id="pTitle" placeholder="الموقع">
-        <input type="text" id="pPrice" placeholder="السعر">
-        <input type="text" id="pSpace" placeholder="المساحة">
+        <h3 style="text-align:center; color:var(--gold); margin-bottom:15px;">إضافة عرض جديد</h3>
+        <input type="text" id="pOwner" placeholder="اسم المعلن">
+        <input type="number" id="pPhone" placeholder="رقم التواصل">
+        <input type="text" id="pTitle" placeholder="اسم العقار أو موقعه">
+        <input type="text" id="pPrice" placeholder="السعر (مثلاً: 100 ألف دولار)">
+        <input type="text" id="pSpace" placeholder="المساحة (مثلاً: 5 لبن)">
         <select id="pCat">
             <option value="apt">شقة</option>
             <option value="land">أرضية</option>
+            <option value="villa">بيت / فيلا</option>
         </select>
-        <input type="password" id="pPass" placeholder="كلمة سر لحذف إعلانك">
         
-        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر العرض 🚀</button>
+        <input type="password" id="pPass" placeholder="كلمة سر لحذف إعلانك لاحقاً">
+
+        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر الآن 🚀</button>
         <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:10px; cursor:pointer;">إلغاء</button>
     </div>
 </div>
 
 <script>
     let allProps = [];
+    const MY_PHONE = "779847980";
 
     async function loadData() {
         try {
             const res = await fetch('/api/properties');
             allProps = await res.json();
             render(allProps);
-        } catch (e) { console.error("خطأ في الاتصال"); }
+        } catch (e) { console.log("خطأ في التحميل"); }
     }
 
     function render(data) {
         const grid = document.getElementById('mainGrid');
         grid.innerHTML = data.map(p => `
             <div class="card">
+                <div class="badge">عقار</div>
                 <div class="card-body">
-                    <span style="color:var(--gold); font-weight:bold;">👤 المعلن: ${p.owner}</span>
-                    <span class="time-badge">🕒 نُشر في: ${p.time || 'الآن'}</span>
-                    <h3 style="color:#fff; margin: 10px 0;">${p.title}</h3>
-                    <div class="price" style="color:var(--gold)">💰 ${p.price}</div>
-                    <div style="color:#8b949e; font-size: 0.9rem; margin-bottom:10px;">📏 المساحة: ${p.space}</div>
-                    
+                    <span class="owner-info"><i class="fas fa-user"></i> المعلن: ${p.owner}</span>
+                    <h3 style="color:#fff; margin-bottom:10px;">${p.title}</h3>
+                    <div class="price" style="color:var(--gold)">${p.price}</div>
+                    <div class="details">
+                        <span>المساحة: ${p.space}</span>
+                    </div>
                     <div class="btn-group">
-                        <a href="https://wa.me/967${p.phone}?text=${encodeURIComponent('حياك، استفسار عن إعلانك: ' + p.title)}" class="contact-btn">
-                            <i class="fab fa-whatsapp"></i> تواصل مع المالك
+                        <a href="https://wa.me/967${p.phone || MY_PHONE}?text=${encodeURIComponent('استفسار عن: ' + p.title)}" class="contact-btn">
+                            <i class="fab fa-whatsapp"></i> تواصل مع المعلن
                         </a>
-                        <div class="action-btns">
-                            <button onclick="shareProp('${p.title}', '${p.price}', '${p.phone}')" class="btn-share"><i class="fas fa-share-alt"></i> شارك</button>
-                            <button onclick="deleteProp('${p.id}')" class="btn-del"><i class="fas fa-trash"></i> احذف</button>
-                        </div>
+                        <button onclick="deleteProp('${p.id}')" class="del-btn">
+                            <i class="fas fa-trash"></i> حذف الإعلان
+                        </button>
                     </div>
                 </div>
             </div>
         `).join('');
     }
 
+    function searchProps() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allProps.filter(p => 
+            p.title.toLowerCase().includes(term) || 
+            p.owner.toLowerCase().includes(term) ||
+            p.price.toString().toLowerCase().includes(term)
+        );
+        render(filtered);
+    }
+
     async function publish() {
         const prop = {
-            owner: document.getElementById('pOwner').value,
-            phone: document.getElementById('pPhone').value,
+            owner: document.getElementById('pOwner').value || "معلن",
+            phone: document.getElementById('pPhone').value || MY_PHONE,
             title: document.getElementById('pTitle').value,
             price: document.getElementById('pPrice').value,
             space: document.getElementById('pSpace').value,
@@ -128,8 +151,8 @@
             password: document.getElementById('pPass').value
         };
         
-        if(!prop.title || !prop.password) return showToast("⚠️ لازم تكتب الموقع وكلمة السر يا خبير!");
-
+        if(!prop.title || !prop.password) return alert("أدخل اسم العقار وكلمة السر!");
+        
         await fetch('/api/properties', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -138,12 +161,11 @@
         
         document.querySelectorAll('#modal input').forEach(i => i.value = '');
         hideModal();
-        showToast("✅ تم نشر العرض بنجاح!");
         loadData();
     }
 
     async function deleteProp(id) {
-        const password = prompt("أدخل كلمة سر الحذف:");
+        const password = prompt("أدخل كلمة سر الإعلان عشان تحذفه:");
         if(!password) return;
 
         const res = await fetch('/api/delete', {
@@ -154,28 +176,16 @@
 
         const result = await res.json();
         if(result.success) {
-            showToast("🗑️ تم الحذف بنجاح!");
+            alert("تم الحذف بنجاح");
             loadData();
         } else {
-            showToast("❌ كلمة السر غلط يا حريف!");
+            alert("كلمة السر غلط!");
         }
     }
 
-    function shareProp(title, price, phone) {
-        const text = `🏠 عقار لقطة في منظومة فادي برو!\n📍 الموقع: ${title}\n💰 السعر: ${price}\n📞 للتواصل: 967${phone}\n\nسارع قبل ما يطير! 🚀`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
-    }
-
-    function searchProps() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        render(allProps.filter(p => p.title.toLowerCase().includes(term) || p.owner.toLowerCase().includes(term)));
-    }
-
-    function showToast(msg) {
-        const x = document.getElementById("toast");
-        x.innerText = msg;
-        x.className = "show";
-        setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+    function filterData(cat) {
+        if(cat === 'all') return render(allProps);
+        render(allProps.filter(p => p.category === cat));
     }
 
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
@@ -184,5 +194,6 @@
     setInterval(loadData, 5000);
     window.onload = loadData;
 </script>
+
 </body>
 </html>
