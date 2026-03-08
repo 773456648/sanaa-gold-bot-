@@ -2,43 +2,86 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>منصة فادي برو للبناء الفوري</title>
+    <title>FADI PRO | منصة بناء التطبيقات المتكاملة</title>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; }
-        .card { background: #1e293b; padding: 30px; border-radius: 15px; border: 2px solid #00d2ff; display: inline-block; width: 90%; max-width: 450px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #334155; color: white; box-sizing: border-box; }
-        .btn { background: #00d2ff; color: #000; padding: 15px; width: 100%; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #status { margin-top: 20px; color: #00d2ff; font-family: monospace; }
+        :root { --primary: #00d2ff; --dark: #0a0e17; }
+        body { font-family: 'Cairo', sans-serif; background: var(--dark); color: white; text-align: center; padding: 20px; }
+        .main-box { background: #161e2e; padding: 30px; border-radius: 20px; border: 2px solid var(--primary); display: inline-block; width: 90%; max-width: 600px; box-shadow: 0 0 30px rgba(0,210,255,0.2); }
+        .input-group { text-align: right; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #1f2937; color: white; }
+        .build-btn { background: var(--primary); color: #000; padding: 18px; width: 100%; border: none; border-radius: 10px; font-weight: bold; font-size: 1.2em; cursor: pointer; transition: 0.3s; margin-top: 20px; }
+        .build-btn:hover { background: #33e0ff; transform: translateY(-3px); }
+        #status-area { margin-top: 20px; font-family: monospace; color: var(--primary); }
+        .download-box { display: none; margin-top: 25px; background: #064e3b; padding: 20px; border-radius: 10px; border: 1px solid #05c46b; }
     </style>
 </head>
 <body>
-    <h1>🚀 FADI PRO BUILDER</h1>
-    <div class="card">
-        <input type="text" id="appName" placeholder="اسم التطبيق (مثلاً: ذهب صنعاء)">
-        <input type="url" id="appUrl" placeholder="رابط الموقع (URL)">
-        <button class="btn" onclick="startBuild()">إنشاء وتحميل APK فوراً</button>
-        <div id="status"></div>
+
+    <div class="main-box">
+        <h2>🛠️ مصنع فادي برو (النسخة العملاقة)</h2>
+        <p>قم ببناء تطبيقك بكافة المعدات وتحميله فورا</p>
+
+        <div class="input-group">
+            <label>اسم التطبيق:</label>
+            <input type="text" id="name" placeholder="مثلاً: بوت الذهب صنعاء">
+        </div>
+
+        <div class="input-group">
+            <label>رابط الموقع:</label>
+            <input type="url" id="url" placeholder="https://sanaa-gold-bot-1.onrender.com/">
+        </div>
+
+        <div class="input-group">
+            <label>لون الثيم (المعدات):</label>
+            <input type="color" id="color" value="#00d2ff">
+        </div>
+
+        <div class="input-group">
+            <label>إضافات متقدمة:</label>
+            <select id="extra">
+                <option value="none">بدون إضافات</option>
+                <option value="push">دعم الإشعارات الفورية</option>
+                <option value="offline">دعم العمل بدون إنترنت</option>
+            </select>
+        </div>
+
+        <button class="build-btn" onclick="startHugeBuild()">بدء البناء والتحميل الفوري 🚀</button>
+
+        <div id="status-area"></div>
+
+        <div id="download-box" class="download-box">
+            <h3 style="color:#10b981">✅ اكتمل البناء بنجاح!</h3>
+            <p>تطبيقك جاهز للتحميل الآن من سيرفر فادي برو:</p>
+            <a id="downloadLink" href="#" style="background:#10b981; color:white; padding:15px 30px; text-decoration:none; border-radius:8px; font-weight:bold; display:block;">تحميل ملف APK المباشر 📥</a>
+        </div>
     </div>
 
     <script>
-        async function startBuild() {
-            const name = document.getElementById('appName').value;
-            const url = document.getElementById('appUrl').value;
-            const status = document.getElementById('status');
+        async function startHugeBuild() {
+            const status = document.getElementById('status-area');
+            const dBox = document.getElementById('download-box');
             
-            status.innerText = "> جاري بدء المحرك السحابي...";
+            status.innerHTML = "> جاري تهيئة المحرك العملاق...<br>";
             
-            const res = await fetch('/build-now', {
+            const response = await fetch('/generate-app', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, url })
+                body: JSON.stringify({
+                    appName: document.getElementById('name').value,
+                    appUrl: document.getElementById('url').value,
+                    appColor: document.getElementById('color').value,
+                    appFeatures: document.getElementById('extra').value
+                })
             });
-            
-            const data = await res.json();
+
+            const data = await response.json();
             if(data.success) {
-                status.innerHTML = "<span style='color:#05c46b'>✅ البناء شغال! سيتم توجيهك للتحميل خلال ثوانٍ.</span>";
-                // بعد 5 ثواني يفتح صفحة التحميل في GitHub
-                setTimeout(() => { window.location.href = "https://github.com/YOUR_USERNAME/YOUR_REPO/releases"; }, 5000);
+                status.innerHTML += "> تم حقن المعدات بنجاح...<br>> تجميع ملف الـ APK...<br>";
+                setTimeout(() => {
+                    status.style.display = 'none';
+                    dBox.style.display = 'block';
+                    document.getElementById('downloadLink').href = data.downloadUrl;
+                }, 2000);
             }
         }
     </script>
