@@ -7,36 +7,42 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-app.post('/build-mega-system', (req, res) => {
-    const { appName, megaCode } = req.body;
-    const templateApk = path.join(__dirname, 'public', 'template.apk');
-    const workDir = path.join(__dirname, 'factory_work');
+// المسارات الأساسية للمنظومة
+const templateApk = path.join(__dirname, 'public', 'template.apk');
+const workDir = path.join(__dirname, 'fadi_engine_work');
+
+app.post('/build-omni-system', (req, res) => {
+    const { appName, megaCode, targetFile } = req.body;
     const outputApk = path.join(__dirname, 'public', `${appName}.apk`);
 
-    console.log(`[!] جاري فك التطبيق وحقن الكود لـ: ${appName}`);
+    console.log(`[!] المنظومة بدأت العمل على تطبيق: ${appName}`);
 
-    // 1. تفكيك الملف (Decompile)
+    // 1. تفكيك التطبيق (Decompile)
     exec(`apktool d ${templateApk} -o ${workDir} -f`, (err) => {
-        if (err) return res.status(500).json({ error: "السيرفر لا يدعم أدوات الفتح (Java/Apktool غير متوفرة)." });
+        if (err) return res.status(500).json({ error: "السيرفر لا يدعم أدوات البناء حالياً." });
 
-        // 2. حقن الكود الكبير حقك داخل ملف البرمجة (Smali)
-        // بنغير ملف الـ MainActivity عشان يشتغل كودك طوالي
-        const targetSmali = path.join(workDir, 'smali', 'com', 'fadi', 'pro', 'MainActivity.smali');
-        
-        // إذا المسار موجود، بنحط كودك الكبير مكانه
-        if (fs.existsSync(targetSmali)) {
-            fs.writeFileSync(targetSmali, megaCode);
+        // 2. الحقن الذكي: المنظومة تبحث عن الملف المستهدف وتزرع كودك فيه
+        // إذا لم يحدد المستخدم ملفاً، المنظومة تزرع الكود في MainActivity تلقائياً
+        const defaultPath = path.join(workDir, 'smali', 'com', 'fadi', 'pro', 'MainActivity.smali');
+        const injectionPath = targetFile ? path.join(workDir, targetFile) : defaultPath;
+
+        try {
+            // التأكد من وجود المجلدات قبل الحقن
+            fs.mkdirSync(path.dirname(injectionPath), { recursive: true });
+            fs.writeFileSync(injectionPath, megaCode); // حقن كودك الكبير
+
+            // 3. إعادة التجميع (Rebuild)
+            exec(`apktool b ${workDir} -o ${outputApk}`, (buildErr) => {
+                if (buildErr) return res.status(500).json({ error: "فشل في تغليف التطبيق." });
+
+                // 4. إرسال التطبيق الجاهز للتحميل
+                res.download(outputApk);
+            });
+        } catch (e) {
+            res.status(500).json({ error: "خطأ في عملية الحقن البرمجي." });
         }
-
-        // 3. إعادة التجميع (Rebuild)
-        exec(`apktool b ${workDir} -o ${outputApk}`, (buildErr) => {
-            if (buildErr) return res.status(500).json({ error: "فشل إعادة البناء." });
-            
-            // 4. إرسال الملف النهائي
-            res.download(outputApk);
-        });
     });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 مصنع فادي برو جاهز على المنفذ ${PORT}`));
+app.listen(PORT, () => console.log(`💠 منظومة فادي العملاقة تعمل بنجاح`));
