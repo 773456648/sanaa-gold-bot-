@@ -8,39 +8,35 @@ app.use(express.json());
 app.use(express.static('public'));
 
 app.post('/build-mega-system', (req, res) => {
-    const { appName, appUrl } = req.body;
+    const { appName, megaCode } = req.body;
     const templateApk = path.join(__dirname, 'public', 'template.apk');
-    const decompiledDir = path.join(__dirname, 'temp_build');
-    const finalApk = path.join(__dirname, 'public', `${appName}_Built.apk`);
+    const workDir = path.join(__dirname, 'factory_work');
+    const outputApk = path.join(__dirname, 'public', `${appName}.apk`);
 
-    console.log(`[!] بدء فتح ملف template.apk وتعديله...`);
+    console.log(`[!] جاري فك التطبيق وحقن الكود لـ: ${appName}`);
 
-    // الخطوة 1: تفكيك الـ APK (Decompile)
-    exec(`apktool d ${templateApk} -o ${decompiledDir} -f`, (err) => {
-        if (err) {
-            console.error("[-] فشل فتح الملف. تأكد من وجود Apktool و Java.");
-            return res.status(500).json({ error: "السيرفر لا يدعم أدوات التعديل الحقيقية (نقص Java/Apktool)." });
+    // 1. تفكيك الملف (Decompile)
+    exec(`apktool d ${templateApk} -o ${workDir} -f`, (err) => {
+        if (err) return res.status(500).json({ error: "السيرفر لا يدعم أدوات الفتح (Java/Apktool غير متوفرة)." });
+
+        // 2. حقن الكود الكبير حقك داخل ملف البرمجة (Smali)
+        // بنغير ملف الـ MainActivity عشان يشتغل كودك طوالي
+        const targetSmali = path.join(workDir, 'smali', 'com', 'fadi', 'pro', 'MainActivity.smali');
+        
+        // إذا المسار موجود، بنحط كودك الكبير مكانه
+        if (fs.existsSync(targetSmali)) {
+            fs.writeFileSync(targetSmali, megaCode);
         }
 
-        // الخطوة 2: تعديل الأكواد (حقن البيانات)
-        // سنعدل اسم التطبيق داخل ملف strings.xml
-        const stringsXml = path.join(decompiledDir, 'res', 'values', 'strings.xml');
-        if (fs.existsSync(stringsXml)) {
-            let data = fs.readFileSync(stringsXml, 'utf8');
-            data = data.replace(/<string name="app_name">.*?<\/string>/, `<string name="app_name">${appName}</string>`);
-            fs.writeFileSync(stringsXml, data);
-            console.log(`[+] تم تغيير اسم التطبيق في الأكواد إلى: ${appName}`);
-        }
-
-        // الخطوة 3: إعادة تجميع الملف (Rebuild)
-        exec(`apktool b ${decompiledDir} -o ${finalApk}`, (buildErr) => {
-            if (buildErr) return res.status(500).json({ error: "فشل إعادة التجميع." });
-
-            console.log(`[✅] تم التعديل والبناء بنجاح!`);
-            res.download(finalApk);
+        // 3. إعادة التجميع (Rebuild)
+        exec(`apktool b ${workDir} -o ${outputApk}`, (buildErr) => {
+            if (buildErr) return res.status(500).json({ error: "فشل إعادة البناء." });
+            
+            // 4. إرسال الملف النهائي
+            res.download(outputApk);
         });
     });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 مصنع التعديل الحقيقي جاهز`));
+app.listen(PORT, () => console.log(`🚀 مصنع فادي برو جاهز على المنفذ ${PORT}`));
