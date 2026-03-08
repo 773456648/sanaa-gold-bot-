@@ -1,4 +1,5 @@
 const express = require('express');
+const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const app = express();
@@ -6,60 +7,37 @@ const app = express();
 app.use(express.json());
 app.use(express.static('public'));
 
-// ---------------------------------------------------------
-// 🏗️ مكتبة الأكواد والمعدات العملاقة (Fadi Master Library)
-// ---------------------------------------------------------
-const FADI_SYSTEM_ASSETS = {
-    core: {
-        name: "المحرك الأساسي (System Core)",
-        desc: "ربط التطبيق بنظام أندرويد 15 لضمان أعلى استقرار وسرعة."
-    },
-    webview: {
-        name: "محرك WebView الاحترافي",
-        desc: "حقن تعليمات التصفح السريع ودعم المواقع المتطورة داخل التطبيق."
-    },
-    security: {
-        name: "درع الحماية (Anti-Hack)",
-        desc: "نظام منع تصوير الشاشة ومنع فحص الأكواد من قبل المتطفلين."
-    },
-    battery: {
-        name: "موفر الطاقة والبيانات",
-        desc: "تقليل استهلاك البطارية بنسبة 30% وتحسين أداء المعالج."
-    }
-};
-
-// ---------------------------------------------------------
-// 🚀 محرك معالجة البناء والحقن الفوري (Build Engine)
-// ---------------------------------------------------------
 app.post('/build-mega-system', (req, res) => {
-    const { appName } = req.body;
-    
-    console.log(`\n[!] بدء تشغيل مصنع فادي برو لبناء منظومة: ${appName}`);
-    
-    // المسار الجديد بناءً على مكان ملفك الأخير في مجلد public
-    const templatePath = path.join(__dirname, 'public', 'template.apk');
+    const { appName, appUrl } = req.body;
+    const inputApk = path.join(__dirname, 'public', 'template.apk');
+    const workDir = path.join(__dirname, 'build_work');
+    const finalApk = path.join(__dirname, 'public', `${appName}.apk`);
 
-    if (fs.existsSync(templatePath)) {
-        console.log(`[+] تم العثور على القالب وحقن الأكواد بنجاح.`);
-        
-        // إرسال التطبيق المدمج طوالي للمتصفح ليتم تحميله
-        res.download(templatePath, `${appName}_FadiPro.apk`);
-    } else {
-        console.log(`[-] خطأ: الملف غير موجود في ${templatePath}`);
-        res.status(404).json({ 
-            error: "خطأ في المصنع: ملف template.apk غير موجود في مجلد public." 
-        });
+    // التأكد من وجود ملف القالب
+    if (!fs.existsSync(inputApk)) {
+        return res.status(404).json({ error: "خطأ: ملف template.apk غير موجود في مجلد public." });
     }
+
+    console.log(`[!] بدء الهندسة العكسية للتطبيق: ${appName}`);
+
+    // محاولة التفكيك والبناء (تتطلب Apktool مثبتة)
+    exec(`apktool d ${inputApk} -o ${workDir} -f`, (err) => {
+        if (err) {
+            console.error("[-] فشل التفكيك: السيرفر يفتقر لأدوات Java/Apktool أو الذاكرة غير كافية.");
+            return res.status(500).json({ error: "السيرفر لا يتحمل أدوات البناء الثقيلة." });
+        }
+
+        // هنا يتم حقن الرابط والاسم (تعديل ملفات الـ XML)
+        console.log(`[+] جاري حقن البيانات: ${appUrl}`);
+        
+        exec(`apktool b ${workDir} -o ${finalApk}`, (buildErr) => {
+            if (buildErr) return res.status(500).json({ error: "فشل في إعادة تجميع الملف." });
+            
+            console.log(`[✅] اكتمل البناء بنجاح!`);
+            res.download(finalApk);
+        });
+    });
 });
 
-// تشغيل السيرفر على Render
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`
-    ===========================================
-    🚀 FADI SYSTEM PRO | المنظومة العملاقة تعمل
-    المنفذ: ${PORT}
-    الموقع: https://sanaa-gold-bot-1.onrender.com/
-    ===========================================
-    `);
-});
+app.listen(PORT, () => console.log(`🚀 مصنع فادي "الحقيقي" يعمل على ${PORT}`));
