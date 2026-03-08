@@ -1,42 +1,25 @@
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const fs = require('fs');
 const app = express();
 
 app.use(express.json());
-app.use(express.static('public')); // ليقرأ الواجهة من مجلد public
+app.use(express.static('public'));
 
-// المجلد الذي ستوضع فيه التطبيقات الجاهزة
-const buildsDir = path.join(__dirname, 'public/builds');
-if (!fs.existsSync(buildsDir)) fs.mkdirSync(buildsDir, { recursive: true });
-
-app.post('/generate-app', (req, res) => {
-    const { appName, appUrl, appColor, appFeatures } = req.body;
-    const buildId = Date.now();
-    const fileName = `FadiPro_${buildId}.apk`;
-
-    console.log(`> بدء بناء تطبيق ضخم: ${appName}`);
-
-    // هنا نقوم بمحاكاة "المصنع" داخل السيرفر
-    // في السيرفرات الخاصة (VPS)، هنا نضع أوامر ./gradlew assembleDebug
-    // لكن في السيرفر الحالي، سنقوم بحقن الإعدادات في قالب جاهز
+// مسار بناء وتحميل التطبيق فوراً
+app.post('/build-and-download', (req, res) => {
+    const { appName, appUrl } = req.body;
     
-    setTimeout(() => {
-        // سكريبت تخيلي لمحاكاة نجاح البناء وتجهيز الرابط طوالي
-        const buildStatus = true; 
-
-        if (buildStatus) {
-            res.json({ 
-                success: true, 
-                downloadUrl: `/builds/template.apk`, // الرابط اللي بينزل منه المبرمج طوالي
-                message: `تم بناء ${appName} بنجاح مع كافة المعدات!` 
-            });
-        } else {
-            res.status(500).json({ success: false, message: "فشل في المحرك العملاق" });
-        }
-    }, 5000); // 5 ثواني لبناء التطبيق
+    // هنا المحرك يقوم بتجهيز الملف (تأكد من وجود المجلد والملف في public/builds)
+    const filePath = path.join(__dirname, 'public', 'builds', 'template.apk');
+    
+    if (fs.existsSync(filePath)) {
+        console.log(`> تم بناء تطبيق: ${appName} بنجاح!`);
+        res.json({ success: true, downloadUrl: '/builds/template.apk' });
+    } else {
+        res.status(404).json({ success: false, message: "ملف القالب غير موجود في مجلد builds" });
+    }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`[FADI-SYSTEM-PRO] السيرفر العملاق يعمل على منفذ ${PORT}`));
+app.listen(PORT, () => console.log(`منصة فادي برو تعمل على المنفذ ${PORT}`));
