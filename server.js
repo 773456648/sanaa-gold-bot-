@@ -1,47 +1,52 @@
 const express = require('express');
-const app = express();
+const fs = require('fs');
 const path = require('path');
+const app = express();
 
 app.use(express.json());
 app.use(express.static('public'));
 
-// مخزن العقارات العالمي
-let sharedProperties = [];
+const DATA_FILE = './database.json';
 
-// جلب كل العقارات
+// وظيفة لقراءة البيانات
+const readDB = () => {
+    if (!fs.existsSync(DATA_FILE)) return [];
+    return JSON.parse(fs.readFileSync(DATA_FILE));
+};
+
+// وظيفة لحفظ البيانات
+const writeDB = (data) => {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+};
+
+// جلب البيانات (مع إخفاء كلمات السر للأمان)
 app.get('/api/properties', (req, res) => {
-    res.json(sharedProperties);
+    const data = readDB();
+    const safeData = data.map(({ password, ...rest }) => rest);
+    res.json(safeData);
 });
 
-// إضافة عقار جديد مع كلمة السر
+// إضافة عقار
 app.post('/api/properties', (req, res) => {
-    const prop = req.body;
-    prop.id = Date.now().toString(); // معرف فريد نصي
-    sharedProperties.unshift(prop); // الجديد يظهر أولاً
+    const data = readDB();
+    const newEntry = { ...req.body, id: Date.now().toString() };
+    data.unshift(newEntry);
+    writeDB(data);
     res.json({ success: true });
 });
 
-// ميزة الحذف بكلمة السر
+// حذف عقار
 app.post('/api/delete', (req, res) => {
     const { id, password } = req.body;
-    const index = sharedProperties.findIndex(p => p.id === id);
+    let data = readDB();
+    const index = data.findIndex(p => p.id === id);
 
-    if (index !== -1) {
-        if (sharedProperties[index].password === password) {
-            sharedProperties.splice(index, 1); // الحذف من المصفوفة
-            return res.json({ success: true });
-        } else {
-            return res.json({ success: false, message: "كلمة السر غلط" });
-        }
+    if (index !== -1 && data[index].password === password) {
+        data.splice(index, 1);
+        writeDB(data);
+        return res.json({ success: true });
     }
-    res.json({ success: false, message: "العقار غير موجود" });
+    res.status(401).json({ success: false });
 });
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-    console.log(`المنظومة شغالة على منفذ ${PORT}`);
-});
+app.listen(10000, () => console.log("🔥 المنظومة الملكية تعمل على المنفذ 10000"));
