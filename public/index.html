@@ -2,52 +2,43 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FADI PRO - Instant Builder</title>
+    <title>منصة فادي برو للبناء الفوري</title>
     <style>
-        body { font-family: 'Cairo', sans-serif; background: #0f172a; color: white; text-align: center; padding: 50px; }
-        .card { background: #1e293b; padding: 30px; border-radius: 15px; border: 1px solid #38bdf8; display: inline-block; width: 400px; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; }
-        .btn { background: #38bdf8; color: #0f172a; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
-        #status { margin-top: 20px; color: #94a3b8; }
-        #downloadBtn { display: none; margin-top: 20px; background: #22c55e; color: white; padding: 15px; text-decoration: none; border-radius: 8px; display: block; }
+        body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; }
+        .card { background: #1e293b; padding: 30px; border-radius: 15px; border: 2px solid #00d2ff; display: inline-block; width: 90%; max-width: 450px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #334155; color: white; box-sizing: border-box; }
+        .btn { background: #00d2ff; color: #000; padding: 15px; width: 100%; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #status { margin-top: 20px; color: #00d2ff; font-family: monospace; }
     </style>
 </head>
 <body>
-
+    <h1>🚀 FADI PRO BUILDER</h1>
     <div class="card">
-        <h2>🏗️ صانع التطبيقات الفوري</h2>
-        <input type="text" id="name" placeholder="اسم التطبيق">
-        <input type="url" id="url" placeholder="رابط الموقع">
-        <button class="btn" onclick="makeApp()">إنشاء وتحميل الآن 🚀</button>
-        
+        <input type="text" id="appName" placeholder="اسم التطبيق (مثلاً: ذهب صنعاء)">
+        <input type="url" id="appUrl" placeholder="رابط الموقع (URL)">
+        <button class="btn" onclick="startBuild()">إنشاء وتحميل APK فوراً</button>
         <div id="status"></div>
-        <a id="downloadBtn" href="#">📥 تحميل ملف APK جاهز</a>
     </div>
 
     <script>
-        async function makeApp() {
-            const name = document.getElementById('name').value;
-            const url = document.getElementById('url').value;
+        async function startBuild() {
+            const name = document.getElementById('appName').value;
+            const url = document.getElementById('appUrl').value;
             const status = document.getElementById('status');
-            const dlBtn = document.getElementById('downloadBtn');
-
-            status.innerText = "جاري البناء... انتظر قليلاً (قد يستغرق دقيقة)";
-            dlBtn.style.display = 'none';
-
-            // إرسال الطلب للسيرفر الحقيقي
-            const response = await fetch('/build', {
+            
+            status.innerText = "> جاري بدء المحرك السحابي...";
+            
+            const res = await fetch('/build-now', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ appName: name, appUrl: url })
+                body: JSON.stringify({ name, url })
             });
-
-            const result = await response.json();
-            if(result.success) {
-                status.innerText = "✅ تم البناء بنجاح!";
-                dlBtn.href = result.downloadUrl;
-                dlBtn.style.display = 'block';
-            } else {
-                status.innerText = "❌ حدث خطأ في البناء";
+            
+            const data = await res.json();
+            if(data.success) {
+                status.innerHTML = "<span style='color:#05c46b'>✅ البناء شغال! سيتم توجيهك للتحميل خلال ثوانٍ.</span>";
+                // بعد 5 ثواني يفتح صفحة التحميل في GitHub
+                setTimeout(() => { window.location.href = "https://github.com/YOUR_USERNAME/YOUR_REPO/releases"; }, 5000);
             }
         }
     </script>
