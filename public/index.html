@@ -2,86 +2,50 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FADI PRO | منصة بناء التطبيقات المتكاملة</title>
+    <title>FADI PRO - بناء فوري</title>
     <style>
-        :root { --primary: #00d2ff; --dark: #0a0e17; }
-        body { font-family: 'Cairo', sans-serif; background: var(--dark); color: white; text-align: center; padding: 20px; }
-        .main-box { background: #161e2e; padding: 30px; border-radius: 20px; border: 2px solid var(--primary); display: inline-block; width: 90%; max-width: 600px; box-shadow: 0 0 30px rgba(0,210,255,0.2); }
-        .input-group { text-align: right; margin-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #334155; background: #1f2937; color: white; }
-        .build-btn { background: var(--primary); color: #000; padding: 18px; width: 100%; border: none; border-radius: 10px; font-weight: bold; font-size: 1.2em; cursor: pointer; transition: 0.3s; margin-top: 20px; }
-        .build-btn:hover { background: #33e0ff; transform: translateY(-3px); }
-        #status-area { margin-top: 20px; font-family: monospace; color: var(--primary); }
-        .download-box { display: none; margin-top: 25px; background: #064e3b; padding: 20px; border-radius: 10px; border: 1px solid #05c46b; }
+        body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 40px; }
+        .builder-box { background: #1e293b; padding: 30px; border-radius: 20px; border: 2px solid #00d2ff; display: inline-block; width: 400px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; }
+        .btn { background: #00d2ff; color: #000; padding: 15px; width: 100%; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #status { margin-top: 20px; color: #38bdf8; }
+        #downloadBtn { display: none; margin-top: 20px; background: #22c55e; color: white; padding: 15px; text-decoration: none; border-radius: 8px; display: block; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <div class="main-box">
-        <h2>🛠️ مصنع فادي برو (النسخة العملاقة)</h2>
-        <p>قم ببناء تطبيقك بكافة المعدات وتحميله فورا</p>
-
-        <div class="input-group">
-            <label>اسم التطبيق:</label>
-            <input type="text" id="name" placeholder="مثلاً: بوت الذهب صنعاء">
-        </div>
-
-        <div class="input-group">
-            <label>رابط الموقع:</label>
-            <input type="url" id="url" placeholder="https://sanaa-gold-bot-1.onrender.com/">
-        </div>
-
-        <div class="input-group">
-            <label>لون الثيم (المعدات):</label>
-            <input type="color" id="color" value="#00d2ff">
-        </div>
-
-        <div class="input-group">
-            <label>إضافات متقدمة:</label>
-            <select id="extra">
-                <option value="none">بدون إضافات</option>
-                <option value="push">دعم الإشعارات الفورية</option>
-                <option value="offline">دعم العمل بدون إنترنت</option>
-            </select>
-        </div>
-
-        <button class="build-btn" onclick="startHugeBuild()">بدء البناء والتحميل الفوري 🚀</button>
-
-        <div id="status-area"></div>
-
-        <div id="download-box" class="download-box">
-            <h3 style="color:#10b981">✅ اكتمل البناء بنجاح!</h3>
-            <p>تطبيقك جاهز للتحميل الآن من سيرفر فادي برو:</p>
-            <a id="downloadLink" href="#" style="background:#10b981; color:white; padding:15px 30px; text-decoration:none; border-radius:8px; font-weight:bold; display:block;">تحميل ملف APK المباشر 📥</a>
-        </div>
+    <div class="builder-box">
+        <h2>🏗️ صانع التطبيقات الفوري</h2>
+        <input type="text" id="appName" placeholder="اسم التطبيق">
+        <input type="url" id="appUrl" placeholder="رابط الموقع">
+        <button class="btn" onclick="buildNow()">إنشاء وتحميل الآن 🚀</button>
+        <div id="status"></div>
+        <a id="downloadBtn" href="#">📥 تحميل ملف APK المباشر</a>
     </div>
 
     <script>
-        async function startHugeBuild() {
-            const status = document.getElementById('status-area');
-            const dBox = document.getElementById('download-box');
+        async function buildNow() {
+            const status = document.getElementById('status');
+            const dlBtn = document.getElementById('downloadBtn');
+            status.innerText = "جاري البناء الفوري... انتظر ثوانٍ";
             
-            status.innerHTML = "> جاري تهيئة المحرك العملاق...<br>";
-            
-            const response = await fetch('/generate-app', {
+            const res = await fetch('/build-and-download', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    appName: document.getElementById('name').value,
-                    appUrl: document.getElementById('url').value,
-                    appColor: document.getElementById('color').value,
-                    appFeatures: document.getElementById('extra').value
+                body: JSON.stringify({ 
+                    appName: document.getElementById('appName').value,
+                    appUrl: document.getElementById('appUrl').value 
                 })
             });
-
-            const data = await response.json();
+            
+            const data = await res.json();
             if(data.success) {
-                status.innerHTML += "> تم حقن المعدات بنجاح...<br>> تجميع ملف الـ APK...<br>";
-                setTimeout(() => {
-                    status.style.display = 'none';
-                    dBox.style.display = 'block';
-                    document.getElementById('downloadLink').href = data.downloadUrl;
-                }, 2000);
+                status.innerText = "✅ اكتمل البناء!";
+                dlBtn.href = data.downloadUrl;
+                dlBtn.style.display = 'block';
+                // التحميل التلقائي فوراً
+                window.location.href = data.downloadUrl;
+            } else {
+                status.innerText = "❌ خطأ: " + data.message;
             }
         }
     </script>
