@@ -1,39 +1,34 @@
 const express = require('express');
-const { exec } = require('child_process');
+const axios = require('axios');
 const path = require('path');
-const fs = require('fs');
 const app = express();
 
 app.use(express.json());
-app.use(express.static('public')); // مجلد الواجهة
+// هذا السطر يخلي السيرفر يقرأ الواجهة من مجلد public
+app.use(express.static(path.join(__dirname, 'public'))); 
 
-// نقطة بناء التطبيق
-app.post('/build', (req, res) => {
-    const { appName, appUrl } = req.body;
-    const buildId = Date.now();
-    const apkPath = `./builds/app-${buildId}.apk`;
-
-    console.log(`بدء بناء تطبيق: ${appName}`);
-
-    // الأوامر البرمجية لبناء APK حقيقي (نستخدم Capacitor كمثال)
-    // ملاحظة: السيرفر لازم يكون فيه Android SDK مثبت
-    const command = `npx cap copy && cd android && ./gradlew assembleDebug && cp app/build/outputs/apk/debug/app-debug.apk .${apkPath}`;
-
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`خطأ: ${error}`);
-            return res.status(500).json({ success: false, message: "فشل البناء" });
-        }
+app.post('/build-now', async (req, res) => {
+    const { name, url } = req.body;
+    
+    try {
+        // الربط مع GitHub Actions (المصنع السحابي)
+        await axios.post('https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO/dispatches', 
+        { 
+            event_type: 'build_apk', 
+            client_payload: { app_name: name, app_url: url } 
+        },
+        { 
+            headers: { 
+                'Authorization': 'token YOUR_GITHUB_TOKEN',
+                'Accept': 'application/vnd.github.v3+json' 
+            } 
+        });
         
-        // إرسال رابط التحميل المباشر للمنصة
-        res.json({ success: true, downloadUrl: `/download/app-${buildId}.apk` });
-    });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
 });
 
-// رابط تحميل الملف
-app.get('/download/:filename', (req, res) => {
-    const file = path.join(__dirname, 'builds', req.params.filename);
-    res.download(file);
-});
-
-app.listen(3000, () => console.log('منصة فادي برو تعمل على منفذ 3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Fadi Pro Hub is live on port ${PORT}`));
