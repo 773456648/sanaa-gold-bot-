@@ -2,67 +2,48 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FADI OMNI-SYSTEM | المنظومة العملاقة</title>
+    <title>FADI AUTO BUILDER</title>
     <style>
-        :root { --main: #00ff88; --bg: #010409; --panel: #0d1117; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
-        .sidebar, .editor { background: var(--panel); border: 1px solid #30363d; border-radius: 10px; padding: 15px; }
-        textarea { width: 100%; height: 450px; background: #000; color: var(--main); border: 1px solid #30363d; padding: 10px; font-family: 'Consolas', monospace; border-radius: 5px; }
-        input { width: 100%; padding: 10px; margin-bottom: 10px; background: #161b22; border: 1px solid #30363d; color: white; border-radius: 5px; }
-        .btn { width: 100%; padding: 15px; background: var(--main); color: black; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
-        .status { margin-top: 10px; font-size: 12px; color: #8b949e; }
+        body { background: #010409; color: #00ff88; font-family: monospace; text-align: center; padding: 20px; }
+        textarea { width: 90%; height: 350px; background: #000; color: #00ff88; border: 1px solid #00d2ff; padding: 10px; }
+        .btn { padding: 20px 40px; background: #00d2ff; color: #000; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 1.2rem; }
     </style>
 </head>
 <body>
-
-    <h1 style="color: var(--main);">💠 منظومة فادي برو (الجيل الذكي)</h1>
-
-    <div class="grid">
-        <div class="sidebar">
-            <h3>⚙️ إعدادات البناء</h3>
-            <label>اسم التطبيق:</label>
-            <input type="text" id="appName" placeholder="مثلاً: Calculator_Pro">
-            
-            <label>مسار الملف (اختياري):</label>
-            <input type="text" id="targetFile" placeholder="smali/com/fadi/pro/MainActivity.smali">
-            
-            <button class="btn" onclick="buildSystem()">🚀 بدء الحقن والتجميع</button>
-            <div id="status" class="status">جاهز للاستخدام...</div>
-        </div>
-
-        <div class="editor">
-            <h3>📝 محرر الكود الكبير (Smali/Java)</h3>
-            <textarea id="megaCode" placeholder="ضع كود التطبيق العملاق هنا..."></textarea>
-        </div>
-    </div>
+    <h1>💠 منظومة فادي للتغليف التلقائي</h1>
+    <input type="text" id="appName" placeholder="اسم التطبيق الجديد" style="padding: 10px; width: 50%;">
+    <br><br>
+    <textarea id="megaCode" placeholder="الصق كود التطبيق الموحد هنا... المنظومة سترتبه تلقائياً"></textarea>
+    <br>
+    <button class="btn" onclick="startBuild()">🏗️ ترتيب وتحميل التطبيق طوالى</button>
+    <div id="status"></div>
 
     <script>
-        async function buildSystem() {
+        async function startBuild() {
             const name = document.getElementById('appName').value;
             const code = document.getElementById('megaCode').value;
-            const file = document.getElementById('targetFile').value;
             const status = document.getElementById('status');
 
-            if(!name || !code) return alert("يا فادي، املأ البيانات أولاً!");
+            if(!name || !code) return alert("يا فادي، املأ البيانات!");
 
-            status.innerHTML = "🌀 جاري فك الملف وحقن الأكواد...";
+            status.innerHTML = "🌀 جاري ترتيب الملفات وبناء التطبيق...";
 
-            const response = await fetch('/build-omni-system', {
+            const res = await fetch('/build-fadi-system', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ appName: name, megaCode: code, targetFile: file })
+                body: JSON.stringify({ appName: name, megaCode: code })
             });
 
-            if(response.ok) {
-                const blob = await response.blob();
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = `${name}.apk`;
-                link.click();
-                status.innerHTML = "✅ اكتملت العملية بنجاح!";
+            if(res.ok) {
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${name}.apk`;
+                a.click();
+                status.innerHTML = "✅ تم الترتيب والتحميل بنجاح!";
             } else {
-                status.innerHTML = "❌ فشل السيرفر في معالجة الطلب.";
+                status.innerHTML = "❌ خطأ: السيرفر لا يدعم أدوات البناء حالياً.";
             }
         }
     </script>
