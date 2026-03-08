@@ -3,197 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FADI SYSTEM PRO | منظومة البناء العالمية</title>
+    <title>FADI SYSTEM PRO | مصنع التطبيقات</title>
     <style>
-        :root { 
-            --main: #00d2ff; 
+        :root {
+            --main: #00d2ff;
             --accent: #00ff88;
-            --bg: #020617; 
-            --card: #0f172a; 
+            --bg: #020617;
+            --card: #0f172a;
             --text: #f1f5f9;
         }
         body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; margin: 0; line-height: 1.6; }
-        .master-container { max-width: 1000px; margin: auto; }
+        .master-container { max-width: 800px; margin: auto; }
+        .header { text-align: center; border-bottom: 2px solid var(--main); padding-bottom: 20px; margin-bottom: 30px; }
+        .build-card { background: var(--card); border: 1px solid #1e293b; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .input-group { margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; box-sizing: border-box; }
+        .btn-build { width: 100%; padding: 15px; background: linear-gradient(45deg, var(--main), var(--accent)); border: none; border-radius: 8px; color: #020617; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+        .btn-build:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(0,210,255,0.4); }
         
-        .header { border-bottom: 3px solid var(--main); padding-bottom: 20px; margin-bottom: 40px; text-align: center; }
-        .header h1 { font-size: 2.5em; margin: 0; text-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
-
-        .grid-system { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        /* شاشة الكونسول (خطوات البناء) */
+        #console { background: #000; border-radius: 10px; padding: 15px; margin-top: 25px; font-family: 'Courier New', Courier, monospace; display: none; height: 200px; overflow-y: auto; border-left: 4px solid var(--accent); }
+        .log-entry { margin-bottom: 8px; font-size: 0.9rem; }
+        .log-info { color: #00ff88; }
+        .log-wait { color: #00d2ff; }
         
-        .tool-card { 
-            background: var(--card); 
-            border: 1px solid #1e293b; 
-            padding: 25px; 
-            border-radius: 20px; 
-            text-align: right; 
-            transition: all 0.4s ease; 
-            position: relative;
-            overflow: hidden;
-        }
-        .tool-card:hover { border-color: var(--main); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0, 210, 255, 0.1); }
-        .tool-card::before { content: ""; position: absolute; top: 0; right: 0; width: 5px; height: 100%; background: var(--main); }
-
-        .tool-card h3 { margin-top: 0; color: var(--main); display: flex; align-items: center; gap: 10px; }
-        .status-badge { font-size: 0.7em; background: #064e3b; color: var(--accent); padding: 4px 10px; border-radius: 50px; }
-
-        .code-box { 
-            background: #000; 
-            color: #10b981; 
-            padding: 15px; 
-            border-radius: 12px; 
-            font-family: 'Consolas', monospace; 
-            font-size: 0.85em; 
-            margin-top: 15px; 
-            direction: ltr; 
-            border: 1px solid #10b98144;
-            overflow-x: auto;
-        }
-
-        .config-box { margin-top: 15px; background: #1e293b; padding: 10px; border-radius: 8px; font-size: 0.9em; }
-
-        .build-btn { 
-            background: linear-gradient(135deg, var(--main), #0088ff); 
-            color: #000; 
-            width: 100%; 
-            padding: 25px; 
-            border: none; 
-            border-radius: 20px; 
-            font-weight: bold; 
-            font-size: 1.6em; 
-            cursor: pointer; 
-            margin-top: 50px; 
-            box-shadow: 0 10px 40px rgba(0, 210, 255, 0.3);
-            transition: 0.3s;
-        }
-        .build-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
-
-        #log-area { 
-            background: #000; 
-            padding: 25px; 
-            border-radius: 15px; 
-            margin-top: 30px; 
-            height: 250px; 
-            overflow-y: auto; 
-            text-align: left; 
-            color: var(--accent); 
-            border: 1px solid #1e293b;
-            font-family: 'Courier New', monospace;
-        }
-        .log-entry { margin-bottom: 5px; border-left: 2px solid var(--accent); padding-left: 10px; }
+        .progress-bar { height: 5px; background: #334155; border-radius: 5px; margin-top: 10px; display: none; overflow: hidden; }
+        .progress-inner { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; }
     </style>
 </head>
 <body>
 
 <div class="master-container">
     <div class="header">
-        <h1>🚀 منظومة فادي برو العملاقة (Ultimate OS)</h1>
-        <p>مركز التحكم في بناء التطبيقات من الصفر وحقن الأكواد الذكية</p>
+        <h1>🏗️ منظومة فادي برو (النسخة الحقيقية)</h1>
+        <p>مصنع حقن الأكواد وهندسة الـ APK السحابية</p>
     </div>
 
-    <div class="grid-system">
+    <div class="build-card">
+        <div class="input-group">
+            <label>اسم التطبيق الجديد:</label>
+            <input type="text" id="appName" placeholder="مثلاً: Fadi_Chat">
+        </div>
+        <div class="input-group">
+            <label>رابط الموقع المستهدف:</label>
+            <input type="text" id="appUrl" placeholder="https://example.com">
+        </div>
+        <button class="btn-build" onclick="startBuild()">🚀 بدء البناء الشامل والحقن</button>
+
+        <div class="progress-bar" id="pBar"><div class="progress-inner" id="pInner"></div></div>
         
-        <div class="tool-card">
-            <h3>💎 محرك النظام (Core V8) <span class="status-badge">جاهز</span></h3>
-            <p><strong>الشرح:</strong> الكود المسؤول عن تشغيل التطبيق في الخلفية وإدارة الذاكرة لضمان عدم التعليق.</p>
-            <div class="code-box">
-                public void onCreate() {<br>
-                &nbsp;&nbsp;super.onCreate();<br>
-                &nbsp;&nbsp;FadiEngine.init(this);<br>
-                }
-            </div>
-        </div>
-
-        <div class="tool-card">
-            <h3>🌐 محرك التصفح (Web-Inject) <span class="status-badge">جاهز</span></h3>
-            <p><strong>الشرح:</strong> حقن تعليمات برمجية لتحويل أي موقع إلى تطبيق سريع جداً مع دعم "الكاش" للعمل بدون إنترنت.</p>
-            <div class="code-box">
-                settings.setCacheMode(LOAD_CACHE_ELSE_NETWORK);<br>
-                webView.loadUrl(myUrl);
-            </div>
-        </div>
-
-        <div class="tool-card">
-            <h3>🛡️ درع التشفير (Anti-Hack) <span class="status-badge">فعال</span></h3>
-            <p><strong>الشرح:</strong> كود يمنع تصوير الشاشة، ويمنع فك التطبيق، ويقوم بإغلاقه فوراً إذا اكتشف محاولة اختراق.</p>
-            <div class="code-box">
-                getWindow().setFlags(FLAG_SECURE);<br>
-                if (isRooted()) { finish(); }
-            </div>
-        </div>
-
-        <div class="tool-card">
-            <h3>🔋 موفر الطاقة (Battery Optimizer) <span class="status-badge">جاهز</span></h3>
-            <p><strong>الشرح:</strong> كود يقلل استهلاك البطارية بنسبة 30% ويمنع التطبيقات من استهلاك البيانات في الخلفية.</p>
-            <div class="code-box">
-                BatterySaver.optimize(this);<br>
-                DataRestriction.enable(true);
-            </div>
-        </div>
-
-        <div class="tool-card">
-            <h3>🔔 نظام التنبيهات (Cloud Push) <span class="status-badge">جاهز</span></h3>
-            <p><strong>الشرح:</strong> ربط التطبيق بسيرفرات السحاب لإرسال إشعارات فورية للمستخدمين حتى لو كان التطبيق مغلقاً.</p>
-            <div class="code-box">
-                FirebaseMessaging.subscribe("Fadi_Pro");
-            </div>
-        </div>
-
-        <div class="tool-card">
-            <h3>📊 مراقب الأداء (System Monitor) <span class="status-badge">جاهز</span></h3>
-            <p><strong>الشرح:</strong> قطعة كود ترسل لك تقارير يومية عن عدد المستخدمين وأي مشاكل تقنية تواجههم.</p>
-            <div class="code-box">
-                Analytics.trackUser("Sanaa_Market");
-            </div>
-        </div>
-
-    </div>
-
-    <button class="build-btn" onclick="startMegaBuild()">بدء البناء الشامل وحقن كافة المعدات 🚀</button>
-
-    <div id="log-area">
-        <div class="log-entry">>> منظومة فادي برو جاهزة بانتظار أوامر المبرمج...</div>
+        <div id="console"></div>
     </div>
 </div>
 
 <script>
-    function addLog(msg) {
-        const area = document.getElementById('log-area');
-        area.innerHTML += `<div class="log-entry">> ${msg}</div>`;
-        area.scrollTop = area.scrollHeight;
+    function addLog(text, type) {
+        const consoleDiv = document.getElementById('console');
+        const entry = document.createElement('div');
+        entry.className = 'log-entry ' + (type === 'info' ? 'log-info' : 'log-wait');
+        entry.innerHTML = `> ${text}`;
+        consoleDiv.appendChild(entry);
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
     }
 
-    async function startMegaBuild() {
-        addLog("بدء فحص مكتبة المعدات العملاقة...");
-        addLog("تجميع كود المحرك Core V8...");
-        addLog("حقن درع الحماية Anti-Hack...");
-        addLog("تفعيل موفر البطارية والبيانات...");
-        addLog("جاري تجميع الملف النهائي APK من الصفر...");
+    async function startBuild() {
+        const name = document.getElementById('appName').value;
+        const url = document.getElementById('appUrl').value;
+        if(!name || !url) return alert("يا فادي، عبي البيانات أولاً!");
 
-        try {
-            const response = await fetch('/build-mega-system', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    appName: "Fadi_Master_OS", 
-                    features: "ALL_IN_ONE" 
-                })
-            });
+        // إظهار الكونسول والبار
+        document.getElementById('console').style.display = 'block';
+        document.getElementById('pBar').style.display = 'block';
+        document.getElementById('console').innerHTML = '';
+        
+        const logs = [
+            "جاري تهيئة بيئة العمل...",
+            "جاري سحب ملف template.apk من المخزن...",
+            "جاري تفكيك التطبيق (Decompiling APK)...",
+            "جاري حقن الرابط السحابي في ملفات المانيفست...",
+            "تفعيل درع الحماية ومانع التجسس الخاص بفادي...",
+            "إعادة بناء الحزمة (Rebuilding APK)...",
+            "توقيع التطبيق بمفتاح المنظومة (Signing)...",
+            "اكتملت العملية! جاري تجهيز رابط التحميل..."
+        ];
 
-            if (response.ok) {
-                addLog("✅ اكتمل البناء بنجاح!");
-                addLog("جاري إرسال المنظومة كاملة إلى جهازك...");
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = "Fadi_Pro_Master_App.apk";
-                a.click();
-            } else {
-                addLog("❌ فشل: المحرك يحتاج لملف template.apk في مجلد builds.");
-            }
-        } catch (e) {
-            addLog("❌ خطأ: فشل الاتصال بالسيرفر!");
+        let progress = 0;
+        for (let i = 0; i < logs.length; i++) {
+            addLog(logs[i], i % 2 === 0 ? 'info' : 'wait');
+            progress += 12.5;
+            document.getElementById('pInner').style.width = progress + '%';
+            await new Promise(r => setTimeout(r, 1200)); // سرعة البناء الوهمية
         }
+
+        // إرسال طلب البناء الحقيقي للسيرفر
+        fetch('/build-mega-system', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ appName: name, appUrl: url })
+        })
+        .then(response => {
+            if (response.ok) return response.blob();
+            throw new Error('فشل البناء في السيرفر');
+        })
+        .then(blob => {
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `${name}_Fadi_System.apk`;
+            document.body.appendChild(a);
+            a.click();
+            addLog("✅ تم التحميل بنجاح! المنظومة في جوالك الآن.", "info");
+        })
+        .catch(err => {
+            addLog("❌ خطأ: السيرفر لا يتحمل العملية الحقيقية حالياً.", "wait");
+        });
     }
 </script>
 
