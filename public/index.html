@@ -2,123 +2,51 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FADI SYSTEM PRO | مصنع التطبيقات</title>
+    <title>FADI SYSTEM | مصنع الهندسة العكسية</title>
     <style>
-        :root {
-            --main: #00d2ff;
-            --accent: #00ff88;
-            --bg: #020617;
-            --card: #0f172a;
-            --text: #f1f5f9;
-        }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; margin: 0; line-height: 1.6; }
-        .master-container { max-width: 800px; margin: auto; }
-        .header { text-align: center; border-bottom: 2px solid var(--main); padding-bottom: 20px; margin-bottom: 30px; }
-        .build-card { background: var(--card); border: 1px solid #1e293b; border-radius: 15px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .input-group { margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; box-sizing: border-box; }
-        .btn-build { width: 100%; padding: 15px; background: linear-gradient(45deg, var(--main), var(--accent)); border: none; border-radius: 8px; color: #020617; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
-        .btn-build:hover { transform: scale(1.02); box-shadow: 0 0 20px rgba(0,210,255,0.4); }
-        
-        /* شاشة الكونسول (خطوات البناء) */
-        #console { background: #000; border-radius: 10px; padding: 15px; margin-top: 25px; font-family: 'Courier New', Courier, monospace; display: none; height: 200px; overflow-y: auto; border-left: 4px solid var(--accent); }
-        .log-entry { margin-bottom: 8px; font-size: 0.9rem; }
-        .log-info { color: #00ff88; }
-        .log-wait { color: #00d2ff; }
-        
-        .progress-bar { height: 5px; background: #334155; border-radius: 5px; margin-top: 10px; display: none; overflow: hidden; }
-        .progress-inner { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; }
+        body { background: #020617; color: #00ff88; font-family: monospace; padding: 20px; }
+        .box { border: 2px solid #00d2ff; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: #1e293b; border: 1px solid #00d2ff; color: white; }
+        button { width: 100%; padding: 15px; background: #00d2ff; color: #000; font-weight: bold; cursor: pointer; }
+        #log { margin-top: 20px; background: #000; padding: 10px; border: 1px solid #334155; height: 150px; overflow-y: auto; font-size: 13px; }
     </style>
 </head>
 <body>
-
-<div class="master-container">
-    <div class="header">
-        <h1>🏗️ منظومة فادي برو (النسخة الحقيقية)</h1>
-        <p>مصنع حقن الأكواد وهندسة الـ APK السحابية</p>
+    <div class="box">
+        <h2>🏗️ منظومة التعديل الحقيقي</h2>
+        <input type="text" id="appName" placeholder="اسم التطبيق الجديد">
+        <input type="text" id="appUrl" placeholder="الرابط المطلوب حقنه">
+        <button onclick="runFactory()">🛠️ فتح الملف وتعديله الآن</button>
+        <div id="log"></div>
     </div>
 
-    <div class="build-card">
-        <div class="input-group">
-            <label>اسم التطبيق الجديد:</label>
-            <input type="text" id="appName" placeholder="مثلاً: Fadi_Chat">
-        </div>
-        <div class="input-group">
-            <label>رابط الموقع المستهدف:</label>
-            <input type="text" id="appUrl" placeholder="https://example.com">
-        </div>
-        <button class="btn-build" onclick="startBuild()">🚀 بدء البناء الشامل والحقن</button>
+    <script>
+        function log(msg) { document.getElementById('log').innerHTML += `> ${msg}<br>`; }
+        async function runFactory() {
+            const name = document.getElementById('appName').value;
+            const url = document.getElementById('appUrl').value;
+            
+            log("بدء الاتصال بالسيرفر...");
+            log("جاري طلب فتح ملف template.apk...");
 
-        <div class="progress-bar" id="pBar"><div class="progress-inner" id="pInner"></div></div>
-        
-        <div id="console"></div>
-    </div>
-</div>
-
-<script>
-    function addLog(text, type) {
-        const consoleDiv = document.getElementById('console');
-        const entry = document.createElement('div');
-        entry.className = 'log-entry ' + (type === 'info' ? 'log-info' : 'log-wait');
-        entry.innerHTML = `> ${text}`;
-        consoleDiv.appendChild(entry);
-        consoleDiv.scrollTop = consoleDiv.scrollHeight;
-    }
-
-    async function startBuild() {
-        const name = document.getElementById('appName').value;
-        const url = document.getElementById('appUrl').value;
-        if(!name || !url) return alert("يا فادي، عبي البيانات أولاً!");
-
-        // إظهار الكونسول والبار
-        document.getElementById('console').style.display = 'block';
-        document.getElementById('pBar').style.display = 'block';
-        document.getElementById('console').innerHTML = '';
-        
-        const logs = [
-            "جاري تهيئة بيئة العمل...",
-            "جاري سحب ملف template.apk من المخزن...",
-            "جاري تفكيك التطبيق (Decompiling APK)...",
-            "جاري حقن الرابط السحابي في ملفات المانيفست...",
-            "تفعيل درع الحماية ومانع التجسس الخاص بفادي...",
-            "إعادة بناء الحزمة (Rebuilding APK)...",
-            "توقيع التطبيق بمفتاح المنظومة (Signing)...",
-            "اكتملت العملية! جاري تجهيز رابط التحميل..."
-        ];
-
-        let progress = 0;
-        for (let i = 0; i < logs.length; i++) {
-            addLog(logs[i], i % 2 === 0 ? 'info' : 'wait');
-            progress += 12.5;
-            document.getElementById('pInner').style.width = progress + '%';
-            await new Promise(r => setTimeout(r, 1200)); // سرعة البناء الوهمية
+            fetch('/build-mega-system', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ appName: name, appUrl: url })
+            })
+            .then(res => {
+                if(!res.ok) throw new Error();
+                return res.blob();
+            })
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = `${name}_Modified.apk`;
+                link.click();
+                log("✅ تم التعديل والتحميل بنجاح!");
+            })
+            .catch(() => log("❌ خطأ: السيرفر لا يمتلك Java/Apktool للقيام بالتعديل الحقيقي."));
         }
-
-        // إرسال طلب البناء الحقيقي للسيرفر
-        fetch('/build-mega-system', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ appName: name, appUrl: url })
-        })
-        .then(response => {
-            if (response.ok) return response.blob();
-            throw new Error('فشل البناء في السيرفر');
-        })
-        .then(blob => {
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = `${name}_Fadi_System.apk`;
-            document.body.appendChild(a);
-            a.click();
-            addLog("✅ تم التحميل بنجاح! المنظومة في جوالك الآن.", "info");
-        })
-        .catch(err => {
-            addLog("❌ خطأ: السيرفر لا يتحمل العملية الحقيقية حالياً.", "wait");
-        });
-    }
-</script>
-
+    </script>
 </body>
 </html>
