@@ -1,12 +1,22 @@
-{
-  "name": "fadi-pro-realestate",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "axios": "^1.6.0"
-  }
-}
+const express = require('express');
+const axios = require('axios');
+const app = express();
+app.use(express.json());
+app.use(express.static('public'));
+
+app.post('/build-now', async (req, res) => {
+    const { name, url } = req.body;
+    
+    // إرسال أمر البناء لـ GitHub Actions
+    try {
+        await axios.post('https://api.github.com/repos/YOUR_USER/YOUR_REPO/dispatches', 
+        { event_type: 'build_apk', client_payload: { app_name: name, app_url: url } },
+        { headers: { 'Authorization': 'token YOUR_GITHUB_TOKEN', 'Accept': 'application/vnd.github.v3+json' } });
+        
+        res.json({ success: true, downloadUrl: `https://github.com/YOUR_USER/YOUR_REPO/releases/latest/download/app-debug.apk` });
+    } catch (e) {
+        res.status(500).json({ success: false });
+    }
+});
+
+app.listen(3000, () => console.log('Fadi Pro Server is running!'));
