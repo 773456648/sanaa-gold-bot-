@@ -3,56 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <title>FADI OMNI-SYSTEM | المنظومة العملاقة</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-        :root { --neon: #00ff88; --cyber: #00d2ff; }
-        body { background: #010409; color: white; font-family: 'Consolas', monospace; padding: 20px; }
-        .omni-box { border: 2px solid var(--neon); padding: 20px; border-radius: 15px; background: rgba(0,255,136,0.05); }
-        textarea { width: 100%; height: 400px; background: #000; color: var(--neon); border: 1px solid var(--cyber); padding: 15px; font-size: 14px; }
-        .btn-factory { width: 100%; padding: 20px; background: var(--neon); color: black; font-weight: bold; font-size: 1.5rem; border: none; cursor: pointer; margin-top: 10px; }
-        #status-light { color: var(--cyber); margin-top: 10px; font-size: 12px; }
+        :root { --main: #00ff88; --bg: #010409; --panel: #0d1117; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        .sidebar, .editor { background: var(--panel); border: 1px solid #30363d; border-radius: 10px; padding: 15px; }
+        textarea { width: 100%; height: 450px; background: #000; color: var(--main); border: 1px solid #30363d; padding: 10px; font-family: 'Consolas', monospace; border-radius: 5px; }
+        input { width: 100%; padding: 10px; margin-bottom: 10px; background: #161b22; border: 1px solid #30363d; color: white; border-radius: 5px; }
+        .btn { width: 100%; padding: 15px; background: var(--main); color: black; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; }
+        .status { margin-top: 10px; font-size: 12px; color: #8b949e; }
     </style>
 </head>
 <body>
 
-<div class="omni-box">
-    <h1>💠 منظومة فادي العملاقة (V1)</h1>
-    <p>ضع كود التطبيق هنا.. المنظومة ستقوم بالبناء والتغليف ذاتياً</p>
-    
-    <textarea id="appSource" placeholder="إكتب كود التطبيق الموحد هنا..."></textarea>
-    
-    <button class="btn-factory" onclick="omniBuild()">🛠️ تشغيل محرك البناء والتحميل</button>
-    <div id="status-light"></div>
-</div>
+    <h1 style="color: var(--main);">💠 منظومة فادي برو (الجيل الذكي)</h1>
 
-<script>
-    async function omniBuild() {
-        const source = document.getElementById('appSource').value;
-        const status = document.getElementById('status-light');
-        if(!source) return alert("يا فادي، المنظومة تحتاج كود لتبدأ!");
+    <div class="grid">
+        <div class="sidebar">
+            <h3>⚙️ إعدادات البناء</h3>
+            <label>اسم التطبيق:</label>
+            <input type="text" id="appName" placeholder="مثلاً: Calculator_Pro">
+            
+            <label>مسار الملف (اختياري):</label>
+            <input type="text" id="targetFile" placeholder="smali/com/fadi/pro/MainActivity.smali">
+            
+            <button class="btn" onclick="buildSystem()">🚀 بدء الحقن والتجميع</button>
+            <div id="status" class="status">جاهز للاستخدام...</div>
+        </div>
 
-        status.innerHTML = "🌀 جاري تنشيط محرك البناء الذاتي...";
-        const zip = new JSZip();
+        <div class="editor">
+            <h3>📝 محرر الكود الكبير (Smali/Java)</h3>
+            <textarea id="megaCode" placeholder="ضع كود التطبيق العملاق هنا..."></textarea>
+        </div>
+    </div>
 
-        // 1. توليد الهوية (Manifest)
-        zip.file("AndroidManifest.xml", `<?xml version="1.0" encoding="utf-8"?><manifest package="com.fadi.omni">...</manifest>`);
-        
-        // 2. حقن الكود الموحد داخل أحشاء التطبيق
-        status.innerHTML = "💉 جاري حقن الكود وتغليف الطبقات...";
-        zip.file("assets/app_logic.js", source); 
-        
-        // 3. بناء هيكل الـ APK (التغليف الذاتي)
-        status.innerHTML = "📦 جاري التغليف النهائي (Packaging)...";
-        const content = await zip.generateAsync({type:"blob"});
-        
-        // 4. التحميل الفوري بدون تدخل السيرفر
-        const link = document.createElement('a');
-        link.href = window.URL.createObjectURL(content);
-        link.download = "Fadi_Generated_App.apk";
-        link.click();
-        
-        status.innerHTML = "✅ اكتملت العملية. التطبيق جاهز خارج السيرفر!";
-    }
-</script>
+    <script>
+        async function buildSystem() {
+            const name = document.getElementById('appName').value;
+            const code = document.getElementById('megaCode').value;
+            const file = document.getElementById('targetFile').value;
+            const status = document.getElementById('status');
+
+            if(!name || !code) return alert("يا فادي، املأ البيانات أولاً!");
+
+            status.innerHTML = "🌀 جاري فك الملف وحقن الأكواد...";
+
+            const response = await fetch('/build-omni-system', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ appName: name, megaCode: code, targetFile: file })
+            });
+
+            if(response.ok) {
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = `${name}.apk`;
+                link.click();
+                status.innerHTML = "✅ اكتملت العملية بنجاح!";
+            } else {
+                status.innerHTML = "❌ فشل السيرفر في معالجة الطلب.";
+            }
+        }
+    </script>
 </body>
 </html>
