@@ -3,197 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💎 منظومة فادي برو للعقارات</title>
+    <title>💎 منظومة فادي برو للعقارات | الفخامة في العرض</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --gold: #e2b714; --bg: #05070a; --glass: rgba(22, 27, 34, 0.9); --border: #30363d; --success: #238636; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', sans-serif; }
+        :root { 
+            --gold: #e2b714; 
+            --bg: #05070a; 
+            --glass: rgba(22, 27, 34, 0.85); 
+            --border: #30363d; 
+            --success: #238636;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
         
-        header { background: var(--glass); backdrop-filter: blur(10px); padding: 15px 5%; border-bottom: 2px solid var(--gold); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
-        .logo { font-size: 1.5rem; font-weight: 900; color: var(--gold); }
-
-        .search-container { padding: 20px 5%; background: #0d1117; border-bottom: 1px solid var(--border); }
-        .search-box { width: 100%; max-width: 600px; margin: 0 auto; position: relative; }
-        .search-box input { width: 100%; padding: 15px 45px 15px 15px; background: #000; border: 1px solid var(--gold); border-radius: 30px; color: #fff; font-size: 1rem; }
-        .search-box i { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--gold); }
-
-        .filters { display: flex; justify-content: center; gap: 10px; padding: 15px; flex-wrap: wrap; }
-        .filter-btn { background: var(--glass); border: 1px solid var(--border); color: #fff; padding: 8px 18px; border-radius: 20px; cursor: pointer; }
-        .filter-btn.active { background: var(--gold); color: #000; }
-
-        .container { padding: 20px 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; position: relative; }
-        .card:hover { border-color: var(--gold); }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.3s ease; }
+        body { background: var(--bg); color: #e6edf3; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
         
-        .badge { position: absolute; top: 15px; right: 15px; background: var(--gold); color: #000; padding: 4px 12px; border-radius: 15px; font-weight: bold; font-size: 0.75rem; }
-        .card-body { padding: 20px; }
-        .price { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 5px; }
-        .owner-info { font-size: 0.85rem; color: var(--gold); margin-bottom: 10px; display: block; }
-        .details { background: #0d1117; padding: 12px; border-radius: 8px; margin-bottom: 15px; color: #8b949e; display: flex; justify-content: space-between; }
+        /* الهيدر الملكي */
+        header { 
+            background: var(--glass); 
+            backdrop-filter: blur(15px); 
+            padding: 20px 5%; 
+            border-bottom: 2px solid var(--gold); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .logo { font-size: 1.8rem; font-weight: 900; color: var(--gold); text-shadow: 0 0 10px rgba(226, 183, 20, 0.3); }
 
-        .btn-group { display: flex; flex-direction: column; gap: 8px; }
-        .contact-btn { padding: 12px; border-radius: 10px; background: var(--success); color: #fff; text-decoration: none; text-align: center; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .dev-btn { padding: 8px; border-radius: 8px; background: transparent; border: 1px dashed var(--gold); color: var(--gold); text-decoration: none; text-align: center; font-size: 0.8rem; }
+        /* منطقة التحكم والبحث */
+        .control-panel { padding: 30px 5%; background: linear-gradient(180deg, #0d1117 0%, var(--bg) 100%); text-align: center; }
+        .search-box { width: 100%; max-width: 700px; margin: 0 auto 20px; position: relative; }
+        .search-box input { 
+            width: 100%; padding: 18px 50px 18px 20px; 
+            background: #000; border: 1px solid var(--border); 
+            border-radius: 50px; color: #fff; font-size: 1.1rem;
+        }
+        .search-box input:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 15px rgba(226, 183, 20, 0.2); }
+        .search-box i { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 1.2rem; }
 
-        /* زر الحذف القوي حقك */
-        .del-btn { padding: 10px; border-radius: 10px; background: transparent; border: 1px solid #da3633; color: #da3633; cursor: pointer; text-align: center; font-weight: bold; }
-        .del-btn:hover { background: #da3633; color: #fff; }
+        /* أزرار العملات والفلترة */
+        .tools { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tool-btn { 
+            background: var(--glass); border: 1px solid var(--border); 
+            color: #fff; padding: 10px 20px; border-radius: 12px; 
+            cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;
+        }
+        .tool-btn:hover, .tool-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
 
-        .fab { position: fixed; bottom: 25px; left: 25px; background: var(--gold); width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; color: #000; border: none; cursor: pointer; z-index: 999; }
+        /* الشبكة والبطاقات */
+        .container { padding: 20px 5% 100px; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px; }
+        .card { 
+            background: var(--glass); border-radius: 20px; border: 1px solid var(--border); 
+            overflow: hidden; position: relative; box-shadow: var(--card-shadow);
+        }
+        .card:hover { transform: translateY(-10px); border-color: var(--gold); }
+        
+        .badge { 
+            position: absolute; top: 15px; right: 15px; 
+            background: var(--gold); color: #000; 
+            padding: 5px 15px; border-radius: 8px; font-weight: 900; font-size: 0.8rem; 
+        }
+        .card-body { padding: 25px; }
+        .price-tag { font-size: 1.6rem; font-weight: 800; color: #fff; margin: 10px 0; display: block; }
+        .info-row { display: flex; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; margin: 15px 0; font-size: 0.9rem; color: #8b949e; }
 
-        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .modal-box { background: #161b22; padding: 25px; border-radius: 20px; border: 1px solid var(--gold); width: 100%; max-width: 450px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 12px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 8px; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .main-btn { 
+            padding: 12px; border-radius: 12px; font-weight: bold; 
+            text-decoration: none; text-align: center; display: flex; 
+            align-items: center; justify-content: center; gap: 5px; cursor: pointer; border: none;
+        }
+        .btn-wa { background: var(--success); color: #fff; grid-column: span 2; }
+        .btn-share { background: #1f6feb; color: #fff; }
+        .btn-del { background: transparent; border: 1px solid #da3633; color: #da3633; }
+        .btn-del:hover { background: #da3633; color: #fff; }
+
+        /* الزر العائم والمودال */
+        .fab { position: fixed; bottom: 30px; left: 30px; background: var(--gold); width: 65px; height: 65px; border-radius: 50%; font-size: 1.8rem; box-shadow: 0 10px 20px rgba(0,0,0,0.4); border: none; cursor: pointer; z-index: 999; }
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .modal-box { background: #161b22; padding: 30px; border-radius: 25px; border: 1px solid var(--gold); width: 100%; max-width: 500px; }
+        input, select { width: 100%; padding: 14px; margin-bottom: 15px; background: #000; border: 1px solid var(--border); color: #fff; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo"><i class="fas fa-gem"></i> فادي برو للعقارات</div>
-    <a href="https://wa.me/967779847980?text=حياك الله يا مصمم المنظومة" class="dev-btn">تواصل مع صاحب التصميم 👤</a>
+    <a href="https://wa.me/967779847980" class="tool-btn" style="font-size: 0.8rem;">المطور 👤</a>
 </header>
 
-<div class="search-container">
+<div class="control-panel">
     <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="ابحث عن منطقة، اسم، أو نوع العقار..." onkeyup="searchProps()">
+        <input type="text" id="searchInput" placeholder="ابحث عن الموقع، النوع، أو السعر..." onkeyup="searchProps()">
+    </div>
+
+    <div class="tools">
+        <button class="tool-btn active" onclick="filterData('all', this)">الكل</button>
+        <button class="tool-btn" onclick="filterData('apt', this)">شقق</button>
+        <button class="tool-btn" onclick="filterData('land', this)">أراضي</button>
+        <button class="tool-btn" onclick="toggleCurrency()"><i class="fas fa-exchange-alt"></i> <span id="curText">عرض باليمني</span></button>
     </div>
 </div>
 
-<div class="filters">
-    <button class="filter-btn active" onclick="filterData('all')">الكل</button>
-    <button class="filter-btn" onclick="filterData('apt')">شقق</button>
-    <button class="filter-btn" onclick="filterData('land')">أراضي</button>
-</div>
-
 <div class="container" id="mainGrid">
-</div>
+    </div>
 
 <button class="fab" onclick="showModal()"><i class="fas fa-plus"></i></button>
 
 <div id="modal">
     <div class="modal-box">
-        <h3 style="text-align:center; color:var(--gold); margin-bottom:15px;">إضافة عرض جديد</h3>
+        <h2 style="text-align:center; color:var(--gold); margin-bottom:20px;">إضافة عرض عقاري جديد</h2>
         <input type="text" id="pOwner" placeholder="اسم المعلن">
-        <input type="number" id="pPhone" placeholder="رقم التواصل">
-        <input type="text" id="pTitle" placeholder="اسم العقار أو موقعه">
-        <input type="text" id="pPrice" placeholder="السعر (مثلاً: 100 ألف دولار)">
-        <input type="text" id="pSpace" placeholder="المساحة (مثلاً: 5 لبن)">
+        <input type="tel" id="pPhone" placeholder="رقم الواتساب (بدون صفر)">
+        <input type="text" id="pTitle" placeholder="عنوان العقار (مثال: أرض في حدة)">
+        <input type="number" id="pPrice" placeholder="السعر بالدولار $">
+        <input type="number" id="pSpace" placeholder="المساحة باللبن">
         <select id="pCat">
-            <option value="apt">شقة</option>
-            <option value="land">أرضية</option>
-            <option value="villa">بيت / فيلا</option>
+            <option value="apt">شقة سكنية</option>
+            <option value="land">أرضية تجارية/سكنية</option>
+            <option value="villa">فيلا / بيت منفصل</option>
         </select>
+        <input type="password" id="pPass" placeholder="كلمة مرور للحذف لاحقاً">
         
-        <input type="password" id="pPass" placeholder="كلمة سر لحذف إعلانك لاحقاً">
-
-        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نشر الآن 🚀</button>
-        <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:10px; cursor:pointer;">إلغاء</button>
+        <button onclick="publish()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:12px; font-weight:bold; cursor:pointer; font-size:1.1rem;">نشر العرض الآن 🚀</button>
+        <button onclick="hideModal()" style="width:100%; background:none; border:none; color:gray; margin-top:15px; cursor:pointer;">إلغاء العملية</button>
     </div>
 </div>
 
 <script>
     let allProps = [];
-    const MY_PHONE = "779847980";
+    let isYemeni = false;
+    const EXCHANGE_RATE = 530; // سعر الصرف الافتراضي
 
     async function loadData() {
         try {
             const res = await fetch('/api/properties');
             allProps = await res.json();
             render(allProps);
-        } catch (e) { console.log("خطأ في التحميل"); }
+        } catch (e) { console.error("فشل في جلب البيانات"); }
     }
 
     function render(data) {
         const grid = document.getElementById('mainGrid');
-        grid.innerHTML = data.map(p => `
-            <div class="card">
-                <div class="badge">عقار</div>
-                <div class="card-body">
-                    <span class="owner-info"><i class="fas fa-user"></i> المعلن: ${p.owner}</span>
-                    <h3 style="color:#fff; margin-bottom:10px;">${p.title}</h3>
-                    <div class="price" style="color:var(--gold)">${p.price}</div>
-                    <div class="details">
-                        <span>المساحة: ${p.space}</span>
-                    </div>
-                    <div class="btn-group">
-                        <a href="https://wa.me/967${p.phone || MY_PHONE}?text=${encodeURIComponent('استفسار عن: ' + p.title)}" class="contact-btn">
-                            <i class="fab fa-whatsapp"></i> تواصل مع المعلن
-                        </a>
-                        <button onclick="deleteProp('${p.id}')" class="del-btn">
-                            <i class="fas fa-trash"></i> حذف الإعلان
-                        </button>
+        grid.innerHTML = data.map(p => {
+            const displayPrice = isYemeni ? (p.price * EXCHANGE_RATE).toLocaleString() + " ريال" : p.price.toLocaleString() + " دولار";
+            const spaceInMeters = (p.space * 44.44).toFixed(1);
+            
+            return `
+                <div class="card">
+                    <div class="badge">${p.category === 'apt' ? 'شقة' : 'أرضية'}</div>
+                    <div class="card-body">
+                        <span class="owner-info" style="color:var(--gold); font-size:0.8rem;"><i class="fas fa-user-check"></i> المعلن: ${p.owner}</span>
+                        <h3 style="margin: 10px 0;">${p.title}</h3>
+                        <span class="price-tag" style="color:var(--gold)">${displayPrice}</span>
+                        <div class="info-row">
+                            <span><i class="fas fa-th-large"></i> ${p.space} لبنة</span>
+                            <span><i class="fas fa-vector-square"></i> ${spaceInMeters} م²</span>
+                        </div>
+                        <div class="btn-group">
+                            <a href="https://wa.me/967${p.phone}?text=${encodeURIComponent('السلام عليكم، استفسار عن إعلان: ' + p.title)}" class="main-btn btn-wa">
+                                <i class="fab fa-whatsapp"></i> تواصل عبر واتساب
+                            </a>
+                            <button onclick="shareProp('${p.title}', '${p.price}')" class="main-btn btn-share">
+                                <i class="fas fa-share-alt"></i> مشاركة
+                            </button>
+                            <button onclick="deleteProp('${p.id}')" class="main-btn btn-del">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
-    function searchProps() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = allProps.filter(p => 
-            p.title.toLowerCase().includes(term) || 
-            p.owner.toLowerCase().includes(term) ||
-            p.price.toString().toLowerCase().includes(term)
-        );
-        render(filtered);
+    function toggleCurrency() {
+        isYemeni = !isYemeni;
+        document.getElementById('curText').innerText = isYemeni ? "عرض بالدولار" : "عرض باليمني";
+        render(allProps);
+    }
+
+    function shareProp(title, price) {
+        const text = `🏠 عرض عقاري مميز من منظومة فادي برو:\n📌 العقار: ${title}\n💰 السعر: ${price}$\n📲 للتفاصيل تواصل معنا!`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`);
     }
 
     async function publish() {
         const prop = {
-            owner: document.getElementById('pOwner').value || "معلن",
-            phone: document.getElementById('pPhone').value || MY_PHONE,
+            owner: document.getElementById('pOwner').value || "معلن غير معروف",
+            phone: document.getElementById('pPhone').value,
             title: document.getElementById('pTitle').value,
-            price: document.getElementById('pPrice').value,
-            space: document.getElementById('pSpace').value,
+            price: Number(document.getElementById('pPrice').value),
+            space: Number(document.getElementById('pSpace').value),
             category: document.getElementById('pCat').value,
             password: document.getElementById('pPass').value
         };
-        
-        if(!prop.title || !prop.password) return alert("أدخل اسم العقار وكلمة السر!");
-        
+
+        if(!prop.title || !prop.password || !prop.phone) return alert("يرجى ملء كافة الحقول الأساسية!");
+
         await fetch('/api/properties', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(prop)
         });
-        
-        document.querySelectorAll('#modal input').forEach(i => i.value = '');
+
         hideModal();
         loadData();
     }
 
-    async function deleteProp(id) {
-        const password = prompt("أدخل كلمة سر الإعلان عشان تحذفه:");
-        if(!password) return;
+    function searchProps() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = allProps.filter(p => p.title.toLowerCase().includes(term) || p.owner.toLowerCase().includes(term));
+        render(filtered);
+    }
 
+    function filterData(cat, btn) {
+        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if(cat === 'all') return render(allProps);
+        render(allProps.filter(p => p.category === cat));
+    }
+
+    async function deleteProp(id) {
+        const pass = prompt("أدخل كلمة السر لحذف الإعلان:");
+        if(!pass) return;
         const res = await fetch('/api/delete', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ id: id, password: password })
+            body: JSON.stringify({ id, password: pass })
         });
-
         const result = await res.json();
-        if(result.success) {
-            alert("تم الحذف بنجاح");
-            loadData();
-        } else {
-            alert("كلمة السر غلط!");
-        }
-    }
-
-    function filterData(cat) {
-        if(cat === 'all') return render(allProps);
-        render(allProps.filter(p => p.category === cat));
+        if(result.success) { alert("تم الحذف بنجاح"); loadData(); }
+        else { alert("كلمة السر خاطئة!"); }
     }
 
     function showModal() { document.getElementById('modal').style.display = 'flex'; }
     function hideModal() { document.getElementById('modal').style.display = 'none'; }
 
-    setInterval(loadData, 5000);
     window.onload = loadData;
 </script>
-
 </body>
 </html>
