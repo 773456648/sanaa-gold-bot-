@@ -9,35 +9,38 @@ app.use(express.static('public'));
 
 app.post('/build-mega-system', (req, res) => {
     const { appName, appUrl } = req.body;
-    const inputApk = path.join(__dirname, 'public', 'template.apk');
-    const workDir = path.join(__dirname, 'build_work');
-    const finalApk = path.join(__dirname, 'public', `${appName}.apk`);
+    const templateApk = path.join(__dirname, 'public', 'template.apk');
+    const decompiledDir = path.join(__dirname, 'temp_build');
+    const finalApk = path.join(__dirname, 'public', `${appName}_Built.apk`);
 
-    // التأكد من وجود ملف القالب
-    if (!fs.existsSync(inputApk)) {
-        return res.status(404).json({ error: "خطأ: ملف template.apk غير موجود في مجلد public." });
-    }
+    console.log(`[!] بدء فتح ملف template.apk وتعديله...`);
 
-    console.log(`[!] بدء الهندسة العكسية للتطبيق: ${appName}`);
-
-    // محاولة التفكيك والبناء (تتطلب Apktool مثبتة)
-    exec(`apktool d ${inputApk} -o ${workDir} -f`, (err) => {
+    // الخطوة 1: تفكيك الـ APK (Decompile)
+    exec(`apktool d ${templateApk} -o ${decompiledDir} -f`, (err) => {
         if (err) {
-            console.error("[-] فشل التفكيك: السيرفر يفتقر لأدوات Java/Apktool أو الذاكرة غير كافية.");
-            return res.status(500).json({ error: "السيرفر لا يتحمل أدوات البناء الثقيلة." });
+            console.error("[-] فشل فتح الملف. تأكد من وجود Apktool و Java.");
+            return res.status(500).json({ error: "السيرفر لا يدعم أدوات التعديل الحقيقية (نقص Java/Apktool)." });
         }
 
-        // هنا يتم حقن الرابط والاسم (تعديل ملفات الـ XML)
-        console.log(`[+] جاري حقن البيانات: ${appUrl}`);
-        
-        exec(`apktool b ${workDir} -o ${finalApk}`, (buildErr) => {
-            if (buildErr) return res.status(500).json({ error: "فشل في إعادة تجميع الملف." });
-            
-            console.log(`[✅] اكتمل البناء بنجاح!`);
+        // الخطوة 2: تعديل الأكواد (حقن البيانات)
+        // سنعدل اسم التطبيق داخل ملف strings.xml
+        const stringsXml = path.join(decompiledDir, 'res', 'values', 'strings.xml');
+        if (fs.existsSync(stringsXml)) {
+            let data = fs.readFileSync(stringsXml, 'utf8');
+            data = data.replace(/<string name="app_name">.*?<\/string>/, `<string name="app_name">${appName}</string>`);
+            fs.writeFileSync(stringsXml, data);
+            console.log(`[+] تم تغيير اسم التطبيق في الأكواد إلى: ${appName}`);
+        }
+
+        // الخطوة 3: إعادة تجميع الملف (Rebuild)
+        exec(`apktool b ${decompiledDir} -o ${finalApk}`, (buildErr) => {
+            if (buildErr) return res.status(500).json({ error: "فشل إعادة التجميع." });
+
+            console.log(`[✅] تم التعديل والبناء بنجاح!`);
             res.download(finalApk);
         });
     });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 مصنع فادي "الحقيقي" يعمل على ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 مصنع التعديل الحقيقي جاهز`));
