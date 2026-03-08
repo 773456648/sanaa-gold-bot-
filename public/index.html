@@ -2,50 +2,78 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FADI PRO - بناء فوري</title>
+    <title>لوحة تحكم منظومة فادي برو</title>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 40px; }
-        .builder-box { background: #1e293b; padding: 30px; border-radius: 20px; border: 2px solid #00d2ff; display: inline-block; width: 400px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; }
-        .btn { background: #00d2ff; color: #000; padding: 15px; width: 100%; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #status { margin-top: 20px; color: #38bdf8; }
-        #downloadBtn { display: none; margin-top: 20px; background: #22c55e; color: white; padding: 15px; text-decoration: none; border-radius: 8px; display: block; font-weight: bold; }
+        body { background: #020617; color: #f8fafc; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .system-card { background: #0f172a; border: 2px solid #38bdf8; border-radius: 25px; padding: 40px; max-width: 700px; margin: auto; box-shadow: 0 0 50px rgba(56, 189, 248, 0.15); }
+        .section-title { border-bottom: 2px solid #1e293b; padding-bottom: 10px; margin-bottom: 25px; color: #38bdf8; display: flex; align-items: center; gap: 10px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: right; }
+        .input-field { background: #020617; border: 1px solid #334155; color: white; padding: 15px; border-radius: 10px; width: 100%; box-sizing: border-box; }
+        .build-button { background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); color: white; padding: 25px; width: 100%; border: none; border-radius: 15px; font-weight: bold; font-size: 1.3em; cursor: pointer; margin-top: 30px; box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3); }
+        #console { background: #000; color: #10b981; padding: 15px; border-radius: 10px; margin-top: 20px; font-family: monospace; height: 120px; overflow-y: auto; border: 1px solid #10b981; }
     </style>
 </head>
 <body>
-    <div class="builder-box">
-        <h2>🏗️ صانع التطبيقات الفوري</h2>
-        <input type="text" id="appName" placeholder="اسم التطبيق">
-        <input type="url" id="appUrl" placeholder="رابط الموقع">
-        <button class="btn" onclick="buildNow()">إنشاء وتحميل الآن 🚀</button>
-        <div id="status"></div>
-        <a id="downloadBtn" href="#">📥 تحميل ملف APK المباشر</a>
+    <div class="system-card">
+        <div class="section-title">
+            <h2>🛠️ منظومة فادي برو العملاقة (v5.0)</h2>
+        </div>
+        
+        <div class="grid">
+            <div>
+                <label>🏷️ اسم التطبيق المدمج:</label>
+                <input type="text" id="name" class="input-field" placeholder="Fadi App Pro">
+            </div>
+            <div>
+                <label>📦 اسم الحزمة (Package Name):</label>
+                <input type="text" id="package" class="input-field" placeholder="com.fadi.pro.system">
+            </div>
+            <div>
+                <label>🌐 رابط السيرفر المصدري:</label>
+                <input type="url" id="url" class="input-field" placeholder="https://sanaa-gold-bot-1.onrender.com/">
+            </div>
+            <div>
+                <label>🎨 لون الواجهة (Theme):</label>
+                <input type="color" id="color" class="input-field" style="height: 50px;">
+            </div>
+        </div>
+
+        <button class="build-button" onclick="runIntegratedBuild()">تشغيل المحرك وبناء التطبيق طوالي 🚀</button>
+        
+        <div id="console">> المنظومة بانتظار الأوامر...</div>
     </div>
 
     <script>
-        async function buildNow() {
-            const status = document.getElementById('status');
-            const dlBtn = document.getElementById('downloadBtn');
-            status.innerText = "جاري البناء الفوري... انتظر ثوانٍ";
+        async function runIntegratedBuild() {
+            const consoleBox = document.getElementById('console');
+            consoleBox.innerHTML += "<br>> بدء فحص المعدات والأدوات...";
             
-            const res = await fetch('/build-and-download', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    appName: document.getElementById('appName').value,
-                    appUrl: document.getElementById('appUrl').value 
-                })
-            });
-            
-            const data = await res.json();
-            if(data.success) {
-                status.innerText = "✅ اكتمل البناء!";
-                dlBtn.href = data.downloadUrl;
-                dlBtn.style.display = 'block';
-                // التحميل التلقائي فوراً
-                window.location.href = data.downloadUrl;
-            } else {
-                status.innerText = "❌ خطأ: " + data.message;
+            try {
+                const res = await fetch('/build-integrated-engine', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        appName: document.getElementById('name').value,
+                        appUrl: document.getElementById('url').value,
+                        appPackage: document.getElementById('package').value,
+                        appColor: document.getElementById('color').value
+                    })
+                });
+
+                if (res.ok) {
+                    consoleBox.innerHTML += "<br><span style='color:#38bdf8'>> تم حقن الأكواد بنجاح! جاري سحب ملف APK المطور...</span>";
+                    const blob = await res.blob();
+                    const dUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = dUrl;
+                    link.download = document.getElementById('name').value + "_FadiPro.apk";
+                    link.click();
+                } else {
+                    const error = await res.json();
+                    consoleBox.innerHTML += `<br><span style='color:#ef4444'>> فشل: ${error.error}</span>`;
+                }
+            } catch (e) {
+                consoleBox.innerHTML += "<br><span style='color:#ef4444'>> خطأ: لا يمكن الاتصال بالمصنع!</span>";
             }
         }
     </script>
