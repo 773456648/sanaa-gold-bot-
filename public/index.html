@@ -3,192 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة فادي للسحب الآلي</title>
+    <title>رادار فادي العالمي | Fadi Global Radar</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Tajawal', sans-serif; background-color: #0f172a; color: #f8fafc; }
-        .fadi-card { background: #1e293b; border: 1px solid #334155; transition: all 0.3s ease; }
-        .fadi-card:hover { border-color: #3b82f6; transform: translateY(-5px); }
-        .auto-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-        .status-dot { height: 10px; width: 10px; background-color: #22c55e; border-radius: 50%; display: inline-block; margin-left: 5px; }
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0a0a0a;
+            color: #e2e8f0;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .fadi-gold {
+            background: linear-gradient(135deg, #d4af37 0%, #f9d976 50%, #b8860b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-border {
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .gold-bg {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.5);
+        }
+
+        .chart-glow {
+            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        }
+
+        .live-dot {
+            animation: pulse-gold 2s infinite;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Top Bar -->
-    <header class="bg-slate-900 border-b border-slate-800 py-4 px-6 sticky top-0 z-50">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="bg-blue-600 p-2 rounded-lg font-black text-xl italic">FADI</div>
-                <div>
-                    <h1 class="text-xl font-black">منظومة فادي للسحب التلقائي</h1>
-                    <div class="flex items-center text-xs text-green-400">
-                        <span class="status-dot animate-pulse"></span> نظام السحب الآلي متصل ويعمل الآن
-                    </div>
-                </div>
-            </div>
-            <div class="hidden md:flex gap-4 items-center">
-                <div id="scanCount" class="bg-slate-800 px-4 py-2 rounded-full text-sm font-bold border border-slate-700">
-                    تم سحب: 0 عرض حقيقي
-                </div>
-            </div>
+    <!-- Header -->
+    <header class="p-6 flex justify-between items-center max-w-7xl mx-auto">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 gold-bg rounded-full flex items-center justify-center text-black font-black text-2xl shadow-lg">F</div>
+            <h1 class="text-2xl font-black uppercase tracking-tighter fadi-gold">FADI RADAR</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="hidden md:block text-sm text-gray-500 font-bold">حالة السوق الآن</div>
+            <div class="w-3 h-3 bg-green-500 rounded-full live-dot"></div>
         </div>
     </header>
 
-    <!-- Scanner Monitor -->
-    <section class="container mx-auto px-4 mt-6">
-        <div class="bg-blue-900/20 border border-blue-500/30 p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <h2 class="text-lg font-bold text-blue-400 mb-1">روبوت فادي الذكي (Fadi-Bot)</h2>
-                <p id="botStatus" class="text-sm text-gray-400 italic">جاري مراقبة جوجل ومواقع الإعلانات لجلب أحدث العروض...</p>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="triggerAutoScrape()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-xl font-bold transition auto-pulse">
-                    سحب يدوي فوري
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Grid View -->
-    <main class="container mx-auto px-4 py-10">
-        <div id="mainDisplay" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Items will pop in here automatically -->
-        </div>
+    <main class="max-w-7xl mx-auto px-6 py-10">
         
-        <!-- Empty State / Loading -->
-        <div id="initialLoader" class="flex flex-col items-center justify-center py-20">
-            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-            <p class="text-xl font-bold text-gray-500">جاري بدء عملية الزحف لسوق فادي...</p>
+        <!-- Hero Display -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="lg:col-span-2 glass-card rounded-3xl p-8 flex flex-col justify-between overflow-hidden relative">
+                <div class="relative z-10">
+                    <h2 class="text-4xl font-black mb-4">أداة فادي <span class="fadi-gold">لتحليل الأسعار</span></h2>
+                    <p class="text-gray-400 max-w-md">بيانات فورية من الأسواق العالمية للمستثمرين والمتداولين. دقة متناهية، وبساطة في التعامل.</p>
+                </div>
+                <div class="flex gap-10 mt-12 overflow-x-auto pb-4">
+                    <div class="min-w-[150px]">
+                        <span class="text-xs text-gray-500 uppercase font-bold">الذهب (أونصة)</span>
+                        <div class="text-2xl font-bold text-yellow-500">$2,154.20</div>
+                        <span class="text-green-500 text-xs font-bold"><i class="fas fa-caret-up"></i> +1.2%</span>
+                    </div>
+                    <div class="min-w-[150px]">
+                        <span class="text-xs text-gray-500 uppercase font-bold">البيتكوين</span>
+                        <div class="text-2xl font-bold text-orange-500">$64,321.00</div>
+                        <span class="text-red-500 text-xs font-bold"><i class="fas fa-caret-down"></i> -0.4%</span>
+                    </div>
+                    <div class="min-w-[150px]">
+                        <span class="text-xs text-gray-500 uppercase font-bold">الدولار / ريال</span>
+                        <div class="text-2xl font-bold text-blue-500">3.75</div>
+                        <span class="text-gray-500 text-xs font-bold">مستقر</span>
+                    </div>
+                </div>
+                <i class="fas fa-chart-line absolute -bottom-4 -left-4 text-[200px] text-white/5 pointer-events-none"></i>
+            </div>
+
+            <!-- Currency Converter -->
+            <div class="glass-card rounded-3xl p-8 gold-border">
+                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <i class="fas fa-exchange-alt fadi-gold"></i> المحول السريع
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs text-gray-500 mb-2 block">المبلغ</label>
+                        <input type="number" id="amount" value="100" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-yellow-500 transition font-bold">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs text-gray-500 mb-2 block">من</label>
+                            <select id="from-cur" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none">
+                                <option value="USD" selected>USD (دولار)</option>
+                                <option value="EUR">EUR (يورو)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500 mb-2 block">إلى</label>
+                            <select id="to-cur" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none">
+                                <option value="SAR" selected>SAR (ريال)</option>
+                                <option value="EGP">EGP (جنيه)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="convert()" class="w-full gold-bg text-black font-black py-4 rounded-xl mt-4 hover:scale-95 transition">تحويل الآن</button>
+                    <div id="result" class="text-center mt-4 text-2xl font-bold fadi-gold"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Grid -->
+        <h3 class="text-2xl font-black mb-8 flex items-center gap-3">
+             مراقبة الأسواق <div class="h-px bg-white/10 flex-1"></div>
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                    <div class="text-gray-500 text-xs font-bold uppercase">Apple (AAPL)</div>
+                    <div class="text-xl font-bold">$182.63</div>
+                </div>
+                <div class="text-green-500 font-bold">+2.4%</div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                    <div class="text-gray-500 text-xs font-bold uppercase">Tesla (TSLA)</div>
+                    <div class="text-xl font-bold">$175.05</div>
+                </div>
+                <div class="text-red-500 font-bold">-1.2%</div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                    <div class="text-gray-500 text-xs font-bold uppercase">S&P 500</div>
+                    <div class="text-xl font-bold">5,137.08</div>
+                </div>
+                <div class="text-green-500 font-bold">+0.8%</div>
+            </div>
+            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                    <div class="text-gray-500 text-xs font-bold uppercase">بترول برنت</div>
+                    <div class="text-xl font-bold">$82.04</div>
+                </div>
+                <div class="text-blue-500 font-bold">0.0%</div>
+            </div>
+        </div>
+
+        <!-- Footer Signature -->
+        <div class="mt-24 text-center">
+            <div class="inline-block relative">
+                <div class="absolute -top-10 left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-[0.5em] text-gray-600">PREMIUM PLATFORM</div>
+                <h2 class="text-4xl md:text-6xl font-black mb-2 opacity-90">تم تصميم هذا من قبل <span class="fadi-gold italic">فادي</span></h2>
+                <div class="h-1 w-20 gold-bg mx-auto rounded-full mb-6"></div>
+                <p class="text-gray-500 font-medium">الأداة الأكثر موثوقية لمتابعة حركة المال عالمياً</p>
+            </div>
         </div>
     </main>
 
-    <!-- Footer Signature -->
-    <footer class="bg-slate-950 py-10 border-t border-slate-800">
-        <div class="container mx-auto text-center px-4">
-            <p class="text-gray-500 text-sm mb-4">نظام متطور يعتمد على سحب البيانات اللحظية من محركات البحث</p>
-            <div class="inline-block border-2 border-blue-500/50 p-4 rounded-2xl">
-                <p class="text-blue-400 font-bold mb-1">تمت تسوية هذه المنظومة بالكامل من قبل:</p>
-                <p class="text-3xl font-black text-white tracking-widest uppercase">المبرمج فادي</p>
-            </div>
-        </div>
-    </footer>
-
     <script>
-        const apiKey = ""; // API Key for the AI model
-        let adsDatabase = [];
-
-        // Automatic keywords to scan for
-        const keywords = ["عقارات للبيع في اليمن", "سيارات حراج", "اراضي لقطة للبيع", "ايفون مستعمل للبيع", "شقق للايجار في صنعاء"];
-
-        // Function to simulate real deep scraping via AI Grounding
-        async function fetchNewData() {
-            const botStatus = document.getElementById('botStatus');
-            const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
+        function convert() {
+            const amount = document.getElementById('amount').value;
+            const from = document.getElementById('from-cur').value;
+            const to = document.getElementById('to-cur').value;
+            const resultDiv = document.getElementById('result');
             
-            botStatus.innerText = `الروبوت يبحث الآن في جوجل عن: ${randomKeyword}...`;
+            // أسعار صرف تقريبية للعرض
+            const rates = {
+                'USD_SAR': 3.75,
+                'USD_EGP': 47.50,
+                'EUR_SAR': 4.08,
+                'EUR_EGP': 51.20
+            };
+
+            const key = `${from}_${to}`;
+            const converted = (amount * (rates[key] || 1)).toFixed(2);
             
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `قم بالبحث في جوجل عن "${randomKeyword}" واجلب لي قائمة بـ 6 عروض حقيقية جداً مع اسم البائع الحقيقي ورقم هاتفه الحقيقي ووصف العرض وسعره. أجب بصيغة JSON فقط.` }] }],
-                        tools: [{ "google_search": {} }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
-
-                const data = await response.json();
-                const rawJson = data.candidates[0].content.parts[0].text;
-                const newAds = JSON.parse(rawJson);
-
-                // Add to database and UI
-                processAds(newAds);
-                
-                botStatus.innerText = "تم تحديث المنظومة بعروض جديدة بنجاح!";
-                document.getElementById('initialLoader').classList.add('hidden');
-                
-            } catch (error) {
-                console.error("Scraping error:", error);
-                botStatus.innerText = "فشل السحب المؤقت.. سيعاود الروبوت المحاولة بعد قليل.";
-            }
+            resultDiv.style.opacity = '0';
+            setTimeout(() => {
+                resultDiv.innerText = `${converted} ${to}`;
+                resultDiv.style.opacity = '1';
+            }, 100);
         }
 
-        function processAds(ads) {
-            ads.forEach(ad => {
-                const item = {
-                    id: Date.now() + Math.random(),
-                    title: ad.title || ad.العنوان || "عرض جديد",
-                    price: ad.price || ad.السعر || "اتصل للسعر",
-                    phone: ad.phone || ad.رقم_الهاتف || "7XXXXXXX",
-                    seller: ad.seller || ad.المعلن || "بائع حقيقي",
-                    desc: ad.desc || ad.الوصف || "تفاصيل العرض مجلوبة من الإنترنت..",
-                    time: new Date().toLocaleTimeString('ar-SA')
-                };
-                
-                // Add to beginning of array
-                adsDatabase.unshift(item);
-            });
-            
-            renderGrid();
-        }
-
-        function renderGrid() {
-            const grid = document.getElementById('mainDisplay');
-            document.getElementById('scanCount').innerText = `تم سحب: ${adsDatabase.length} عرض حقيقي`;
-
-            grid.innerHTML = adsDatabase.map(item => `
-                <div class="fadi-card rounded-3xl p-6 flex flex-col h-full animate-fade-in">
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="bg-blue-600/20 text-blue-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase tracking-tighter">
-                            سحب تلقائي | ${item.time}
-                        </span>
-                        <div class="text-green-500 font-black">${item.price}</div>
-                    </div>
-                    <h3 class="text-lg font-bold mb-3 h-14 overflow-hidden text-white leading-snug">${item.title}</h3>
-                    <p class="text-slate-400 text-sm mb-6 line-clamp-3 flex-1">${item.desc}</p>
-                    
-                    <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 mb-4">
-                        <div class="flex justify-between text-xs mb-2">
-                            <span class="text-gray-500">اسم المعلن الحقيقي:</span>
-                            <span class="text-gray-200 font-bold">${item.seller}</span>
-                        </div>
-                        <div class="flex justify-between text-xs items-center">
-                            <span class="text-gray-500">رقم التواصل:</span>
-                            <span class="text-blue-400 font-mono text-sm font-bold">${item.phone}</span>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="https://wa.me/${item.phone.replace(/\s/g, '')}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white text-center py-2 rounded-xl text-xs font-black transition">واتساب</a>
-                        <a href="tel:${item.phone}" class="bg-slate-700 hover:bg-slate-600 text-white text-center py-2 rounded-xl text-xs font-black transition">اتصال مباشر</a>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function triggerAutoScrape() {
-            fetchNewData();
-        }
-
-        // AUTO-BOT INITIALIZATION
-        window.onload = () => {
-            // Start first fetch
-            fetchNewData();
-            
-            // Set interval to fetch new data every 60 seconds automatically
-            setInterval(() => {
-                fetchNewData();
-            }, 60000);
-        };
+        // تشغيل المحول لأول مرة
+        window.onload = convert;
     </script>
-
-    <style>
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
 </body>
 </html>
