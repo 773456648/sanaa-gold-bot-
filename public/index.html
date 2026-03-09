@@ -2,62 +2,38 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>منظومة فادي للاتصال</title>
+    <title>FADI SYSTEM PRO v3.0</title>
     <style>
-        body { background: #0f0f0f; color: #00ff00; font-family: monospace; text-align: center; padding: 50px; }
-        .panel { border: 2px solid #00ff00; padding: 30px; display: inline-block; border-radius: 10px; box-shadow: 0 0 15px #00ff00; }
-        input { background: #000; color: #00ff00; border: 1px solid #00ff00; padding: 10px; font-size: 20px; width: 250px; margin-bottom: 20px; }
-        button { background: #00ff00; color: #000; border: none; padding: 10px 30px; font-size: 18px; cursor: pointer; font-weight: bold; }
-        #log { margin-top: 20px; color: #ff0000; }
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; text-align: center; padding: 40px; }
+        .container { border: 2px solid #00ff41; padding: 30px; border-radius: 20px; display: inline-block; box-shadow: 0 0 20px #00ff41; }
+        input { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 15px; font-size: 25px; width: 250px; text-align: center; border-radius: 10px; }
+        button { background: #00ff41; color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 10px; margin-top: 20px; font-size: 18px; }
+        #status { margin-top: 20px; color: #ffff00; }
     </style>
 </head>
 <body>
-    <div class="panel">
-        <h1>FADI SYSTEM PRO v1.0</h1>
-        <p>الاتصال عبر مودم Huawei B535</p>
-        <input type="text" id="phone" placeholder="ادخل الرقم هنا">
+    <div class="container">
+        <h1>FADI CALL PRO</h1>
+        <p>بوابة تحكم مودم B535</p>
+        <input type="tel" id="num" placeholder="77XXXXXXX">
         <br>
-        <button onclick="startCall()">إرسال أمر اتصال</button>
-        <div id="log">حالة المنظومة: جاهز..</div>
+        <button onclick="sendCall()">إرسال أمر اتصال 🚀</button>
+        <div id="status">الحالة: جاهز</div>
     </div>
 
     <script>
-        async function startCall() {
-            const num = document.getElementById('phone').value;
-            const log = document.getElementById('log');
-            const ip = "192.168.8.1";
+        async function sendCall() {
+            const number = document.getElementById('num').value;
+            const status = document.getElementById('status');
+            status.innerText = "جاري التنفيذ...";
 
-            if(!num) return alert("اكتب الرقم يا فادي!");
-
-            log.style.color = "#00ff00";
-            log.innerText = "جاري فك تشفير التوكن للمودم...";
-
-            try {
-                // جلب التوكن من المودم
-                let res = await fetch(`http://${ip}/api/webserver/SesTokInfo`);
-                let text = await res.text();
-                let parser = new DOMParser();
-                let xml = parser.parseFromString(text, "text/xml");
-                let token = xml.getElementsByTagName("TokInfo")[0].textContent;
-
-                // إرسال أمر الاتصال
-                let callXml = `<?xml version="1.0" encoding="UTF-8"?><request><phonenumber>${num}</phonenumber></request>`;
-                
-                let callRes = await fetch(`http://${ip}/api/voice/call`, {
-                    method: 'POST',
-                    headers: { '__RequestVerificationToken': token, 'Content-Type': 'application/xml' },
-                    body: callXml
-                });
-
-                if(callRes.ok) {
-                    log.innerText = "✅ تم! المودم يتصل الآن بالرقم: " + num;
-                } else {
-                    log.innerText = "❌ المودم رفض الطلب.. تأكد من الرصيد.";
-                }
-            } catch (e) {
-                log.style.color = "#ff0000";
-                log.innerText = "⚠️ خطأ: تأكد أنك مسجل دخول في صفحة المودم 192.168.8.1 في تبويب آخر.";
-            }
+            const res = await fetch('/api/fadi-call', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ number })
+            });
+            const result = await res.json();
+            status.innerText = result.message;
         }
     </script>
 </body>
