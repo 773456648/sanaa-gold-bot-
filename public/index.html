@@ -2,48 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FADI AUTO BUILDER</title>
+    <title>منظومة فادي للاتصال بالمودم</title>
     <style>
-        body { background: #010409; color: #00ff88; font-family: monospace; text-align: center; padding: 20px; }
-        textarea { width: 90%; height: 350px; background: #000; color: #00ff88; border: 1px solid #00d2ff; padding: 10px; }
-        .btn { padding: 20px 40px; background: #00d2ff; color: #000; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 1.2rem; }
+        body { font-family: sans-serif; text-align: center; background: #121212; color: white; padding: 20px; }
+        .box { border: 2px solid #7289da; padding: 20px; border-radius: 15px; display: inline-block; }
+        input { padding: 10px; font-size: 18px; border-radius: 5px; border: none; width: 200px; text-align: center; }
+        button { padding: 10px 20px; font-size: 18px; background: #43b581; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        #status { margin-top: 20px; color: #faa61a; }
     </style>
 </head>
 <body>
-    <h1>💠 منظومة فادي للتغليف التلقائي</h1>
-    <input type="text" id="appName" placeholder="اسم التطبيق الجديد" style="padding: 10px; width: 50%;">
-    <br><br>
-    <textarea id="megaCode" placeholder="الصق كود التطبيق الموحد هنا... المنظومة سترتبه تلقائياً"></textarea>
-    <br>
-    <button class="btn" onclick="startBuild()">🏗️ ترتيب وتحميل التطبيق طوالى</button>
-    <div id="status"></div>
+
+    <div class="box">
+        <h2>📞 منظومة فادي للاتصال</h2>
+        <p>عبر مودم Huawei B535</p>
+        <input type="text" id="phoneNum" placeholder="ادخل الرقم هنا">
+        <br>
+        <button onclick="makeCall()">اتصال الآن (بالرصيد)</button>
+        <div id="status">جاهز للاتصال...</div>
+    </div>
 
     <script>
-        async function startBuild() {
-            const name = document.getElementById('appName').value;
-            const code = document.getElementById('megaCode').value;
+        async function makeCall() {
+            const num = document.getElementById('phoneNum').value;
             const status = document.getElementById('status');
+            const modemIp = "192.168.8.1";
 
-            if(!name || !code) return alert("يا فادي، املأ البيانات!");
+            if(!num) { alert("اكتب الرقم أولاً!"); return; }
 
-            status.innerHTML = "🌀 جاري ترتيب الملفات وبناء التطبيق...";
+            status.innerHTML = "جاري طلب الإذن من المودم...";
 
-            const res = await fetch('/build-fadi-system', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ appName: name, megaCode: code })
-            });
+            try {
+                // الخطوة 1: جلب التوكن (Token) لفك حماية هواوي
+                let sessionRes = await fetch(`http://${modemIp}/api/webserver/SesTokInfo`);
+                let sessionData = await sessionRes.text();
+                let parser = new DOMParser();
+                let xmlDoc = parser.parseFromString(sessionData, "text/xml");
+                let token = xmlDoc.getElementsByTagName("TokInfo")[0].textContent;
 
-            if(res.ok) {
-                const blob = await res.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${name}.apk`;
-                a.click();
-                status.innerHTML = "✅ تم الترتيب والتحميل بنجاح!";
-            } else {
-                status.innerHTML = "❌ خطأ: السيرفر لا يدعم أدوات البناء حالياً.";
+                status.innerHTML = "تم الحصول على التصريح.. جاري طلب الرقم " + num;
+
+                // الخطوة 2: إرسال أمر الاتصال الصوتي (Voice Call)
+                let callXml = `<?xml version="1.0" encoding="UTF-8"?><request><phonenumber>${num}</phonenumber></request>`;
+
+                let response = await fetch(`http://${modemIp}/api/voice/call`, {
+                    method: 'POST',
+                    headers: {
+                        '__RequestVerificationToken': token,
+                        'Content-Type': 'application/xml'
+                    },
+                    body: callXml
+                });
+
+                if(response.ok) {
+                    status.innerHTML = "✅ جاري الاتصال الآن.. ارفع سماعة التلفون أو الميكروفون!";
+                } else {
+                    status.innerHTML = "❌ المودم رفض الطلب (تأكد من وجود رصيد وصلاحية الشريحة)";
+                }
+
+            } catch (err) {
+                status.innerHTML = "⚠️ خطأ: تأكد أنك متصل بواي فاي المودم 192.168.8.1";
+                console.error(err);
             }
         }
     </script>
