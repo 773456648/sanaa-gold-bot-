@@ -1,12 +1,12 @@
 {
-  "name": "sanaa-gold-bot",
+  "name": "fadi-modem-system",
   "version": "1.0.0",
-  "description": "Fadi Pro Building System",
   "main": "server.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.4.0"
+  },
   "scripts": {
     "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
   }
 }
