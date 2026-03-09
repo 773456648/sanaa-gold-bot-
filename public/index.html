@@ -3,210 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رادار فادي العالمي | Fadi Global Radar</title>
+    <title>منظومة فادي الاحترافية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Orbitron:wght@500;900&display=swap');
         
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #0a0a0a;
-            color: #e2e8f0;
+            background-color: #020617; /* أسود عميق */
+            color: #f1f5f9;
             margin: 0;
+            padding: 20px;
             overflow-x: hidden;
         }
 
-        .fadi-gold {
-            background: linear-gradient(135deg, #d4af37 0%, #f9d976 50%, #b8860b 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .tech-font { font-family: 'Orbitron', sans-serif; }
+
+        /* حاوية البطاقات المنظمة */
+        .fadi-card {
+            background: #0f172a; /* كحلي غامق جداً */
+            border: 1px solid #1e293b;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            height: 100%;
         }
 
-        .gold-border {
-            border: 1px solid rgba(212, 175, 55, 0.3);
-        }
-
-        .gold-bg {
-            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
-        }
-
-        .glass-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: transform 0.3s ease;
-        }
-
-        .glass-card:hover {
+        .fadi-card:hover {
+            border-color: #3b82f6;
             transform: translateY(-5px);
-            border-color: rgba(212, 175, 55, 0.5);
         }
 
-        .chart-glow {
-            filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #1e293b;
         }
 
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(212, 175, 55, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+        .icon-box {
+            width: 45px;
+            height: 45px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #3b82f6;
+            font-size: 1.2rem;
         }
 
-        .live-dot {
-            animation: pulse-gold 2s infinite;
+        .status-badge {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* شريط تمرير أنيق */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        /* توقيع فادي */
+        .signature-section {
+            background: linear-gradient(90deg, #1e3a8a, #1e1b4b);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 40px;
+            border: 1px solid #3b82f6;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header class="p-6 flex justify-between items-center max-w-7xl mx-auto">
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 gold-bg rounded-full flex items-center justify-center text-black font-black text-2xl shadow-lg">F</div>
-            <h1 class="text-2xl font-black uppercase tracking-tighter fadi-gold">FADI RADAR</h1>
+    <!-- الترويسة العلوية -->
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+        <div>
+            <h1 class="text-4xl font-black text-white tracking-tight">FADI <span class="text-blue-500">SYSTEM</span></h1>
+            <p class="text-slate-500 font-bold mt-1">المنظومة المتكاملة للتحليل والسيطرة</p>
         </div>
-        <div class="flex items-center gap-4">
-            <div class="hidden md:block text-sm text-gray-500 font-bold">حالة السوق الآن</div>
-            <div class="w-3 h-3 bg-green-500 rounded-full live-dot"></div>
+        <div class="flex items-center gap-6">
+            <div class="text-left md:text-right">
+                <p id="live-clock" class="tech-font text-2xl font-bold text-blue-400">00:00:00</p>
+                <span class="text-[10px] text-slate-500 uppercase font-black tracking-widest">توقيت النظام العالمي</span>
+            </div>
+            <div class="h-12 w-px bg-slate-800"></div>
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Fadi&background=3b82f6&color=fff" class="w-12 h-12 rounded-full border-2 border-blue-500 shadow-lg shadow-blue-500/20" alt="Fadi">
+                <div>
+                    <p class="font-black text-white">فادي</p>
+                    <span class="status-badge">مدير المنظومة</span>
+                </div>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-10">
+    <!-- شبكة الأدوات المنظمة -->
+    <main class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        <!-- Hero Display -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <div class="lg:col-span-2 glass-card rounded-3xl p-8 flex flex-col justify-between overflow-hidden relative">
-                <div class="relative z-10">
-                    <h2 class="text-4xl font-black mb-4">أداة فادي <span class="fadi-gold">لتحليل الأسعار</span></h2>
-                    <p class="text-gray-400 max-w-md">بيانات فورية من الأسواق العالمية للمستثمرين والمتداولين. دقة متناهية، وبساطة في التعامل.</p>
-                </div>
-                <div class="flex gap-10 mt-12 overflow-x-auto pb-4">
-                    <div class="min-w-[150px]">
-                        <span class="text-xs text-gray-500 uppercase font-bold">الذهب (أونصة)</span>
-                        <div class="text-2xl font-bold text-yellow-500">$2,154.20</div>
-                        <span class="text-green-500 text-xs font-bold"><i class="fas fa-caret-up"></i> +1.2%</span>
-                    </div>
-                    <div class="min-w-[150px]">
-                        <span class="text-xs text-gray-500 uppercase font-bold">البيتكوين</span>
-                        <div class="text-2xl font-bold text-orange-500">$64,321.00</div>
-                        <span class="text-red-500 text-xs font-bold"><i class="fas fa-caret-down"></i> -0.4%</span>
-                    </div>
-                    <div class="min-w-[150px]">
-                        <span class="text-xs text-gray-500 uppercase font-bold">الدولار / ريال</span>
-                        <div class="text-2xl font-bold text-blue-500">3.75</div>
-                        <span class="text-gray-500 text-xs font-bold">مستقر</span>
-                    </div>
-                </div>
-                <i class="fas fa-chart-line absolute -bottom-4 -left-4 text-[200px] text-white/5 pointer-events-none"></i>
+        <!-- البطاقة 1: رادار الكريبتو -->
+        <div class="fadi-card">
+            <div class="card-header">
+                <div class="icon-box"><i class="fab fa-bitcoin"></i></div>
+                <h3 class="font-bold text-lg">رادار العملات الرقمية</h3>
             </div>
-
-            <!-- Currency Converter -->
-            <div class="glass-card rounded-3xl p-8 gold-border">
-                <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-                    <i class="fas fa-exchange-alt fadi-gold"></i> المحول السريع
-                </h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-xs text-gray-500 mb-2 block">المبلغ</label>
-                        <input type="number" id="amount" value="100" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-yellow-500 transition font-bold">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="text-xs text-gray-500 mb-2 block">من</label>
-                            <select id="from-cur" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none">
-                                <option value="USD" selected>USD (دولار)</option>
-                                <option value="EUR">EUR (يورو)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs text-gray-500 mb-2 block">إلى</label>
-                            <select id="to-cur" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 outline-none">
-                                <option value="SAR" selected>SAR (ريال)</option>
-                                <option value="EGP">EGP (جنيه)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button onclick="convert()" class="w-full gold-bg text-black font-black py-4 rounded-xl mt-4 hover:scale-95 transition">تحويل الآن</button>
-                    <div id="result" class="text-center mt-4 text-2xl font-bold fadi-gold"></div>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center bg-slate-900/50 p-4 rounded-xl">
+                    <span class="font-bold">Bitcoin</span>
+                    <span id="btc-val" class="tech-font text-orange-500 font-bold">جاري الجلب..</span>
                 </div>
+                <div class="flex justify-between items-center bg-slate-900/50 p-4 rounded-xl">
+                    <span class="font-bold">Ethereum</span>
+                    <span id="eth-val" class="tech-font text-blue-400 font-bold">جاري الجلب..</span>
+                </div>
+                <p class="text-[10px] text-slate-500 text-center">تحديث تلقائي كل 30 ثانية</p>
             </div>
         </div>
 
-        <!-- Market Grid -->
-        <h3 class="text-2xl font-black mb-8 flex items-center gap-3">
-             مراقبة الأسواق <div class="h-px bg-white/10 flex-1"></div>
-        </h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                    <div class="text-gray-500 text-xs font-bold uppercase">Apple (AAPL)</div>
-                    <div class="text-xl font-bold">$182.63</div>
-                </div>
-                <div class="text-green-500 font-bold">+2.4%</div>
+        <!-- البطاقة 2: المحول الذكي -->
+        <div class="fadi-card">
+            <div class="card-header">
+                <div class="icon-box"><i class="fas fa-calculator"></i></div>
+                <h3 class="font-bold text-lg">حاسبة العملات</h3>
             </div>
-            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                    <div class="text-gray-500 text-xs font-bold uppercase">Tesla (TSLA)</div>
-                    <div class="text-xl font-bold">$175.05</div>
+            <div class="space-y-3">
+                <input type="number" id="money-input" placeholder="المبلغ بالدولار ($)" class="w-full bg-slate-900 border border-slate-700 p-3 rounded-xl outline-none focus:border-blue-500 transition font-bold">
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="calcFadi(3.75, 'ريال')" class="bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-bold text-xs transition">ريال سعودي</button>
+                    <button onclick="calcFadi(1500, 'دينار')" class="bg-slate-800 hover:bg-slate-700 py-3 rounded-xl font-bold text-xs transition">دينار عراقي</button>
                 </div>
-                <div class="text-red-500 font-bold">-1.2%</div>
-            </div>
-            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                    <div class="text-gray-500 text-xs font-bold uppercase">S&P 500</div>
-                    <div class="text-xl font-bold">5,137.08</div>
-                </div>
-                <div class="text-green-500 font-bold">+0.8%</div>
-            </div>
-            <div class="glass-card p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                    <div class="text-gray-500 text-xs font-bold uppercase">بترول برنت</div>
-                    <div class="text-xl font-bold">$82.04</div>
-                </div>
-                <div class="text-blue-500 font-bold">0.0%</div>
+                <div id="calc-output" class="text-center mt-2 text-xl font-black text-blue-400">0.00</div>
             </div>
         </div>
 
-        <!-- Footer Signature -->
-        <div class="mt-24 text-center">
-            <div class="inline-block relative">
-                <div class="absolute -top-10 left-1/2 -translate-x-1/2 text-xs font-bold uppercase tracking-[0.5em] text-gray-600">PREMIUM PLATFORM</div>
-                <h2 class="text-4xl md:text-6xl font-black mb-2 opacity-90">تم تصميم هذا من قبل <span class="fadi-gold italic">فادي</span></h2>
-                <div class="h-1 w-20 gold-bg mx-auto rounded-full mb-6"></div>
-                <p class="text-gray-500 font-medium">الأداة الأكثر موثوقية لمتابعة حركة المال عالمياً</p>
+        <!-- البطاقة 3: حالة السيرفرات -->
+        <div class="fadi-card">
+            <div class="card-header">
+                <div class="icon-box"><i class="fas fa-server"></i></div>
+                <h3 class="font-bold text-lg">مراقبة الشبكة</h3>
+            </div>
+            <div class="space-y-5">
+                <div>
+                    <div class="flex justify-between text-xs mb-2"><span>استجابة النظام</span><span class="text-green-500">12ms</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-green-500 h-full w-[95%]"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs mb-2"><span>استهلاك المعالج</span><span class="text-blue-500">28%</span></div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-500 h-full w-[28%]"></div>
+                    </div>
+                </div>
+                <div class="pt-2 text-center text-[11px] text-slate-500 font-bold uppercase tracking-widest">جميع الأنظمة تعمل بكفاءة</div>
+            </div>
+        </div>
+
+        <!-- البطاقة 4: سجل العمليات الحية (Terminal) -->
+        <div class="fadi-card lg:col-span-2">
+            <div class="card-header">
+                <div class="icon-box"><i class="fas fa-terminal"></i></div>
+                <h3 class="font-bold text-lg">سجل العمليات (Logs)</h3>
+            </div>
+            <div id="logs-box" class="bg-black/40 rounded-xl p-4 h-48 overflow-y-auto font-mono text-xs text-blue-300 space-y-2 custom-scroll">
+                <p>> تم بدء تشغيل منظومة فادي المركزية...</p>
+                <p>> الاتصال بقاعدة البيانات العالمية مستقر...</p>
+            </div>
+        </div>
+
+        <!-- البطاقة 5: الطقس العالمي -->
+        <div class="fadi-card">
+            <div class="card-header">
+                <div class="icon-box"><i class="fas fa-cloud-sun"></i></div>
+                <h3 class="font-bold text-lg">المناخ العالمي</h3>
+            </div>
+            <div class="flex items-center justify-around py-4">
+                <div class="text-center">
+                    <i class="fas fa-sun text-4xl text-yellow-500 mb-2"></i>
+                    <p class="text-xs text-slate-500">الرياض</p>
+                    <p class="font-black text-xl">32°C</p>
+                </div>
+                <div class="h-10 w-px bg-slate-800"></div>
+                <div class="text-center">
+                    <i class="fas fa-cloud text-4xl text-slate-400 mb-2"></i>
+                    <p class="text-xs text-slate-500">بغداد</p>
+                    <p class="font-black text-xl">24°C</p>
+                </div>
             </div>
         </div>
     </main>
 
-    <script>
-        function convert() {
-            const amount = document.getElementById('amount').value;
-            const from = document.getElementById('from-cur').value;
-            const to = document.getElementById('to-cur').value;
-            const resultDiv = document.getElementById('result');
-            
-            // أسعار صرف تقريبية للعرض
-            const rates = {
-                'USD_SAR': 3.75,
-                'USD_EGP': 47.50,
-                'EUR_SAR': 4.08,
-                'EUR_EGP': 51.20
-            };
+    <!-- توقيع فادي الضخم -->
+    <div class="max-w-7xl mx-auto">
+        <section class="signature-section">
+            <p class="text-blue-300 text-sm font-bold uppercase tracking-[0.4em] mb-4">Masterpiece Created By</p>
+            <h2 class="text-5xl md:text-7xl font-black text-white mb-6">تم تصميم هذا من قبل فادي</h2>
+            <div class="flex justify-center gap-4">
+                <div class="h-1 w-24 bg-blue-500 rounded-full"></div>
+                <div class="h-1 w-8 bg-blue-300 rounded-full"></div>
+            </div>
+            <p class="mt-8 text-slate-400 font-medium">هذه المنظومة تمثل قمة الترتيب والدقة الرقمية لعام 2024</p>
+        </section>
+    </div>
 
-            const key = `${from}_${to}`;
-            const converted = (amount * (rates[key] || 1)).toFixed(2);
-            
-            resultDiv.style.opacity = '0';
-            setTimeout(() => {
-                resultDiv.innerText = `${converted} ${to}`;
-                resultDiv.style.opacity = '1';
-            }, 100);
+    <script>
+        // ساعة النظام
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toLocaleTimeString('en-GB');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // جلب أسعار حقيقية
+        async function getPrices() {
+            try {
+                const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+                const data = await res.json();
+                document.getElementById('btc-val').innerText = '$' + data.bitcoin.usd.toLocaleString();
+                document.getElementById('eth-val').innerText = '$' + data.ethereum.usd.toLocaleString();
+                addLog("تم تحديث أسعار الكريبتو بنجاح.");
+            } catch (e) {
+                addLog("خطأ في جلب البيانات.. جاري المحاولة.");
+            }
+        }
+        setInterval(getPrices, 30000);
+        getPrices();
+
+        // دالة الحاسبة
+        function calcFadi(rate, name) {
+            const val = document.getElementById('money-input').value;
+            if(!val) return;
+            const res = (val * rate).toLocaleString();
+            document.getElementById('calc-output').innerText = res + " " + name;
+            addLog(`عملية حسابية جديدة: تحويل ${val} دولار.`);
         }
 
-        // تشغيل المحول لأول مرة
-        window.onload = convert;
+        // إضافة سجلات
+        function addLog(msg) {
+            const box = document.getElementById('logs-box');
+            const time = new Date().toLocaleTimeString();
+            const p = document.createElement('p');
+            p.innerHTML = `<span class="text-slate-500">[${time}]</span> > ${msg}`;
+            box.prepend(p);
+        }
+
+        // إضافة لوجات عشوائية للهيبة
+        const quotes = ["تشفير البيانات مستقر", "فحص الثغرات الأمنية: لا يوجد", "تم مزامنة الوقت العالمي"];
+        setInterval(() => {
+            const q = quotes[Math.floor(Math.random() * quotes.length)];
+            addLog(q);
+        }, 8000);
     </script>
 </body>
 </html>
