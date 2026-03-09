@@ -2,39 +2,213 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>FADI SYSTEM PRO v3.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة سوق فادي الشامل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; text-align: center; padding: 40px; }
-        .container { border: 2px solid #00ff41; padding: 30px; border-radius: 20px; display: inline-block; box-shadow: 0 0 20px #00ff41; }
-        input { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 15px; font-size: 25px; width: 250px; text-align: center; border-radius: 10px; }
-        button { background: #00ff41; color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 10px; margin-top: 20px; font-size: 18px; }
-        #status { margin-top: 20px; color: #ffff00; }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; }
+        .hero-gradient { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        .card-shadow { transition: all 0.3s ease; }
+        .card-shadow:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .fadi-signature { border-right: 4px solid #facc15; padding-right: 10px; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>FADI CALL PRO</h1>
-        <p>بوابة تحكم مودم B535</p>
-        <input type="tel" id="num" placeholder="77XXXXXXX">
-        <br>
-        <button onclick="sendCall()">إرسال أمر اتصال 🚀</button>
-        <div id="status">الحالة: جاهز</div>
+<body class="text-gray-900">
+
+    <!-- Header & Brand -->
+    <header class="hero-gradient text-white pt-8 pb-16 px-4 shadow-2xl">
+        <div class="container mx-auto text-center">
+            <h1 class="text-5xl font-extrabold mb-4">سوق فادي الشامل</h1>
+            <p class="text-xl opacity-90 max-w-2xl mx-auto">أكبر منصة عربية لبيع وشراء العقارات والسلع التجارية - كل ما تحتاجه في مكان واحد.</p>
+            <div class="mt-8 inline-block bg-yellow-400 text-blue-900 font-black px-6 py-2 rounded-full shadow-lg">
+                تم تطوير هذه المنصة بواسطة: فادي
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="sticky top-0 z-50 bg-white shadow-md">
+        <div class="container mx-auto px-4 overflow-x-auto">
+            <div class="flex space-x-reverse space-x-8 py-4 whitespace-nowrap justify-center">
+                <button onclick="filterCategory('all')" class="text-blue-700 font-bold hover:text-blue-900">الكل</button>
+                <button onclick="filterCategory('real-estate')" class="text-gray-600 font-bold hover:text-blue-600">عقارات</button>
+                <button onclick="filterCategory('cars')" class="text-gray-600 font-bold hover:text-blue-600">سيارات</button>
+                <button onclick="filterCategory('tech')" class="text-gray-600 font-bold hover:text-blue-600">إلكترونيات</button>
+                <button onclick="filterCategory('trade')" class="text-gray-600 font-bold hover:text-blue-600">تجارة عامة</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Action Bar -->
+    <div class="container mx-auto px-4 -mt-8">
+        <div class="bg-white p-4 rounded-xl shadow-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="relative w-full md:w-1/2">
+                <input type="text" id="searchInput" onkeyup="searchItems()" placeholder="ابحث عن أي شيء (فيلا، آيفون، مرسيدس)..." 
+                       class="w-full pr-12 pl-4 py-3 bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <span class="absolute right-4 top-3.5 text-gray-400 text-xl">🔍</span>
+            </div>
+            <button onclick="openModal()" class="w-full md:w-auto bg-green-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-700 transition transform hover:scale-105 shadow-lg">
+                + أضف إعلانك الآن
+            </button>
+        </div>
     </div>
 
-    <script>
-        async function sendCall() {
-            const number = document.getElementById('num').value;
-            const status = document.getElementById('status');
-            status.innerText = "جاري التنفيذ...";
+    <!-- Listings Grid -->
+    <main class="container mx-auto px-4 py-12">
+        <div id="listingsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <!-- Items will be injected here -->
+        </div>
+    </main>
 
-            const res = await fetch('/api/fadi-call', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ number })
+    <!-- Post Ad Modal -->
+    <div id="adModal" class="fixed inset-0 bg-black bg-opacity-60 z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-bounce-in">
+            <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+                <h3 class="text-xl font-bold">نشر إعلان جديد في سوق فادي</h3>
+                <button onclick="closeModal()" class="text-2xl font-bold">&times;</button>
+            </div>
+            <form id="adForm" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold mb-1">عنوان الإعلان</label>
+                    <input type="text" id="adTitle" required class="w-full border p-2 rounded-lg" placeholder="مثلاً: فيلا للبيع في صنعاء">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">القسم</label>
+                    <select id="adCategory" class="w-full border p-2 rounded-lg">
+                        <option value="real-estate">عقارات</option>
+                        <option value="cars">سيارات</option>
+                        <option value="tech">إلكترونيات</option>
+                        <option value="trade">تجارة عامة</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">السعر (بالعملة المحلية)</label>
+                    <input type="number" id="adPrice" required class="w-full border p-2 rounded-lg" placeholder="السعر">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">اسم المعلن</label>
+                    <input type="text" id="adSeller" required class="w-full border p-2 rounded-lg" placeholder="اسمك الكامل">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1">رقم الهاتف/واتساب</label>
+                    <input type="tel" id="adPhone" required class="w-full border p-2 rounded-lg" placeholder="7XXXXXXXX">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-bold mb-1">وصف السلعة بالتفصيل</label>
+                    <textarea id="adDesc" rows="3" required class="w-full border p-2 rounded-lg" placeholder="اكتب تفاصيل المنتج وحالته..."></textarea>
+                </div>
+                <div class="md:col-span-2">
+                    <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700">نشر الإعلان فوراً</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-4">سوق فادي الشامل</h2>
+            <p class="text-gray-400 mb-6">الخيار الأول للبيع والشراء في منطقتك</p>
+            <div class="fadi-signature inline-block">
+                <p class="text-yellow-400 font-bold">حقوق التصميم والبرمجة محفوظة © 2024</p>
+                <p class="text-white text-lg">تم تنفيذ المشروع بواسطة البطل: فادي</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mock Initial Data
+        let items = [
+            { id: 1, category: 'real-estate', title: 'عمارة سكنية 4 أدوار', price: '500,000', seller: 'أحمد علي', phone: '777000111', desc: 'موقع استراتيجي، تشطيب سوبر لوكس، مساحة واسعة.' },
+            { id: 2, category: 'cars', title: 'تويوتا لاندكروزر 2023', price: '85,000', seller: 'معرض الأمل', phone: '777222333', desc: 'فل كامل، فتحة سقف، جلد، دفع رباعي.' },
+            { id: 3, category: 'tech', title: 'آيفون 15 برو ماكس', price: '1,200', seller: 'عالم التقنية', phone: '777444555', desc: 'جديد بكرتونه، سعة 256 جيجا، لون تيتانيوم.' },
+            { id: 4, category: 'trade', title: 'معدات ورشة نجارة كاملة', price: '15,000', seller: 'خالد اليماني', phone: '777666777', desc: 'استخدام خفيف، ماركات عالمية، تصفية محل.' }
+        ];
+
+        function renderItems(dataToRender) {
+            const grid = document.getElementById('listingsGrid');
+            grid.innerHTML = '';
+            
+            dataToRender.forEach(item => {
+                const categoryNames = {
+                    'real-estate': 'عقار', 'cars': 'سيارة', 'tech': 'إلكترونيات', 'trade': 'تجارة'
+                };
+                
+                grid.innerHTML += `
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-md card-shadow border border-gray-100">
+                        <div class="h-48 bg-gray-200 flex items-center justify-center relative">
+                            <span class="text-4xl">📦</span>
+                            <div class="absolute top-4 right-4 bg-blue-600 text-white text-xs px-3 py-1 rounded-full font-bold">
+                                ${categoryNames[item.category]}
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="text-lg font-black mb-2 h-14 overflow-hidden">${item.title}</h3>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-green-600 font-black text-xl">${item.price} $</span>
+                                <span class="text-xs text-gray-400">بواسطة: ${item.seller}</span>
+                            </div>
+                            <p class="text-gray-600 text-sm line-clamp-2 mb-4 h-10">${item.desc}</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <a href="https://wa.me/${item.phone}" target="_blank" class="bg-green-500 text-white text-center py-2 rounded-lg font-bold text-sm hover:bg-green-600">
+                                     واتساب
+                                </a>
+                                <a href="tel:${item.phone}" class="bg-blue-100 text-blue-700 text-center py-2 rounded-lg font-bold text-sm hover:bg-blue-200">
+                                     اتصال
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
-            const result = await res.json();
-            status.innerText = result.message;
         }
+
+        function filterCategory(cat) {
+            if (cat === 'all') {
+                renderItems(items);
+            } else {
+                const filtered = items.filter(i => i.category === cat);
+                renderItems(filtered);
+            }
+        }
+
+        function searchItems() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = items.filter(i => 
+                i.title.toLowerCase().includes(term) || 
+                i.desc.toLowerCase().includes(term) ||
+                i.seller.toLowerCase().includes(term)
+            );
+            renderItems(filtered);
+        }
+
+        // Modal Controls
+        function openModal() { document.getElementById('adModal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('adModal').classList.add('hidden'); }
+
+        // Form Submission
+        document.getElementById('adForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const newItem = {
+                id: Date.now(),
+                title: document.getElementById('adTitle').value,
+                category: document.getElementById('adCategory').value,
+                price: document.getElementById('adPrice').value,
+                seller: document.getElementById('adSeller').value,
+                phone: document.getElementById('adPhone').value,
+                desc: document.getElementById('adDesc').value
+            };
+            
+            items.unshift(newItem); // Add to beginning
+            renderItems(items);
+            closeModal();
+            this.reset();
+            alert("تم نشر إعلانك بنجاح في سوق فادي!");
+        });
+
+        // Initialize
+        window.onload = () => renderItems(items);
     </script>
 </body>
 </html>
