@@ -3,95 +3,136 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة الهيبة الكبرى</title>
+    <title>HEIBA ROYAL | منظومة الهيبة الملكية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;500;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;500;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --heiba-green: #00ff41; --heiba-dark: #020202; }
-        body { font-family: 'Changa', sans-serif; background: var(--heiba-dark); color: var(--heiba-green); }
-        .glass { background: rgba(15, 15, 15, 0.9); border: 1px solid var(--heiba-green); border-radius: 20px; box-shadow: 0 0 30px rgba(0, 255, 65, 0.1); }
-        .neon-text { text-shadow: 0 0 10px var(--heiba-green); }
-        input { background: #000 !important; border: 1px solid #00441b !important; color: var(--heiba-green) !important; text-align: center; }
-        input:focus { border-color: var(--heiba-green) !important; box-shadow: 0 0 15px var(--heiba-green); outline: none; }
-        .btn-gold { background: var(--heiba-green); color: #000; font-weight: 700; transition: 0.4s; }
-        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 5px 20px var(--heiba-green); }
-        .instruction-card { border-right: 5px solid var(--heiba-green); background: #0a0a0a; }
-        .status-dot { width: 10px; height: 10px; background: var(--heiba-green); border-radius: 50%; display: inline-block; animation: blink 1s infinite; }
-        @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+        :root { --neon: #00ff41; --bg: #030303; }
+        body { 
+            font-family: 'Changa', sans-serif; 
+            background-color: var(--bg); 
+            background-image: linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px), linear-gradient(90px, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .neon-border { border: 1px solid var(--neon); box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
+        .glass { background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(10px); }
+        .pulse { animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(.33); } 80%, 100% { opacity: 0; } }
+        .btn-action { background: var(--neon); color: #000; font-weight: 900; letter-spacing: 1px; transition: 0.3s; }
+        .btn-action:hover { background: #ffffff; box-shadow: 0 0 30px var(--neon); transform: scale(1.02); }
+        input { background: #000 !important; border: 1px solid #1a1a1a !important; color: var(--neon) !important; font-size: 0.9rem; }
+        input:focus { border-color: var(--neon) !important; outline: none; }
+        .status-badge { background: rgba(0, 255, 65, 0.1); border: 1px solid var(--neon); color: var(--neon); padding: 2px 10px; border-radius: 50px; font-size: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-10">
 
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <header class="text-center mb-12">
-        <h1 class="text-6xl font-black neon-text mb-4">👑 مَنْظُومَةُ الهَيْبَةِ</h1>
-        <p class="text-xl text-gray-400 tracking-[0.2em]">GLOBAL TRADING INTELLIGENCE</p>
-    </header>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-16 border-b border-green-900/30 pb-8">
+        <div class="text-right mb-6 md:mb-0">
+            <h1 class="text-5xl font-black mb-2 flex items-center">
+                <span class="text-[#00ff41] ml-3">👑</span> مَنْظُومَةُ الهَيْبَةِ 
+            </h1>
+            <p class="text-gray-500 tracking-[0.4em] uppercase text-xs orbitron">Royal Trading Protocol v2.0</p>
+        </div>
+        <div class="glass neon-border p-4 rounded-xl flex items-center space-x-6 space-x-reverse">
+            <div class="text-center px-4">
+                <p class="text-[10px] text-gray-500 uppercase">سيرفر الترقيم</p>
+                <p class="text-green-400 font-bold orbitron">ACTIVE</p>
+            </div>
+            <div class="w-[1px] h-10 bg-green-900/50"></div>
+            <div class="text-center px-4">
+                <p class="text-[10px] text-gray-500 uppercase">الأعضاء</p>
+                <p id="count" class="text-white font-bold orbitron">00</p>
+            </div>
+        </div>
+    </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <!-- Sidebar: Registration & Instructions -->
-        <div class="lg:col-span-4 space-y-6">
-            <div class="glass p-8">
-                <h2 class="text-2xl font-bold mb-6 flex items-center">🛡️ تفعيل الربط السحابي</h2>
-                <div class="space-y-4">
-                    <div class="relative">
-                        <input type="password" id="m_pass" placeholder="كلمة السر الذهبية" class="w-full p-4 rounded-xl">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <!-- Sidebar: Security Center -->
+        <div class="lg:col-span-4 space-y-8">
+            <div class="glass neon-border p-8 rounded-3xl relative overflow-hidden">
+                <div class="absolute -top-10 -left-10 w-32 h-32 bg-green-500/10 rounded-full blur-3xl"></div>
+                <h2 class="text-xl font-bold mb-8 flex items-center border-b border-green-900/30 pb-4">
+                    <span class="status-badge ml-3">SECURE</span> تفعيل وحدة الربط
+                </h2>
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-[10px] text-gray-500 mb-1 block mr-2">بروتوكول الوصول (Pass)</label>
+                        <input type="password" id="m_pass" placeholder="********" class="w-full p-4 rounded-xl">
                     </div>
-                    <input type="text" id="m_name" placeholder="اسمك الكامل" class="w-full p-4 rounded-xl">
-                    <input type="text" id="m_token" placeholder="Bot Token (من BotFather)" class="w-full p-4 rounded-xl text-xs">
-                    <input type="text" id="m_chatid" placeholder="Chat ID (معرفك)" class="w-full p-4 rounded-xl">
-                    <button onclick="registerHeiba()" class="btn-gold w-full py-4 rounded-xl text-lg">تفعيل واستلام التعليمات 🚀</button>
+                    <div>
+                        <label class="text-[10px] text-gray-500 mb-1 block mr-2">الاسم التشغيلي</label>
+                        <input type="text" id="m_name" placeholder="أدخل اسمك" class="w-full p-4 rounded-xl">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 mb-1 block mr-2">Telegram Bot Token</label>
+                        <input type="text" id="m_token" placeholder="000000:AAAAA..." class="w-full p-4 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-500 mb-1 block mr-2">Telegram Chat ID</label>
+                        <input type="text" id="m_chatid" placeholder="000000000" class="w-full p-4 rounded-xl">
+                    </div>
+                    <button onclick="register()" class="btn-action w-full py-5 rounded-xl mt-4 uppercase text-sm">إرسال بيانات التفعيل ⚡</button>
                 </div>
             </div>
 
-            <div class="glass p-6 instruction-card">
-                <h3 class="font-bold text-white mb-3 flex items-center">💡 كيف تجني الزلط؟</h3>
-                <ul class="text-sm space-y-3 text-gray-300">
-                    <li>• السيرفر يراقب أكبر 10 منصات في العالم.</li>
-                    <li>• التنبيهات تصلك في تليجرام خلال أجزاء من الثانية.</li>
-                    <li>• بمجرد التسجيل، ستصلك "رسالة التعليمات الملكية" على بوتك.</li>
-                </ul>
+            <div class="bg-[#080808] p-6 rounded-2xl border-r-4 border-green-500">
+                <h3 class="font-bold text-white text-sm mb-2">📡 التوجيهات الملكية:</h3>
+                <p class="text-gray-400 text-xs leading-relaxed">بمجرد تسجيلك، سيقوم السيرفر بإرسال كود التعليمات السري إلى بوتك الخاص. لا تشارك كلمة السر مع أي شخص لضمان أمان بوتك في السيرفر.</p>
             </div>
         </div>
 
-        <!-- Main Dashboard -->
+        <!-- Main Content: Monitor -->
         <div class="lg:col-span-8 space-y-8">
-            <!-- Market Pulse -->
-            <div class="glass p-8">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-3xl font-bold">📊 رادار السوق الحي</h2>
-                    <span class="text-xs bg-green-900/30 px-4 py-2 rounded-full border border-green-700">
-                        <span class="status-dot ml-2"></span> اتصال سحابي نشط
-                    </span>
+            <!-- Market Radar -->
+            <div class="glass neon-border p-8 rounded-3xl relative">
+                <div class="flex justify-between items-center mb-10">
+                    <h2 class="text-2xl font-bold orbitron italic">LIVE RADAR</h2>
+                    <div class="flex items-center text-[10px] text-green-500">
+                        <span class="relative flex h-3 w-3 ml-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        </span>
+                        فحص الأسواق العالمية...
+                    </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="prices-ui">
-                    <!-- Live Data -->
-                    <div class="bg-black/40 p-6 rounded-2xl border border-green-900/50 text-center">
-                        <div class="text-gray-500 text-sm mb-2">BITCOIN</div>
-                        <div id="price-btc" class="text-3xl font-bold">--$</div>
-                        <div id="status-btc" class="text-[10px] text-blue-400 mt-2 italic">جاري الرصد...</div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="market-monitor">
+                    <!-- BTC Card -->
+                    <div class="bg-black border border-green-900/30 p-6 rounded-2xl flex justify-between items-center group hover:border-green-500 transition">
+                        <div>
+                            <p class="text-xs text-gray-500 orbitron">BTC / USDT</p>
+                            <h3 id="btc-p" class="text-2xl font-bold orbitron">--.---$</h3>
+                        </div>
+                        <div class="text-right">
+                            <span id="btc-s" class="status-badge">جاري الرصد</span>
+                        </div>
                     </div>
-                    <div class="bg-black/40 p-6 rounded-2xl border border-green-900/50 text-center">
-                        <div class="text-gray-500 text-sm mb-2">ETHEREUM</div>
-                        <div id="price-eth" class="text-3xl font-bold">--$</div>
-                        <div id="status-eth" class="text-[10px] text-blue-400 mt-2 italic">جاري الرصد...</div>
-                    </div>
-                    <div class="bg-black/40 p-6 rounded-2xl border border-green-900/50 text-center">
-                        <div class="text-gray-500 text-sm mb-2">SOLANA</div>
-                        <div id="price-sol" class="text-3xl font-bold">--$</div>
-                        <div id="status-sol" class="text-[10px] text-blue-400 mt-2 italic">جاري الرصد...</div>
+                    <!-- ETH Card -->
+                    <div class="bg-black border border-green-900/30 p-6 rounded-2xl flex justify-between items-center group hover:border-green-500 transition">
+                        <div>
+                            <p class="text-xs text-gray-500 orbitron">ETH / USDT</p>
+                            <h3 id="eth-p" class="text-2xl font-bold orbitron">--.---$</h3>
+                        </div>
+                        <div class="text-right">
+                            <span id="eth-s" class="status-badge">جاري الرصد</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Active Bots List -->
-            <div class="glass p-8">
-                <h2 class="text-2xl font-bold mb-6">🤖 الأعضاء النشطون بالسيرفر (<span id="bot-count">0</span>)</h2>
+            <!-- Units Table -->
+            <div class="glass neon-border p-8 rounded-3xl">
+                <h2 class="text-xl font-bold mb-6 flex items-center">
+                    <span class="ml-3">📟</span> وحدات البوت النشطة
+                </h2>
                 <div id="bots-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Bots Show Here -->
+                    <!-- Bots go here -->
                 </div>
             </div>
         </div>
@@ -99,16 +140,15 @@
 </div>
 
 <script>
-    const API_BASE = "http://YOUR_SERVER_IP:3000/api"; // ضع هنا عنوان السيرفر الحقيقي
+    const API_BASE = window.location.origin + "/api";
 
-    async function registerHeiba() {
+    async function register() {
         const body = {
             password: document.getElementById('m_pass').value,
             name: document.getElementById('m_name').value,
             token: document.getElementById('m_token').value,
             chatid: document.getElementById('m_chatid').value
         };
-
         try {
             const res = await fetch(`${API_BASE}/bots/register`, {
                 method: 'POST',
@@ -117,69 +157,66 @@
             });
             const data = await res.json();
             if (data.success) {
-                alert(data.message);
-                loadBots();
-            } else {
-                alert(data.error);
-            }
-        } catch (e) { alert("تأكد من تشغيل ملف server.js أولاً!"); }
+                showModal("تم تفعيل الربط الملكي! تفقد التليجرام الآن.");
+                load();
+            } else { showModal("خطأ: " + data.error); }
+        } catch(e) { showModal("السيرفر غير مستجيب!"); }
     }
 
-    async function loadBots() {
-        const res = await fetch(`${API_BASE}/bots`);
-        const bots = await res.json();
-        const list = document.getElementById('bots-list');
-        document.getElementById('bot-count').innerText = bots.length;
-        list.innerHTML = "";
-        bots.forEach(b => {
-            list.innerHTML += `
-                <div class="bg-white/5 p-4 rounded-xl flex justify-between items-center border border-white/10">
-                    <div>
-                        <div class="font-bold text-white">${b.name}</div>
-                        <div class="text-[10px] text-green-500">● مُتصل بالنخبة</div>
-                    </div>
-                    <button onclick="removeBot(${b.id})" class="text-red-500 hover:scale-110 transition">🗑️</button>
-                </div>
-            `;
-        });
+    function showModal(msg) { alert(msg); } // يمكنك استبدالها بـ Modal احترافي
+
+    async function load() {
+        try {
+            const res = await fetch(`${API_BASE}/bots`);
+            const bots = await res.json();
+            document.getElementById('count').innerText = bots.length.toString().padStart(2, '0');
+            const list = document.getElementById('bots-list');
+            list.innerHTML = "";
+            bots.forEach(b => {
+                list.innerHTML += `
+                    <div class="bg-black border border-green-900/20 p-4 rounded-xl flex justify-between items-center hover:bg-green-900/5 transition">
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-green-500 rounded-full ml-3 pulse"></div>
+                            <div>
+                                <p class="text-sm font-bold text-white">${b.name}</p>
+                                <p class="text-[9px] text-gray-500 orbitron">UNIT ID: ${b.id.toString().slice(-6)}</p>
+                            </div>
+                        </div>
+                        <button onclick="removeBot(${b.id})" class="text-red-900 hover:text-red-500 transition">🗑️</button>
+                    </div>`;
+            });
+        } catch(e) {}
     }
 
     async function removeBot(id) {
-        const pass = prompt("أدخل كلمة السر الذهبية للحذف:");
-        if (pass === "771232690") {
-            await fetch(`${API_BASE}/bots/remove`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id, password: pass })
-            });
-            loadBots();
-        }
+        const password = prompt("أدخل كلمة السر الذهبية للمصادقة على الحذف:");
+        if(!password) return;
+        const res = await fetch(`${API_BASE}/bots/remove`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ id, password })
+        });
+        if((await res.json()).success) load();
+        else alert("فشلت المصادقة!");
     }
 
-    // محرك الأسعار الحي
     async function updateMarket() {
-        const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
-        for (let s of symbols) {
+        const syms = ['BTCUSDT', 'ETHUSDT'];
+        for (let s of syms) {
             try {
-                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`);
-                const data = await res.json();
-                const id = s.replace('USDT', '').toLowerCase();
-                const price = parseFloat(data.lastPrice).toLocaleString();
-                const change = parseFloat(data.priceChangePercent);
-                
-                document.getElementById(`price-${id}`).innerText = price + "$";
-                const st = document.getElementById(`status-${id}`);
-                if (change < -2) { st.innerText = "🔥 فرصة ترقيم (شراء)"; st.className = "text-[10px] text-green-400 mt-2 font-bold"; }
-                else if (change > 4) { st.innerText = "⚠️ تضخم (بيع)"; st.className = "text-[10px] text-yellow-400 mt-2 font-bold"; }
-                else { st.innerText = "🔄 رصد مستقر"; st.className = "text-[10px] text-blue-400 mt-2"; }
-            } catch (e) {}
+                const r = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${s}`);
+                const d = await r.json();
+                const id = s.slice(0, 3).toLowerCase();
+                document.getElementById(`${id}-p`).innerText = parseFloat(d.price).toLocaleString() + "$";
+                document.getElementById(`${id}-s`).innerText = "رصد مباشر";
+            } catch(e) {}
         }
     }
 
     setInterval(updateMarket, 5000);
-    setInterval(loadBots, 10000);
+    setInterval(load, 10000);
     updateMarket();
-    loadBots();
+    load();
 </script>
 </body>
 </html>
