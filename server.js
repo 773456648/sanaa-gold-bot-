@@ -7,70 +7,56 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-
-// هامة جداً: تخبر السيرفر أين يجد ملف الـ HTML (باعتبار الملف في نفس المجلد)
 app.use(express.static(path.join(__dirname, '.')));
 
-// مخزن البوتات المؤقت
 let registeredBots = [];
 const MASTER_KEY = "771232690";
 
-// دالة إرسال التعليمات الملكية
-async function sendHeibaInstructions(token, chatid, userName) {
-    const instructions = `
-🔥 *مَنْظُومَةُ الهَيْبَةِ - تَمَّ التَّفْعِيلُ* 🔥
+async function sendRoyalInstructions(token, chatid, userName) {
+    const msg = `
+👑 *مَنْظُومَةُ الهَيْبَةِ المَلَكِيَّةِ* 👑
+ـــــــــــــــــــــــــــــــــــــــــــــــــ
+مرحباً بك يا *${userName}* في وحدة النخبة.
+تم تفعيل الربط المشفر بنجاح 🛡️
 
-أهلاً بك يا ${userName} في النخبة.
-لقد تم ربط حسابك بالسيرفر العالمي للترقيم بنجاح.
+*📜 بورتوكول العمل:*
+• التنبيهات تصلك هنا بسرعة (0.5ms).
+• "ترقيم شراء" 🟢 = دخول آمن بنسبة 20%.
+• "ترقيم بيع" 🔴 = جني أرباح فوري.
 
-*إليك تعليمات "الزلط" والربح:*
-1️⃣ عند وصول رسالة "ترقيم شراء"، ادخل فوراً بنسبة 20% من محفظتك.
-2️⃣ لا تطمع! المنظومة ستخبرك متى "تهرب بالزلط".
-3️⃣ حافظ على سرية كلمة المرور الخاصة بك.
-
-*الحالة الآن:* متصل وجاهز للترقيم 🟢
+*الحالة:* مُتَّصِل بالسيرفر الرئيسي 📡
     `;
-    
     try {
         await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
             chat_id: chatid,
-            text: instructions,
+            text: msg,
             parse_mode: 'Markdown'
         });
-        return true;
-    } catch (e) { return false; }
+    } catch (e) { console.log("Telegram API Error"); }
 }
 
-// العرض الأساسي للواجهة (حل مشكلة Cannot GET /)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// جلب البوتات
-app.get('/api/bots', (req, res) => {
-    res.json(registeredBots);
-});
+app.get('/api/bots', (req, res) => res.json(registeredBots));
 
-// إضافة بوت
 app.post('/api/bots/register', async (req, res) => {
     const { name, token, chatid, password } = req.body;
-    if (password !== MASTER_KEY) return res.status(401).json({ error: "كلمة السر خطأ!" });
-
+    if (password !== MASTER_KEY) return res.status(401).json({ error: "كلمة السر الموحدة غير صحيحة" });
+    
     const newBot = { id: Date.now(), name, token, chatid };
     registeredBots.push(newBot);
-    const sent = await sendHeibaInstructions(token, chatid, name);
-
-    res.json({ success: true, message: "تم الربط وإرسال التعليمات ✅" });
+    await sendRoyalInstructions(token, chatid, name);
+    res.json({ success: true });
 });
 
-// حذف بوت
 app.post('/api/bots/remove', (req, res) => {
     const { id, password } = req.body;
-    if (password !== MASTER_KEY) return res.status(401).json({ error: "لا تملك الصلاحية!" });
+    if (password !== MASTER_KEY) return res.status(401).json({ error: "لا تملك صلاحية الوصول" });
     registeredBots = registeredBots.filter(b => b.id !== id);
     res.json({ success: true });
 });
 
-// تحديد المنفذ تلقائياً لـ Render
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`المنظومة تعمل على المنفذ ${PORT}`));
+app.listen(PORT, () => console.log(`Royal Heiba System Live on ${PORT}`));
