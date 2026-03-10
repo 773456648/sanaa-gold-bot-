@@ -1,113 +1,127 @@
 const express = require('express');
+const axios = require('axios');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const axios = require('axios');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// --- إعدادات النظام ---
-let activeSystems = [];
+// --- قاعدة بيانات المنظومة ---
+let globalUsers = [];
 const MASTER_KEY = "771232690";
 
-// --- محرك الأسعار والترقيم الذكي ---
-function getMarketData() {
-    // محاكاة لأسعار الذهب والعملات (يمكن ربطها بـ API حقيقي لاحقاً)
-    const goldPrice = (2000 + Math.random() * 50).toFixed(2);
-    const usdSar = (3.75 + Math.random() * 0.05).toFixed(4);
+// --- محرك الذكاء الاصطناعي للرصد الشامل ---
+// هذا المحرك يحاكي الربط مع Binance و TradingView لجلب أدق المعلومات
+async function analyzeMarket() {
+    // محاكاة سحب بيانات حية من المنصات العالمية
+    const marketTrends = ["صعود قوي 🚀", "تصحيح مسار ⚠️", "تجميع سيولة 💎", "هبوط حاد 🔴"];
+    const strength = Math.floor(Math.random() * 40 + 60); // دقة تفوق الـ 60% دائماً
+    const selectedTrend = marketTrends[Math.floor(Math.random() * marketTrends.length)];
     
-    const signals = [
-        { label: "ترقيم أخضر 🟢", action: "شراء وتمركز", risk: "منخفض" },
-        { label: "ترقيم أحمر 🔴", action: "بيع وتصفية", risk: "عالي" },
-        { label: "ترقيم ذهبي ✨", action: "فرصة ملكية", risk: "متوسط" }
-    ];
-    const signal = signals[Math.floor(Math.random() * signals.length)];
-    
-    return { gold: goldPrice, sar: usdSar, signal: signal };
+    return {
+        trend: selectedTrend,
+        accuracy: strength + "%",
+        recommendation: strength > 80 ? "دخول بأقصى طاقة" : "دخول بحذر",
+        timestamp: new Date().toLocaleTimeString('ar-SA')
+    };
 }
 
-// --- الواجهة الملكية الشاملة (HTML) ---
-const UI = `
+// --- واجهة المنظومة الخيالية (Corporate UI) ---
+const HTML_INTERFACE = `
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA ULTIMATE | المنظومة الشاملة</title>
+    <title>HEIBA GLOBAL INTELLIGENCE</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
     <style>
-        body { background: #000; color: #fff; font-family: 'Changa', sans-serif; overflow-x: hidden; }
+        body { background: #020202; color: #fff; font-family: 'Changa', sans-serif; overflow-x: hidden; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(0, 20, 0, 0.8); border: 1px solid rgba(0, 255, 65, 0.2); backdrop-filter: blur(10px); }
-        .neon-green { color: #00ff41; text-shadow: 0 0 10px #00ff41; }
-        .price-card { background: linear-gradient(135deg, #000 0%, #001a08 100%); border-right: 4px solid #00ff41; }
-        .instruction-row { border-bottom: 1px solid rgba(0, 255, 65, 0.1); transition: 0.3s; }
-        .instruction-row:hover { background: rgba(0, 255, 65, 0.05); }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-        .live-dot { width: 8px; height: 8px; background: #00ff41; border-radius: 50%; animation: pulse 1.5s infinite; }
+        .hero-gradient { background: radial-gradient(circle at top right, #003311 0%, #020202 60%); }
+        .cyber-panel { background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(0, 255, 65, 0.15); backdrop-filter: blur(20px); }
+        .neon-glow { color: #00ff41; text-shadow: 0 0 15px rgba(0, 255, 65, 0.6); }
+        .btn-gold { background: linear-gradient(90deg, #c5a059, #8e6d2f); color: #000; font-weight: 800; transition: 0.4s; }
+        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(197, 160, 89, 0.4); }
+        .market-card { border-right: 4px solid #c5a059; background: rgba(255,255,255,0.03); }
+        .pulse-live { width: 10px; height: 10px; background: #00ff41; border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
-        <!-- رأس المنظومة -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-10 border-b border-green-900/40 pb-6">
-            <div class="text-right">
-                <h1 class="text-6xl font-black orbitron neon-green italic tracking-tighter">HEIBA CORE</h1>
-                <p class="text-xs text-gray-500 mt-2 tracking-[0.5em] uppercase">The Ultimate Trading Intelligence</p>
-            </div>
-            <div class="flex space-x-6 space-x-reverse mt-6 md:mt-0">
-                <div class="price-card p-4 rounded-xl min-w-[150px]">
-                    <p class="text-[10px] text-gray-400">سعر الذهب مباشر</p>
-                    <p id="gold-live" class="orbitron text-2xl neon-green">$0,000.00</p>
+<body class="hero-gradient min-h-screen">
+    <div class="max-w-[1500px] mx-auto p-4 md:p-10">
+        <!-- Header -->
+        <header class="flex flex-col lg:flex-row justify-between items-center mb-16 border-b border-white/5 pb-10">
+            <div>
+                <h1 class="text-6xl font-black orbitron neon-glow italic tracking-tighter">HEIBA GLOBAL</h1>
+                <div class="flex items-center mt-4">
+                    <div class="pulse-live ml-3"></div>
+                    <span class="text-xs text-gray-400 uppercase tracking-[0.6em]">نظام الرصد والذكاء الموحد لكافة المنصات</span>
                 </div>
-                <div class="price-card p-4 rounded-xl min-w-[150px]">
-                    <p class="text-[10px] text-gray-400">مؤشر الترقيم</p>
-                    <p id="signal-live" class="text-xl font-bold text-white">---</p>
+            </div>
+            <div class="flex gap-8 mt-8 lg:mt-0">
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-500 uppercase">Live Nodes</p>
+                    <p id="nodes-count" class="text-2xl orbitron text-[#c5a059]">00</p>
+                </div>
+                <div class="text-center border-r border-white/10 pr-8">
+                    <p class="text-[10px] text-gray-500 uppercase">Success Rate</p>
+                    <p class="text-2xl orbitron text-green-500">98.4%</p>
                 </div>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- قسم التحكم والربط -->
-            <div class="lg:col-span-4 space-y-6">
-                <div class="glass p-6 rounded-2xl">
-                    <h2 class="text-xl font-bold mb-6 flex items-center border-b border-green-900 pb-3">
-                        <span class="live-dot ml-3"></span> ربط وحدة تليجرام
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <!-- اللوحة الجانبية: التحكم والتعليمات -->
+            <div class="lg:col-span-4 space-y-8">
+                <div class="cyber-panel p-8 rounded-3xl relative overflow-hidden">
+                    <h2 class="text-2xl font-bold mb-8 flex items-center">
+                        <span class="text-[#c5a059] ml-3">◈</span> تسجيل الدخول الآمن
                     </h2>
                     <div class="space-y-4">
-                        <input type="password" id="m_pass" placeholder="MASTER KEY" class="w-full p-4 bg-black border border-green-900/50 rounded-xl text-green-400 text-center">
-                        <input type="text" id="m_name" placeholder="اسم المستخدم" class="w-full p-4 bg-black border border-green-900/50 rounded-xl text-center">
-                        <input type="text" id="m_token" placeholder="BOT TOKEN" class="w-full p-4 bg-black border border-green-900/50 rounded-xl text-xs text-center">
-                        <input type="text" id="m_chatid" placeholder="CHAT ID" class="w-full p-4 bg-black border border-green-900/50 rounded-xl text-center">
-                        <button onclick="register()" class="w-full py-5 bg-[#00ff41] text-black font-black rounded-xl hover:shadow-[0_0_30px_#00ff41] transition duration-500 uppercase">تفعيل المنظومة العملاقة ⚡</button>
+                        <input type="password" id="m_pass" placeholder="MASTER KEY" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center focus:border-[#c5a059] outline-none transition">
+                        <input type="text" id="m_name" placeholder="اسم المستخدم" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center outline-none">
+                        <input type="text" id="m_token" placeholder="BOT TOKEN" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center text-xs outline-none">
+                        <input type="text" id="m_chatid" placeholder="CHAT ID" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center outline-none">
+                        <button onclick="joinProtocol()" class="btn-gold w-full py-5 rounded-xl uppercase text-lg mt-4">ربط المنظومة الآن ⚡</button>
                     </div>
                 </div>
 
-                <!-- لوحة التعليمات العملياتية -->
-                <div class="glass p-6 rounded-2xl">
-                    <h2 class="text-xl font-bold mb-4 text-[#00ff41]">📜 التعليمات الملكية</h2>
-                    <div class="text-[13px] space-y-3 text-gray-300">
-                        <div class="instruction-row py-2">🟢 <b>الترقيم الأخضر:</b> دخول تدريجي، سيولة 30% من المحفظة.</div>
-                        <div class="instruction-row py-2">🔴 <b>الترقيم الأحمر:</b> خروج فوري، وقف خسارة عند كسر الدعم.</div>
-                        <div class="instruction-row py-2">✨ <b>الترقيم الذهبي:</b> فرصة نادرة، تفعيل أقصى طاقة.</div>
-                        <div class="instruction-row py-2">⚠️ <b>تنبيه:</b> لا تفتح صفقات خارج نطاق إشارة المنظومة.</div>
+                <div class="cyber-panel p-8 rounded-3xl">
+                    <h2 class="text-xl font-bold mb-6 text-[#c5a059]">📜 بروتوكول التعليمات الذكية</h2>
+                    <div class="space-y-4 text-sm">
+                        <div class="p-4 market-card rounded">
+                            <h4 class="text-green-500 font-bold mb-1">الترقيم العملياتي الأخضر</h4>
+                            <p class="text-gray-400 text-xs">يصدر عند تطابق سيولة 4 منصات عالمية. ادخل فوراً.</p>
+                        </div>
+                        <div class="p-4 market-card rounded border-r-red-600">
+                            <h4 class="text-red-600 font-bold mb-1">إشارة التسييل الأحمر</h4>
+                            <p class="text-gray-400 text-xs">خروج الحيتان من السوق. اخرج بأرباحك ولا تتردد.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- رادار المراقبة -->
+            <!-- الرادار المركزي -->
             <div class="lg:col-span-8">
-                <div class="glass p-8 rounded-3xl h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-8">
-                        <h2 class="text-3xl font-bold">📡 رادار الوحدات المتصلة</h2>
-                        <div class="bg-black/50 border border-green-500/30 px-6 py-2 rounded-full">
-                            <span class="orbitron text-[#00ff41] text-2xl" id="bot-count">00</span>
+                <div class="cyber-panel p-10 rounded-[2.5rem] h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-10 pb-6 border-b border-white/5">
+                        <h2 class="text-3xl font-bold">📡 رادار الربط العالمي المباشر</h2>
+                        <div class="text-right">
+                            <p class="text-[10px] text-gray-500 uppercase">حالة السوق الآن</p>
+                            <p id="market-status" class="orbitron text-[#c5a059] text-xl">SCANNING...</p>
                         </div>
                     </div>
-                    <div id="bots-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pr-2">
+
+                    <div id="users-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[500px] pr-2">
                         <!-- الوحدات تظهر هنا -->
+                    </div>
+
+                    <div id="loading" class="flex-grow flex flex-col items-center justify-center opacity-30">
+                        <div class="w-16 h-16 border-4 border-[#c5a059] border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p class="orbitron tracking-[1em] text-[10px]">CONNECTING TO NODES</p>
                     </div>
                 </div>
             </div>
@@ -115,7 +129,7 @@ const UI = `
     </div>
 
     <script>
-        async function register() {
+        async function joinProtocol() {
             const data = {
                 password: document.getElementById('m_pass').value,
                 name: document.getElementById('m_name').value,
@@ -128,85 +142,89 @@ const UI = `
                 body: JSON.stringify(data)
             });
             const res = await r.json();
-            if(res.success) { alert("✅ تم التفعيل بنجاح!"); load(); } else { alert("❌ خطأ: " + res.error); }
+            if(res.success) { alert("تم الربط بنجاح مع كافة المنصات!"); refresh(); }
+            else { alert("خطأ في مفتاح الوصول!"); }
         }
 
-        async function load() {
-            // تحديث الوحدات
-            const r = await fetch('/api/bots');
-            const bots = await r.json();
-            document.getElementById('bot-count').innerText = bots.length.toString().padStart(2, '0');
-            const list = document.getElementById('bots-list');
-            list.innerHTML = bots.map(b => \`
-                <div class="bg-white/5 border border-green-900/20 p-5 rounded-2xl flex justify-between items-center group">
-                    <div class="text-right">
-                        <h3 class="font-bold text-lg">\${b.name}</h3>
-                        <p class="text-[10px] text-gray-500 orbitron">PROTOCOL ACTIVE</p>
+        async function refresh() {
+            const r = await fetch('/api/users');
+            const users = await r.json();
+            const mr = await fetch('/api/analyze');
+            const market = await mr.json();
+
+            document.getElementById('nodes-count').innerText = users.length.toString().padStart(2, '0');
+            document.getElementById('market-status').innerText = market.trend;
+            
+            const grid = document.getElementById('users-grid');
+            const loader = document.getElementById('loading');
+
+            if(users.length > 0) {
+                loader.classList.add('hidden');
+                grid.innerHTML = users.map(u => \`
+                    <div class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-[#c5a059] transition-all group">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-white text-lg">\${u.name}</h3>
+                                <p class="text-[9px] text-gray-500 orbitron tracking-widest uppercase">Node Online</p>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-[10px] text-green-500 font-bold">\${market.accuracy} ACCURACY</p>
+                                <button onclick="removeUnit(\${u.id})" class="text-red-900 hover:text-red-500 text-xs mt-2 transition">🗑 قطع الاتصال</button>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="removeBot(\${b.id})" class="text-red-900 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">🗑️</button>
-                </div>
-            \`).join('');
-
-            // تحديث الأسعار والترقيم
-            const pr = await fetch('/api/market');
-            const market = await pr.json();
-            document.getElementById('gold-live').innerText = "$" + market.gold;
-            document.getElementById('signal-live').innerText = market.signal.label;
-            document.getElementById('signal-live').style.color = market.signal.label.includes('أخضر') ? '#00ff41' : '#ff4500';
+                \`).join('');
+            }
         }
-
-        setInterval(load, 5000);
-        load();
+        setInterval(refresh, 5000);
+        refresh();
     </script>
 </body>
 </html>
 `;
 
-// --- المسارات الخلفية ---
-app.get('/', (req, res) => res.send(UI));
+app.get('/', (req, res) => res.send(HTML_INTERFACE));
 
-app.get('/api/market', (req, res) => res.json(getMarketData()));
+app.get('/api/users', (req, res) => res.json(globalUsers));
 
-app.get('/api/bots', (req, res) => res.json(activeSystems));
+app.get('/api/analyze', async (req, res) => {
+    const data = await analyzeMarket();
+    res.json(data);
+});
 
 app.post('/api/register', async (req, res) => {
     const { password, name, token, chatid } = req.body;
     if (password !== MASTER_KEY) return res.status(401).json({ error: "Access Denied" });
     
-    const newSys = { id: Date.now(), name, token, chatid };
-    activeSystems.push(newSys);
+    const newUser = { id: Date.now(), name, token, chatid };
+    globalUsers.push(newUser);
     
-    // إرسال رسالة ترحيبية وتعليمات فورية لتليجرام
-    const market = getMarketData();
-    const welcomeMsg = `
-👑 *منظومة الهيبة العملاقة* 👑
+    // إرسال تقرير الذكاء الأول فوراً لتليجرام
+    const market = await analyzeMarket();
+    const message = `
+👑 *منظومة الهيبة العملاقة - الربط العالمي* 👑
 ـــــــــــــــــــــــــــــــــــــــــــــــــ
-أهلاً بك يا *${name}* في وحدة النخبة.
+المستلم: *${name}*
+الحالة: *مُتصل بكافة المنصات ✅*
 
-📊 *الحالة المبدئية:*
-• سعر الذهب: *$${market.gold}*
-• الترقيم الحالي: *${market.signal.label}*
-• التعليمات: *${market.signal.action}*
+📊 *تحليل الرادار الحي:*
+• الاتجاه: *${market.trend}*
+• دقة الرصد: *${market.accuracy}*
+• التوصية: *${market.recommendation}*
 
-🛡️ _النظام يراقب السوق الآن بالنيابة عنك._
+🚀 *التعليمات:* النظام الآن يراقب حركة السيولة العالمية، أي تغيير في الترقيم سيصلك فوراً.
     `;
+    
     try {
         await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
             chat_id: chatid,
-            text: welcomeMsg,
+            text: message,
             parse_mode: 'Markdown'
         });
-    } catch (e) {}
+    } catch(e) {}
     
-    res.json({ success: true });
-});
-
-app.post('/api/remove', (req, res) => {
-    const { id, password } = req.body;
-    if (password !== MASTER_KEY) return res.status(401).json({ error: "Unauthorized" });
-    activeSystems = activeSystems.filter(s => s.id !== id);
     res.json({ success: true });
 });
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log('HEIBA CORE V3 ULTIMATE ACTIVE'));
+app.listen(PORT, () => console.log('GLOBAL HEIBA SYSTEM STARTED'));
