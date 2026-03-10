@@ -3,225 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة الهيبة الذكية v2.0</title>
+    <title>منظومة الهيبة الكبرى</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;500;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Changa', sans-serif; background-color: #020202; color: #00ff41; }
-        .heiba-card { background: rgba(15, 15, 15, 0.95); border: 1px solid #00ff41; box-shadow: 0 0 20px rgba(0, 255, 65, 0.15); }
-        .crypto-glow { text-shadow: 0 0 10px #00ff41; }
-        input, select { background: #000 !important; border: 1px solid #00441b !important; color: #00ff41 !important; transition: 0.3s; }
-        input:focus { border-color: #00ff41 !important; outline: none; box-shadow: 0 0 10px #00ff41; }
-        .instruction-box { background: #001a08; border-right: 4px solid #00ff41; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #00ff41; border-radius: 10px; }
+        :root { --heiba-green: #00ff41; --heiba-dark: #020202; }
+        body { font-family: 'Changa', sans-serif; background: var(--heiba-dark); color: var(--heiba-green); }
+        .glass { background: rgba(15, 15, 15, 0.9); border: 1px solid var(--heiba-green); border-radius: 20px; box-shadow: 0 0 30px rgba(0, 255, 65, 0.1); }
+        .neon-text { text-shadow: 0 0 10px var(--heiba-green); }
+        input { background: #000 !important; border: 1px solid #00441b !important; color: var(--heiba-green) !important; text-align: center; }
+        input:focus { border-color: var(--heiba-green) !important; box-shadow: 0 0 15px var(--heiba-green); outline: none; }
+        .btn-gold { background: var(--heiba-green); color: #000; font-weight: 700; transition: 0.4s; }
+        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 5px 20px var(--heiba-green); }
+        .instruction-card { border-right: 5px solid var(--heiba-green); background: #0a0a0a; }
+        .status-dot { width: 10px; height: 10px; background: var(--heiba-green); border-radius: 50%; display: inline-block; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-10">
-            <h1 class="text-5xl font-bold crypto-glow mb-4">👑 مَنْظُومَةُ الهَيْبَةِ الذَّكِيَّةِ</h1>
-            <p class="text-gray-400">نظام الترقيم العالمي - رصد، تحليل، وتنبيه آلي</p>
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-6xl font-black neon-text mb-4">👑 مَنْظُومَةُ الهَيْبَةِ</h1>
+        <p class="text-xl text-gray-400 tracking-[0.2em]">GLOBAL TRADING INTELLIGENCE</p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Sidebar: Registration & Instructions -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="glass p-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">🛡️ تفعيل الربط السحابي</h2>
+                <div class="space-y-4">
+                    <div class="relative">
+                        <input type="password" id="m_pass" placeholder="كلمة السر الذهبية" class="w-full p-4 rounded-xl">
+                    </div>
+                    <input type="text" id="m_name" placeholder="اسمك الكامل" class="w-full p-4 rounded-xl">
+                    <input type="text" id="m_token" placeholder="Bot Token (من BotFather)" class="w-full p-4 rounded-xl text-xs">
+                    <input type="text" id="m_chatid" placeholder="Chat ID (معرفك)" class="w-full p-4 rounded-xl">
+                    <button onclick="registerHeiba()" class="btn-gold w-full py-4 rounded-xl text-lg">تفعيل واستلام التعليمات 🚀</button>
+                </div>
+            </div>
+
+            <div class="glass p-6 instruction-card">
+                <h3 class="font-bold text-white mb-3 flex items-center">💡 كيف تجني الزلط؟</h3>
+                <ul class="text-sm space-y-3 text-gray-300">
+                    <li>• السيرفر يراقب أكبر 10 منصات في العالم.</li>
+                    <li>• التنبيهات تصلك في تليجرام خلال أجزاء من الثانية.</li>
+                    <li>• بمجرد التسجيل، ستصلك "رسالة التعليمات الملكية" على بوتك.</li>
+                </ul>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- Left: Instructions & Logic (العقل المدبر) -->
-            <div class="lg:col-span-4 space-y-6">
-                <div class="heiba-card p-5 rounded-2xl">
-                    <h2 class="text-xl font-bold mb-4 flex items-center"><span class="ml-2">📖</span> دليل التشغيل والربح</h2>
-                    <div class="instruction-box p-3 text-sm space-y-3 text-gray-200">
-                        <p><strong>1. إنشاء البوت:</strong> اذهب لـ @BotFather في تليجرام، أنشئ بوت جديد وانسخ الـ Token.</p>
-                        <p><strong>2. معرف الحساب:</strong> اذهب لـ @userinfobot لتعرف الـ ID الخاص بك.</p>
-                        <p><strong>3. الربط الآمن:</strong> أدخل كلمة السر <span class="text-yellow-400 font-bold">771232690</span> لتفعيل اشتراكك في المنظومة.</p>
-                        <p><strong>4. قاعدة الزلط:</strong> المنظومة تراقب (RSI) والسيولة. إذا قالت لك "ترقيم شراء" فالسعر في القاع، وإذا قالت "بيع" فالسعر في القمة.</p>
-                    </div>
+        <!-- Main Dashboard -->
+        <div class="lg:col-span-8 space-y-8">
+            <!-- Market Pulse -->
+            <div class="glass p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold">📊 رادار السوق الحي</h2>
+                    <span class="text-xs bg-green-900/30 px-4 py-2 rounded-full border border-green-700">
+                        <span class="status-dot ml-2"></span> اتصال سحابي نشط
+                    </span>
                 </div>
-
-                <div class="heiba-card p-5 rounded-2xl">
-                    <h2 class="text-xl font-bold mb-4">🛡️ إضافة بوت جديد للمنظومة</h2>
-                    <div class="space-y-4">
-                        <input type="password" id="master-pass" placeholder="كلمة السر المطلوبة للتعديل" class="w-full p-3 rounded-xl">
-                        <input type="text" id="user-name" placeholder="اسمك أو اسم البوت" class="w-full p-3 rounded-xl">
-                        <input type="text" id="bot-token" placeholder="Bot Token" class="w-full p-3 rounded-xl text-xs">
-                        <input type="text" id="chat-id" placeholder="Your Telegram ID" class="w-full p-3 rounded-xl">
-                        <button onclick="addNewBot()" class="w-full bg-green-600 text-black font-bold py-3 rounded-xl hover:bg-green-400 transition transform hover:scale-105">إنشاء وحفظ في السيرفر</button>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="prices-ui">
+                    <!-- Live Data -->
+                    <div class="bg-black/40 p-6 rounded-2xl border border-green-900/50 text-center">
+                        <div class="text-gray-500 text-sm mb-2">BITCOIN</div>
+                        <div id="price-btc" class="text-3xl font-bold">--$</div>
+                        <div id="status-btc" class="text-[10px] text-blue-400 mt-2 italic">جاري الرصد...</div>
+                    </div>
+                    <div class="bg-black/40 p-6 rounded-2xl border border-green-900/50 text-center">
+                        <div class="text-gray-500 text-sm mb-2">ETHEREUM</div>
+                        <div id="price-eth" class="text-3xl font-bold">--$</div>
+                        <div id="status-eth" class="text-[10px] text-blue-400 mt-2 italic">جاري الرصد...</div>
+                    </div>
+                    <div class="bg-black/40 p-6 rounded-2xl border border-green-900/50 text-center">
+                        <div class="text-gray-500 text-sm mb-2">SOLANA</div>
+                        <div id="price-sol" class="text-3xl font-bold">--$</div>
+                        <div id="status-sol" class="text-[10px] text-blue-400 mt-2 italic">جاري الرصد...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Live Monitor & Bots List -->
-            <div class="lg:col-span-8 space-y-6">
-                <!-- Market Analysis Engine -->
-                <div class="heiba-card p-6 rounded-2xl relative overflow-hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">📡 الرادار الذكي (تحليل حي)</h2>
-                        <div id="market-status" class="bg-green-900 text-green-300 px-3 py-1 rounded-full text-xs">متصل بالبورصة العالمية</div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="market-data">
-                        <!-- البيانات تأتي من JS -->
-                        <div class="text-center p-4 bg-black/50 rounded-xl border border-green-900">
-                            <span class="text-gray-400 text-sm">BITCOIN</span>
-                            <div id="btc-price" class="text-2xl font-bold">--</div>
-                            <div id="btc-advice" class="text-[10px] mt-1">جاري التحليل...</div>
-                        </div>
-                        <div class="text-center p-4 bg-black/50 rounded-xl border border-green-900">
-                            <span class="text-gray-400 text-sm">ETHEREUM</span>
-                            <div id="eth-price" class="text-2xl font-bold">--</div>
-                            <div id="eth-advice" class="text-[10px] mt-1">جاري التحليل...</div>
-                        </div>
-                        <div class="text-center p-4 bg-black/50 rounded-xl border border-green-900">
-                            <span class="text-gray-400 text-sm">SOLANA</span>
-                            <div id="sol-price" class="text-2xl font-bold">--</div>
-                            <div id="sol-advice" class="text-[10px] mt-1">جاري التحليل...</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bots List (سيرفر البوتات) -->
-                <div class="heiba-card p-6 rounded-2xl">
-                    <h2 class="text-xl font-bold mb-4 flex items-center">🤖 سيرفر البوتات النشطة (<span id="bot-count">0</span>)</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="bots-list">
-                        <!-- البوتات المضافة تظهر هنا -->
-                    </div>
-                </div>
-
-                <!-- Logs -->
-                <div class="heiba-card p-4 rounded-2xl h-40 overflow-y-auto text-xs font-mono" id="system-logs">
-                    <div class="text-gray-500">> تم إقلاع منظومة الهيبة بنجاح...</div>
-                    <div class="text-gray-500">> بانتظار أوامر الترقيم...</div>
+            <!-- Active Bots List -->
+            <div class="glass p-8">
+                <h2 class="text-2xl font-bold mb-6">🤖 الأعضاء النشطون بالسيرفر (<span id="bot-count">0</span>)</h2>
+                <div id="bots-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Bots Show Here -->
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        const MASTER_KEY = "771232690";
-        let bots = JSON.parse(localStorage.getItem('heiba_bots')) || [];
+<script>
+    const API_BASE = "http://YOUR_SERVER_IP:3000/api"; // ضع هنا عنوان السيرفر الحقيقي
 
-        // تشغيل النظام
-        window.onload = () => {
-            renderBots();
-            setInterval(updatePrices, 5000);
-            updatePrices();
+    async function registerHeiba() {
+        const body = {
+            password: document.getElementById('m_pass').value,
+            name: document.getElementById('m_name').value,
+            token: document.getElementById('m_token').value,
+            chatid: document.getElementById('m_chatid').value
         };
 
-        function addLog(msg, color = "text-green-500") {
-            const logs = document.getElementById('system-logs');
-            const time = new Date().toLocaleTimeString();
-            logs.innerHTML = `<div class="${color}">> [${time}] ${msg}</div>` + logs.innerHTML;
-        }
-
-        // إضافة بوت جديد
-        function addNewBot() {
-            const pass = document.getElementById('master-pass').value;
-            const name = document.getElementById('user-name').value;
-            const token = document.getElementById('bot-token').value;
-            const chatid = document.getElementById('chat-id').value;
-
-            if (pass !== MASTER_KEY) {
-                alert("⛔ كلمة السر خطأ! لا يمكنك إضافة بوت للسيرفر.");
-                return;
-            }
-
-            if (!name || !token || !chatid) {
-                alert("أكمل كل البيانات يا صاحبي!");
-                return;
-            }
-
-            const newBot = { id: Date.now(), name, token, chatid };
-            bots.push(newBot);
-            localStorage.setItem('heiba_bots', JSON.stringify(bots));
-            
-            renderBots();
-            addLog(`تم إضافة بوت جديد بنجاح باسم [${name}]`);
-            
-            // مسح الخانات
-            document.getElementById('user-name').value = "";
-            document.getElementById('bot-token').value = "";
-            document.getElementById('chat-id').value = "";
-        }
-
-        // حذف بوت (بكلمة سر)
-        function deleteBot(id) {
-            const pass = prompt("أدخل كلمة السر للحذف من السيرفر:");
-            if (pass === MASTER_KEY) {
-                bots = bots.filter(b => b.id !== id);
-                localStorage.setItem('heiba_bots', JSON.stringify(bots));
-                renderBots();
-                addLog("تم حذف بوت من السيرفر بأمان.");
+        try {
+            const res = await fetch(`${API_BASE}/bots/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                loadBots();
             } else {
-                alert("لا تملك صلاحية الحذف!");
+                alert(data.error);
             }
-        }
+        } catch (e) { alert("تأكد من تشغيل ملف server.js أولاً!"); }
+    }
 
-        function renderBots() {
-            const list = document.getElementById('bots-list');
-            document.getElementById('bot-count').innerText = bots.length;
-            list.innerHTML = "";
-
-            bots.forEach(bot => {
-                list.innerHTML += `
-                    <div class="bg-green-900/10 border border-green-800 p-4 rounded-xl flex justify-between items-center">
-                        <div>
-                            <div class="font-bold text-white">${bot.name}</div>
-                            <div class="text-[10px] text-gray-500">ID: ${bot.chatid}</div>
-                            <div class="text-[10px] text-green-500 mt-1">● نشط ومحمي</div>
-                        </div>
-                        <button onclick="deleteBot(${bot.id})" class="text-red-500 hover:text-red-300">🗑️</button>
+    async function loadBots() {
+        const res = await fetch(`${API_BASE}/bots`);
+        const bots = await res.json();
+        const list = document.getElementById('bots-list');
+        document.getElementById('bot-count').innerText = bots.length;
+        list.innerHTML = "";
+        bots.forEach(b => {
+            list.innerHTML += `
+                <div class="bg-white/5 p-4 rounded-xl flex justify-between items-center border border-white/10">
+                    <div>
+                        <div class="font-bold text-white">${b.name}</div>
+                        <div class="text-[10px] text-green-500">● مُتصل بالنخبة</div>
                     </div>
-                `;
+                    <button onclick="removeBot(${b.id})" class="text-red-500 hover:scale-110 transition">🗑️</button>
+                </div>
+            `;
+        });
+    }
+
+    async function removeBot(id) {
+        const pass = prompt("أدخل كلمة السر الذهبية للحذف:");
+        if (pass === "771232690") {
+            await fetch(`${API_BASE}/bots/remove`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id, password: pass })
             });
+            loadBots();
         }
+    }
 
-        // محرك التحليل والأسعار
-        async function updatePrices() {
-            const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
-            for (let s of symbols) {
-                try {
-                    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`);
-                    const data = await res.json();
-                    
-                    const price = parseFloat(data.lastPrice);
-                    const change = parseFloat(data.priceChangePercent);
-                    const displayId = s.replace('USDT', '').toLowerCase();
-                    
-                    document.getElementById(`${displayId}-price`).innerText = price.toLocaleString() + "$";
-                    
-                    // منطق ذكي للقرار
-                    let advice = "";
-                    let color = "";
-                    
-                    if (change < -3) {
-                        advice = "🔥 ترقيم شراء فوراً (القاع)";
-                        color = "text-green-400";
-                        sendToAllBots(`🚨 فرصة ترقيم ذهبية!\nالعملة: ${s}\nالسعر: ${price}\nالسبب: هبوط حاد وفرصة ارتداد.`);
-                    } else if (change > 5) {
-                        advice = "⚠️ ترقيم بيع (جني أرباح)";
-                        color = "text-yellow-400";
-                    } else {
-                        advice = "🔄 مراقبة هادئة للسوق";
-                        color = "text-blue-400";
-                    }
-
-                    const adviceElem = document.getElementById(`${displayId}-advice`);
-                    adviceElem.innerText = advice;
-                    adviceElem.className = `text-[10px] mt-1 font-bold ${color}`;
-
-                } catch (e) { console.log("خطأ في الاتصال بالسيرفر"); }
-            }
+    // محرك الأسعار الحي
+    async function updateMarket() {
+        const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT'];
+        for (let s of symbols) {
+            try {
+                const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${s}`);
+                const data = await res.json();
+                const id = s.replace('USDT', '').toLowerCase();
+                const price = parseFloat(data.lastPrice).toLocaleString();
+                const change = parseFloat(data.priceChangePercent);
+                
+                document.getElementById(`price-${id}`).innerText = price + "$";
+                const st = document.getElementById(`status-${id}`);
+                if (change < -2) { st.innerText = "🔥 فرصة ترقيم (شراء)"; st.className = "text-[10px] text-green-400 mt-2 font-bold"; }
+                else if (change > 4) { st.innerText = "⚠️ تضخم (بيع)"; st.className = "text-[10px] text-yellow-400 mt-2 font-bold"; }
+                else { st.innerText = "🔄 رصد مستقر"; st.className = "text-[10px] text-blue-400 mt-2"; }
+            } catch (e) {}
         }
+    }
 
-        async function sendToAllBots(msg) {
-            bots.forEach(bot => {
-                const url = `https://api.telegram.org/bot${bot.token}/sendMessage?chat_id=${bot.chatid}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
-                fetch(url).catch(e => console.log("خطأ إرسال لبوت: " + bot.name));
-            });
-        }
-
-    </script>
+    setInterval(updateMarket, 5000);
+    setInterval(loadBots, 10000);
+    updateMarket();
+    loadBots();
+</script>
 </body>
 </html>
