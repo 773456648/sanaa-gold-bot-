@@ -1,7 +1,6 @@
 {
   "name": "heiba-royal-system",
-  "version": "2.0.0",
-  "description": "منظومة الهيبة الملكية للترقيم الآلي",
+  "version": "1.0.0",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -10,7 +9,6 @@
     "express": "^4.18.2",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "axios": "^1.6.0",
-    "path": "^0.12.7"
+    "axios": "^1.6.0"
   }
 }
