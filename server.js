@@ -7,121 +7,86 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// --- قاعدة بيانات المنظومة ---
-let globalUsers = [];
+// --- قاعدة بيانات المستخدمين والمحافظ ---
+let userWallets = [];
 const MASTER_KEY = "771232690";
 
-// --- محرك الذكاء الاصطناعي للرصد الشامل ---
-// هذا المحرك يحاكي الربط مع Binance و TradingView لجلب أدق المعلومات
-async function analyzeMarket() {
-    // محاكاة سحب بيانات حية من المنصات العالمية
-    const marketTrends = ["صعود قوي 🚀", "تصحيح مسار ⚠️", "تجميع سيولة 💎", "هبوط حاد 🔴"];
-    const strength = Math.floor(Math.random() * 40 + 60); // دقة تفوق الـ 60% دائماً
-    const selectedTrend = marketTrends[Math.floor(Math.random() * marketTrends.length)];
+// --- محرك حساب الأرباح والخسائر (المحاكاة الذكية) ---
+// في الواقع يتم ربط هذا بـ API المنصة لسحب الرصيد الحقيقي
+function updateWalletStatus(wallet) {
+    const changePercent = (Math.random() * 4 - 2); // تذبذب بين -2% و +2%
+    const oldBalance = parseFloat(wallet.currentBalance);
+    const newBalance = (oldBalance + (oldBalance * (changePercent / 100))).toFixed(2);
+    const profit = (newBalance - parseFloat(wallet.initialDeposit)).toFixed(2);
     
     return {
-        trend: selectedTrend,
-        accuracy: strength + "%",
-        recommendation: strength > 80 ? "دخول بأقصى طاقة" : "دخول بحذر",
-        timestamp: new Date().toLocaleTimeString('ar-SA')
+        newBalance,
+        profit,
+        status: profit >= 0 ? "ارتفاع 📈" : "انخفاض 📉",
+        change: changePercent.toFixed(2) + "%"
     };
 }
 
-// --- واجهة المنظومة الخيالية (Corporate UI) ---
-const HTML_INTERFACE = `
+// --- الواجهة الملكية (Portfolio Dashboard) ---
+const UI = `
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA GLOBAL INTELLIGENCE</title>
+    <title>HEIBA PORTFOLIO | إدارة الزلط والأرباح</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;700&family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #020202; color: #fff; font-family: 'Changa', sans-serif; overflow-x: hidden; }
+        body { background: #050505; color: #fff; font-family: 'Changa', sans-serif; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
-        .hero-gradient { background: radial-gradient(circle at top right, #003311 0%, #020202 60%); }
-        .cyber-panel { background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(0, 255, 65, 0.15); backdrop-filter: blur(20px); }
-        .neon-glow { color: #00ff41; text-shadow: 0 0 15px rgba(0, 255, 65, 0.6); }
-        .btn-gold { background: linear-gradient(90deg, #c5a059, #8e6d2f); color: #000; font-weight: 800; transition: 0.4s; }
-        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(197, 160, 89, 0.4); }
-        .market-card { border-right: 4px solid #c5a059; background: rgba(255,255,255,0.03); }
-        .pulse-live { width: 10px; height: 10px; background: #00ff41; border-radius: 50%; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+        .glass { background: rgba(20, 20, 20, 0.8); border: 1px solid rgba(197, 160, 89, 0.2); backdrop-filter: blur(10px); }
+        .gold-text { color: #c5a059; text-shadow: 0 0 10px rgba(197, 160, 89, 0.3); }
+        .profit-up { color: #00ff41; }
+        .profit-down { color: #ff4500; }
+        .card-inner { background: linear-gradient(145deg, #0a0a0a, #151515); }
+        .btn-royal { background: #c5a059; color: #000; font-weight: bold; transition: 0.3s; }
+        .btn-royal:hover { background: #fff; box-shadow: 0 0 20px #c5a059; }
     </style>
 </head>
-<body class="hero-gradient min-h-screen">
-    <div class="max-w-[1500px] mx-auto p-4 md:p-10">
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="flex flex-col lg:flex-row justify-between items-center mb-16 border-b border-white/5 pb-10">
-            <div>
-                <h1 class="text-6xl font-black orbitron neon-glow italic tracking-tighter">HEIBA GLOBAL</h1>
-                <div class="flex items-center mt-4">
-                    <div class="pulse-live ml-3"></div>
-                    <span class="text-xs text-gray-400 uppercase tracking-[0.6em]">نظام الرصد والذكاء الموحد لكافة المنصات</span>
-                </div>
+        <header class="flex justify-between items-center mb-10 border-b border-white/5 pb-8">
+            <div class="text-right">
+                <h1 class="text-4xl font-black orbitron gold-text uppercase italic">Heiba Portfolio</h1>
+                <p class="text-[10px] text-gray-500 tracking-[0.4em] mt-1">نظام رصد الأرباح والسيولة الذكي</p>
             </div>
-            <div class="flex gap-8 mt-8 lg:mt-0">
-                <div class="text-center">
-                    <p class="text-[10px] text-gray-500 uppercase">Live Nodes</p>
-                    <p id="nodes-count" class="text-2xl orbitron text-[#c5a059]">00</p>
-                </div>
-                <div class="text-center border-r border-white/10 pr-8">
-                    <p class="text-[10px] text-gray-500 uppercase">Success Rate</p>
-                    <p class="text-2xl orbitron text-green-500">98.4%</p>
-                </div>
+            <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+                <p class="text-[10px] text-gray-400">إجمالي السيولة المدارة</p>
+                <p id="total-assets" class="orbitron text-2xl text-white">$0.00</p>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <!-- اللوحة الجانبية: التحكم والتعليمات -->
-            <div class="lg:col-span-4 space-y-8">
-                <div class="cyber-panel p-8 rounded-3xl relative overflow-hidden">
-                    <h2 class="text-2xl font-bold mb-8 flex items-center">
-                        <span class="text-[#c5a059] ml-3">◈</span> تسجيل الدخول الآمن
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- إدخال بيانات المحفظة -->
+            <div class="lg:col-span-4">
+                <div class="glass p-6 rounded-2xl">
+                    <h2 class="text-xl font-bold mb-6 flex items-center">
+                        <span class="ml-3 text-[#c5a059]">💰</span> ربط محفظة جديدة
                     </h2>
                     <div class="space-y-4">
-                        <input type="password" id="m_pass" placeholder="MASTER KEY" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center focus:border-[#c5a059] outline-none transition">
-                        <input type="text" id="m_name" placeholder="اسم المستخدم" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center outline-none">
-                        <input type="text" id="m_token" placeholder="BOT TOKEN" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center text-xs outline-none">
-                        <input type="text" id="m_chatid" placeholder="CHAT ID" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center outline-none">
-                        <button onclick="joinProtocol()" class="btn-gold w-full py-5 rounded-xl uppercase text-lg mt-4">ربط المنظومة الآن ⚡</button>
-                    </div>
-                </div>
-
-                <div class="cyber-panel p-8 rounded-3xl">
-                    <h2 class="text-xl font-bold mb-6 text-[#c5a059]">📜 بروتوكول التعليمات الذكية</h2>
-                    <div class="space-y-4 text-sm">
-                        <div class="p-4 market-card rounded">
-                            <h4 class="text-green-500 font-bold mb-1">الترقيم العملياتي الأخضر</h4>
-                            <p class="text-gray-400 text-xs">يصدر عند تطابق سيولة 4 منصات عالمية. ادخل فوراً.</p>
-                        </div>
-                        <div class="p-4 market-card rounded border-r-red-600">
-                            <h4 class="text-red-600 font-bold mb-1">إشارة التسييل الأحمر</h4>
-                            <p class="text-gray-400 text-xs">خروج الحيتان من السوق. اخرج بأرباحك ولا تتردد.</p>
-                        </div>
+                        <input type="password" id="m_pass" placeholder="MASTER KEY" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center text-[#c5a059] orbitron">
+                        <input type="text" id="u_name" placeholder="اسم صاحب المحفظة" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center">
+                        <input type="number" id="u_deposit" placeholder="رأس المال ($)" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center orbitron">
+                        <input type="text" id="u_token" placeholder="BOT TOKEN" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center text-xs">
+                        <input type="text" id="u_chatid" placeholder="CHAT ID" class="w-full p-4 bg-black border border-white/10 rounded-xl text-center">
+                        <button onclick="linkWallet()" class="btn-royal w-full py-5 rounded-xl uppercase mt-4">بدء الرصد الذكي ⚡</button>
                     </div>
                 </div>
             </div>
 
-            <!-- الرادار المركزي -->
+            <!-- عرض المحافظ والأرباح -->
             <div class="lg:col-span-8">
-                <div class="cyber-panel p-10 rounded-[2.5rem] h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-10 pb-6 border-b border-white/5">
-                        <h2 class="text-3xl font-bold">📡 رادار الربط العالمي المباشر</h2>
-                        <div class="text-right">
-                            <p class="text-[10px] text-gray-500 uppercase">حالة السوق الآن</p>
-                            <p id="market-status" class="orbitron text-[#c5a059] text-xl">SCANNING...</p>
-                        </div>
-                    </div>
-
-                    <div id="users-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto max-h-[500px] pr-2">
-                        <!-- الوحدات تظهر هنا -->
-                    </div>
-
-                    <div id="loading" class="flex-grow flex flex-col items-center justify-center opacity-30">
-                        <div class="w-16 h-16 border-4 border-[#c5a059] border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p class="orbitron tracking-[1em] text-[10px]">CONNECTING TO NODES</p>
+                <div class="glass p-8 rounded-3xl h-full">
+                    <h2 class="text-2xl font-bold mb-8 border-b border-white/5 pb-4">📊 رادار المحافظ الحية</h2>
+                    <div id="wallets-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- المحافظ تظهر هنا -->
                     </div>
                 </div>
             </div>
@@ -129,53 +94,57 @@ const HTML_INTERFACE = `
     </div>
 
     <script>
-        async function joinProtocol() {
+        async function linkWallet() {
             const data = {
                 password: document.getElementById('m_pass').value,
-                name: document.getElementById('m_name').value,
-                token: document.getElementById('m_token').value,
-                chatid: document.getElementById('m_chatid').value
+                name: document.getElementById('u_name').value,
+                deposit: document.getElementById('u_deposit').value,
+                token: document.getElementById('u_token').value,
+                chatid: document.getElementById('u_chatid').value
             };
-            const r = await fetch('/api/register', {
+            const r = await fetch('/api/wallet/link', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             });
             const res = await r.json();
-            if(res.success) { alert("تم الربط بنجاح مع كافة المنصات!"); refresh(); }
-            else { alert("خطأ في مفتاح الوصول!"); }
+            if(res.success) { alert("تم ربط المحفظة وبدء الرصد!"); refresh(); }
+            else { alert("فشل الربط: " + res.error); }
         }
 
         async function refresh() {
-            const r = await fetch('/api/users');
-            const users = await r.json();
-            const mr = await fetch('/api/analyze');
-            const market = await mr.json();
-
-            document.getElementById('nodes-count').innerText = users.length.toString().padStart(2, '0');
-            document.getElementById('market-status').innerText = market.trend;
+            const r = await fetch('/api/wallets');
+            const wallets = await r.json();
             
-            const grid = document.getElementById('users-grid');
-            const loader = document.getElementById('loading');
-
-            if(users.length > 0) {
-                loader.classList.add('hidden');
-                grid.innerHTML = users.map(u => \`
-                    <div class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-[#c5a059] transition-all group">
-                        <div class="flex justify-between items-center">
+            let total = 0;
+            const grid = document.getElementById('wallets-grid');
+            grid.innerHTML = wallets.map(w => {
+                total += parseFloat(w.currentBalance);
+                const isProfit = parseFloat(w.profit) >= 0;
+                return \`
+                    <div class="card-inner p-6 rounded-2xl border border-white/5 relative overflow-hidden">
+                        <div class="flex justify-between items-start mb-4">
                             <div>
-                                <h3 class="font-bold text-white text-lg">\${u.name}</h3>
-                                <p class="text-[9px] text-gray-500 orbitron tracking-widest uppercase">Node Online</p>
+                                <h3 class="font-bold text-lg">\${w.name}</h3>
+                                <p class="text-[10px] text-gray-500 uppercase orbitron">Balance Tracked</p>
                             </div>
-                            <div class="text-left">
-                                <p class="text-[10px] text-green-500 font-bold">\${market.accuracy} ACCURACY</p>
-                                <button onclick="removeUnit(\${u.id})" class="text-red-900 hover:text-red-500 text-xs mt-2 transition">🗑 قطع الاتصال</button>
-                            </div>
+                            <span class="\${isProfit ? 'profit-up' : 'profit-down'} text-xs font-bold orbitron">
+                                \${isProfit ? '+' : ''}\${w.change}
+                            </span>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-3xl font-black orbitron">$\${w.currentBalance}</p>
+                            <p class="text-xs mt-2 \${isProfit ? 'text-green-500' : 'text-red-500'}">
+                                \${isProfit ? 'ربح:' : 'خسارة:'} $\${w.profit}
+                            </p>
                         </div>
                     </div>
-                \`).join('');
-            }
+                \`;
+            }).join('');
+            
+            document.getElementById('total-assets').innerText = "$" + total.toFixed(2);
         }
+
         setInterval(refresh, 5000);
         refresh();
     </script>
@@ -183,42 +152,31 @@ const HTML_INTERFACE = `
 </html>
 `;
 
-app.get('/', (req, res) => res.send(HTML_INTERFACE));
+app.get('/', (req, res) => res.send(UI));
 
-app.get('/api/users', (req, res) => res.json(globalUsers));
+app.get('/api/wallets', (req, res) => res.json(userWallets));
 
-app.get('/api/analyze', async (req, res) => {
-    const data = await analyzeMarket();
-    res.json(data);
-});
-
-app.post('/api/register', async (req, res) => {
-    const { password, name, token, chatid } = req.body;
+app.post('/api/wallet/link', async (req, res) => {
+    const { password, name, deposit, token, chatid } = req.body;
     if (password !== MASTER_KEY) return res.status(401).json({ error: "Access Denied" });
     
-    const newUser = { id: Date.now(), name, token, chatid };
-    globalUsers.push(newUser);
+    const newWallet = {
+        id: Date.now(),
+        name,
+        initialDeposit: deposit,
+        currentBalance: deposit,
+        profit: "0.00",
+        change: "0.00%",
+        token,
+        chatid
+    };
+    userWallets.push(newWallet);
     
-    // إرسال تقرير الذكاء الأول فوراً لتليجرام
-    const market = await analyzeMarket();
-    const message = `
-👑 *منظومة الهيبة العملاقة - الربط العالمي* 👑
-ـــــــــــــــــــــــــــــــــــــــــــــــــ
-المستلم: *${name}*
-الحالة: *مُتصل بكافة المنصات ✅*
-
-📊 *تحليل الرادار الحي:*
-• الاتجاه: *${market.trend}*
-• دقة الرصد: *${market.accuracy}*
-• التوصية: *${market.recommendation}*
-
-🚀 *التعليمات:* النظام الآن يراقب حركة السيولة العالمية، أي تغيير في الترقيم سيصلك فوراً.
-    `;
-    
+    // إرسال أول رسالة لتليجرام
     try {
         await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
             chat_id: chatid,
-            text: message,
+            text: `💰 *تم ربط محفظتك بنجاح*\n\nالاسم: ${name}\nرأس المال: $${deposit}\n\nالنظام سيقوم بإرسال تحديثات دورية عن "زلطك" والأرباح.`,
             parse_mode: 'Markdown'
         });
     } catch(e) {}
@@ -226,5 +184,26 @@ app.post('/api/register', async (req, res) => {
     res.json({ success: true });
 });
 
+// وظيفة لتحديث المحافظ وإرسال تنبيهات تليجرام تلقائياً
+setInterval(async () => {
+    for (let wallet of userWallets) {
+        const update = updateWalletStatus(wallet);
+        wallet.currentBalance = update.newBalance;
+        wallet.profit = update.profit;
+        wallet.change = update.change;
+        
+        // إرسال تنبيه لتليجرام إذا كان هناك ربح ملحوظ (محاكاة)
+        if (Math.abs(parseFloat(update.profit)) > 1) {
+             try {
+                await axios.post(`https://api.telegram.org/bot${wallet.token}/sendMessage`, {
+                    chat_id: wallet.chatid,
+                    text: `📢 *تحديث الرصيد*\n\nصاحب المحفظة: ${wallet.name}\nالرصيد الحالي: *$${wallet.currentBalance}*\nالأرباح/الخسائر: *$${wallet.profit}*\nالحالة: ${update.status}`,
+                    parse_mode: 'Markdown'
+                });
+            } catch(e) {}
+        }
+    }
+}, 30000); // تحديث تليجرام كل 30 ثانية
+
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log('GLOBAL HEIBA SYSTEM STARTED'));
+app.listen(PORT, () => console.log('WALLET TRACKER ACTIVE'));
