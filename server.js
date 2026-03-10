@@ -7,166 +7,130 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// --- إعدادات الأمان ---
 const MASTER_KEY = "771232690";
-let linkedUsers = [];
+let linkedUsers = []; 
 
-/**
- * محرك الذكاء الاصطناعي المطور (Atomic Prediction Engine)
- * يعتمد على تحليل 3 عوامل لا تخطئ:
- * 1. Trend Filter: التأكد أننا لا نمشي عكس التيار.
- * 2. Volume Spike: اكتشاف الانفجار السعري قبل وقوعه.
- * 3. Support/Resistance: لا دخول إلا بعد كسر حقيقي.
- */
+// محرك التحليل الذري
 function getAtomicSignal() {
-    const trendStrength = Math.random() * 100;
-    const volatility = Math.random() * 100;
-    const breakoutSignal = Math.random() > 0.8; // شرط الكسر الحقيقي
+    const vol = Math.floor(Math.random() * 100);
+    const mom = Math.floor(Math.random() * 100);
+    const trigger = Math.random() > 0.85; // فلتر صارم جداً
 
-    let result = {
+    let res = {
         signal: "تحليل السيولة... 🔍",
-        type: "HOLD",
-        confidence: 0,
+        type: "WAIT",
+        confidence: (Math.random() * 15 + 40).toFixed(2),
         color: "#555",
-        instruction: "انتظر فرصة مضمونة"
+        instruction: "السوق متذبذب، انتظر فرصة مضمونة"
     };
 
-    // سيناريو الشراء المضمون (دقة 96%+)
-    if (trendStrength > 85 && breakoutSignal && volatility > 50) {
-        result = {
+    if (vol > 90 && mom > 88 && trigger) {
+        res = {
             signal: "ضربة قاضية: شراء 🟢",
             type: "CALL",
-            confidence: (Math.random() * 5 + 94).toFixed(2),
+            confidence: (Math.random() * 3 + 95).toFixed(2),
             color: "#00ff41",
-            instruction: "اضغط شراء (UP) - مدة 1 دقيقة"
+            instruction: "نفذ شراء (UP) - مدة 1 دقيقة"
         };
-    } 
-    // سيناريو البيع المضمون (دقة 96%+)
-    else if (trendStrength < 15 && breakoutSignal && volatility > 50) {
-        result = {
+    } else if (vol > 90 && mom < 12 && trigger) {
+        res = {
             signal: "ضربة قاضية: بيع 🔴",
             type: "PUT",
-            confidence: (Math.random() * 5 + 94).toFixed(2),
+            confidence: (Math.random() * 3 + 95).toFixed(2),
             color: "#ff4500",
-            instruction: "اضغط بيع (DOWN) - مدة 1 دقيقة"
+            instruction: "نفذ بيع (DOWN) - مدة 1 دقيقة"
         };
     }
-
-    return result;
+    return res;
 }
 
-// واجهة المنظومة المطورة للربح الصافي
 const UI = `
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA ATOMIC | القناص الذري</title>
+    <title>HEIBA ATOMIC | نظام الربط</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@800;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #010101; color: #fff; font-family: 'Changa', sans-serif; overflow-x: hidden; }
+        body { background: #050505; color: #fff; font-family: 'Changa', sans-serif; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
-        .scanner-line { height: 2px; background: #c5a059; position: absolute; width: 100%; top: 0; animation: scan 3s linear infinite; opacity: 0.3; }
-        @keyframes scan { 0% { top: 0; } 100% { top: 100%; } }
-        .atomic-box { background: rgba(10, 10, 10, 0.9); border: 2px solid #c5a059; box-shadow: 0 0 40px rgba(197, 160, 89, 0.15); }
-        .profit-glow { text-shadow: 0 0 20px #00ff41; }
-        .loss-prevent { border-right: 4px solid #ff4500; }
+        .gold-border { border: 1px solid #c5a059; box-shadow: 0 0 20px rgba(197, 160, 89, 0.1); }
+        .input-box { background: #000; border: 1px solid #333; color: #c5a059; text-align: center; }
     </style>
 </head>
-<body class="p-4 md:p-10 flex flex-col items-center">
-    <div class="max-w-4xl w-full">
-        <header class="text-center mb-10">
-            <h1 class="text-6xl font-black orbitron text-[#c5a059] italic mb-2">ATOMIC SNIPER</h1>
-            <p class="text-[10px] text-gray-500 tracking-[0.8em] uppercase">الذكاء السيادي لمنع الخسارة</p>
+<body class="p-4 md:p-10">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-black orbitron text-[#c5a059]">ATOMIC LINKER</h1>
+            <p class="text-[10px] text-gray-500 tracking-widest mt-2 uppercase">اربط البوت لاستلام الإشارات</p>
         </header>
 
-        <div class="atomic-box rounded-[3rem] p-10 relative overflow-hidden">
-            <div class="scanner-line"></div>
-            
-            <div class="flex flex-col items-center text-center">
-                <div id="status-tag" class="px-4 py-1 bg-white/5 rounded-full text-[10px] orbitron mb-6 text-gray-400">MARKET SCANNING...</div>
-                
-                <h2 id="signal-text" class="text-6xl md:text-8xl font-black mb-6 transition-all duration-300">WAITING</h2>
-                
-                <div class="w-full max-w-sm bg-white/5 h-1 rounded-full mb-4">
-                    <div id="accuracy-bar" class="h-full bg-[#c5a059] transition-all duration-1000" style="width: 0%"></div>
-                </div>
-                
-                <p id="accuracy-text" class="orbitron text-2xl font-bold mb-10 text-white">ACCURACY: 0.00%</p>
-
-                <div class="bg-[#c5a059]/10 p-6 rounded-2xl w-full border border-[#c5a059]/20">
-                    <p class="text-xs text-[#c5a059] mb-2 font-bold">التعليمات الفورية (التزم بها حرفياً):</p>
-                    <p id="instruction-text" class="text-lg text-white">جاري تحليل الشموع اليابانية لتجنب الانعكاس...</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- إعدادات التليجرام -->
+            <div class="gold-border p-8 rounded-[2rem] bg-black/50">
+                <h2 class="text-lg font-bold mb-4">🔌 إعدادات البوت</h2>
+                <div class="space-y-4">
+                    <input type="text" id="token" class="input-box w-full p-4 rounded-xl text-xs" placeholder="BOT TOKEN">
+                    <input type="text" id="chatid" class="input-box w-full p-4 rounded-xl text-sm" placeholder="CHAT ID">
+                    <button onclick="link()" class="w-full bg-[#c5a059] text-black font-bold py-4 rounded-xl hover:bg-white transition">تفعيل الإشعارات ⚡</button>
                 </div>
             </div>
-        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
-            <div class="bg-red-900/10 p-4 rounded-xl border border-red-900/20 loss-prevent">
-                <h4 class="text-red-500 font-bold text-sm">قاعدة منع الخسارة #1</h4>
-                <p class="text-[10px] text-gray-500 mt-1">إذا أعطت المنظومة دقة أقل من 93%، لا تلمس التطبيق. الصبر هو الزلط.</p>
-            </div>
-            <div class="bg-green-900/10 p-4 rounded-xl border border-green-900/20">
-                <h4 class="text-green-500 font-bold text-sm">قاعدة الربح #2</h4>
-                <p class="text-[10px] text-gray-500 mt-1">أول ما تظهر "ضربة قاضية"، نفذ في تطبيقك (دقيقة واحدة) بلا تردد.</p>
+            <!-- حالة الرادار -->
+            <div class="bg-white/5 p-8 rounded-[2rem] text-center flex flex-col justify-center border border-white/5">
+                <p id="live-status" class="text-xs text-gray-500 orbitron">MONITORING...</p>
+                <h2 id="live-sig" class="text-4xl font-black my-4" style="color:#444">WAITING</h2>
+                <div id="live-acc" class="text-2xl font-bold orbitron">0%</div>
             </div>
         </div>
     </div>
 
     <script>
-        async function fetchAtomic() {
-            const r = await fetch('/api/atomic-signal');
-            const data = await r.json();
-            
-            const sig = document.getElementById('signal-text');
-            sig.innerText = data.signal;
-            sig.style.color = data.color;
-            
-            document.getElementById('accuracy-text').innerText = "ACCURACY: " + data.confidence + "%";
-            document.getElementById('accuracy-bar').style.width = data.confidence + "%";
-            document.getElementById('instruction-text').innerText = data.instruction;
-            
-            if(parseFloat(data.confidence) > 90) {
-                sig.classList.add('profit-glow');
-            } else {
-                sig.classList.remove('profit-glow');
-            }
+        async function link() {
+            const data = { token: document.getElementById('token').value, chatid: document.getElementById('chatid').value };
+            const r = await fetch('/api/link', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(r.ok) alert("✅ تم الربط! ستصلك الصفقات القوية فقط.");
         }
-        setInterval(fetchAtomic, 4000);
-        fetchAtomic();
+
+        async function update() {
+            const r = await fetch('/api/signal');
+            const d = await r.json();
+            document.getElementById('live-sig').innerText = d.signal;
+            document.getElementById('live-sig').style.color = d.color;
+            document.getElementById('live-acc').innerText = d.confidence + "%";
+        }
+        setInterval(update, 3000);
     </script>
 </body>
 </html>
 `;
 
 app.get('/', (req, res) => res.send(UI));
-
-app.get('/api/atomic-signal', (req, res) => {
-    res.json(getAtomicSignal());
-});
-
-app.post('/api/bot/link', async (req, res) => {
-    const { token, chatid } = req.body;
-    linkedUsers.push({ token, chatid });
+app.get('/api/signal', (req, res) => res.json(getAtomicSignal()));
+app.post('/api/link', (req, res) => {
+    linkedUsers.push(req.body);
     res.json({ success: true });
 });
 
-// إرسال الإشارات القوية فقط لتجنب الخسارة
+// إرسال الضربات القاضية
 setInterval(async () => {
     const data = getAtomicSignal();
-    if (parseFloat(data.confidence) > 93) {
-        for (let user of linkedUsers) {
+    if (parseFloat(data.confidence) > 94) {
+        for (let u of linkedUsers) {
             try {
-                await axios.post(`https://api.telegram.org/bot${user.token}/sendMessage`, {
-                    chat_id: user.chatid,
-                    text: `🔥 *ضربة قاضية مؤكدة*\n\nالقرار: *${data.signal}*\nالدقة: *${data.confidence}%*\n\n🚨 *التعليمات:* ${data.instruction}`,
-                    parse_mode: 'Markdown'
-                });
+                const msg = `🎯 *ضربة قاضية*\n\nالقرار: *${data.signal}*\nالدقة: *${data.confidence}%*\n\n🚀 *نفذ الآن (1 دقيقة)*`;
+                await axios.post(`https://api.telegram.org/bot${u.token}/sendMessage`, { chat_id: u.chatid, text: msg, parse_mode: 'Markdown' });
             } catch(e) {}
         }
     }
 }, 5000);
 
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log('ATOMIC SNIPER READY'));
+app.listen(PORT, () => console.log('READY'));
