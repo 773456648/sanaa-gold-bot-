@@ -2,18 +2,20 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// مخزن البوتات (يفضل استخدام MongoDB أو SQL في الإنتاج)
-let registeredBots = [];
+// هامة جداً: تخبر السيرفر أين يجد ملف الـ HTML (باعتبار الملف في نفس المجلد)
+app.use(express.static(path.join(__dirname, '.')));
 
-// الإعدادات الذهبية
+// مخزن البوتات المؤقت
+let registeredBots = [];
 const MASTER_KEY = "771232690";
 
-// دالة إرسال التوجيهات الفورية
+// دالة إرسال التعليمات الملكية
 async function sendHeibaInstructions(token, chatid, userName) {
     const instructions = `
 🔥 *مَنْظُومَةُ الهَيْبَةِ - تَمَّ التَّفْعِيلُ* 🔥
@@ -22,10 +24,9 @@ async function sendHeibaInstructions(token, chatid, userName) {
 لقد تم ربط حسابك بالسيرفر العالمي للترقيم بنجاح.
 
 *إليك تعليمات "الزلط" والربح:*
-1️⃣ المنظومة تراقب السيولة (Whale Alerts) والزخم (RSI).
-2️⃣ عند وصول رسالة "ترقيم شراء"، ادخل فوراً بنسبة 20% من محفظتك.
-3️⃣ لا تطمع! المنظومة ستخبرك متى "تهرب بالزلط" (ترقيم بيع).
-4️⃣ حافظ على سرية كلمة المرور الخاصة بك.
+1️⃣ عند وصول رسالة "ترقيم شراء"، ادخل فوراً بنسبة 20% من محفظتك.
+2️⃣ لا تطمع! المنظومة ستخبرك متى "تهرب بالزلط".
+3️⃣ حافظ على سرية كلمة المرور الخاصة بك.
 
 *الحالة الآن:* متصل وجاهز للترقيم 🟢
     `;
@@ -37,44 +38,39 @@ async function sendHeibaInstructions(token, chatid, userName) {
             parse_mode: 'Markdown'
         });
         return true;
-    } catch (e) {
-        return false;
-    }
+    } catch (e) { return false; }
 }
+
+// العرض الأساسي للواجهة (حل مشكلة Cannot GET /)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // جلب البوتات
 app.get('/api/bots', (req, res) => {
     res.json(registeredBots);
 });
 
-// إضافة بوت وإرسال التعليمات فورا
+// إضافة بوت
 app.post('/api/bots/register', async (req, res) => {
     const { name, token, chatid, password } = req.body;
-
-    if (password !== MASTER_KEY) {
-        return res.status(401).json({ error: "كلمة السر غير صحيحة يا صاحبي!" });
-    }
+    if (password !== MASTER_KEY) return res.status(401).json({ error: "كلمة السر خطأ!" });
 
     const newBot = { id: Date.now(), name, token, chatid };
     registeredBots.push(newBot);
-
-    // إرسال التعليمات فوراً لتليجرام
     const sent = await sendHeibaInstructions(token, chatid, name);
 
-    res.json({ 
-        success: true, 
-        message: sent ? "تم التسجيل وإرسال التعليمات لتليجرام ✅" : "تم التسجيل لكن فشل إرسال التعليمات (تأكد من التوكن) ⚠️" 
-    });
+    res.json({ success: true, message: "تم الربط وإرسال التعليمات ✅" });
 });
 
 // حذف بوت
 app.post('/api/bots/remove', (req, res) => {
     const { id, password } = req.body;
-    if (password !== MASTER_KEY) {
-        return res.status(401).json({ error: "لا تملك الصلاحية!" });
-    }
+    if (password !== MASTER_KEY) return res.status(401).json({ error: "لا تملك الصلاحية!" });
     registeredBots = registeredBots.filter(b => b.id !== id);
     res.json({ success: true });
 });
 
-app.listen(3000, () => console.log('Heiba Server is Running on port 3000'));
+// تحديد المنفذ تلقائياً لـ Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`المنظومة تعمل على المنفذ ${PORT}`));
