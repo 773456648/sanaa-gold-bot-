@@ -59,4 +59,4 @@ app.post('/api/bots/remove', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Royal Heiba System Live on ${PORT}`));
+app.listen(PORT, () => console.log(`Royal Heiba System Live on ${PORT}`)); 
