@@ -1,75 +1,174 @@
 const express = require('express');
-const fs = require('fs');
+const mongoose = require('mongoose');
+const path = require('path');
 const axios = require('axios');
+const cors = require('cors');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-const DB_FILE = './heiba_vault.json';
+const DELETE_SECRET = "heiba_777_delete_2026"; // ⚠️ غيرها بكلمة سر تخصك
 
 app.use(express.json());
+app.use(cors());
 app.use(express.static('public'));
 
-// قاعدة البيانات: الرصيد، البوتات، والصفقات
-let vault = { balance: 10000, bots: [], trades: [] };
-if (fs.existsSync(DB_FILE)) { 
-    try { vault = JSON.parse(fs.readFileSync(DB_FILE)); } catch (e) { console.log("Init DB"); }
-}
+// ------------------- الاتصال بقاعدة البيانات -------------------
+// شوف ملف README.txt عشان تعرف تجيب رابط MongoDB Atlas
+const MONGODB_URI = "mongodb+srv://heiba:heiba123@cluster0.xxxxx.mongodb.net/trading?retryWrites=true&w=majority";
+// ⚠️ غير الرابط أعلاه برابطك من MongoDB Atlas
 
-const saveDB = () => fs.writeFileSync(DB_FILE, JSON.stringify(vault, null, 2));
+mongoose.connect(MONGODB_URI)
+    .then(() => console.log('✅ متصل بقاعدة البيانات السحابية'))
+    .catch(err => console.error('❌ فشل الاتصال:', err));
 
-// مسار جلب البيانات
-app.get('/api/data', (req, res) => res.json(vault));
-
-// تنفيذ صفقة وخصم المبلغ من الرصيد التجريبي
-app.post('/api/trade', (req, res) => {
-    const trade = { ...req.body, id: Date.now(), time: new Date().toLocaleString() };
-    if (vault.balance >= trade.amount) {
-        vault.balance -= trade.amount;
-        vault.trades.push(trade);
-        saveDB();
-        res.json(trade);
-    } else {
-        res.status(400).send("الرصيد لا يكفي");
-    }
+// ------------------- نماذج البيانات -------------------
+const UserSchema = new mongoose.Schema({
+    username: String,
+    password: String,
+    role: { type: String, default: 'user' } // admin or user
 });
 
-// إغلاق صفقة وإعادة المبلغ مع الربح أو الخسارة
-app.post('/api/close-trade', (req, res) => {
-    const { id, currentPrice } = req.body;
-    const tIndex = vault.trades.findIndex(t => t.id == id);
-    if (tIndex > -1) {
-        const t = vault.trades[tIndex];
-        const diff = currentPrice - t.entryPrice;
-        const pnl = t.side === 'BUY' ? (diff * t.amount / t.entryPrice) : (-diff * t.amount / t.entryPrice);
-        
-        vault.balance += (t.amount + pnl);
-        vault.trades.splice(tIndex, 1);
-        saveDB();
-        res.json({ newBalance: vault.balance });
-    } else {
-        res.status(404).send("الصفقة غير موجودة");
-    }
+const TradeSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    asset: String,
+    side: String,
+    amount: Number,
+    entryPrice: Number,
+    status: { type: String, default: 'OPEN' },
+    timestamp: { type: Date, default: Date.now }
 });
 
-// محرك الذكاء الاصطناعي الخاص بالمنظومة
-app.post('/api/ai-chat', (req, res) => {
-    const { question, price, asset } = req.body;
-    let answer = "";
+const BotSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    name: String,
+    token: String,
+    chatId: String
+});
+
+const User = mongoose.model('User', UserSchema);
+const Trade = mongoose.model('Trade', TradeSchema);
+const Bot = mongoose.model('Bot', BotSchema);
+
+// ------------------- API -------------------
+
+// تسجيل الدخول
+app.post('/api/login', async (req, res) => {
+    const { password } = req.body;
     
-    if (question.includes("ذهب") || question.includes("اشتري")) {
-        answer = `يا قائد، سعر ${asset} الآن ${price}$. فنياً، إذا كان السعر في اتجاه صاعد، فالشراء بـ 2% من رصيدك التجريبي ($${(vault.balance * 0.02).toFixed(2)}) هو القرار الأذكى لتقليل الخسارة.`;
-    } else if (question.includes("خسارة") || question.includes("ايش اسوي")) {
-        answer = "لا تقلق! التداول علم وصبر. راقب الشارت جيداً، وإذا كنت خاسراً الآن، انتظر منطقة الارتداد ولا تستعجل في إغلاق الصفقة.";
-    } else {
-        answer = `أنا معك يا قائد! رصيدك الحالي $${vault.balance.toFixed(2)}. السوق اليوم فيه سيولة قوية، اسألني عن أي صفقة تريد تحليلها.`;
+    // كلمة السر الرئيسية (أنت)
+    if(password === '771232690') {
+        let user = await User.findOne({ username: 'admin' });
+        if(!user) {
+            user = new User({ 
+                username: 'admin', 
+                password: '771232690', 
+                role: 'admin' 
+            });
+            await user.save();
+        }
+        return res.json({ 
+            success: true, 
+            userId: user._id, 
+            role: user.role,
+            username: user.username 
+        });
     }
-    res.json({ answer });
+    
+    // المستخدمين الآخرين
+    const user = await User.findOne({ password });
+    if(user) {
+        return res.json({ 
+            success: true, 
+            userId: user._id, 
+            role: user.role,
+            username: user.username 
+        });
+    }
+    
+    res.json({ success: false, error: 'كلمة سر خطأ' });
 });
 
-app.post('/api/bots', (req, res) => {
-    vault.bots = [req.body];
-    saveDB();
-    res.send("Saved");
+// إنشاء مستخدم جديد (للأدمن فقط)
+app.post('/api/users', async (req, res) => {
+    const { adminPassword, newUsername, newPassword } = req.body;
+    
+    if(adminPassword !== '771232690') {
+        return res.status(403).json({ error: 'ما لك صلاحية' });
+    }
+    
+    // التأكد إن المستخدم ما موجود
+    const existing = await User.findOne({ password: newPassword });
+    if(existing) {
+        return res.status(400).json({ error: 'المستخدم موجود' });
+    }
+    
+    const user = new User({ 
+        username: newUsername, 
+        password: newPassword, 
+        role: 'user' 
+    });
+    await user.save();
+    res.json({ success: true, userId: user._id });
 });
 
-app.listen(PORT, () => console.log(`🚀 HEIBA SMART SYSTEM ACTIVE ON ${PORT}`));
+// جلب صفقات المستخدم
+app.get('/api/trades/:userId', async (req, res) => {
+    const trades = await Trade.find({ userId: req.params.userId });
+    res.json(trades);
+});
+
+// جلب كل الصفقات (للأدمن)
+app.get('/api/all-trades/:adminId', async (req, res) => {
+    const admin = await User.findById(req.params.adminId);
+    if(admin.role !== 'admin') {
+        return res.status(403).json({ error: 'صلاحية أدمن مطلوبة' });
+    }
+    const trades = await Trade.find().populate('userId', 'username');
+    res.json(trades);
+});
+
+// إضافة صفقة
+app.post('/api/trade', async (req, res) => {
+    const { userId, asset, side, amount, entryPrice } = req.body;
+    
+    const trade = new Trade({
+        userId,
+        asset,
+        side,
+        amount,
+        entryPrice
+    });
+    
+    await trade.save();
+    res.json(trade);
+});
+
+// حذف صفقة (بكلمة سر خاصة)
+app.delete('/api/trade/:id', async (req, res) => {
+    const { deleteSecret, userId } = req.body;
+    
+    if(deleteSecret !== DELETE_SECRET) {
+        return res.status(403).json({ error: 'كلمة سر الحذف غلط' });
+    }
+    
+    const user = await User.findById(userId);
+    const trade = await Trade.findById(req.params.id);
+    
+    if(!trade) {
+        return res.status(404).json({ error: 'الصفقة مو موجودة' });
+    }
+    
+    // إذا كان أدمن أو صاحب الصفقة
+    if(user.role === 'admin' || trade.userId.toString() === userId) {
+        await Trade.findByIdAndDelete(req.params.id);
+        return res.json({ success: true });
+    }
+    
+    res.status(403).json({ error: 'ما لك صلاحية' });
+});
+
+// ------------------- تشغيل السيرفر -------------------
+app.listen(PORT, () => {
+    console.log(`🚀 HEIBA CLOUD ACTIVE ON PORT ${PORT}`);
+    console.log(`📍 افتح المتصفح على: http://localhost:${PORT}`);
+});
