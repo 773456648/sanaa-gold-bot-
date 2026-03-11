@@ -1,137 +1,63 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const { RSI, SMA } = require('technicalindicators');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- الإعدادات ---
+// إعدادات البوت والتحكم
 const MASTER_KEY = "771232690";
-let linkedUsers = [];
+let linkedUsers = []; // [{token, chatid}]
 
-/**
- * جلب بيانات السوق الحقيقية من Binance
- * سنستخدم زوج BTCUSDT كمؤشر عام للسوق
- */
-async function fetchMarketData(symbol = "BTCUSDT") {
+// دالة لجلب البيانات وتحليلها في الخلفية (لإرسال التنبيهات)
+async function monitorMarket() {
     try {
-        const response = await axios.get(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1m&limit=100`);
-        return response.data.map(d => ({
-            close: parseFloat(d[4]), // سعر الإغلاق
-            high: parseFloat(d[2]),
-            low: parseFloat(d[3]),
-            volume: parseFloat(d[5])
-        }));
-    } catch (error) {
-        console.error("خطأ في جلب البيانات:", error);
-        return null;
+        const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+        const price = parseFloat(response.data.lastPrice);
+        
+        // جلب بيانات الشموع لحساب RSI (بسيط)
+        const klines = await axios.get('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=14');
+        const closes = klines.data.map(k => parseFloat(k[4]));
+        
+        // حساب تقريبي للـ RSI
+        let gains = 0, losses = 0;
+        for (let i = 1; i < closes.length; i++) {
+            let diff = closes[i] - closes[i-1];
+            if (diff > 0) gains += diff; else losses -= diff;
+        }
+        const rsi = 100 - (100 / (1 + (gains / (losses || 1))));
+
+        // إرسال تنبيه إذا كانت الإشارة قوية جداً
+        if ((rsi < 25 || rsi > 75) && linkedUsers.length > 0) {
+            const signalType = rsi < 25 ? "شراء 🟢" : "بيع 🔴";
+            for (let user of linkedUsers) {
+                await axios.post(`https://api.telegram.org/bot${user.token}/sendMessage`, {
+                    chat_id: user.chatid,
+                    text: `🎯 *إشارة قناص مؤكدة*\n\nالنوع: ${signalType}\nالسعر: $${price}\nقوة الإشارة: ${rsi.toFixed(2)}%\n\n⚠️ نفذ الآن!`,
+                    parse_mode: 'Markdown'
+                });
+            }
+        }
+    } catch (e) {
+        console.log("خطأ في المراقبة:");
     }
 }
 
-/**
- * المحرك التحليلي الحقيقي (Real Technical Analysis)
- */
-async function analyzeMarket() {
-    const data = await fetchMarketData();
-    if (!data) return { signal: "خطأ في الاتصال", type: "ERROR" };
+// تشغيل المراقبة كل 10 ثوانٍ
+setInterval(monitorMarket, 10000);
 
-    const prices = data.map(d => d.close);
-    
-    // 1. حساب مؤشر RSI (فترة 14)
-    const rsiValues = RSI.calculate({ values: prices, period: 14 });
-    const currentRSI = rsiValues[rsiValues.length - 1];
-
-    // 2. حساب المتوسط المتحرك البسيط SMA (فترة 10)
-    const smaValues = SMA.calculate({ values: prices, period: 10 });
-    const currentSMA = smaValues[smaValues.length - 1];
-    const currentPrice = prices[prices.length - 1];
-
-    let result = {
-        signal: "تحليل السوق... 📊",
-        type: "WAIT",
-        confidence: 0,
-        color: "#555",
-        instruction: "السوق متذبذب، انتظر لحظة الاختراق."
-    };
-
-    // استراتيجية الاختراق والارتداد:
-    // شراء إذا كان RSI أقل من 30 (تشبع بيعي) والسعر بدأ يرتفع فوق المتوسط
-    if (currentRSI < 30 && currentPrice > currentSMA) {
-        result = {
-            signal: "دخول شراء 🟢",
-            type: "CALL",
-            confidence: (100 - currentRSI).toFixed(2),
-            color: "#00ff41",
-            instruction: "إشارة ارتداد قوية - شراء لمدة 1-3 دقائق"
-        };
-    } 
-    // بيع إذا كان RSI أعلى من 70 (تشبع شرائي) والسعر كسر المتوسط للأسفل
-    else if (currentRSI > 70 && currentPrice < currentSMA) {
-        result = {
-            signal: "دخول بيع 🔴",
-            type: "PUT",
-            confidence: currentRSI.toFixed(2),
-            color: "#ff4500",
-            instruction: "إشارة تشبع شرائي - بيع لمدة 1-3 دقائق"
-        };
-    }
-
-    return { ...result, rsi: currentRSI.toFixed(2), price: currentPrice };
-}
-
-// واجهة المستخدم (HTML المستضافة)
-app.get('/', (req, res) => {
-    res.send(`
-        <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
-        <head>
-            <meta charset="UTF-8">
-            <title>ATOMIC REAL-TIME | نظام التحليل الحقيقي</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-            <style>
-                body { background: #050505; color: white; font-family: sans-serif; }
-                .card { background: rgba(20,20,20,0.8); border: 1px solid #c5a059; }
-            </style>
-        </head>
-        <body class="p-10">
-            <div class="max-w-2xl mx-auto text-center">
-                <h1 class="text-4xl font-bold mb-8 text-[#c5a059]">ATOMIC LIVE SCANNER</h1>
-                <div class="card p-10 rounded-3xl shadow-2xl">
-                    <div id="sig" class="text-6xl font-black mb-4">LOADING...</div>
-                    <div id="acc" class="text-2xl text-gray-400 mb-6">Confidence: --%</div>
-                    <div class="grid grid-cols-2 gap-4 text-sm mb-6 text-gray-500">
-                        <div class="bg-black/50 p-3 rounded">RSI: <span id="rsi-val">--</span></div>
-                        <div class="bg-black/50 p-3 rounded">PRICE: <span id="price-val">--</span></div>
-                    </div>
-                    <p id="instr" class="italic text-yellow-500">جاري الاتصال بسيرفرات Binance...</p>
-                </div>
-            </div>
-            <script>
-                async function update() {
-                    try {
-                        const r = await fetch('/api/signal');
-                        const d = await r.json();
-                        document.getElementById('sig').innerText = d.signal;
-                        document.getElementById('sig').style.color = d.color;
-                        document.getElementById('acc').innerText = "Confidence: " + d.confidence + "%";
-                        document.getElementById('rsi-val').innerText = d.rsi;
-                        document.getElementById('price-val').innerText = d.price;
-                        document.getElementById('instr').innerText = d.instruction;
-                    } catch(e) {}
-                }
-                setInterval(update, 3000);
-            </script>
-        </body>
-        </html>
-    `);
+// المسارات (API)
+app.post('/api/link-bot', (req, res) => {
+    const { key, token, chatid } = req.body;
+    if (key !== MASTER_KEY) return res.status(401).json({ success: false });
+    linkedUsers.push({ token, chatid });
+    res.json({ success: true });
 });
 
-app.get('/api/signal', async (req, res) => {
-    const analysis = await analyzeMarket();
-    res.json(analysis);
+app.get('/api/status', (req, res) => {
+    res.json({ active_bots: linkedUsers.length, status: "Running" });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('REAL ANALYTICS ENGINE START'));
+app.listen(PORT, () => console.log(`سيرفر القناص يعمل على المنفذ ${PORT}`));
