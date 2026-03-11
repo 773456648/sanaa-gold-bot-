@@ -3,192 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA GLOBAL | المنظومة العملاقة</title>
+    <title>HEIBA GLOBAL | المنظومة الجماعية</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
-        :root { --gold: #d4af37; --bg: #050508; --card: rgba(15, 15, 25, 0.9); }
+        :root { --gold: #d4af37; --bg: #050508; --card: rgba(15, 15, 25, 0.95); }
         body { background: var(--bg); color: #fff; font-family: 'Changa', sans-serif; overflow-x: hidden; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass-panel { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
-        .gold-glow { color: #f1d279; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
-        .input-heiba { background: rgba(0,0,0,0.5); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; color: var(--gold); text-align: center; outline: none; }
-        .asset-tab.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); color: var(--gold); }
-        .scanning { background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent); background-size: 200% 100%; animation: scan 2s infinite linear; }
-        @keyframes scan { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .activity-item { border-left: 2px solid var(--gold); padding: 5px 10px; margin-bottom: 8px; background: rgba(255,255,255,0.02); font-size: 11px; }
+        .glass-panel { background: var(--card); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; }
+        .gold-glow { color: #f1d279; text-shadow: 0 0 10px rgba(212, 175, 55, 0.4); }
+        .input-heiba { background: rgba(0,0,0,0.6); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; color: var(--gold); padding: 8px; outline: none; transition: 0.3s; width: 100%; font-size: 13px; }
+        .input-heiba:focus { border-color: var(--gold); box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+        .btn-gold { background: linear-gradient(to right, #d4af37, #a17d1a); color: black; font-weight: 900; border-radius: 8px; transition: 0.3s; cursor: pointer; }
+        .btn-gold:hover { transform: scale(1.02); filter: brightness(1.2); }
+        .trade-card { border-right: 4px solid #444; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-2 md:p-6">
 
+    <!-- شاشة الدخول الرئيسية -->
     <div id="lock" class="fixed inset-0 z-[1000] bg-black flex items-center justify-center p-6">
-        <div class="glass-panel p-10 max-w-md w-full text-center border-gold/30">
-            <h2 class="text-3xl font-black gold-glow mb-2 orbitron">HEIBA GLOBAL</h2>
-            <p class="text-[10px] tracking-[5px] uppercase mb-8">Quantum Access Only</p>
-            <input type="text" id="user-identity" class="input-heiba w-full p-3 mb-3" placeholder="اسمك البرمجي">
-            <input type="password" id="pass" class="input-heiba w-full p-4 text-2xl mb-6 tracking-[10px]" placeholder="••••">
-            <button onclick="unlock()" class="w-full bg-gradient-to-r from-[#d4af37] to-[#a17d1a] text-black py-4 rounded-xl font-black uppercase">دخول المنظومة</button>
+        <div class="glass-panel p-10 max-w-sm w-full text-center">
+            <h2 class="text-3xl font-black gold-glow mb-2 orbitron uppercase">Heiba Global</h2>
+            <p class="text-gray-500 text-[9px] tracking-[4px] mb-8">Quantum Shared Access</p>
+            <input type="password" id="access-key" class="input-heiba text-center text-xl mb-6 tracking-[8px]" placeholder="••••">
+            <button onclick="unlock()" class="btn-gold w-full py-3">دخول المنظومة</button>
         </div>
     </div>
 
     <div id="main" class="hidden">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
-            <div class="flex items-center gap-5">
-                <div class="p-5 glass-panel border-gold/40 gold-glow orbitron font-black text-2xl">H</div>
-                <div><h1 class="text-2xl font-black tracking-tight">HEIBA <span class="gold-glow">TRADER V2</span></h1></div>
+        <!-- الهيدر -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="p-4 glass-panel border-gold/40 gold-glow orbitron font-black text-xl">H</div>
+                <div>
+                    <h1 class="text-xl font-black">HEIBA <span class="gold-glow">SHARED NETWORK</span></h1>
+                    <div class="flex items-center gap-2 text-[10px] text-green-500">
+                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                        سيرفر الرصد المشترك متصل
+                    </div>
+                </div>
             </div>
-            <div class="glass-panel px-8 py-4 border-r-4 border-gold">
-                <div id="live-price" class="text-3xl font-black orbitron gold-glow">$0.00</div>
+            <div class="glass-panel px-6 py-2 border-r-4 border-gold text-right">
+                <div id="live-price" class="text-2xl font-black orbitron gold-glow">$0.00</div>
+                <div id="active-asset-name" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Loading...</div>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-3 space-y-6">
-                <div class="glass-panel p-6">
-                    <h3 class="text-xs font-bold gold-glow mb-4">🤖 إدارة البوت الشخصي</h3>
-                    <div class="space-y-3">
-                        <input id="bot-n" class="input-heiba w-full p-2 text-xs" placeholder="اسم البوت (فريد)">
-                        <input id="bot-t" class="input-heiba w-full p-2 text-xs" placeholder="Telegram Token">
-                        <input id="bot-c" class="input-heiba w-full p-2 text-xs" placeholder="Chat ID">
-                        <input id="bot-p" type="password" class="input-heiba w-full p-2 text-xs" placeholder="كلمة سر الحماية">
-                        <button onclick="linkBot()" class="w-full bg-gold/20 text-gold py-2 rounded-lg text-xs font-bold">ربط وحماية</button>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- اليمين: البوتات (إدارة الرصد) -->
+            <div class="lg:col-span-3 space-y-4">
+                <div class="glass-panel p-4">
+                    <h3 class="text-xs font-bold gold-glow mb-4 flex justify-between">
+                        🤖 رادارات الرصد 
+                        <span id="bot-count" class="text-[9px] bg-gold/10 px-1 rounded text-gold">0</span>
+                    </h3>
+                    <div id="bot-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto no-scrollbar">
+                        <!-- البوتات تظهر هنا -->
+                    </div>
+                    <div class="space-y-2 pt-4 border-t border-white/5">
+                        <input id="bot-n" class="input-heiba" placeholder="اسم البوت (مثلاً: رادار 1)">
+                        <input id="bot-t" class="input-heiba" placeholder="Token البوت">
+                        <input id="bot-c" class="input-heiba" placeholder="Chat ID">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input id="bot-u" class="input-heiba" placeholder="اسمك">
+                            <input id="bot-p" type="password" class="input-heiba" placeholder="كلمة سر الحذف">
+                        </div>
+                        <button onclick="addBot()" class="btn-gold w-full py-2 text-xs">إضافة رصد جديد</button>
                     </div>
                 </div>
 
-                <div class="glass-panel p-6">
-                    <h3 class="text-xs font-bold text-gray-500 mb-4 tracking-widest uppercase">📡 رادار الأنشطة المباشرة</h3>
-                    <div id="activity-log" class="max-h-[200px] overflow-y-auto space-y-2">
-                        </div>
+                <div class="glass-panel p-4 bg-gold/5">
+                    <h3 class="text-xs font-bold text-gray-400 mb-4">نشاط المنظومة الأخير</h3>
+                    <div id="activity-log" class="text-[10px] space-y-2 max-h-32 overflow-y-auto no-scrollbar text-gray-500">
+                        <!-- السجل -->
+                    </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-6 space-y-6">
-                <div class="glass-panel h-[450px] overflow-hidden">
+            <!-- المنتصف: الشارت والتحكم -->
+            <div class="lg:col-span-6 space-y-4">
+                <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <button class="asset-tab bg-gold/10 text-gold px-4 py-1 rounded-full text-xs border border-gold/30" onclick="changeAsset('OANDA:XAUUSD', 'GOLD')">GOLD</button>
+                    <button class="asset-tab bg-white/5 px-4 py-1 rounded-full text-xs border border-white/10" onclick="changeAsset('BINANCE:BTCUSDT', 'BTC')">BTC</button>
+                    <button class="asset-tab bg-white/5 px-4 py-1 rounded-full text-xs border border-white/10" onclick="changeAsset('BINANCE:ETHUSDT', 'ETH')">ETH</button>
+                    <button class="asset-tab bg-white/5 px-4 py-1 rounded-full text-xs border border-white/10" onclick="changeAsset('BINANCE:SOLUSDT', 'SOL')">SOL</button>
+                </div>
+                
+                <div class="glass-panel h-[420px] overflow-hidden relative">
                     <div id="chart-container" class="w-full h-full"></div>
                 </div>
-                <div class="glass-panel p-8 scanning flex gap-4">
-                    <input id="trade-amount" type="number" class="input-heiba flex-1 p-4 text-2xl font-black" placeholder="0.00">
-                    <button onclick="placeOrder('BUY')" class="bg-green-600 px-8 rounded-xl font-black">BUY</button>
-                    <button onclick="placeOrder('SELL')" class="bg-red-600 px-8 rounded-xl font-black">SELL</button>
+
+                <div class="glass-panel p-5">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <input id="trade-u" class="input-heiba" placeholder="اسمك (المنفذ)">
+                        <input id="trade-p" type="password" class="input-heiba" placeholder="كلمة سر الإغلاق">
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="relative flex-1">
+                            <input id="trade-amount" type="number" class="input-heiba p-3 text-lg font-black" placeholder="المبلغ $">
+                        </div>
+                        <button onclick="placeOrder('BUY')" class="bg-green-600 hover:bg-green-500 px-6 rounded-lg font-bold text-sm">BUY</button>
+                        <button onclick="placeOrder('SELL')" class="bg-red-600 hover:bg-red-500 px-6 rounded-lg font-bold text-sm">SELL</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-3 space-y-6">
-                <div class="glass-panel p-6">
-                    <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase">المنظومات المتصلة</h3>
-                    <div id="active-bots" class="space-y-2 text-[10px]">
-                        </div>
+            <!-- اليسار: قائمة الصفقات العامة -->
+            <div class="lg:col-span-3 space-y-4">
+                <div class="glass-panel p-4 h-full">
+                    <h3 class="text-xs font-bold gold-glow mb-4">📈 صفقات الشبكة الحالية</h3>
+                    <div id="trades-list" class="space-y-3 max-h-[600px] overflow-y-auto no-scrollbar">
+                        <!-- الصفقات تظهر هنا -->
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentUser = "";
         let currentAsset = { symbol: 'OANDA:XAUUSD', name: 'GOLD' };
         let allPrices = {};
+        let sharedData = { trades: [], bots: [], logs: [] };
 
         function unlock() {
-            const user = document.getElementById('user-identity').value;
-            const pass = document.getElementById('pass').value;
-            if(pass === '771232690' && user.trim() !== "") {
-                currentUser = user;
+            if(document.getElementById('access-key').value === '771232690') {
                 document.getElementById('lock').style.display='none';
                 document.getElementById('main').classList.remove('hidden');
                 init();
-            } else { alert("تأكد من الاسم والرمز!"); }
+            } else { alert("رمز الدخول غير صحيح"); }
         }
 
-        function init() {
+        async function init() {
             loadChart();
-            setInterval(syncData, 2000);
             updatePrices();
-            setInterval(updatePrices, 5000);
-        }
-
-        async function syncData() {
-            const res = await fetch('/api/data');
-            const data = await res.json();
-            
-            // تحديث سجل الأنشطة
-            const log = document.getElementById('activity-log');
-            log.innerHTML = data.activities.map(a => `
-                <div class="activity-item">
-                    <span class="gold-glow font-bold">${a.user}</span>: ${a.action} <br>
-                    <span class="text-[8px] opacity-50">${a.time}</span>
-                </div>
-            `).join('');
-
-            // تحديث قائمة البوتات مع خيار الحذف
-            const botsDiv = document.getElementById('active-bots');
-            botsDiv.innerHTML = data.bots.map(b => `
-                <div class="flex justify-between items-center bg-white/5 p-2 rounded">
-                    <span>${b.name}</span>
-                    <button onclick="requestDeleteBot(${b.id})" class="text-red-500 hover:scale-110">✖</button>
-                </div>
-            `).join('');
-        }
-
-        async function linkBot() {
-            const name = document.getElementById('bot-n').value;
-            const token = document.getElementById('bot-t').value;
-            const chatid = document.getElementById('bot-c').value;
-            const password = document.getElementById('bot-p').value;
-
-            if(!name || !password) return alert("الاسم وكلمة السر ضروريان للحماية!");
-
-            await fetch('/api/bots', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, token, chatid, password })
-            });
-            alert("تم الحماية والربط!");
-        }
-
-        async function requestDeleteBot(id) {
-            const pass = prompt("أدخل كلمة سر الحماية لهذا البوت لحذفه:");
-            if(!pass) return;
-
-            const res = await fetch('/api/bots/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id, password: pass })
-            });
-
-            if(res.ok) alert("تم الحذف"); else alert("خطأ: كلمة السر غير صحيحة!");
-        }
-
-        async function updatePrices() {
-            const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');
-            const d = await r.json();
-            allPrices['GOLD'] = parseFloat(d.price);
-            document.getElementById('live-price').innerText = "$" + allPrices['GOLD'].toLocaleString();
+            setInterval(updatePrices, 3000);
+            syncData(); // المزامنة الأولى
+            setInterval(syncData, 5000); // مزامنة كل 5 ثواني لرؤية تحديثات الآخرين
         }
 
         function loadChart() {
             new TradingView.widget({
                 "width": "100%", "height": "100%", "symbol": currentAsset.symbol,
                 "interval": "15", "theme": "dark", "container_id": "chart-container",
-                "locale": "ar", "style": "1"
+                "locale": "ar", "style": "1", "hide_top_toolbar": true
             });
+            document.getElementById('active-asset-name').innerText = currentAsset.name + " Price";
+        }
+
+        async function updatePrices() {
+            try {
+                const r = await fetch('https://api.binance.com/api/v3/ticker/price');
+                const d = await r.json();
+                const pairs = { 'PAXGUSDT': 'GOLD', 'BTCUSDT': 'BTC', 'ETHUSDT': 'ETH', 'SOLUSDT': 'SOL' };
+                d.forEach(p => {
+                    if(pairs[p.symbol]) allPrices[pairs[p.symbol]] = parseFloat(p.price);
+                });
+                document.getElementById('live-price').innerText = "$" + (allPrices[currentAsset.name] || 0).toLocaleString();
+            } catch(e) {}
+        }
+
+        async function syncData() {
+            try {
+                const res = await fetch('/api/data');
+                sharedData = await res.json();
+                renderUI();
+            } catch(e) {}
+        }
+
+        function changeAsset(symbol, name) {
+            currentAsset = { symbol, name };
+            loadChart();
+        }
+
+        async function addBot() {
+            const bot = {
+                name: document.getElementById('bot-n').value,
+                token: document.getElementById('bot-t').value,
+                chatid: document.getElementById('bot-c').value,
+                user: document.getElementById('bot-u').value,
+                pass: document.getElementById('bot-p').value,
+                id: Date.now()
+            };
+
+            if(!bot.name || !bot.user || !bot.pass) return alert("يرجى إكمال البيانات للهوية");
+
+            await fetch('/api/bots', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(bot)
+            });
+            syncData();
+            ['bot-n','bot-t','bot-c','bot-u','bot-p'].forEach(id => document.getElementById(id).value = '');
+        }
+
+        async function deleteBot(id) {
+            const pass = prompt("أدخل كلمة السر الخاصة بهذا البوت لحذفه:");
+            const res = await fetch(`/api/bots/${id}`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ pass })
+            });
+            const result = await res.json();
+            if(result.success) syncData(); else alert(result.msg);
         }
 
         async function placeOrder(side) {
-            const amount = document.getElementById('trade-amount').value;
-            if(!amount) return;
+            const trade = {
+                asset: currentAsset.name,
+                side,
+                amount: document.getElementById('trade-amount').value,
+                user: document.getElementById('trade-u').value,
+                pass: document.getElementById('trade-p').value,
+                entryPrice: allPrices[currentAsset.name],
+                id: Date.now()
+            };
+
+            if(!trade.amount || !trade.user || !trade.pass) return alert("يجب إدخال اسمك وكلمة سر لحماية الصفقة");
+
             await fetch('/api/trade', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    asset: currentAsset.name,
-                    side,
-                    amount,
-                    entryPrice: allPrices[currentAsset.name],
-                    userName: currentUser
-                })
+                body: JSON.stringify(trade)
             });
-            alert("تم إرسال الأمر للمنظومة");
+            syncData();
+            document.getElementById('trade-amount').value = '';
+        }
+
+        async function closeTrade(id) {
+            const pass = prompt("أدخل كلمة سر إغلاق هذه الصفقة:");
+            const res = await fetch(`/api/trade/${id}`, {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ pass })
+            });
+            const result = await res.json();
+            if(result.success) syncData(); else alert(result.msg);
+        }
+
+        function renderUI() {
+            // رصد البوتات
+            const bList = document.getElementById('bot-list');
+            document.getElementById('bot-count').innerText = sharedData.bots.length;
+            bList.innerHTML = sharedData.bots.map(b => `
+                <div class="flex justify-between items-center bg-white/5 p-2 rounded border border-gold/10">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-bold">${b.name}</span>
+                        <span class="text-[8px] text-gray-500">بواسطة: ${b.user}</span>
+                    </div>
+                    <button onclick="deleteBot(${b.id})" class="text-red-500 text-[10px]">حذف</button>
+                </div>
+            `).join('');
+
+            // رصد الصفقات
+            const tList = document.getElementById('trades-list');
+            tList.innerHTML = sharedData.trades.map(t => {
+                const current = allPrices[t.asset] || t.entryPrice;
+                const diff = t.side === 'BUY' ? (current - t.entryPrice) : (t.entryPrice - current);
+                const pnl = (diff * t.amount / t.entryPrice).toFixed(2);
+                const isWin = pnl >= 0;
+
+                return `
+                <div class="trade-card" style="border-right-color: ${t.side==='BUY'?'#10b981':'#ef4444'}">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[11px] font-black ${t.side==='BUY'?'text-green-500':'text-red-500'}">${t.side} ${t.asset}</span>
+                        <span class="text-[10px] ${isWin?'text-green-500':'text-red-500'} orbitron font-bold">${isWin?'+':''}${pnl}$</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[9px] text-gray-400">
+                        <span>المنفذ: <b class="text-white">${t.user}</b></span>
+                        <button onclick="closeTrade(${t.id})" class="text-[8px] bg-white/10 px-2 py-1 rounded">إغلاق</button>
+                    </div>
+                </div>`;
+            }).reverse().join('');
+
+            // سجل النشاط
+            const aLog = document.getElementById('activity-log');
+            aLog.innerHTML = sharedData.logs.map(l => `<div>[${l.time}] ${l.msg}</div>`).reverse().join('');
         }
     </script>
 </body>
