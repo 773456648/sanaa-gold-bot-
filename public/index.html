@@ -23,7 +23,7 @@
 </head>
 <body class="p-2 md:p-6">
 
-    <!-- شاشة الدخول الرئيسية -->
+    <!-- شاشة الدخول -->
     <div id="lock" class="fixed inset-0 z-[1000] bg-black flex items-center justify-center p-6">
         <div class="glass-panel p-10 max-w-sm w-full text-center">
             <h2 class="text-3xl font-black gold-glow mb-2 orbitron uppercase">Heiba Global</h2>
@@ -48,12 +48,12 @@
             </div>
             <div class="glass-panel px-6 py-2 border-r-4 border-gold text-right">
                 <div id="live-price" class="text-2xl font-black orbitron gold-glow">$0.00</div>
-                <div id="active-asset-name" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Loading...</div>
+                <div id="active-asset-name" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">جاري التحميل...</div>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- اليمين: البوتات (إدارة الرصد) -->
+            <!-- اليمين: البوتات -->
             <div class="lg:col-span-3 space-y-4">
                 <div class="glass-panel p-4">
                     <h3 class="text-xs font-bold gold-glow mb-4 flex justify-between">
@@ -64,26 +64,26 @@
                         <!-- البوتات تظهر هنا -->
                     </div>
                     <div class="space-y-2 pt-4 border-t border-white/5">
-                        <input id="bot-n" class="input-heiba" placeholder="اسم البوت (مثلاً: رادار 1)">
-                        <input id="bot-t" class="input-heiba" placeholder="Token البوت">
-                        <input id="bot-c" class="input-heiba" placeholder="Chat ID">
+                        <input id="bot-n" class="input-heiba" placeholder="اسم البوت">
+                        <input id="bot-t" class="input-heiba" placeholder="توكن التيليجرام">
+                        <input id="bot-c" class="input-heiba" placeholder="معرف التيليجرام">
                         <div class="grid grid-cols-2 gap-2">
                             <input id="bot-u" class="input-heiba" placeholder="اسمك">
-                            <input id="bot-p" type="password" class="input-heiba" placeholder="كلمة سر الحذف">
+                            <input id="bot-p" type="password" class="input-heiba" placeholder="كلمة السر">
                         </div>
-                        <button onclick="addBot()" class="btn-gold w-full py-2 text-xs">إضافة رصد جديد</button>
+                        <button onclick="addBot()" class="btn-gold w-full py-2 text-xs">➕ إضافة رصد جديد</button>
                     </div>
                 </div>
 
-                <div class="glass-panel p-4 bg-gold/5">
-                    <h3 class="text-xs font-bold text-gray-400 mb-4">نشاط المنظومة الأخير</h3>
+                <div class="glass-panel p-4">
+                    <h3 class="text-xs font-bold text-gray-400 mb-4">📋 نشاط المنظومة</h3>
                     <div id="activity-log" class="text-[10px] space-y-2 max-h-32 overflow-y-auto no-scrollbar text-gray-500">
                         <!-- السجل -->
                     </div>
                 </div>
             </div>
 
-            <!-- المنتصف: الشارت والتحكم -->
+            <!-- المنتصف: الشارت -->
             <div class="lg:col-span-6 space-y-4">
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     <button class="asset-tab bg-gold/10 text-gold px-4 py-1 rounded-full text-xs border border-gold/30" onclick="changeAsset('OANDA:XAUUSD', 'GOLD')">GOLD</button>
@@ -98,8 +98,8 @@
 
                 <div class="glass-panel p-5">
                     <div class="grid grid-cols-2 gap-4 mb-4">
-                        <input id="trade-u" class="input-heiba" placeholder="اسمك (المنفذ)">
-                        <input id="trade-p" type="password" class="input-heiba" placeholder="كلمة سر الإغلاق">
+                        <input id="trade-u" class="input-heiba" placeholder="اسمك">
+                        <input id="trade-p" type="password" class="input-heiba" placeholder="كلمة السر">
                     </div>
                     <div class="flex gap-4">
                         <div class="relative flex-1">
@@ -111,10 +111,10 @@
                 </div>
             </div>
 
-            <!-- اليسار: قائمة الصفقات العامة -->
+            <!-- اليسار: الصفقات -->
             <div class="lg:col-span-3 space-y-4">
                 <div class="glass-panel p-4 h-full">
-                    <h3 class="text-xs font-bold gold-glow mb-4">📈 صفقات الشبكة الحالية</h3>
+                    <h3 class="text-xs font-bold gold-glow mb-4">📈 صفقات الشبكة</h3>
                     <div id="trades-list" class="space-y-3 max-h-[600px] overflow-y-auto no-scrollbar">
                         <!-- الصفقات تظهر هنا -->
                     </div>
@@ -124,60 +124,100 @@
     </div>
 
     <script>
+        // ===== المتغيرات العامة =====
         let currentAsset = { symbol: 'OANDA:XAUUSD', name: 'GOLD' };
         let allPrices = {};
         let sharedData = { trades: [], bots: [], logs: [] };
+        let chartWidget = null;
 
+        // ===== فتح القفل =====
         function unlock() {
             if(document.getElementById('access-key').value === '771232690') {
-                document.getElementById('lock').style.display='none';
+                document.getElementById('lock').style.display = 'none';
                 document.getElementById('main').classList.remove('hidden');
                 init();
-            } else { alert("رمز الدخول غير صحيح"); }
+            } else { 
+                alert("❌ رمز الدخول غير صحيح"); 
+            }
         }
 
+        // ===== التهيئة =====
         async function init() {
             loadChart();
             updatePrices();
             setInterval(updatePrices, 3000);
-            syncData(); // المزامنة الأولى
-            setInterval(syncData, 5000); // مزامنة كل 5 ثواني لرؤية تحديثات الآخرين
+            syncData();
+            setInterval(syncData, 3000);
         }
 
+        // ===== تحميل الشارت =====
         function loadChart() {
-            new TradingView.widget({
-                "width": "100%", "height": "100%", "symbol": currentAsset.symbol,
-                "interval": "15", "theme": "dark", "container_id": "chart-container",
-                "locale": "ar", "style": "1", "hide_top_toolbar": true
+            if(chartWidget) {
+                chartWidget.remove();
+            }
+            chartWidget = new TradingView.widget({
+                "width": "100%",
+                "height": "100%",
+                "symbol": currentAsset.symbol,
+                "interval": "15",
+                "timezone": "Asia/Riyadh",
+                "theme": "dark",
+                "style": "1",
+                "locale": "ar",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "hide_top_toolbar": true,
+                "save_image": false,
+                "container_id": "chart-container"
             });
-            document.getElementById('active-asset-name').innerText = currentAsset.name + " Price";
+            document.getElementById('active-asset-name').innerText = currentAsset.name;
         }
 
+        // ===== تحديث الأسعار =====
         async function updatePrices() {
             try {
-                const r = await fetch('https://api.binance.com/api/v3/ticker/price');
-                const d = await r.json();
-                const pairs = { 'PAXGUSDT': 'GOLD', 'BTCUSDT': 'BTC', 'ETHUSDT': 'ETH', 'SOLUSDT': 'SOL' };
-                d.forEach(p => {
-                    if(pairs[p.symbol]) allPrices[pairs[p.symbol]] = parseFloat(p.price);
+                const response = await fetch('https://api.binance.com/api/v3/ticker/price');
+                const data = await response.json();
+                const pairs = { 
+                    'PAXGUSDT': 'GOLD', 
+                    'BTCUSDT': 'BTC', 
+                    'ETHUSDT': 'ETH', 
+                    'SOLUSDT': 'SOL' 
+                };
+                
+                data.forEach(item => {
+                    if(pairs[item.symbol]) {
+                        allPrices[pairs[item.symbol]] = parseFloat(item.price);
+                    }
                 });
-                document.getElementById('live-price').innerText = "$" + (allPrices[currentAsset.name] || 0).toLocaleString();
-            } catch(e) {}
+                
+                const currentPrice = allPrices[currentAsset.name] || 0;
+                document.getElementById('live-price').innerText = "$" + currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            } catch(e) {
+                console.log("خطأ في تحديث الأسعار:", e);
+            }
         }
 
+        // ===== مزامنة البيانات مع السيرفر =====
         async function syncData() {
             try {
-                const res = await fetch('/api/data');
-                sharedData = await res.json();
-                renderUI();
-            } catch(e) {}
+                const response = await fetch('/api/data');
+                if(response.ok) {
+                    sharedData = await response.json();
+                    renderUI();
+                }
+            } catch(e) {
+                console.log("خطأ في المزامنة:", e);
+            }
         }
 
+        // ===== تغيير الأصل =====
         function changeAsset(symbol, name) {
             currentAsset = { symbol, name };
             loadChart();
         }
 
+        // ===== إضافة بوت =====
         async function addBot() {
             const bot = {
                 name: document.getElementById('bot-n').value,
@@ -188,99 +228,161 @@
                 id: Date.now()
             };
 
-            if(!bot.name || !bot.user || !bot.pass) return alert("يرجى إكمال البيانات للهوية");
+            if(!bot.name || !bot.user || !bot.pass) {
+                alert("❌ يرجى إكمال البيانات المطلوبة");
+                return;
+            }
 
-            await fetch('/api/bots', {
+            const response = await fetch('/api/bots', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(bot)
             });
-            syncData();
-            ['bot-n','bot-t','bot-c','bot-u','bot-p'].forEach(id => document.getElementById(id).value = '');
+
+            if(response.ok) {
+                syncData();
+                document.getElementById('bot-n').value = '';
+                document.getElementById('bot-t').value = '';
+                document.getElementById('bot-c').value = '';
+                document.getElementById('bot-u').value = '';
+                document.getElementById('bot-p').value = '';
+            }
         }
 
+        // ===== حذف بوت =====
         async function deleteBot(id) {
-            const pass = prompt("أدخل كلمة السر الخاصة بهذا البوت لحذفه:");
-            const res = await fetch(`/api/bots/${id}`, {
+            const pass = prompt("🔑 أدخل كلمة السر لحذف هذا البوت:");
+            if(!pass) return;
+            
+            const response = await fetch(`/api/bots/${id}`, {
                 method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ pass })
             });
-            const result = await res.json();
-            if(result.success) syncData(); else alert(result.msg);
+            
+            const result = await response.json();
+            if(result.success) {
+                syncData();
+            } else {
+                alert(result.msg);
+            }
         }
 
+        // ===== فتح صفقة =====
         async function placeOrder(side) {
             const trade = {
                 asset: currentAsset.name,
-                side,
+                side: side,
                 amount: document.getElementById('trade-amount').value,
                 user: document.getElementById('trade-u').value,
                 pass: document.getElementById('trade-p').value,
                 entryPrice: allPrices[currentAsset.name],
+                timestamp: new Date().toISOString(),
                 id: Date.now()
             };
 
-            if(!trade.amount || !trade.user || !trade.pass) return alert("يجب إدخال اسمك وكلمة سر لحماية الصفقة");
+            if(!trade.amount || !trade.user || !trade.pass) {
+                alert("❌ يجب إدخال جميع البيانات");
+                return;
+            }
 
-            await fetch('/api/trade', {
+            if(parseFloat(trade.amount) <= 0) {
+                alert("❌ المبلغ يجب أن يكون أكبر من صفر");
+                return;
+            }
+
+            const response = await fetch('/api/trade', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(trade)
             });
-            syncData();
-            document.getElementById('trade-amount').value = '';
+
+            if(response.ok) {
+                syncData();
+                document.getElementById('trade-amount').value = '';
+                document.getElementById('trade-u').value = '';
+                document.getElementById('trade-p').value = '';
+            }
         }
 
+        // ===== إغلاق صفقة =====
         async function closeTrade(id) {
-            const pass = prompt("أدخل كلمة سر إغلاق هذه الصفقة:");
-            const res = await fetch(`/api/trade/${id}`, {
+            const pass = prompt("🔑 أدخل كلمة السر لإغلاق هذه الصفقة:");
+            if(!pass) return;
+            
+            const response = await fetch(`/api/trade/${id}`, {
                 method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ pass })
             });
-            const result = await res.json();
-            if(result.success) syncData(); else alert(result.msg);
+            
+            const result = await response.json();
+            if(result.success) {
+                syncData();
+            } else {
+                alert(result.msg);
+            }
         }
 
+        // ===== عرض الواجهة =====
         function renderUI() {
-            // رصد البوتات
-            const bList = document.getElementById('bot-list');
+            // عرض البوتات
+            const botList = document.getElementById('bot-list');
             document.getElementById('bot-count').innerText = sharedData.bots.length;
-            bList.innerHTML = sharedData.bots.map(b => `
-                <div class="flex justify-between items-center bg-white/5 p-2 rounded border border-gold/10">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold">${b.name}</span>
-                        <span class="text-[8px] text-gray-500">بواسطة: ${b.user}</span>
+            
+            if(sharedData.bots.length === 0) {
+                botList.innerHTML = '<div class="text-gray-600 text-center p-4 text-[10px]">لا توجد رادارات بعد</div>';
+            } else {
+                botList.innerHTML = sharedData.bots.map(b => `
+                    <div class="flex justify-between items-center bg-white/5 p-2 rounded border border-gold/10">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] font-bold">${b.name}</span>
+                            <span class="text-[8px] text-gray-500">بواسطة: ${b.user}</span>
+                        </div>
+                        <button onclick="deleteBot(${b.id})" class="text-red-500 text-[10px] hover:text-red-400">✖</button>
                     </div>
-                    <button onclick="deleteBot(${b.id})" class="text-red-500 text-[10px]">حذف</button>
-                </div>
-            `).join('');
+                `).join('');
+            }
 
-            // رصد الصفقات
-            const tList = document.getElementById('trades-list');
-            tList.innerHTML = sharedData.trades.map(t => {
-                const current = allPrices[t.asset] || t.entryPrice;
-                const diff = t.side === 'BUY' ? (current - t.entryPrice) : (t.entryPrice - current);
-                const pnl = (diff * t.amount / t.entryPrice).toFixed(2);
-                const isWin = pnl >= 0;
+            // عرض الصفقات
+            const tradesList = document.getElementById('trades-list');
+            
+            if(sharedData.trades.length === 0) {
+                tradesList.innerHTML = '<div class="text-gray-600 text-center p-8 text-[10px]">لا توجد صفقات مفتوحة</div>';
+            } else {
+                tradesList.innerHTML = sharedData.trades.map(t => {
+                    const current = allPrices[t.asset] || t.entryPrice;
+                    const diff = t.side === 'BUY' ? (current - t.entryPrice) : (t.entryPrice - current);
+                    const pnl = (diff * t.amount / t.entryPrice).toFixed(2);
+                    const isWin = pnl >= 0;
 
-                return `
-                <div class="trade-card" style="border-right-color: ${t.side==='BUY'?'#10b981':'#ef4444'}">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-[11px] font-black ${t.side==='BUY'?'text-green-500':'text-red-500'}">${t.side} ${t.asset}</span>
-                        <span class="text-[10px] ${isWin?'text-green-500':'text-red-500'} orbitron font-bold">${isWin?'+':''}${pnl}$</span>
-                    </div>
-                    <div class="flex justify-between items-center text-[9px] text-gray-400">
-                        <span>المنفذ: <b class="text-white">${t.user}</b></span>
-                        <button onclick="closeTrade(${t.id})" class="text-[8px] bg-white/10 px-2 py-1 rounded">إغلاق</button>
-                    </div>
-                </div>`;
-            }).reverse().join('');
+                    return `
+                    <div class="trade-card" style="border-right-color: ${t.side==='BUY'?'#10b981':'#ef4444'}">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[11px] font-black ${t.side==='BUY'?'text-green-500':'text-red-500'}">${t.side} ${t.asset}</span>
+                            <span class="text-[10px] ${isWin?'text-green-500':'text-red-500'} orbitron font-bold">${isWin?'+':''}$${pnl}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[9px] text-gray-400">
+                            <span>المنفذ: <b class="text-white">${t.user}</b></span>
+                            <span>$${t.amount}</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-[8px] text-gray-600">دخول: $${t.entryPrice.toFixed(2)}</span>
+                            <button onclick="closeTrade(${t.id})" class="text-[8px] bg-white/10 hover:bg-white/20 px-2 py-1 rounded">🔒 إغلاق</button>
+                        </div>
+                    </div>`;
+                }).reverse().join('');
+            }
 
-            // سجل النشاط
-            const aLog = document.getElementById('activity-log');
-            aLog.innerHTML = sharedData.logs.map(l => `<div>[${l.time}] ${l.msg}</div>`).reverse().join('');
+            // عرض السجل
+            const activityLog = document.getElementById('activity-log');
+            if(sharedData.logs.length === 0) {
+                activityLog.innerHTML = '<div class="text-gray-700 text-center">لا يوجد نشاط بعد</div>';
+            } else {
+                activityLog.innerHTML = sharedData.logs.slice(-5).reverse().map(l => 
+                    `<div class="border-b border-white/5 pb-1">[${l.time}] ${l.msg}</div>`
+                ).join('');
+            }
         }
     </script>
 </body>
