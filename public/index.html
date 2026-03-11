@@ -7,55 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js" type="module"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js" type="module"></script>
     <style>
         :root { --gold: #d4af37; --bg: #050508; --card: rgba(15, 15, 25, 0.9); }
         body { background: var(--bg); color: #fff; font-family: 'Changa', sans-serif; overflow-x: hidden; }
         .orbitron { font-family: 'Orbitron', sans-serif; }
         .glass-panel { background: var(--card); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
         .gold-glow { color: #f1d279; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
-        .btn-action { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 15px; font-weight: 900; }
-        .btn-action:hover { transform: translateY(-2px); filter: brightness(1.2); }
-        .input-heiba { background: rgba(0,0,0,0.5); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; color: var(--gold); text-align: center; outline: none; transition: 0.3s; }
-        .input-heiba:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
-        .asset-tab { background: rgba(255,255,255,0.03); padding: 12px 20px; border-radius: 15px; cursor: pointer; transition: 0.3s; border: 1px solid transparent; min-width: 100px; text-align: center; }
-        .asset-tab.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.1); }
-        .trade-card { border-right: 5px solid #333; transition: 0.4s; }
-        .win { border-right-color: #10b981; background: rgba(16, 185, 129, 0.05) !important; }
-        .loss { border-right-color: #ef4444; background: rgba(239, 68, 68, 0.05) !important; }
+        .input-heiba { background: rgba(0,0,0,0.5); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 12px; color: var(--gold); text-align: center; outline: none; }
+        .asset-tab.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); color: var(--gold); }
         .scanning { background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent); background-size: 200% 100%; animation: scan 2s infinite linear; }
         @keyframes scan { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        #auth-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:5000; align-items:center; justify-content:center; }
+        .activity-item { border-left: 2px solid var(--gold); padding: 5px 10px; margin-bottom: 8px; background: rgba(255,255,255,0.02); font-size: 11px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- نافذة طلب الهوية (الاسم والسر) -->
-    <div id="auth-modal">
-        <div class="glass-panel p-8 max-w-sm w-full border-[#d4af37]/40">
-            <h3 id="auth-title" class="text-xl font-bold gold-glow mb-4 text-center tracking-tighter">تأمين العملية</h3>
-            <p class="text-[10px] text-gray-500 mb-6 text-center">أدخل الاسم وكلمة السر الخاصة بك للتحكم</p>
-            <div class="space-y-4">
-                <input id="auth-user" class="input-heiba w-full p-4 text-sm" placeholder="اسم المستخدم">
-                <input id="auth-pass" type="password" class="input-heiba w-full p-4 text-sm" placeholder="كلمة السر">
-                <div class="flex gap-2">
-                    <button id="auth-confirm-btn" class="flex-1 bg-[#d4af37] text-black py-4 rounded-xl font-black">تأكيد</button>
-                    <button onclick="hideAuth()" class="flex-1 bg-white/10 text-white py-4 rounded-xl font-black">إلغاء</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- شاشة الحماية الرئيسية -->
     <div id="lock" class="fixed inset-0 z-[1000] bg-black flex items-center justify-center p-6">
         <div class="glass-panel p-10 max-w-md w-full text-center border-gold/30">
             <h2 class="text-3xl font-black gold-glow mb-2 orbitron">HEIBA GLOBAL</h2>
-            <p class="text-gray-500 text-[10px] tracking-[5px] uppercase mb-8">Quantum Access Only</p>
+            <p class="text-[10px] tracking-[5px] uppercase mb-8">Quantum Access Only</p>
+            <input type="text" id="user-identity" class="input-heiba w-full p-3 mb-3" placeholder="اسمك البرمجي">
             <input type="password" id="pass" class="input-heiba w-full p-4 text-2xl mb-6 tracking-[10px]" placeholder="••••">
-            <button onclick="unlock()" class="w-full bg-gradient-to-r from-[#d4af37] to-[#a17d1a] text-black py-4 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-gold/20">دخول المنظومة</button>
+            <button onclick="unlock()" class="w-full bg-gradient-to-r from-[#d4af37] to-[#a17d1a] text-black py-4 rounded-xl font-black uppercase">دخول المنظومة</button>
         </div>
     </div>
 
@@ -63,246 +36,159 @@
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
             <div class="flex items-center gap-5">
                 <div class="p-5 glass-panel border-gold/40 gold-glow orbitron font-black text-2xl">H</div>
-                <div>
-                    <h1 class="text-2xl font-black tracking-tight">HEIBA <span class="gold-glow">TRADER V2</span></h1>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        <p class="text-[10px] text-gray-500 uppercase tracking-widest">نظام الرصد السحابي الاجتماعي</p>
-                    </div>
-                </div>
+                <div><h1 class="text-2xl font-black tracking-tight">HEIBA <span class="gold-glow">TRADER V2</span></h1></div>
             </div>
-            <div class="glass-panel px-8 py-4 border-r-4 border-gold flex flex-col items-end">
-                <div id="active-asset-name" class="text-[10px] text-gray-500 uppercase font-bold">Gold Price</div>
+            <div class="glass-panel px-8 py-4 border-r-4 border-gold">
                 <div id="live-price" class="text-3xl font-black orbitron gold-glow">$0.00</div>
             </div>
         </header>
 
-        <div class="flex gap-3 mb-8 overflow-x-auto pb-4 no-scrollbar">
-            <div class="asset-tab active" onclick="changeAsset('OANDA:XAUUSD', 'GOLD', 'PAXGUSDT')">الذهب 🏆</div>
-            <div class="asset-tab" onclick="changeAsset('BINANCE:BTCUSDT', 'BTC', 'BTCUSDT')">بيتكوين ₿</div>
-            <div class="asset-tab" onclick="changeAsset('BINANCE:ETHUSDT', 'ETH', 'ETHUSDT')">إيثيريوم Ξ</div>
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-3 order-3 lg:order-1 space-y-6">
+            <div class="lg:col-span-3 space-y-6">
                 <div class="glass-panel p-6">
-                    <h3 class="text-xs font-bold gold-glow mb-5 flex justify-between items-center">📊 صفقات المجتمع <span id="trade-count" class="bg-gold/10 text-gold px-2 py-0.5 rounded text-[10px]">0</span></h3>
-                    <div id="trades-list" class="space-y-4 max-h-[450px] overflow-y-auto pr-2 no-scrollbar">
-                        <p class="text-center text-gray-600 text-[10px] py-10">بانتظار الرصد...</p>
+                    <h3 class="text-xs font-bold gold-glow mb-4">🤖 إدارة البوت الشخصي</h3>
+                    <div class="space-y-3">
+                        <input id="bot-n" class="input-heiba w-full p-2 text-xs" placeholder="اسم البوت (فريد)">
+                        <input id="bot-t" class="input-heiba w-full p-2 text-xs" placeholder="Telegram Token">
+                        <input id="bot-c" class="input-heiba w-full p-2 text-xs" placeholder="Chat ID">
+                        <input id="bot-p" type="password" class="input-heiba w-full p-2 text-xs" placeholder="كلمة سر الحماية">
+                        <button onclick="linkBot()" class="w-full bg-gold/20 text-gold py-2 rounded-lg text-xs font-bold">ربط وحماية</button>
                     </div>
                 </div>
+
                 <div class="glass-panel p-6">
-                    <h3 class="text-xs font-bold text-gray-500 mb-5 uppercase tracking-widest">إعدادات البوت المحمي</h3>
-                    <div class="space-y-3">
-                        <input id="bot-n" class="input-heiba w-full p-3 text-xs" placeholder="اسم صاحب البوت">
-                        <input id="bot-t" class="input-heiba w-full p-3 text-xs" placeholder="Token">
-                        <input id="bot-c" class="input-heiba w-full p-3 text-xs" placeholder="Chat ID">
-                        <button onclick="linkBotSecure()" class="w-full border border-gold/40 text-gold py-3 rounded-xl text-[10px] font-bold">ربط وحماية بكلمة سر</button>
-                    </div>
+                    <h3 class="text-xs font-bold text-gray-500 mb-4 tracking-widest uppercase">📡 رادار الأنشطة المباشرة</h3>
+                    <div id="activity-log" class="max-h-[200px] overflow-y-auto space-y-2">
+                        </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-6 order-1 lg:order-2 space-y-6">
-                <div class="glass-panel h-[450px] md:h-[550px] overflow-hidden relative">
+            <div class="lg:col-span-6 space-y-6">
+                <div class="glass-panel h-[450px] overflow-hidden">
                     <div id="chart-container" class="w-full h-full"></div>
                 </div>
-                <div class="glass-panel p-8 scanning">
-                    <div class="flex justify-between items-center mb-6">
-                        <div class="flex flex-col"><span class="text-xs font-bold">تحليل الإشارة على <span id="target-asset" class="gold-glow">GOLD</span></span><span id="signal-power" class="text-[10px] text-green-500 mt-1 font-bold">قوة التحليل: 92%</span></div>
-                        <div class="text-right"><span class="text-[10px] text-gray-500 uppercase">التوصية</span><p id="ai-advice" class="text-sm font-black text-green-500">شراء (BUY)</p></div>
-                    </div>
-                    <div class="flex flex-col md:flex-row gap-5">
-                        <div class="relative flex-1">
-                            <input id="trade-amount" type="number" class="input-heiba w-full p-4 text-2xl font-black orbitron" placeholder="0.00">
-                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 font-bold">$</span>
-                        </div>
-                        <div class="flex flex-1 gap-3">
-                            <button onclick="requestOrder('BUY')" class="flex-1 bg-green-600 btn-action py-4 shadow-lg">شراء</button>
-                            <button onclick="requestOrder('SELL')" class="flex-1 bg-red-600 btn-action py-4 shadow-lg">بيع</button>
-                        </div>
-                    </div>
+                <div class="glass-panel p-8 scanning flex gap-4">
+                    <input id="trade-amount" type="number" class="input-heiba flex-1 p-4 text-2xl font-black" placeholder="0.00">
+                    <button onclick="placeOrder('BUY')" class="bg-green-600 px-8 rounded-xl font-black">BUY</button>
+                    <button onclick="placeOrder('SELL')" class="bg-red-600 px-8 rounded-xl font-black">SELL</button>
                 </div>
             </div>
 
-            <div class="lg:col-span-3 order-2 lg:order-3 space-y-6">
+            <div class="lg:col-span-3 space-y-6">
                 <div class="glass-panel p-6">
-                    <h3 class="text-xs font-bold text-gray-500 mb-6 uppercase tracking-widest">رصد السوق الموحد</h3>
-                    <div id="prices-board" class="space-y-4"></div>
-                </div>
-                <div class="glass-panel p-6 bg-gold/5">
-                    <div class="flex justify-between items-center"><span class="text-xs text-gray-400">أرباح الجلسة</span><span id="session-profit" class="text-lg font-black orbitron text-green-500">$0.00</span></div>
+                    <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase">المنظومات المتصلة</h3>
+                    <div id="active-bots" class="space-y-2 text-[10px]">
+                        </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, addDoc, onSnapshot, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'heiba-ultimate';
-
-        let currentAsset = { symbol: 'OANDA:XAUUSD', name: 'GOLD', binance: 'PAXGUSDT' };
+    <script>
+        let currentUser = "";
+        let currentAsset = { symbol: 'OANDA:XAUUSD', name: 'GOLD' };
         let allPrices = {};
-        let trades = [];
-        let sessionProfit = 0;
-        let pendingTrade = null;
 
-        window.unlock = () => {
-            if(document.getElementById('pass').value === '771232690') {
+        function unlock() {
+            const user = document.getElementById('user-identity').value;
+            const pass = document.getElementById('pass').value;
+            if(pass === '771232690' && user.trim() !== "") {
+                currentUser = user;
                 document.getElementById('lock').style.display='none';
                 document.getElementById('main').classList.remove('hidden');
                 init();
-            } else { alert("رمز الوصول غير صحيح."); }
-        };
+            } else { alert("تأكد من الاسم والرمز!"); }
+        }
 
-        async function init() {
-            await signInAnonymously(auth);
+        function init() {
             loadChart();
+            setInterval(syncData, 2000);
             updatePrices();
-            setInterval(updatePrices, 3000);
-            updateAIAdvice();
+            setInterval(updatePrices, 5000);
+        }
+
+        async function syncData() {
+            const res = await fetch('/api/data');
+            const data = await res.json();
             
-            // ربط سحابي لرؤية صفقات الجميع
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'trades'), (snapshot) => {
-                trades = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderUI();
+            // تحديث سجل الأنشطة
+            const log = document.getElementById('activity-log');
+            log.innerHTML = data.activities.map(a => `
+                <div class="activity-item">
+                    <span class="gold-glow font-bold">${a.user}</span>: ${a.action} <br>
+                    <span class="text-[8px] opacity-50">${a.time}</span>
+                </div>
+            `).join('');
+
+            // تحديث قائمة البوتات مع خيار الحذف
+            const botsDiv = document.getElementById('active-bots');
+            botsDiv.innerHTML = data.bots.map(b => `
+                <div class="flex justify-between items-center bg-white/5 p-2 rounded">
+                    <span>${b.name}</span>
+                    <button onclick="requestDeleteBot(${b.id})" class="text-red-500 hover:scale-110">✖</button>
+                </div>
+            `).join('');
+        }
+
+        async function linkBot() {
+            const name = document.getElementById('bot-n').value;
+            const token = document.getElementById('bot-t').value;
+            const chatid = document.getElementById('bot-c').value;
+            const password = document.getElementById('bot-p').value;
+
+            if(!name || !password) return alert("الاسم وكلمة السر ضروريان للحماية!");
+
+            await fetch('/api/bots', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, token, chatid, password })
             });
+            alert("تم الحماية والربط!");
+        }
+
+        async function requestDeleteBot(id) {
+            const pass = prompt("أدخل كلمة سر الحماية لهذا البوت لحذفه:");
+            if(!pass) return;
+
+            const res = await fetch('/api/bots/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id, password: pass })
+            });
+
+            if(res.ok) alert("تم الحذف"); else alert("خطأ: كلمة السر غير صحيحة!");
+        }
+
+        async function updatePrices() {
+            const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');
+            const d = await r.json();
+            allPrices['GOLD'] = parseFloat(d.price);
+            document.getElementById('live-price').innerText = "$" + allPrices['GOLD'].toLocaleString();
         }
 
         function loadChart() {
-            document.getElementById('chart-container').innerHTML = '<div id="tv_widget"></div>';
-            new TradingView.widget({ "width": "100%", "height": "100%", "symbol": currentAsset.symbol, "interval": "15", "theme": "dark", "container_id": "tv_widget", "locale": "ar", "style": "1" });
-        }
-
-        window.changeAsset = (symbol, name, binance) => {
-            currentAsset = { symbol, name, binance };
-            document.getElementById('active-asset-name').innerText = name + " Price";
-            document.getElementById('target-asset').innerText = name;
-            document.querySelectorAll('.asset-tab').forEach(b => b.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            loadChart();
-            updateAIAdvice();
-        };
-
-        async function updatePrices() {
-            try {
-                const r = await fetch('https://api.binance.com/api/v3/ticker/price');
-                const d = await r.json();
-                const pairs = { 'PAXGUSDT': 'GOLD', 'BTCUSDT': 'BTC', 'ETHUSDT': 'ETH', 'SOLUSDT': 'SOL' };
-                let board = '';
-                d.forEach(p => {
-                    if(pairs[p.symbol]) {
-                        allPrices[pairs[p.symbol]] = parseFloat(p.price);
-                        board += `<div class="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
-                            <span class="text-[11px] font-bold text-gray-400">${pairs[p.symbol]}</span>
-                            <span class="text-sm font-black orbitron gold-glow">${allPrices[pairs[p.symbol]].toLocaleString()}</span>
-                        </div>`;
-                    }
-                });
-                document.getElementById('prices-board').innerHTML = board;
-                document.getElementById('live-price').innerText = "$" + (allPrices[currentAsset.name] || 0).toLocaleString();
-            } catch(e) {}
-        }
-
-        window.requestOrder = (side) => {
-            const amt = document.getElementById('trade-amount').value;
-            if(!amt || amt <= 0) return alert("أدخل مبلغاً صحيحاً");
-            pendingTrade = { side, amount: parseFloat(amt) };
-            showAuth("فتح صفقة باسمك", confirmTrade);
-        };
-
-        async function confirmTrade() {
-            const user = document.getElementById('auth-user').value;
-            const pass = document.getElementById('auth-pass').value;
-            if(!user || !pass) return alert("الاسم والسر ضروريان لحماية صفتك");
-            
-            const tradeData = {
-                asset: currentAsset.name,
-                side: pendingTrade.side,
-                amount: pendingTrade.amount,
-                entryPrice: allPrices[currentAsset.name],
-                owner: user,
-                ownerPass: pass,
-                timestamp: Date.now()
-            };
-
-            await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'trades'), tradeData);
-            sendToTelegram(`🚀 صفقة ${tradeData.side} محمية\nالمالك: ${user}\nالأصل: ${tradeData.asset}`, user);
-            hideAuth();
-            document.getElementById('trade-amount').value = '';
-        }
-
-        window.requestDelete = (tradeId) => {
-            const trade = trades.find(t => t.id === tradeId);
-            showAuth("حذف صفقة " + trade.owner, async () => {
-                const pass = document.getElementById('auth-pass').value;
-                if(pass === trade.ownerPass || pass === "771232690") {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'trades', tradeId));
-                    hideAuth();
-                } else { alert("كلمة سر خاطئة! لا يمكنك حذف ملكية غيرك."); }
+            new TradingView.widget({
+                "width": "100%", "height": "100%", "symbol": currentAsset.symbol,
+                "interval": "15", "theme": "dark", "container_id": "chart-container",
+                "locale": "ar", "style": "1"
             });
-        };
+        }
 
-        window.linkBotSecure = () => {
-            showAuth("تأمين البوت", () => {
-                const user = document.getElementById('auth-user').value;
-                const pass = document.getElementById('auth-pass').value;
-                const config = {
-                    name: document.getElementById('bot-n').value,
-                    token: document.getElementById('bot-t').value,
-                    chat: document.getElementById('bot-c').value,
-                    user, pass
-                };
-                localStorage.setItem('h_bot_secure', JSON.stringify(config));
-                alert("تم تأمين البوت بنجاح باسم: " + user);
-                hideAuth();
+        async function placeOrder(side) {
+            const amount = document.getElementById('trade-amount').value;
+            if(!amount) return;
+            await fetch('/api/trade', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    asset: currentAsset.name,
+                    side,
+                    amount,
+                    entryPrice: allPrices[currentAsset.name],
+                    userName: currentUser
+                })
             });
-        };
-
-        function showAuth(title, cb) {
-            document.getElementById('auth-title').innerText = title;
-            document.getElementById('auth-modal').style.display = 'flex';
-            document.getElementById('auth-confirm-btn').onclick = cb;
-        }
-        function hideAuth() { 
-            document.getElementById('auth-modal').style.display = 'none';
-            document.getElementById('auth-user').value = '';
-            document.getElementById('auth-pass').value = '';
-        }
-
-        function renderUI() {
-            const list = document.getElementById('trades-list');
-            document.getElementById('trade-count').innerText = trades.length;
-            list.innerHTML = trades.map(t => {
-                const curr = allPrices[t.asset] || t.entryPrice;
-                const diff = t.side === 'BUY' ? curr - t.entryPrice : t.entryPrice - curr;
-                const pnl = (diff * t.amount / t.entryPrice);
-                return `
-                <div class="glass-panel p-4 trade-card ${pnl >= 0 ? 'win' : 'loss'}">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-[11px] font-black">${t.owner} | ${t.side} ${t.asset}</span>
-                        <span class="text-xs font-black orbitron ${pnl>=0?'text-green-500':'text-red-500'}">${pnl.toFixed(2)}$</span>
-                    </div>
-                    <button onclick="requestDelete('${t.id}')" class="w-full mt-2 bg-white/5 text-[9px] py-1 rounded hover:bg-red-500/20">إغلاق بالسر</button>
-                </div>`;
-            }).reverse().join('');
-        }
-
-        function sendToTelegram(msg, ownerName) {
-            const config = JSON.parse(localStorage.getItem('h_bot_secure'));
-            if(!config || config.user !== ownerName) return; // يرسل فقط لصاحب البوت
-            fetch(`https://api.telegram.org/bot${config.token}/sendMessage?chat_id=${config.chat}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
-        }
-
-        function updateAIAdvice() {
-            const advice = ["شراء قوي (BUY)", "بيع قوي (SELL)", "منطقة تذبذب (WAIT)"];
-            document.getElementById('ai-advice').innerText = advice[Math.floor(Math.random() * 3)];
+            alert("تم إرسال الأمر للمنظومة");
         }
     </script>
 </body>
