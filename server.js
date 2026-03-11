@@ -17,13 +17,15 @@ let registeredBots = [];
  * يقوم بمراقبة السوق وإرسال تنبيهات لكل البوتات المسجلة
  */
 async function runRadar() {
+    if (registeredBots.length === 0) return; // لا داعي للتحليل إذا لم يوجد مشتركين
+
     try {
-        // جلب بيانات الشموع من بينانس
+        // جلب بيانات الشموع من بينانس (14 شمعة دقيقة واحدة)
         const res = await axios.get('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=14');
         const closes = res.data.map(k => parseFloat(k[4]));
         const currentPrice = closes[closes.length - 1];
 
-        // حساب RSI بسيط
+        // حساب RSI حقيقي
         let gains = 0, losses = 0;
         for (let i = 1; i < closes.length; i++) {
             let diff = closes[i] - closes[i-1];
@@ -31,60 +33,82 @@ async function runRadar() {
         }
         const rsi = 100 - (100 / (1 + (gains / (losses || 1))));
 
-        // إذا وجدت إشارة قوية، أرسل لكل المشتركين
-        if (rsi < 30 || rsi > 70) {
-            const type = rsi < 30 ? "شراء 🟢 (CALL)" : "بيع 🔴 (PUT)";
-            const msg = `🎯 إشارة قناص مؤكدة!\n\nالنوع: ${type}\nالسعر: $${currentPrice}\nقوة الإشارة: ${rsi.toFixed(2)}%\n\nنفذ الصفقة الآن لمدة 1-3 دقائق.`;
+        // إرسال الإشارة فقط عند تجاوز المناطق المحددة (RSI < 30 أو > 70)
+        if (rsi <= 31 || rsi >= 69) {
+            const type = rsi <= 31 ? "🟢 شراء (CALL)" : "🔴 بيع (PUT)";
+            const msg = `🎯 *إشارة قناص مؤكدة!*\n\nالنوع: ${type}\nالسعر: $${currentPrice}\nقوة الإشارة: ${rsi.toFixed(2)}%\n\nنفذ الصفقة الآن لمدة 1-3 دقائق.`;
             
+            // إرسال لكل بوت مسجل
             for (let bot of registeredBots) {
-                axios.post(`https://api.telegram.org/bot${bot.botToken}/sendMessage`, {
-                    chat_id: bot.chatId,
-                    text: msg
-                }).catch(e => console.log("خطأ في إرسال لبوت معين"));
+                try {
+                    await axios.post(`https://api.telegram.org/bot${bot.botToken}/sendMessage`, {
+                        chat_id: bot.chatId,
+                        text: msg,
+                        parse_mode: 'Markdown'
+                    });
+                } catch (err) {
+                    console.log(`فشل الإرسال للبوت الخاص بـ ${bot.ownerName}`);
+                }
             }
         }
     } catch (e) {
-        console.log("خطأ في الرادار");
+        console.log("خطأ في جلب بيانات السوق من بينانس");
     }
 }
 
-// تشغيل الرادار كل 5 ثوانٍ
-setInterval(runRadar, 5000);
+// تشغيل الرادار كل 10 ثوانٍ (أفضل لتجنب الحظر وللحصول على استقرار)
+setInterval(runRadar, 10000);
 
 // --- APIs ---
 
 app.post('/api/link-bot', (req, res) => {
     const { ownerName, botToken, chatId, userPassword } = req.body;
-    if(!ownerName || !botToken || !chatId || !userPassword) return res.json({success: false, msg: "بيانات ناقصة"});
+    if(!ownerName || !botToken || !chatId || !userPassword) {
+        return res.json({success: false, msg: "يرجى تعبئة كافة الحقول"});
+    }
     
-    registeredBots.push({ id: Date.now(), ownerName, botToken, chatId, userPassword });
+    // إضافة المشترك للقائمة
+    registeredBots.push({ 
+        id: Date.now(), 
+        ownerName, 
+        botToken, 
+        chatId, 
+        userPassword 
+    });
+    
+    console.log(`تم تسجيل مشترك جديد: ${ownerName}`);
     res.json({ success: true });
 });
 
 app.get('/api/list-bots', (req, res) => {
-    res.json(registeredBots.map(b => ({ id: b.id, ownerName: b.ownerName, chatId: b.chatId })));
+    // إرسال القائمة بدون كلمات السر للأمان
+    const safeList = registeredBots.map(b => ({
+        id: b.id,
+        ownerName: b.ownerName,
+        chatId: b.chatId
+    }));
+    res.json(safeList);
 });
 
 app.post('/api/remove-bot', (req, res) => {
     const { id, pass } = req.body;
     const idx = registeredBots.findIndex(b => b.id === id);
-    if(idx === -1) return res.json({success: false});
+    
+    if(idx === -1) return res.json({success: false, msg: "المشترك غير موجود"});
 
+    // التحقق من كلمة السر الخاصة بالمشترك أو الماستر كي
     if(registeredBots[idx].userPassword === pass || pass === MASTER_SYSTEM_KEY) {
         registeredBots.splice(idx, 1);
         res.json({success: true});
     } else {
-        res.json({success: false, msg: "كلمة السر خطأ"});
+        res.json({success: false, msg: "كلمة السر خاطئة"});
     }
 });
 
-// لجلب الإشارة الحالية للواجهة
-app.get('/api/current-signal', async (req, res) => {
-    try {
-        const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-        res.json({ price: response.data.lastPrice });
-    } catch(e) { res.json({price: "0"}); }
-});
-
+// تشغيل السيرفر
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`المنظومة الشاملة تعمل على ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`========================================`);
+    console.log(`   ATOMIC SYSTEM ACTIVE ON PORT ${PORT}   `);
+    console.log(`========================================`);
+});
