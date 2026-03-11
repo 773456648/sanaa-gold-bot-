@@ -1,62 +1,61 @@
 const express = require('express');
-const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
+const path = require('path');
 const app = express();
 
-const PORT = process.env.PORT || 3000;
-const DB_FILE = './heiba_trading_vault.json';
+const PORT = 3000;
+const DB_FILE = './heiba_vault.json';
 
 app.use(express.json());
 app.use(express.static('public'));
 
-// قاعدة بيانات تدعم تعدد العملات
-let vault = {
-    bots: [],
-    trades: [], // ستخزن العملة، سعر الدخول، الكمية، والنوع
-    config: { masterKey: "771232690" }
-};
-
+// إنشاء قاعدة بيانات إذا لم تكن موجودة
+let vault = { bots: [], trades: [] };
 if (fs.existsSync(DB_FILE)) {
-    try {
-        vault = JSON.parse(fs.readFileSync(DB_FILE));
-    } catch (e) { console.log("Database initialized"); }
+    try { vault = JSON.parse(fs.readFileSync(DB_FILE)); } catch (e) { console.log("Init DB"); }
 }
 
 const saveDB = () => fs.writeFileSync(DB_FILE, JSON.stringify(vault, null, 2));
 
-// API لجلب البيانات
+// إرسال تنبيه لتليجرام
+async function notifyTelegram(msg) {
+    if (vault.bots.length > 0) {
+        const bot = vault.bots[0];
+        const url = `https://api.telegram.org/bot${bot.token}/sendMessage?chat_id=${bot.chatId}&text=${encodeURIComponent(msg)}`;
+        try { await axios.get(url); } catch (e) { console.log("Telegram Error"); }
+    }
+}
+
 app.get('/api/data', (req, res) => res.json(vault));
 
-// تنفيذ صفقة على أي عملة أو ذهب
-app.post('/api/trade', (req, res) => {
-    const { asset, side, amount, entryPrice } = req.body;
-    const newTrade = {
-        id: Date.now(),
-        asset, // مثل BTC, GOLD, ETH
-        side,  // BUY or SELL
-        amount: parseFloat(amount),
-        entryPrice: parseFloat(entryPrice),
-        status: 'OPEN',
-        timestamp: new Date().toISOString()
-    };
-    vault.trades.push(newTrade);
+app.post('/api/trade', async (req, res) => {
+    const trade = { ...req.body, id: Date.now(), time: new Date().toLocaleString() };
+    vault.trades.push(trade);
     saveDB();
-    res.json(newTrade);
+    await notifyTelegram(`🔔 صفقة جديدة!\nالعملة: ${trade.asset}\nالنوع: ${trade.side}\nالسعر: ${trade.entryPrice}\nالمبلغ: $${trade.amount}`);
+    res.json(trade);
 });
 
-// إغلاق صفقة
-app.delete('/api/trade/:id', (req, res) => {
+app.delete('/api/trade/:id', async (req, res) => {
+    const trade = vault.trades.find(t => t.id == req.params.id);
     vault.trades = vault.trades.filter(t => t.id != req.params.id);
     saveDB();
+    if(trade) await notifyTelegram(`✅ تم إغلاق صفقة ${trade.asset} بنجاح`);
     res.send("Closed");
 });
 
-// إدارة البوتات
 app.post('/api/bots', (req, res) => {
-    vault.bots.push({ ...req.body, id: Date.now() });
+    vault.bots = [req.body]; // حفظ بوت واحد حالياً
     saveDB();
-    res.send("Bot Linked");
+    res.send("Linked");
 });
 
-app.listen(PORT, () => console.log(`🚀 HEIBA MULTI-TRADER ACTIVE ON ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`
+    ===========================================
+    🚀 HEIBA TRADING SYSTEM IS ACTIVE
+    🌐 URL: http://localhost:3000
+    ===========================================
+    `);
+});
