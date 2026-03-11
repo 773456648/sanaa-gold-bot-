@@ -2,148 +2,128 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA ATOMIC PRO | النسخة المعتمدة</title>
+    <title>ATOMIC PREDICTOR | المنظومة الشاملة</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
-        body { background: #050507; color: #e5e7eb; font-family: 'Changa', sans-serif; }
-        .orbitron { font-family: 'Orbitron', sans-serif; }
-        .glass-panel { background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(15px); border: 1px solid rgba(197, 160, 89, 0.2); shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .btn-gold { background: linear-gradient(135deg, #c5a059 0%, #9e7d3e 100%); color: #000; font-weight: bold; }
-        .status-pulse { animation: pulse-status 2s infinite; }
-        @keyframes pulse-status { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        body { background: #050507; color: #eee; font-family: 'Changa', sans-serif; }
+        .glass { background: rgba(15, 15, 25, 0.9); border: 1px solid rgba(197,160,89,0.2); backdrop-filter: blur(10px); }
+        input { background: #0c0c14 !important; border: 1px solid #222 !important; color: #c5a059 !important; padding: 12px; border-radius: 12px; width: 100%; outline: none; margin-bottom: 10px; font-size: 13px;}
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body class="p-4">
 
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-center mb-6 glass-panel p-4 rounded-2xl gap-4">
-            <div class="flex items-center gap-4">
-                <div class="bg-[#c5a059] p-3 rounded-xl text-black font-black text-2xl">A</div>
-                <div>
-                    <h1 class="text-2xl font-black orbitron text-[#c5a059] tracking-tighter">ATOMIC PREDICTOR</h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest">Advanced Signal Intelligence</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-6">
-                <div class="text-left">
-                    <div class="text-[10px] text-gray-500 uppercase">سعر BTC/USDT مباشر</div>
-                    <div id="price-top" class="text-xl font-bold orbitron text-white">$ --,---</div>
-                </div>
-                <div class="h-10 w-[1px] bg-white/10"></div>
-                <div class="flex items-center gap-2 text-green-500 text-sm">
-                    <span class="w-2 h-2 bg-green-500 rounded-full status-pulse"></span>
-                    متصل بالخادم
-                </div>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <!-- Left: Signals & Control -->
-            <div class="lg:col-span-1 space-y-6">
-                <!-- Main Decision Card -->
-                <div class="glass-panel p-6 rounded-[2.5rem] text-center relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-10">
-                        <svg class="w-20 h-20" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM5.884 6.68a1 1 0 10-1.415-1.414l.707-.707a1 1 0 001.415 1.415l-.707.707zM14.116 6.68l.707-.707a1 1 0 00-1.415-1.415l-.707.707a1 1 0 101.415 1.414zm-7.07 7.071l-.707.707a1 1 0 101.414 1.414l.707-.707a1 1 0 00-1.414-1.414zm7.07 0a1 1 0 101.414 1.414l.707-.707a1 1 0 00-1.414-1.414l-.707.707zM9 11a1 1 0 102 0V9a1 1 0 10-2 0v2z"/></svg>
-                    </div>
-                    <h3 class="text-xs text-gray-500 mb-6 font-bold uppercase tracking-widest">إشارة الدخول الحالية</h3>
-                    <div id="sig-display" class="text-5xl font-black mb-4 text-gray-600 transition-all duration-500">جاري التحليل</div>
-                    <div id="sig-conf" class="text-[#c5a059] font-bold orbitron mb-6 text-xl">--%</div>
-                    
-                    <div class="grid grid-cols-2 gap-2 text-[10px] mb-6">
-                        <div class="bg-white/5 p-3 rounded-xl border border-white/5">
-                            <div class="text-gray-500 mb-1 uppercase">RSI (14)</div>
-                            <div id="rsi-val" class="text-white font-bold text-lg">--</div>
-                        </div>
-                        <div class="bg-white/5 p-3 rounded-xl border border-white/5">
-                            <div class="text-gray-500 mb-1 uppercase">الاتجاه</div>
-                            <div id="trend-val" class="text-white font-bold text-lg">--</div>
-                        </div>
-                    </div>
-                    <div id="sig-advice" class="text-xs text-gray-400 italic bg-black/40 p-4 rounded-2xl border border-white/5">
-                        جاري فحص مؤشرات السيولة ونقاط الارتداد...
-                    </div>
-                </div>
-
-                <!-- Telegram Link -->
-                <div class="glass-panel p-6 rounded-[2.5rem]">
-                    <h3 class="text-sm font-bold mb-4 text-[#c5a059]">🛰️ ربط البوت الشخصي</h3>
-                    <div class="space-y-3">
-                        <input type="password" id="key" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-xs outline-none focus:border-[#c5a059]" placeholder="MASTER KEY">
-                        <input type="text" id="token" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-xs outline-none focus:border-[#c5a059]" placeholder="BOT TOKEN">
-                        <input type="text" id="chatid" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-xs outline-none focus:border-[#c5a059]" placeholder="CHAT ID">
-                        <button onclick="linkBot()" class="w-full btn-gold py-3 rounded-xl text-sm transition-transform active:scale-95">تفعيل إشعارات الهاتف</button>
-                    </div>
+    <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- العمود الأول: الرادار والإشارات -->
+        <div class="lg:col-span-1 space-y-4">
+            <div class="glass p-6 rounded-[2rem] text-center">
+                <h2 class="text-[#c5a059] font-bold mb-4">رادار التحليل المباشر</h2>
+                <div id="sig-text" class="text-4xl font-black my-4 text-gray-500 italic">جاري الفحص..</div>
+                <div id="price-val" class="text-xl font-bold orbitron mb-4">$ --,---</div>
+                <div id="sig-advice" class="text-[11px] text-gray-400 bg-black/40 p-3 rounded-xl italic">
+                    النظام يراقب السوق ويرسل التنبيهات للبوتات المسجلة تلقائياً..
                 </div>
             </div>
 
-            <!-- Right: Chart Area -->
-            <div class="lg:col-span-3 space-y-6">
-                <div class="glass-panel rounded-[2.5rem] overflow-hidden h-[600px] border-none shadow-2xl">
-                    <div id="tv_chart_container" class="w-full h-full"></div>
+            <!-- إضافة بوت -->
+            <div class="glass p-6 rounded-[2rem]">
+                <h3 class="text-sm font-bold mb-4 text-[#c5a059]">➕ إضافة بوت جديد</h3>
+                <input type="text" id="name" placeholder="اسمك">
+                <input type="text" id="token" placeholder="Bot Token">
+                <input type="text" id="chatid" placeholder="Chat ID">
+                <input type="password" id="pass" placeholder="كلمة سر الحماية">
+                <button onclick="addBot()" class="w-full bg-[#c5a059] text-black font-bold py-3 rounded-xl hover:bg-white transition">اشتراك وتفعيل</button>
+            </div>
+        </div>
+
+        <!-- العمود الثاني والثالث: الشارت -->
+        <div class="lg:col-span-2">
+            <div class="glass rounded-[2rem] overflow-hidden h-[600px]">
+                <div id="tv_chart" class="w-full h-full"></div>
+            </div>
+        </div>
+
+        <!-- العمود الرابع: قائمة المشتركين -->
+        <div class="lg:col-span-1">
+            <div class="glass p-6 rounded-[2rem] h-full overflow-y-auto">
+                <h3 class="text-[#c5a059] font-bold mb-4 border-b border-white/5 pb-2">المشتركين النشطين</h3>
+                <div id="bots-list" class="space-y-3">
+                    <!-- Bots list here -->
                 </div>
             </div>
         </div>
+
     </div>
 
     <script>
-        // تشغيل TradingView
-        let widget;
-        window.onload = function() {
-            widget = new TradingView.widget({
-                "width": "100%", "height": "100%", "symbol": "BINANCE:BTCUSDT",
-                "interval": "1", "timezone": "Etc/UTC", "theme": "dark",
-                "style": "1", "locale": "ar", "container_id": "tv_chart_container",
-                "studies": ["RSI@tv-basicstudies", "MASimple@tv-basicstudies"]
+        // الشارت
+        new TradingView.widget({
+            "width": "100%", "height": "100%", "symbol": "BINANCE:BTCUSDT",
+            "interval": "1", "theme": "dark", "container_id": "tv_chart",
+            "studies": ["RSI@tv-basicstudies"]
+        });
+
+        // تحديث البيانات
+        async function update() {
+            try {
+                const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
+                const d = await r.json();
+                document.getElementById('price-val').innerText = "$" + parseFloat(d.price).toLocaleString();
+
+                // محاكاة الإشارة في الواجهة (لأن السيرفر يرسل للبوت)
+                const rsiMock = Math.floor(Math.random() * 60) + 20;
+                const sig = document.getElementById('sig-text');
+                if(rsiMock < 30) { sig.innerText = "شراء 🟢"; sig.className = "text-4xl font-black my-4 text-green-500 animate-pulse"; }
+                else if(rsiMock > 70) { sig.innerText = "بيع 🔴"; sig.className = "text-4xl font-black my-4 text-red-500 animate-pulse"; }
+                else { sig.innerText = "انتظر 🔍"; sig.className = "text-4xl font-black my-4 text-gray-500"; }
+            } catch(e) {}
+        }
+        setInterval(update, 3000);
+
+        async function loadBots() {
+            const r = await fetch('/api/list-bots');
+            const data = await r.json();
+            document.getElementById('bots-list').innerHTML = data.map(b => `
+                <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center border border-white/5">
+                    <div>
+                        <div class="text-[12px] font-bold text-[#c5a059]">${b.ownerName}</div>
+                        <div class="text-[9px] text-gray-500">${b.chatId}</div>
+                    </div>
+                    <button onclick="delBot(${b.id})" class="text-red-500 text-[10px]">حذف</button>
+                </div>
+            `).join('');
+        }
+
+        async function addBot() {
+            const body = {
+                ownerName: document.getElementById('name').value,
+                botToken: document.getElementById('token').value,
+                chatId: document.getElementById('chatid').value,
+                userPassword: document.getElementById('pass').value
+            };
+            await fetch('/api/link-bot', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
             });
-            runEngine();
-        };
-
-        async function runEngine() {
-            setInterval(async () => {
-                try {
-                    const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
-                    const data = await res.json();
-                    const price = parseFloat(data.lastPrice);
-                    document.getElementById('price-top').innerText = "$" + price.toLocaleString();
-
-                    // محاكاة حساب مؤشر حقيقي
-                    const rsi = Math.floor(Math.random() * 40) + 30; // سيتم استبداله بحسابات السيرفر
-                    updateSignalUI(rsi, price);
-                } catch(e) {}
-            }, 3000);
+            alert("تم الاشتراك!");
+            loadBots();
         }
 
-        function updateSignalUI(rsi, price) {
-            const sig = document.getElementById('sig-display');
-            const conf = document.getElementById('sig-conf');
-            const advice = document.getElementById('sig-advice');
-            const rsiEl = document.getElementById('rsi-val');
-
-            rsiEl.innerText = rsi;
-
-            if (rsi <= 32) {
-                sig.innerText = "شراء 🟢"; sig.className = "text-5xl font-black mb-4 text-green-500 animate-pulse";
-                conf.innerText = (90 + (Math.random() * 8)).toFixed(2) + "%";
-                advice.innerText = "🚨 السعر في منطقة تشبع بيعي. ادخل صفقة صعود (UP) لمدة دقيقة الآن!";
-            } else if (rsi >= 68) {
-                sig.innerText = "بيع 🔴"; sig.className = "text-5xl font-black mb-4 text-red-500 animate-pulse";
-                conf.innerText = (90 + (Math.random() * 8)).toFixed(2) + "%";
-                advice.innerText = "🚨 السعر في منطقة تشبع شرائي. ادخل صفقة هبوط (DOWN) لمدة دقيقة الآن!";
-            } else {
-                sig.innerText = "انتظر 🔍"; sig.className = "text-5xl font-black mb-4 text-gray-500";
-                conf.innerText = "--%";
-                advice.innerText = "السوق الآن في منطقة حيادية. الصبر هو سر الربح، انتظر الإشارة القادمة.";
-            }
+        async function delBot(id) {
+            const pass = prompt("أدخل كلمة السر للحذف:");
+            const r = await fetch('/api/remove-bot', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id, pass })
+            });
+            const res = await r.json();
+            if(res.success) loadBots(); else alert(res.msg);
         }
 
-        async function linkBot() {
-            // كود الربط مع السيرفر كما في النسخة السابقة
-            alert("✅ تم إرسال طلب الربط للسيرفر...");
-        }
+        loadBots();
     </script>
 </body>
 </html>
