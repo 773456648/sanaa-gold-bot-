@@ -27,7 +27,6 @@
 </head>
 <body class="p-3 md:p-6">
 
-    <!-- شاشة الدخول -->
     <div id="lock" class="fixed inset-0 z-[100] bg-black flex items-center justify-center p-6">
         <div class="glass p-8 max-w-sm w-full text-center">
             <h2 class="text-2xl font-black gold-glow mb-6 orbitron italic">HEIBA CLOUD</h2>
@@ -36,9 +35,7 @@
         </div>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div id="main" class="hidden">
-        <!-- الهيدر -->
         <header class="flex justify-between items-center mb-6">
             <div class="flex items-center gap-3">
                 <div class="p-3 glass border-gold/30 gold-glow orbitron font-black">H</div>
@@ -56,7 +53,6 @@
             </div>
         </header>
 
-        <!-- اختيار العملات -->
         <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
             <div class="asset-btn active" onclick="changeAsset('OANDA:XAUUSD', 'GOLD', 'PAXGUSDT')">ذهب</div>
             <div class="asset-btn" onclick="changeAsset('BINANCE:BTCUSDT', 'BTC', 'BTCUSDT')">بيتكوين</div>
@@ -65,7 +61,6 @@
             <div class="asset-btn" onclick="changeAsset('FX:EURUSD', 'EUR', 'EURUSDT')">يورو/دولار</div>
         </div>
 
-        <!-- إذا كان أدمن، يظهر قسم إنشاء مستخدمين -->
         <div id="admin-section" class="glass p-4 mb-6 hidden">
             <h3 class="text-xs font-bold gold-glow mb-4">➕ إنشاء مستخدم جديد</h3>
             <div class="flex flex-col md:flex-row gap-3">
@@ -77,9 +72,7 @@
             </div>
         </div>
 
-        <!-- الشبكة الرئيسية -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- اليسار: الصفقات -->
             <div class="lg:col-span-3 order-3 lg:order-1 space-y-4">
                 <div class="glass p-5">
                     <h3 class="text-xs font-bold gold-glow mb-4">📊 الصفقات المفتوحة</h3>
@@ -89,7 +82,6 @@
                 </div>
             </div>
 
-            <!-- الوسط: الشارت والتداول -->
             <div class="lg:col-span-6 order-1 lg:order-2 space-y-4">
                 <div class="glass h-[400px] md:h-[500px] overflow-hidden">
                     <div id="chart-container" class="w-full h-full"></div>
@@ -109,7 +101,6 @@
                 </div>
             </div>
 
-            <!-- اليمين: الأسعار -->
             <div class="lg:col-span-3 order-2 lg:order-3 space-y-4">
                 <div class="glass p-5">
                     <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase">الأسعار الحية</h3>
@@ -124,7 +115,6 @@
         let allPrices = {};
         let currentUser = null;
 
-        // استرجاع المستخدم من localStorage
         (function() {
             const saved = localStorage.getItem('heiba_user');
             if(saved) {
@@ -155,11 +145,9 @@
                 document.getElementById('lock').style.display = 'none';
                 document.getElementById('main').classList.remove('hidden');
                 
-                // عرض الصلاحية
                 document.getElementById('user-role').innerText = data.role === 'admin' ? 'أدمن' : 'مستخدم';
                 document.getElementById('user-role').className = data.role === 'admin' ? 'admin-badge' : 'user-badge';
                 
-                // إظهار قسم الأدمن
                 if(data.role === 'admin') {
                     document.getElementById('admin-section').classList.remove('hidden');
                 }
@@ -238,7 +226,6 @@
             const res = await fetch(`/api/trades/${currentUser.userId}`);
             const trades = await res.json();
             
-            // إذا كان أدمن، نجيب كل الصفقات
             if(currentUser.role === 'admin') {
                 const allRes = await fetch(`/api/all-trades/${currentUser.userId}`);
                 const allTrades = await allRes.json();
