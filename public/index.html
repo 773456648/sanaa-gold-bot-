@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATOMIC PREDICTOR | المنظومة الشاملة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap" rel="stylesheet">
@@ -9,7 +10,9 @@
     <style>
         body { background: #050507; color: #eee; font-family: 'Changa', sans-serif; }
         .glass { background: rgba(15, 15, 25, 0.9); border: 1px solid rgba(197,160,89,0.2); backdrop-filter: blur(10px); }
-        input { background: #0c0c14 !important; border: 1px solid #222 !important; color: #c5a059 !important; padding: 12px; border-radius: 12px; width: 100%; outline: none; margin-bottom: 10px; font-size: 13px;}
+        input { background: #0c0c14 !important; border: 1px solid #222 !important; color: #c5a059 !important; padding: 12px; border-radius: 12px; width: 100%; outline: none; margin-bottom: 10px; font-size: 13px; transition: border 0.3s;}
+        input:focus { border-color: #c5a059 !important; }
+        .btn-active:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="p-4">
@@ -18,39 +21,47 @@
         
         <!-- العمود الأول: الرادار والإشارات -->
         <div class="lg:col-span-1 space-y-4">
-            <div class="glass p-6 rounded-[2rem] text-center">
-                <h2 class="text-[#c5a059] font-bold mb-4">رادار التحليل المباشر</h2>
-                <div id="sig-text" class="text-4xl font-black my-4 text-gray-500 italic">جاري الفحص..</div>
-                <div id="price-val" class="text-xl font-bold orbitron mb-4">$ --,---</div>
-                <div id="sig-advice" class="text-[11px] text-gray-400 bg-black/40 p-3 rounded-xl italic">
-                    النظام يراقب السوق ويرسل التنبيهات للبوتات المسجلة تلقائياً..
+            <div class="glass p-6 rounded-[2rem] text-center border-b-4 border-[#c5a059]">
+                <h2 class="text-[#c5a059] font-bold mb-4 uppercase text-xs tracking-widest">رادار التحليل المباشر</h2>
+                <div id="sig-text" class="text-4xl font-black my-4 text-gray-600 italic transition-all duration-500">جاري الفحص..</div>
+                <div id="price-val" class="text-xl font-bold mb-4 text-white font-mono">$ --,---</div>
+                <div id="sig-advice" class="text-[11px] text-gray-400 bg-black/40 p-3 rounded-xl italic border border-white/5">
+                    الرادار يراقب حركة السعر الآن.. التنبيهات ستصل للبوتات المسجلة تلقائياً.
                 </div>
             </div>
 
             <!-- إضافة بوت -->
             <div class="glass p-6 rounded-[2rem]">
-                <h3 class="text-sm font-bold mb-4 text-[#c5a059]">➕ إضافة بوت جديد</h3>
-                <input type="text" id="name" placeholder="اسمك">
-                <input type="text" id="token" placeholder="Bot Token">
-                <input type="text" id="chatid" placeholder="Chat ID">
-                <input type="password" id="pass" placeholder="كلمة سر الحماية">
-                <button onclick="addBot()" class="w-full bg-[#c5a059] text-black font-bold py-3 rounded-xl hover:bg-white transition">اشتراك وتفعيل</button>
+                <h3 class="text-sm font-bold mb-4 text-[#c5a059] flex items-center gap-2">
+                    <span>➕</span> تسجيل مشترك جديد
+                </h3>
+                <div id="registration-form">
+                    <input type="text" id="name" placeholder="اسم صاحب البوت">
+                    <input type="text" id="token" placeholder="Bot Token">
+                    <input type="text" id="chatid" placeholder="Chat ID">
+                    <input type="password" id="pass" placeholder="كلمة سر الحماية">
+                    <button onclick="addBot()" id="add-btn" class="w-full bg-[#c5a059] text-black font-bold py-3 rounded-xl hover:bg-white transition btn-active shadow-lg shadow-[#c5a059]/10">تفعيل واشتراك</button>
+                </div>
             </div>
         </div>
 
         <!-- العمود الثاني والثالث: الشارت -->
         <div class="lg:col-span-2">
-            <div class="glass rounded-[2rem] overflow-hidden h-[600px]">
+            <div class="glass rounded-[2rem] overflow-hidden h-[600px] border border-white/5">
                 <div id="tv_chart" class="w-full h-full"></div>
             </div>
         </div>
 
         <!-- العمود الرابع: قائمة المشتركين -->
         <div class="lg:col-span-1">
-            <div class="glass p-6 rounded-[2rem] h-full overflow-y-auto">
-                <h3 class="text-[#c5a059] font-bold mb-4 border-b border-white/5 pb-2">المشتركين النشطين</h3>
-                <div id="bots-list" class="space-y-3">
-                    <!-- Bots list here -->
+            <div class="glass p-6 rounded-[2rem] h-full flex flex-col">
+                <h3 class="text-[#c5a059] font-bold mb-4 border-b border-white/5 pb-2 flex justify-between items-center">
+                    <span>المشتركين النشطين</span>
+                    <span id="bot-count" class="bg-[#c5a059] text-black text-[10px] px-2 py-1 rounded-full">0</span>
+                </h3>
+                <div id="bots-list" class="space-y-3 overflow-y-auto flex-grow pr-1">
+                    <!-- القائمة تظهر هنا -->
+                    <p class="text-gray-600 text-xs italic">جاري تحميل القائمة...</p>
                 </div>
             </div>
         </div>
@@ -58,71 +69,133 @@
     </div>
 
     <script>
-        // الشارت
-        new TradingView.widget({
+        // إعداد شارت TradingView
+        let widget = new TradingView.widget({
             "width": "100%", "height": "100%", "symbol": "BINANCE:BTCUSDT",
-            "interval": "1", "theme": "dark", "container_id": "tv_chart",
-            "studies": ["RSI@tv-basicstudies"]
+            "interval": "1", "timezone": "Etc/UTC", "theme": "dark", "style": "1",
+            "locale": "ar", "container_id": "tv_chart", "studies": ["RSI@tv-basicstudies"]
         });
 
-        // تحديث البيانات
-        async function update() {
+        // تحديث السعر والإشارات في الواجهة
+        async function updateUI() {
             try {
                 const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
                 const d = await r.json();
                 document.getElementById('price-val').innerText = "$" + parseFloat(d.price).toLocaleString();
 
-                // محاكاة الإشارة في الواجهة (لأن السيرفر يرسل للبوت)
-                const rsiMock = Math.floor(Math.random() * 60) + 20;
-                const sig = document.getElementById('sig-text');
-                if(rsiMock < 30) { sig.innerText = "شراء 🟢"; sig.className = "text-4xl font-black my-4 text-green-500 animate-pulse"; }
-                else if(rsiMock > 70) { sig.innerText = "بيع 🔴"; sig.className = "text-4xl font-black my-4 text-red-500 animate-pulse"; }
-                else { sig.innerText = "انتظر 🔍"; sig.className = "text-4xl font-black my-4 text-gray-500"; }
+                // محاكاة بصرية للإشارة (السيرفر هو من يرسل الحقيقي)
+                const sigText = document.getElementById('sig-text');
+                const rsiMock = Math.random() * 100; // هذا للعرض فقط
+                
+                if(rsiMock < 30) { 
+                    sigText.innerText = "شراء 🟢"; 
+                    sigText.className = "text-4xl font-black my-4 text-green-500 animate-pulse";
+                } else if(rsiMock > 70) {
+                    sigText.innerText = "بيع 🔴"; 
+                    sigText.className = "text-4xl font-black my-4 text-red-500 animate-pulse";
+                } else {
+                    sigText.innerText = "انتظر 🔍"; 
+                    sigText.className = "text-4xl font-black my-4 text-gray-500";
+                }
             } catch(e) {}
         }
-        setInterval(update, 3000);
+        setInterval(updateUI, 2000);
 
+        // تحميل قائمة البوتات من السيرفر
         async function loadBots() {
-            const r = await fetch('/api/list-bots');
-            const data = await r.json();
-            document.getElementById('bots-list').innerHTML = data.map(b => `
-                <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center border border-white/5">
-                    <div>
-                        <div class="text-[12px] font-bold text-[#c5a059]">${b.ownerName}</div>
-                        <div class="text-[9px] text-gray-500">${b.chatId}</div>
+            try {
+                const r = await fetch('/api/list-bots');
+                const data = await r.json();
+                document.getElementById('bot-count').innerText = data.length;
+                const container = document.getElementById('bots-list');
+                
+                if(data.length === 0) {
+                    container.innerHTML = "<p class='text-gray-600 italic text-xs'>لا يوجد مشتركون نشطون.</p>";
+                    return;
+                }
+
+                container.innerHTML = data.map(b => `
+                    <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center border border-white/5 hover:bg-white/10 transition">
+                        <div>
+                            <div class="text-[12px] font-bold text-[#c5a059]">${b.ownerName}</div>
+                            <div class="text-[9px] text-gray-500 font-mono italic">${b.chatId}</div>
+                        </div>
+                        <button onclick="delBot(${b.id})" class="text-red-500 text-[10px] border border-red-500/20 px-2 py-1 rounded hover:bg-red-500 hover:text-white transition">حذف</button>
                     </div>
-                    <button onclick="delBot(${b.id})" class="text-red-500 text-[10px]">حذف</button>
-                </div>
-            `).join('');
+                `).join('');
+            } catch(e) { console.log("خطأ في تحميل القائمة"); }
         }
 
+        // إضافة بوت جديد
         async function addBot() {
-            const body = {
-                ownerName: document.getElementById('name').value,
-                botToken: document.getElementById('token').value,
-                chatId: document.getElementById('chatid').value,
-                userPassword: document.getElementById('pass').value
+            const btn = document.getElementById('add-btn');
+            const inputs = {
+                name: document.getElementById('name'),
+                token: document.getElementById('token'),
+                chatid: document.getElementById('chatid'),
+                pass: document.getElementById('pass')
             };
-            await fetch('/api/link-bot', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(body)
-            });
-            alert("تم الاشتراك!");
-            loadBots();
+
+            if(!inputs.name.value || !inputs.token.value || !inputs.chatid.value) {
+                alert("يرجى إكمال جميع البيانات!");
+                return;
+            }
+
+            btn.innerText = "جاري التفعيل...";
+            btn.disabled = true;
+
+            const body = {
+                ownerName: inputs.name.value,
+                botToken: inputs.token.value,
+                chatId: inputs.chatid.value,
+                userPassword: inputs.pass.value
+            };
+
+            try {
+                const r = await fetch('/api/link-bot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                const res = await r.json();
+
+                if(res.success) {
+                    alert("✅ تم الاشتراك! إذا كانت البيانات صحيحة ستصلك الإشارات فوراً.");
+                    // مسح الحقول
+                    inputs.name.value = ""; inputs.token.value = ""; inputs.chatid.value = ""; inputs.pass.value = "";
+                    loadBots();
+                } else {
+                    alert("❌ فشل الاشتراك: " + res.msg);
+                }
+            } catch(e) {
+                alert("❌ خطأ في الاتصال بالسيرفر");
+            } finally {
+                btn.innerText = "تفعيل واشتراك";
+                btn.disabled = false;
+            }
         }
 
+        // حذف بوت
         async function delBot(id) {
-            const pass = prompt("أدخل كلمة السر للحذف:");
-            const r = await fetch('/api/remove-bot', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id, pass })
-            });
-            const res = await r.json();
-            if(res.success) loadBots(); else alert(res.msg);
+            const pass = prompt("أدخل كلمة السر الخاصة بهذا المشترك للحذف:");
+            if(!pass) return;
+
+            try {
+                const r = await fetch('/api/remove-bot', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ id, pass })
+                });
+                const res = await r.json();
+                if(res.success) {
+                    loadBots();
+                } else {
+                    alert("❌ كلمة السر خاطئة!");
+                }
+            } catch(e) { alert("خطأ في الاتصال"); }
         }
 
+        // تحميل القائمة عند فتح الصفحة
         loadBots();
     </script>
 </body>
