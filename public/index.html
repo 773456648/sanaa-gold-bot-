@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE ALPHA v4.0 | التحكم المطلق</title>
+    <title>THE ALPHA v5.0 | نظام القناص الزمني</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -28,6 +28,13 @@
         .buy-signal { color: var(--neon-green); text-shadow: 0 0 20px rgba(57, 255, 20, 0.8); animation: flash 0.8s infinite; }
         .sell-signal { color: var(--neon-red); text-shadow: 0 0 20px rgba(255, 49, 49, 0.8); animation: flash 0.8s infinite; }
         @keyframes flash { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } }
+        
+        /* مؤشر الوقت الدائري */
+        .timer-circle { position: relative; width: 80px; height: 80px; }
+        svg { transform: rotate(-90deg); }
+        circle { fill: none; stroke-width: 4; stroke-linecap: round; }
+        .bg-circle { stroke: #1e293b; }
+        .progress-circle { stroke: var(--gold); stroke-dasharray: 251.2; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
     </style>
 </head>
 <body>
@@ -35,73 +42,95 @@
     <!-- شاشة الحماية -->
     <div id="login-screen">
         <div class="mb-8 text-center">
-            <h1 class="cyber-font text-5xl font-bold text-yellow-500 mb-2 tracking-tighter italic">THE ALPHA</h1>
-            <p class="text-gray-400 text-sm tracking-widest uppercase">Management & Analysis System</p>
+            <h1 class="cyber-font text-5xl font-bold text-yellow-500 mb-2 italic">THE ALPHA</h1>
+            <p class="text-gray-400 text-sm tracking-widest uppercase italic">Master Time Control System</p>
         </div>
         <div class="p-8 rounded-2xl border border-yellow-500/30 text-center bg-gray-900/50 backdrop-blur-md">
-            <p class="mb-4 text-sm text-yellow-500 font-bold italic">إثبات الهوية مطلوب</p>
+            <p class="mb-4 text-sm text-yellow-500 font-bold">أدخل الرقم السري للعبور</p>
             <input type="password" id="pass-field" class="password-input w-72 p-4 rounded-xl mb-6 outline-none" placeholder="•••••••••">
-            <button onclick="checkAccess()" class="block w-full bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-4 rounded-xl transition-all shadow-lg shadow-yellow-500/10">الدخول للنظام</button>
+            <button onclick="checkAccess()" class="block w-full bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-4 rounded-xl transition-all shadow-lg">تشغيل العبقري</button>
             <p id="err-msg" class="text-red-500 mt-4 text-xs hidden">❌ الشيفرة خاطئة!</p>
         </div>
     </div>
 
-    <!-- واجهة النظام -->
+    <!-- الواجهة الرئيسية -->
     <main id="main-content" class="hidden p-4 lg:p-6 animate-fade-in">
         <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-800 pb-4">
             <div>
-                <h2 class="cyber-font text-2xl font-bold text-yellow-500">SYSTEM CONTROL v4.0</h2>
-                <p id="system-status" class="text-[10px] text-gray-500">الحالة: بانتظار إعدادات البوت...</p>
+                <h2 class="cyber-font text-2xl font-bold text-yellow-500 italic">ALPHA CHRONO v5.0</h2>
+                <p id="system-status" class="text-[10px] text-gray-500 italic uppercase">النظام يقوم بمزامنة الوقت الذري...</p>
             </div>
-            <div id="clock" class="cyber-font text-xl text-gray-300 bg-gray-900 px-4 py-2 rounded-lg border border-gray-700">00:00:00</div>
+            
+            <div class="flex items-center gap-4">
+                <div class="stat-card px-4 py-2 flex items-center gap-3">
+                    <div class="text-left">
+                        <p class="text-[9px] text-gray-500 uppercase">توقيت الشمعة</p>
+                        <p id="candle-timer" class="cyber-font text-yellow-500 text-lg">00:60</p>
+                    </div>
+                    <div class="timer-circle">
+                        <svg width="40" height="40">
+                            <circle class="bg-circle" cx="20" cy="20" r="18"></circle>
+                            <circle id="progress" class="progress-circle" cx="20" cy="20" r="18"></circle>
+                        </svg>
+                    </div>
+                </div>
+                <div id="clock" class="cyber-font text-xl text-gray-300 bg-gray-900 px-4 py-2 rounded-lg border border-gray-700">00:00:00</div>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- لوحة التحكم بالبوت -->
+            <!-- لوحة التحكم والتحليل -->
             <div class="lg:col-span-3 space-y-4">
-                <div class="stat-card p-5 border-l-4 border-blue-500">
-                    <h3 class="text-xs font-bold text-gray-400 mb-4 uppercase">إعدادات Telegram</h3>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="text-[10px] text-gray-500 block mb-1">Bot Token</label>
-                            <input type="password" id="tg-token-input" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-xs text-yellow-500 outline-none" placeholder="أدخل توكن البوت...">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-gray-500 block mb-1">Your Chat ID</label>
-                            <input type="text" id="tg-chat-input" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-xs text-yellow-500 outline-none" placeholder="أدخل الآيدي الخاص بك...">
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="saveBotSettings()" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-xs py-2 rounded font-bold transition">حفظ وتفعيل</button>
-                            <button onclick="clearBotSettings()" class="bg-red-900 hover:bg-red-700 text-white text-[10px] px-3 rounded transition">حذف</button>
-                        </div>
+                <!-- إعدادات البوت (مخفية في الأكورديون) -->
+                <details class="stat-card p-4 border-gray-700 group">
+                    <summary class="text-xs font-bold text-gray-400 cursor-pointer list-none flex justify-between uppercase">
+                        إعدادات التنبيهات <span>⚙️</span>
+                    </summary>
+                    <div class="mt-4 space-y-3">
+                        <input type="password" id="tg-token-input" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-[10px] text-yellow-500 outline-none" placeholder="Bot Token">
+                        <input type="text" id="tg-chat-input" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-[10px] text-yellow-500 outline-none" placeholder="Chat ID">
+                        <button onclick="saveBotSettings()" class="w-full bg-green-600 py-1.5 rounded text-[10px] font-bold">حفظ</button>
                     </div>
-                </div>
+                </details>
 
-                <!-- التحليل الفني -->
+                <!-- مؤشر القوة -->
                 <div class="stat-card p-5">
-                    <h3 class="text-xs font-bold text-gray-500 mb-4">قوة السوق اللحظية</h3>
+                    <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest italic text-center">رادار التذبذب اللحظي</h3>
                     <div class="flex justify-between text-xs mb-2">
-                        <span>مؤشر RSI</span>
+                        <span>قوة الزخم (RSI)</span>
                         <span id="rsi-val" class="font-bold text-yellow-500">--</span>
                     </div>
-                    <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
                         <div id="rsi-bar" class="h-full bg-yellow-500 transition-all duration-700 w-0"></div>
                     </div>
                 </div>
 
-                <!-- القرار الاستراتيجي -->
-                <div class="stat-card p-6 border-2 border-yellow-500/20 bg-yellow-500/5">
-                    <div id="decision-box" class="text-center py-4">
-                        <p id="main-signal" class="text-xl font-bold text-gray-500 italic uppercase">Monitoring...</p>
-                        <p id="signal-desc" class="text-[10px] text-gray-400 mt-2">النظام في وضع الاستعداد.</p>
+                <!-- توجيه العبقري للوقت والصفقة -->
+                <div class="stat-card p-6 border-2 border-yellow-500/30 bg-yellow-500/5">
+                    <div id="decision-box" class="text-center">
+                        <p id="main-signal" class="text-2xl font-bold text-gray-600 italic uppercase">الرصد مفعل</p>
+                        <div id="time-recommendation" class="mt-3 p-2 bg-black/40 rounded border border-gray-800 hidden">
+                            <p class="text-[11px] text-yellow-500 font-bold uppercase mb-1">تعليمات الدخول:</p>
+                            <p class="text-[10px] text-gray-300">الوقت: <span class="text-white font-bold">2 دقيقة</span></p>
+                            <p class="text-[10px] text-gray-300">انتظر عداد الشمعة حتى يصل لـ <span class="text-white font-bold">00:02</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card p-4 text-center">
+                    <p class="text-[9px] text-gray-500 uppercase mb-2 italic">حالة الاتصال بالسوق</p>
+                    <div class="flex justify-center gap-1">
+                        <div class="w-1 h-3 bg-green-500 rounded-full"></div>
+                        <div class="w-1 h-3 bg-green-500 rounded-full animate-bounce"></div>
+                        <div class="w-1 h-3 bg-green-500 rounded-full"></div>
                     </div>
                 </div>
             </div>
 
             <!-- الشارت المباشر -->
-            <div class="lg:col-span-9 h-[700px]">
-                <div id="tradingview_widget" class="h-full w-full rounded-2xl overflow-hidden border border-gray-800"></div>
+            <div class="lg:col-span-9 h-[720px]">
+                <div id="tradingview_widget" class="h-full w-full rounded-2xl overflow-hidden border border-gray-800 shadow-2xl"></div>
             </div>
         </div>
     </main>
@@ -111,7 +140,6 @@
         const ACCESS_KEY = "771232690";
         let botConfig = { token: '', chatId: '' };
 
-        // التحقق من كلمة السر
         function checkAccess() {
             if (document.getElementById('pass-field').value === ACCESS_KEY) {
                 document.getElementById('login-screen').style.display = 'none';
@@ -123,93 +151,98 @@
         }
 
         function initSystem() {
-            // تحميل الإعدادات المحفوظة
+            // مزامنة البيانات
             const savedToken = localStorage.getItem('alpha_bot_token');
             const savedChat = localStorage.getItem('alpha_bot_chat');
             if (savedToken && savedChat) {
+                botConfig = { token: savedToken, chatId: savedChat };
                 document.getElementById('tg-token-input').value = savedToken;
                 document.getElementById('tg-chat-input').value = savedChat;
-                botConfig = { token: savedToken, chatId: savedChat };
-                document.getElementById('system-status').innerText = "الحالة: البوت متصل ونشط ✅";
             }
 
-            setInterval(() => {
-                document.getElementById('clock').innerText = new Date().toLocaleTimeString('en-US', { hour12: false });
-            }, 1000);
+            // تشغيل الساعة والعداد
+            setInterval(updateTimers, 1000);
 
+            // تشغيل الشارت
             new TradingView.widget({
                 "autosize": true,
                 "symbol": "BINANCE:BTCUSDT",
                 "interval": "1",
                 "timezone": "Etc/UTC",
                 "theme": "dark",
+                "style": "1",
+                "locale": "ar",
+                "toolbar_bg": "#f1f3f6",
                 "container_id": "tradingview_widget"
             });
 
-            setInterval(runAnalysis, 4000);
+            setInterval(runAlphaLogic, 3000);
         }
 
-        // حفظ إعدادات البوت
+        function updateTimers() {
+            const now = new Date();
+            // الساعة الرئيسية
+            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+
+            // عداد الشمعة (لحساب متى تنتهي الدقيقة الحالية)
+            const seconds = now.getSeconds();
+            const remaining = 60 - seconds;
+            const timerText = `00:${remaining < 10 ? '0' : ''}${remaining}`;
+            document.getElementById('candle-timer').innerText = timerText;
+
+            // تحديث الدائرة
+            const progress = document.getElementById('progress');
+            const offset = 251.2 - (251.2 * remaining / 60);
+            progress.style.strokeDashoffset = offset;
+        }
+
         function saveBotSettings() {
             const token = document.getElementById('tg-token-input').value;
             const chat = document.getElementById('tg-chat-input').value;
-            if (token && chat) {
-                localStorage.setItem('alpha_bot_token', token);
-                localStorage.setItem('alpha_bot_chat', chat);
-                botConfig = { token, chatId: chat };
-                document.getElementById('system-status').innerText = "الحالة: تم التحديث والتفعيل بنجاح ✅";
-                alert('تم تفعيل البوت الجديد بنجاح!');
-            }
+            localStorage.setItem('alpha_bot_token', token);
+            localStorage.setItem('alpha_bot_chat', chat);
+            botConfig = { token, chatId: chat };
+            alert('تم الحفظ. العبقري سيتصل بهاتفك الآن.');
         }
 
-        // حذف إعدادات البوت
-        function clearBotSettings() {
-            localStorage.removeItem('alpha_bot_token');
-            localStorage.removeItem('alpha_bot_chat');
-            document.getElementById('tg-token-input').value = '';
-            document.getElementById('tg-chat-input').value = '';
-            botConfig = { token: '', chatId: '' };
-            document.getElementById('system-status').innerText = "الحالة: تم إيقاف البوت ❌";
-            alert('تم حذف إعدادات البوت.');
+        async function sendSignal(msg) {
+            if(!botConfig.token) return;
+            const url = `https://api.telegram.org/bot${botConfig.token}/sendMessage?chat_id=${botConfig.chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
+            try { await fetch(url); } catch(e) {}
         }
 
-        async function sendTelegramSignal(message) {
-            if (!botConfig.token || !botConfig.chatId) return;
-            const url = `https://api.telegram.org/bot${botConfig.token}/sendMessage?chat_id=${botConfig.chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
-            try { await fetch(url); } catch (e) { console.error("Telegram Error"); }
-        }
+        let lastActiveSignal = "";
 
-        let lastSignal = ""; 
-
-        function runAnalysis() {
+        function runAlphaLogic() {
+            // محاكاة تحليل ذكي (يفضل استبداله بـ API حقيقي في السيرفر)
             const rsi = Math.floor(Math.random() * (85 - 15) + 15);
             document.getElementById('rsi-val').innerText = rsi;
             document.getElementById('rsi-bar').style.width = rsi + '%';
 
             const mainSignal = document.getElementById('main-signal');
-            const signalDesc = document.getElementById('signal-desc');
+            const timeRec = document.getElementById('time-recommendation');
 
             if (rsi <= 25) {
                 mainSignal.innerText = "BUY / شراء الآن";
                 mainSignal.className = "text-3xl font-bold buy-signal";
-                signalDesc.innerText = "السعر في القاع. فرصة قوية للصعود.";
-                if(lastSignal !== "buy") {
-                    sendTelegramSignal("🚨 إشارة قناص: شراء الآن (القاع وصل)!");
-                    lastSignal = "buy";
+                timeRec.classList.remove('hidden');
+                if(lastActiveSignal !== "buy") {
+                    sendSignal("🚀 إشارة شراء قوية! ادخل دقيقتين الآن.");
+                    lastActiveSignal = "buy";
                 }
             } else if (rsi >= 75) {
                 mainSignal.innerText = "SELL / بيع الآن";
                 mainSignal.className = "text-3xl font-bold sell-signal";
-                signalDesc.innerText = "السعر في القمة. فرصة قوية للهبوط.";
-                if(lastSignal !== "sell") {
-                    sendTelegramSignal("🚨 إشارة قناص: بيع الآن (القمة وصلت)!");
-                    lastSignal = "sell";
+                timeRec.classList.remove('hidden');
+                if(lastActiveSignal !== "sell") {
+                    sendSignal("🚨 إشارة بيع قوية! ادخل دقيقتين الآن.");
+                    lastActiveSignal = "sell";
                 }
             } else {
                 mainSignal.innerText = "Monitoring...";
                 mainSignal.className = "text-xl font-bold text-gray-600";
-                signalDesc.innerText = "السوق يتذبذب. انتظر الإشارة.";
-                lastSignal = "";
+                timeRec.classList.add('hidden');
+                lastActiveSignal = "";
             }
         }
     </script>
