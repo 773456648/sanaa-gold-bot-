@@ -3,248 +3,498 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>THE ALPHA v5.0 | نظام القناص الزمني</title>
+    <title>Binance Alpha Terminal - VIP</title>
+    <!-- Tailwind CSS للستايل الاحترافي -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- خطوط عربية احترافية -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Cairo', 'sans-serif'] },
+                    colors: {
+                        binance: '#F3BA2F',
+                        darkBg: '#0b0e11',
+                        panelBg: '#1e2329',
+                        up: '#2ebd85',
+                        down: '#F6465D'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root { --gold: #ffd700; --neon-green: #39ff14; --neon-red: #ff3131; }
-        body { font-family: 'Cairo', sans-serif; background-color: #05070a; color: #ffffff; margin: 0; overflow-x: hidden; }
-        .cyber-font { font-family: 'Orbitron', sans-serif; }
-        
-        #login-screen {
-            position: fixed; inset: 0; background: radial-gradient(circle, #0d1117 0%, #05070a 100%);
-            z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .password-input {
-            background: rgba(255, 255, 255, 0.05); border: 2px solid var(--gold);
-            color: var(--gold); text-align: center; letter-spacing: 5px; font-size: 1.5rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(145deg, #0b0e14, #161b22);
-            border: 1px solid #30363d; position: relative; border-radius: 16px;
-        }
-        
-        .buy-signal { color: var(--neon-green); text-shadow: 0 0 20px rgba(57, 255, 20, 0.8); animation: flash 0.8s infinite; }
-        .sell-signal { color: var(--neon-red); text-shadow: 0 0 20px rgba(255, 49, 49, 0.8); animation: flash 0.8s infinite; }
-        @keyframes flash { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.02); } }
-        
-        /* مؤشر الوقت الدائري */
-        .timer-circle { position: relative; width: 80px; height: 80px; }
-        svg { transform: rotate(-90deg); }
-        circle { fill: none; stroke-width: 4; stroke-linecap: round; }
-        .bg-circle { stroke: #1e293b; }
-        .progress-circle { stroke: var(--gold); stroke-dasharray: 251.2; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear; }
+        body { background-color: #0b0e11; color: #eaecef; }
+        .glass-panel { background: #1e2329; border: 1px solid #2b3139; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.3); }
+        .signal-buy { background: rgba(46, 189, 133, 0.1); border: 2px solid #2ebd85; box-shadow: 0 0 20px rgba(46, 189, 133, 0.2); }
+        .signal-sell { background: rgba(246, 70, 93, 0.1); border: 2px solid #F6465D; box-shadow: 0 0 20px rgba(246, 70, 93, 0.2); }
+        .pulse-dot { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(243, 186, 47, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(243, 186, 47, 0); } 100% { box-shadow: 0 0 0 0 rgba(243, 186, 47, 0); } }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0e11; }
+        ::-webkit-scrollbar-thumb { background: #2b3139; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #F3BA2F; }
     </style>
 </head>
-<body>
+<body class="min-h-screen p-2 md:p-6 overflow-x-hidden selection:bg-binance selection:text-black">
 
-    <!-- شاشة الحماية -->
-    <div id="login-screen">
-        <div class="mb-8 text-center">
-            <h1 class="cyber-font text-5xl font-bold text-yellow-500 mb-2 italic">THE ALPHA</h1>
-            <p class="text-gray-400 text-sm tracking-widest uppercase italic">Master Time Control System</p>
+    <!-- Navbar -->
+    <nav class="max-w-[1600px] mx-auto glass-panel rounded-3xl p-4 md:p-6 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-binance rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(243,186,47,0.4)]">
+                <i class="fa-solid fa-microchip text-black text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-black text-binance uppercase tracking-wider">Alpha Whale Ops <span class="text-sm text-gray-500">v10</span></h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <div class="w-2.5 h-2.5 bg-green-500 rounded-full pulse-dot"></div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">خوادم التحليل الكمي متصلة (Live)</span>
+                </div>
+            </div>
         </div>
-        <div class="p-8 rounded-2xl border border-yellow-500/30 text-center bg-gray-900/50 backdrop-blur-md">
-            <p class="mb-4 text-sm text-yellow-500 font-bold">أدخل الرقم السري للعبور</p>
-            <input type="password" id="pass-field" class="password-input w-72 p-4 rounded-xl mb-6 outline-none" placeholder="•••••••••">
-            <button onclick="checkAccess()" class="block w-full bg-yellow-600 hover:bg-yellow-500 text-black font-bold py-4 rounded-xl transition-all shadow-lg">تشغيل العبقري</button>
-            <p id="err-msg" class="text-red-500 mt-4 text-xs hidden">❌ الشيفرة خاطئة!</p>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="glass-panel px-6 py-2 rounded-xl flex flex-col items-center">
+                <span class="text-[10px] text-gray-500 font-bold">رصيد المحفظة الآمن</span>
+                <span class="text-lg font-black text-white">$10,000.00</span>
+            </div>
+            <button onclick="toggleSettings()" class="bg-panelBg hover:bg-gray-800 border border-gray-700 p-4 rounded-xl text-binance transition-all">
+                <i class="fa-brands fa-telegram text-xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Grid -->
+    <div class="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Sidebar: Market Watch -->
+        <div class="lg:col-span-3 space-y-4">
+            <div class="glass-panel rounded-3xl p-6 h-full min-h-[500px]">
+                <h3 class="text-sm font-black text-gray-400 mb-6 flex items-center gap-2 border-b border-gray-800 pb-4">
+                    <i class="fa-solid fa-radar text-binance"></i> رادار السيولة الحية
+                </h3>
+                <div id="coin-list" class="space-y-3">
+                    <!-- سيتم حقن العملات هنا عبر جافاسكربت -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: Analytics & Signals -->
+        <div class="lg:col-span-6 space-y-6">
+            <div class="glass-panel rounded-3xl p-8 relative overflow-hidden">
+                <!-- Background decoration -->
+                <i class="fa-brands fa-bitcoin absolute top-5 left-5 text-[150px] opacity-5 text-gray-500 pointer-events-none"></i>
+                
+                <div class="flex justify-between items-start mb-8 relative z-10">
+                    <div>
+                        <h2 id="display-coin-id" class="text-5xl font-black">BTC<span class="text-binance text-3xl">/USDT</span></h2>
+                        <div class="flex gap-3 mt-4">
+                            <span class="bg-darkBg px-4 py-1.5 rounded-lg text-xs font-bold text-gray-300 border border-gray-700 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-line text-binance"></i> RSI: <span id="display-rsi">45.2</span>
+                            </span>
+                            <span class="bg-darkBg px-4 py-1.5 rounded-lg text-xs font-bold text-gray-300 border border-gray-700 flex items-center gap-2">
+                                <i class="fa-solid fa-water text-blue-400"></i> Vol: <span id="display-vol">85B</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-left" dir="ltr">
+                        <p id="display-price" class="text-4xl font-black text-white">$63,450.20</p>
+                        <p id="display-change" class="text-sm font-bold text-up mt-1">+2.15%</p>
+                    </div>
+                </div>
+
+                <!-- Signal Box -->
+                <div id="signal-box" class="glass-panel rounded-2xl p-8 text-center transition-all duration-500">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-binance mb-4 opacity-50"></i>
+                    <p class="font-black text-gray-400 uppercase tracking-widest text-sm">جاري مسح الـ Order Book وتتبع حركات الحيتان...</p>
+                    <p class="text-xs text-gray-600 mt-2">لا يوجد تشبع بيعي أو شرائي حالياً، السعر في منطقة محايدة.</p>
+                </div>
+            </div>
+
+            <!-- Risk Management Widget -->
+            <div class="grid grid-cols-3 gap-4">
+                <div class="glass-panel p-4 rounded-2xl text-center border-t-2 border-blue-500">
+                    <i class="fa-solid fa-shield-halved text-blue-500 mb-2 text-xl"></i>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase">قاعدة الدخول</p>
+                    <p class="font-black text-white text-sm">5% حد أقصى</p>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl text-center border-t-2 border-binance">
+                    <i class="fa-solid fa-bolt text-binance mb-2 text-xl"></i>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase">سرعة التنفيذ</p>
+                    <p class="font-black text-white text-sm">شراء فوري (Market)</p>
+                </div>
+                <div class="glass-panel p-4 rounded-2xl text-center border-t-2 border-red-500">
+                    <i class="fa-solid fa-lock text-red-500 mb-2 text-xl"></i>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase">الأمان (SL)</p>
+                    <p class="font-black text-white text-sm">إلزامي لتفعيل الصفقة</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Rules & Telegram -->
+        <div class="lg:col-span-3 space-y-6">
+            <!-- Telegram Status Card -->
+            <div class="bg-gradient-to-br from-[#1c2a38] to-[#111926] p-6 rounded-3xl border border-[#2b4461] relative overflow-hidden">
+                <i class="fa-brands fa-telegram absolute -right-4 -bottom-4 text-8xl text-blue-500 opacity-10"></i>
+                <h3 class="text-sm font-black text-blue-400 mb-2 flex items-center gap-2 relative z-10">
+                    <i class="fa-solid fa-paper-plane"></i> بوت التنبيهات
+                </h3>
+                <p id="tg-status-text" class="text-xs text-gray-400 font-bold mb-4 relative z-10">غير متصل. اضغط لربط البوت لتصلك الإشارات وأنت خارج المنصة.</p>
+                <button onclick="toggleSettings()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl text-xs transition-all shadow-[0_0_15px_rgba(37,99,235,0.3)] relative z-10">
+                    إعداد التلجرام
+                </button>
+            </div>
+
+            <!-- Strict Rules -->
+            <div class="glass-panel rounded-3xl p-6 border border-red-900/30">
+                <h3 class="text-sm font-black text-red-500 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation"></i> دستور إدارة رأس المال
+                </h3>
+                <div class="space-y-4 text-xs text-gray-300 font-bold">
+                    <div class="flex gap-3 items-start bg-black/30 p-3 rounded-xl">
+                        <span class="text-red-500 text-lg">1</span>
+                        <p>لا تتداول بأكثر من <strong>5%</strong> من محفظتك في عملة واحدة أبداً. الحيتان تصطاد الطامعين.</p>
+                    </div>
+                    <div class="flex gap-3 items-start bg-black/30 p-3 rounded-xl">
+                        <span class="text-binance text-lg">2</span>
+                        <p>بمجرد دخولك الصفقة، ضع <strong>وقف الخسارة (Stop Loss)</strong> الموضح فوراً. هو حزام أمانك الوحيد.</p>
+                    </div>
+                    <div class="flex gap-3 items-start bg-black/30 p-3 rounded-xl">
+                        <span class="text-up text-lg">3</span>
+                        <p>عند الوصول للهدف الأول (TP1)، قم ببيع نصف الكمية، وارفع وقف الخسارة لسعر الدخول.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- الواجهة الرئيسية -->
-    <main id="main-content" class="hidden p-4 lg:p-6 animate-fade-in">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-gray-800 pb-4">
-            <div>
-                <h2 class="cyber-font text-2xl font-bold text-yellow-500 italic">ALPHA CHRONO v5.0</h2>
-                <p id="system-status" class="text-[10px] text-gray-500 italic uppercase">النظام يقوم بمزامنة الوقت الذري...</p>
-            </div>
+    <!-- Telegram Settings Modal (Hidden by default) -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+        <div class="glass-panel p-8 rounded-3xl w-full max-w-md border border-binance/30 relative transform transition-all scale-100">
+            <button onclick="toggleSettings()" class="absolute top-6 left-6 text-gray-500 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-2xl font-black text-binance mb-6 text-center"><i class="fa-brands fa-telegram"></i> إعدادات البوت</h3>
             
-            <div class="flex items-center gap-4">
-                <div class="stat-card px-4 py-2 flex items-center gap-3">
-                    <div class="text-left">
-                        <p class="text-[9px] text-gray-500 uppercase">توقيت الشمعة</p>
-                        <p id="candle-timer" class="cyber-font text-yellow-500 text-lg">00:60</p>
-                    </div>
-                    <div class="timer-circle">
-                        <svg width="40" height="40">
-                            <circle class="bg-circle" cx="20" cy="20" r="18"></circle>
-                            <circle id="progress" class="progress-circle" cx="20" cy="20" r="18"></circle>
-                        </svg>
-                    </div>
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">1. توكن البوت (Bot Token)</label>
+                    <input type="password" id="tg-token" class="w-full bg-darkBg border border-gray-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-binance" placeholder="مثال: 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
                 </div>
-                <div id="clock" class="cyber-font text-xl text-gray-300 bg-gray-900 px-4 py-2 rounded-lg border border-gray-700">00:00:00</div>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            <!-- لوحة التحكم والتحليل -->
-            <div class="lg:col-span-3 space-y-4">
-                <!-- إعدادات البوت (مخفية في الأكورديون) -->
-                <details class="stat-card p-4 border-gray-700 group">
-                    <summary class="text-xs font-bold text-gray-400 cursor-pointer list-none flex justify-between uppercase">
-                        إعدادات التنبيهات <span>⚙️</span>
-                    </summary>
-                    <div class="mt-4 space-y-3">
-                        <input type="password" id="tg-token-input" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-[10px] text-yellow-500 outline-none" placeholder="Bot Token">
-                        <input type="text" id="tg-chat-input" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-[10px] text-yellow-500 outline-none" placeholder="Chat ID">
-                        <button onclick="saveBotSettings()" class="w-full bg-green-600 py-1.5 rounded text-[10px] font-bold">حفظ</button>
-                    </div>
-                </details>
-
-                <!-- مؤشر القوة -->
-                <div class="stat-card p-5">
-                    <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest italic text-center">رادار التذبذب اللحظي</h3>
-                    <div class="flex justify-between text-xs mb-2">
-                        <span>قوة الزخم (RSI)</span>
-                        <span id="rsi-val" class="font-bold text-yellow-500">--</span>
-                    </div>
-                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                        <div id="rsi-bar" class="h-full bg-yellow-500 transition-all duration-700 w-0"></div>
-                    </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-2 uppercase">2. معرف المحادثة (Chat ID)</label>
+                    <input type="text" id="tg-chatid" class="w-full bg-darkBg border border-gray-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-binance" placeholder="مثال: 987654321">
                 </div>
-
-                <!-- توجيه العبقري للوقت والصفقة -->
-                <div class="stat-card p-6 border-2 border-yellow-500/30 bg-yellow-500/5">
-                    <div id="decision-box" class="text-center">
-                        <p id="main-signal" class="text-2xl font-bold text-gray-600 italic uppercase">الرصد مفعل</p>
-                        <div id="time-recommendation" class="mt-3 p-2 bg-black/40 rounded border border-gray-800 hidden">
-                            <p class="text-[11px] text-yellow-500 font-bold uppercase mb-1">تعليمات الدخول:</p>
-                            <p class="text-[10px] text-gray-300">الوقت: <span class="text-white font-bold">2 دقيقة</span></p>
-                            <p class="text-[10px] text-gray-300">انتظر عداد الشمعة حتى يصل لـ <span class="text-white font-bold">00:02</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card p-4 text-center">
-                    <p class="text-[9px] text-gray-500 uppercase mb-2 italic">حالة الاتصال بالسوق</p>
-                    <div class="flex justify-center gap-1">
-                        <div class="w-1 h-3 bg-green-500 rounded-full"></div>
-                        <div class="w-1 h-3 bg-green-500 rounded-full animate-bounce"></div>
-                        <div class="w-1 h-3 bg-green-500 rounded-full"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- الشارت المباشر -->
-            <div class="lg:col-span-9 h-[720px]">
-                <div id="tradingview_widget" class="h-full w-full rounded-2xl overflow-hidden border border-gray-800 shadow-2xl"></div>
+                <button onclick="saveTelegramSettings()" class="w-full bg-binance text-black font-black py-4 rounded-xl mt-2 hover:bg-yellow-500 transition-all text-sm uppercase">
+                    حفظ وتفعيل التنبيهات
+                </button>
+                <p class="text-[10px] text-gray-500 text-center mt-4">
+                    للحصول على التوكن، تواصل مع BotFather في تلجرام. للحصول على Chat ID، تواصل مع userinfobot.
+                </p>
             </div>
         </div>
-    </main>
+    </div>
 
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <!-- JavaScript Logic -->
     <script>
-        const ACCESS_KEY = "771232690";
-        let botConfig = { token: '', chatId: '' };
+        // 1. البيانات الأساسية للعملات (تحديث مباشر محاكى)
+        let coins = [
+            { id: 'BTC', name: 'Bitcoin', price: 63450.20, rsi: 45.5, volume: '85.2B', change: 2.15 },
+            { id: 'ETH', name: 'Ethereum', price: 3450.15, rsi: 38.2, volume: '42.1B', change: -1.40 },
+            { id: 'SOL', name: 'Solana', price: 145.80, rsi: 72.5, volume: '15.4B', change: 8.45 },
+            { id: 'BNB', name: 'Binance Coin', price: 580.40, rsi: 51.0, volume: '3.2B', change: 0.50 },
+            { id: 'AVAX', name: 'Avalanche', price: 38.20, rsi: 22.4, volume: '1.2B', change: -4.50 },
+            { id: 'XRP', name: 'Ripple', price: 0.58, rsi: 48.0, volume: '2.5B', change: 1.20 }
+        ];
 
-        function checkAccess() {
-            if (document.getElementById('pass-field').value === ACCESS_KEY) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-content').classList.remove('hidden');
-                initSystem();
+        let selectedCoinId = 'BTC';
+        let activeSignal = null;
+        let lastSignalSentId = null; // لمنع تكرار الإرسال
+        let lastSignalSentTime = 0;
+
+        // استرجاع بيانات التلجرام من المتصفح
+        let tgToken = localStorage.getItem('alpha_tg_token') || '';
+        let tgChatId = localStorage.getItem('alpha_tg_chat') || '';
+
+        // 2. تحديث واجهة المستخدم (UI)
+        function renderCoins() {
+            const list = document.getElementById('coin-list');
+            list.innerHTML = '';
+            coins.forEach(coin => {
+                const isSelected = coin.id === selectedCoinId;
+                const changeColor = coin.change >= 0 ? 'text-up' : 'text-down';
+                const changeSign = coin.change >= 0 ? '+' : '';
+                const rsiColor = coin.rsi < 30 ? 'bg-up' : (coin.rsi > 70 ? 'bg-down' : 'bg-binance');
+
+                const item = document.createElement('div');
+                item.className = `p-4 rounded-2xl cursor-pointer transition-all border ${isSelected ? 'bg-binance/10 border-binance/50 shadow-[0_0_15px_rgba(243,186,47,0.1)]' : 'hover:bg-white/5 border-transparent'}`;
+                item.onclick = () => { selectedCoinId = coin.id; updateMainPanel(); };
+                
+                item.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <span class="font-black text-lg font-sans">${coin.id}</span>
+                        <span class="text-xs font-bold ${changeColor}" dir="ltr">${changeSign}${coin.change.toFixed(2)}%</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-xs text-gray-500 font-bold">$${coin.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                        <div class="w-16 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                            <div class="h-full ${rsiColor}" style="width: ${coin.rsi}%"></div>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function updateMainPanel() {
+            const coin = coins.find(c => c.id === selectedCoinId);
+            if(!coin) return;
+
+            document.getElementById('display-coin-id').innerHTML = `${coin.id}<span class="text-binance text-3xl">/USDT</span>`;
+            document.getElementById('display-price').innerText = `$${coin.price.toLocaleString(undefined, {minimumFractionDigits: 4})}`;
+            
+            const changeEl = document.getElementById('display-change');
+            changeEl.innerText = `${coin.change >= 0 ? '+' : ''}${coin.change.toFixed(2)}%`;
+            changeEl.className = `text-sm font-bold mt-1 ${coin.change >= 0 ? 'text-up' : 'text-down'}`;
+            
+            document.getElementById('display-rsi').innerText = coin.rsi.toFixed(1);
+            document.getElementById('display-rsi').className = coin.rsi <= 25 ? 'text-up' : (coin.rsi >= 75 ? 'text-down' : 'text-white');
+            document.getElementById('display-vol').innerText = coin.volume;
+
+            renderSignalBox(coin);
+        }
+
+        function renderSignalBox(coin) {
+            const box = document.getElementById('signal-box');
+            
+            // خوارزمية الحيتان الصارمة
+            if (coin.rsi <= 25) {
+                // صفقة شراء (Long / Buy)
+                activeSignal = {
+                    type: 'BUY',
+                    action: 'شراء تجميعي',
+                    price: coin.price,
+                    tp1: coin.price * 1.05, // 5% ربح
+                    tp2: coin.price * 1.10, // 10% ربح
+                    tp3: coin.price * 1.25, // 25% ربح
+                    sl: coin.price * 0.94   // 6% وقف خسارة (صارم)
+                };
+                
+                box.className = 'signal-buy rounded-2xl p-6 text-right transition-all duration-500';
+                box.innerHTML = `
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-up rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(46,189,133,0.4)]">
+                                <i class="fa-solid fa-arrow-trend-up text-white text-3xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-black text-up uppercase">BUY ZONE</h3>
+                                <p class="text-sm font-bold text-white mt-1">فرصة ذهبية: تشبع بيعي ودخول سيولة</p>
+                            </div>
+                        </div>
+                        <div class="text-left bg-black/40 px-6 py-3 rounded-2xl border border-up/30">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">سعر الدخول</p>
+                            <p class="text-2xl font-black text-white" dir="ltr">$${activeSignal.price.toLocaleString(undefined, {minimumFractionDigits:4})}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                        <div class="bg-black/50 p-4 rounded-xl border border-gray-800">
+                            <p class="text-[10px] text-gray-400 font-bold mb-1">الهدف الأول (5%)</p>
+                            <p class="text-lg font-black text-up" dir="ltr">$${activeSignal.tp1.toLocaleString(undefined, {minimumFractionDigits:4})}</p>
+                        </div>
+                        <div class="bg-black/50 p-4 rounded-xl border border-gray-800">
+                            <p class="text-[10px] text-gray-400 font-bold mb-1">الهدف الثاني (10%)</p>
+                            <p class="text-lg font-black text-up" dir="ltr">$${activeSignal.tp2.toLocaleString(undefined, {minimumFractionDigits:4})}</p>
+                        </div>
+                        <div class="bg-black/50 p-4 rounded-xl border border-gray-800 relative overflow-hidden">
+                            <i class="fa-solid fa-fire absolute left-2 top-2 text-binance opacity-20 text-3xl"></i>
+                            <p class="text-[10px] text-gray-400 font-bold mb-1">هدف القناص (25%)</p>
+                            <p class="text-lg font-black text-binance" dir="ltr">$${activeSignal.tp3.toLocaleString(undefined, {minimumFractionDigits:4})}</p>
+                        </div>
+                        <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/30">
+                            <p class="text-[10px] text-red-400 font-bold mb-1"><i class="fa-solid fa-shield"></i> وقف الخسارة (SL)</p>
+                            <p class="text-lg font-black text-red-500" dir="ltr">$${activeSignal.sl.toLocaleString(undefined, {minimumFractionDigits:4})}</p>
+                        </div>
+                    </div>
+                `;
+                sendTelegramAlert(coin, activeSignal);
+
+            } else if (coin.rsi >= 75) {
+                // إشارة بيع (Short / Take Profit)
+                activeSignal = {
+                    type: 'SELL',
+                    action: 'جني أرباح / خروج',
+                    price: coin.price,
+                    tp1: coin.price * 0.95,
+                    tp2: coin.price * 0.90,
+                    tp3: coin.price * 0.75,
+                    sl: coin.price * 1.06
+                };
+
+                box.className = 'signal-sell rounded-2xl p-6 text-right transition-all duration-500';
+                box.innerHTML = `
+                     <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-down rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(246,70,93,0.4)]">
+                                <i class="fa-solid fa-arrow-trend-down text-white text-3xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-black text-down uppercase">SELL / EXIT</h3>
+                                <p class="text-sm font-bold text-white mt-1">تنبيه: تشبع شرائي واحتمال هبوط عنيف</p>
+                            </div>
+                        </div>
+                         <div class="text-left bg-black/40 px-6 py-3 rounded-2xl border border-down/30">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">سعر التنفيذ</p>
+                            <p class="text-2xl font-black text-white" dir="ltr">$${activeSignal.price.toLocaleString(undefined, {minimumFractionDigits:4})}</p>
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-2 gap-4 mt-6">
+                        <div class="bg-black/50 p-4 rounded-xl border border-down/30">
+                            <p class="text-xs text-gray-400 font-bold mb-1">إجراء فوري مطلوب</p>
+                            <p class="text-lg font-black text-down">قم ببيع الكمية لجني الأرباح فوراً</p>
+                        </div>
+                        <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/30">
+                            <p class="text-[10px] text-red-400 font-bold mb-1"><i class="fa-solid fa-shield"></i> نقطة إلغاء السيناريو السلبي</p>
+                            <p class="text-lg font-black text-red-500" dir="ltr">$${activeSignal.sl.toLocaleString(undefined, {minimumFractionDigits:4})}</p>
+                        </div>
+                    </div>
+                `;
+                sendTelegramAlert(coin, activeSignal);
+
             } else {
-                document.getElementById('err-msg').classList.remove('hidden');
+                activeSignal = null;
+                box.className = 'glass-panel rounded-2xl p-10 text-center transition-all duration-500 border border-gray-800';
+                box.innerHTML = `
+                    <div class="relative inline-block mb-4">
+                        <i class="fa-solid fa-circle-notch fa-spin text-5xl text-binance opacity-30"></i>
+                        <i class="fa-solid fa-eye absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-binance text-xl"></i>
+                    </div>
+                    <p class="font-black text-gray-400 uppercase tracking-widest text-sm">جاري مراقبة السيولة والـ Order Book...</p>
+                    <p class="text-xs text-gray-600 mt-2 font-bold">لا يوجد تدخل حيتان حالياً. التداول في هذه المنطقة مخاطرة. (الصبر هو الزالط)</p>
+                `;
             }
         }
 
-        function initSystem() {
-            // مزامنة البيانات
-            const savedToken = localStorage.getItem('alpha_bot_token');
-            const savedChat = localStorage.getItem('alpha_bot_chat');
-            if (savedToken && savedChat) {
-                botConfig = { token: savedToken, chatId: savedChat };
-                document.getElementById('tg-token-input').value = savedToken;
-                document.getElementById('tg-chat-input').value = savedChat;
+        // 3. نظام إرسال التلجرام
+        async function sendTelegramAlert(coin, signal) {
+            if (!tgToken || !tgChatId) return;
+
+            // التأكد من عدم إرسال نفس الإشارة لنفس العملة خلال 3 دقائق
+            const now = Date.now();
+            const signalId = `${coin.id}-${signal.type}`;
+            if (lastSignalSentId === signalId && (now - lastSignalSentTime) < 180000) {
+                return; 
             }
 
-            // تشغيل الساعة والعداد
-            setInterval(updateTimers, 1000);
+            const message = `
+⚠️ *إشعار طوارئ من رادار العبقري (VIP)* ⚠️
+━━━━━━━━━━━━━━━━━━
+💎 *العملة:* ${coin.id}/USDT
+🚀 *القرار:* ${signal.type === 'BUY' ? '🟢 شراء قوي (دخول حيتان)' : '🔴 بيع/جني أرباح (تصريف)'}
 
-            // تشغيل الشارت
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": "BINANCE:BTCUSDT",
-                "interval": "1",
-                "timezone": "Etc/UTC",
-                "theme": "dark",
-                "style": "1",
-                "locale": "ar",
-                "toolbar_bg": "#f1f3f6",
-                "container_id": "tradingview_widget"
+📊 *المعطيات الفنية:*
+▪️ سعر التنفيذ: $${signal.price.toLocaleString()}
+▪️ مؤشر القوة (RSI): ${coin.rsi.toFixed(1)}
+
+🎯 *الأهداف (لمتداولي Spot):*
+${signal.type === 'BUY' ? 
+`1️⃣ هدف 1: $${signal.tp1.toLocaleString()} (+5%)
+2️⃣ هدف 2: $${signal.tp2.toLocaleString()} (+10%)
+3️⃣ هدف 3: $${signal.tp3.toLocaleString()} (+25%)` 
+: 'جني الأرباح فوراً والخروج من السوق.'}
+
+🛑 *نقطة حماية رأس المال (Stop Loss):*
+سعر الوقف: $${signal.sl.toLocaleString()}
+
+⚠️ *تنبيه من العبقري:* الرجاء الالتزام بقاعدة 5% من المحفظة. ضع الوقف فور دخولك الصفقة.
+━━━━━━━━━━━━━━━━━━`;
+
+            try {
+                const url = `https://api.telegram.org/bot${tgToken}/sendMessage`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: tgChatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                if(response.ok) {
+                    lastSignalSentId = signalId;
+                    lastSignalSentTime = now;
+                    console.log('Telegram sent successfully');
+                }
+            } catch (error) {
+                console.error('Telegram Error:', error);
+            }
+        }
+
+        // 4. محرك محاكاة السوق الحي (التحديث كل ثانيتين)
+        setInterval(() => {
+            coins = coins.map(c => {
+                // تذبذب عشوائي طفيف للسعر
+                const priceChange = c.price * (Math.random() * 0.002 - 0.001); 
+                const newPrice = c.price + priceChange;
+                
+                // تحديث الـ RSI للتنقل بين المناطق لتجربة النظام
+                let newRsi = c.rsi + (Math.random() * 4 - 2);
+                if(newRsi > 90) newRsi = 85;
+                if(newRsi < 10) newRsi = 15;
+
+                // تحديث النسبة المئوية للتغير
+                const newChange = c.change + (Math.random() * 0.2 - 0.1);
+
+                return { ...c, price: newPrice, rsi: newRsi, change: newChange };
             });
 
-            setInterval(runAlphaLogic, 3000);
-        }
+            renderCoins();
+            updateMainPanel();
+        }, 2000);
 
-        function updateTimers() {
-            const now = new Date();
-            // الساعة الرئيسية
-            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
-
-            // عداد الشمعة (لحساب متى تنتهي الدقيقة الحالية)
-            const seconds = now.getSeconds();
-            const remaining = 60 - seconds;
-            const timerText = `00:${remaining < 10 ? '0' : ''}${remaining}`;
-            document.getElementById('candle-timer').innerText = timerText;
-
-            // تحديث الدائرة
-            const progress = document.getElementById('progress');
-            const offset = 251.2 - (251.2 * remaining / 60);
-            progress.style.strokeDashoffset = offset;
-        }
-
-        function saveBotSettings() {
-            const token = document.getElementById('tg-token-input').value;
-            const chat = document.getElementById('tg-chat-input').value;
-            localStorage.setItem('alpha_bot_token', token);
-            localStorage.setItem('alpha_bot_chat', chat);
-            botConfig = { token, chatId: chat };
-            alert('تم الحفظ. العبقري سيتصل بهاتفك الآن.');
-        }
-
-        async function sendSignal(msg) {
-            if(!botConfig.token) return;
-            const url = `https://api.telegram.org/bot${botConfig.token}/sendMessage?chat_id=${botConfig.chatId}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`;
-            try { await fetch(url); } catch(e) {}
-        }
-
-        let lastActiveSignal = "";
-
-        function runAlphaLogic() {
-            // محاكاة تحليل ذكي (يفضل استبداله بـ API حقيقي في السيرفر)
-            const rsi = Math.floor(Math.random() * (85 - 15) + 15);
-            document.getElementById('rsi-val').innerText = rsi;
-            document.getElementById('rsi-bar').style.width = rsi + '%';
-
-            const mainSignal = document.getElementById('main-signal');
-            const timeRec = document.getElementById('time-recommendation');
-
-            if (rsi <= 25) {
-                mainSignal.innerText = "BUY / شراء الآن";
-                mainSignal.className = "text-3xl font-bold buy-signal";
-                timeRec.classList.remove('hidden');
-                if(lastActiveSignal !== "buy") {
-                    sendSignal("🚀 إشارة شراء قوية! ادخل دقيقتين الآن.");
-                    lastActiveSignal = "buy";
-                }
-            } else if (rsi >= 75) {
-                mainSignal.innerText = "SELL / بيع الآن";
-                mainSignal.className = "text-3xl font-bold sell-signal";
-                timeRec.classList.remove('hidden');
-                if(lastActiveSignal !== "sell") {
-                    sendSignal("🚨 إشارة بيع قوية! ادخل دقيقتين الآن.");
-                    lastActiveSignal = "sell";
-                }
+        // 5. إعدادات واجهة المستخدم والتلجرام
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                document.getElementById('tg-token').value = tgToken;
+                document.getElementById('tg-chatid').value = tgChatId;
             } else {
-                mainSignal.innerText = "Monitoring...";
-                mainSignal.className = "text-xl font-bold text-gray-600";
-                timeRec.classList.add('hidden');
-                lastActiveSignal = "";
+                modal.classList.add('hidden');
             }
         }
+
+        function saveTelegramSettings() {
+            tgToken = document.getElementById('tg-token').value.trim();
+            tgChatId = document.getElementById('tg-chatid').value.trim();
+            
+            localStorage.setItem('alpha_tg_token', tgToken);
+            localStorage.setItem('alpha_tg_chat', tgChatId);
+            
+            toggleSettings();
+            updateTelegramStatus();
+            alert('تم حفظ إعدادات البوت بنجاح! سيتم إرسال الإشارات المشفرة إليه فور رصدها.');
+        }
+
+        function updateTelegramStatus() {
+            const el = document.getElementById('tg-status-text');
+            if (tgToken && tgChatId) {
+                el.innerHTML = '<span class="text-green-500 font-bold"><i class="fa-solid fa-check-circle"></i> البوت متصل ومفعل وجاهز لاصطياد الفرص.</span>';
+            } else {
+                el.innerText = 'غير متصل. اضغط لربط البوت لتصلك الإشارات وأنت خارج المنصة.';
+            }
+        }
+
+        // التشغيل الأولي
+        updateTelegramStatus();
+        renderCoins();
+        updateMainPanel();
     </script>
 </body>
 </html>
