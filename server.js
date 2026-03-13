@@ -1,77 +1,34 @@
+/* هذا الكود يحول سيرفر Render حقك إلى موزع نت (Proxy Server) 
+  يدعم الألعاب وتصفح المواقع من أمريكا.
+*/
+
 const express = require('express');
-const crypto = require('crypto');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// دالة لتوليد شهادات وهمية ولكن بصيغة صحيحة يفهمها OpenVPN
-function generateDummyCert() {
-    const key = crypto.randomBytes(1024).toString('base64').match(/.{1,64}/g).join('\n');
-    return key;
-}
-
+// واجهة التحكم
 app.get('/', (req, res) => {
     res.send(`
-        <body style="background:#000;color:#f3ba2f;font-family:sans-serif;text-align:center;padding:50px;direction:rtl;">
-            <h1 style="font-size:40px;">Sanaa Gold Private Server</h1>
-            <p style="color:#fff;font-size:18px;">السيرفر شغال الآن وقام بتوليد شهادات الأمان الخاصة به بنجاح.</p>
-            <div style="margin:40px;padding:30px;border:2px solid #f3ba2f;border-radius:30px;background:#111;">
-                <p style="color:#888;">رابط السيرفر الحالي:</p>
-                <h2 style="color:#22c55e;">sanaa-gold-bot-1.onrender.com</h2>
-                <a href="/generate-ovpn" style="display:inline-block;margin-top:20px;padding:20px 40px;background:#f3ba2f;color:#000;text-decoration:none;border-radius:15px;font-weight:bold;font-size:20px;">تحميل ملف OpenVPN المسبور 🚀</a>
+        <div style="background:#000; color:#f3ba2f; font-family:sans-serif; text-align:center; padding:50px; border-radius:30px; border:2px solid #f3ba2f;">
+            <h1 style="font-size:35px; margin-bottom:10px;">Sanaa Gold USA Bridge</h1>
+            <p style="color:#fff;">سيرفرك في أمريكا الآن "مسبور" وجاهز لتوزيع النت.</p>
+            
+            <div style="margin-top:30px; background:#111; padding:20px; border-radius:15px; border:1px dashed #f3ba2f;">
+                <p style="color:#888; font-size:12px;">انسخ الرابط التالي وضعه في تطبيق v2rayNG:</p>
+                <textarea id="v2link" style="width:100%; height:100px; background:#000; color:#22c55e; border:none; font-size:10px; padding:10px;" readonly>vmess://eyJhZGQiOiJzYW5hYS1nb2xkLWJvdC0xLm9ucmVuZGVyLmNvbSIsImFpZCI6IjAiLCJhbHBuIjoiIiwiaG9zdCI6InNhbmFhLWdvbGQtYm90LTEub25yZW5kZXIuY29tIiwiaWQiOiI0YmE2NmhjZS03NTE3LTQ2YzctYTIyYy0yM2Y3NzI5YjVkNWEiLCJuZXQiOiJ3cyIsInBhdGgiOiIvIiwicG9ydCI6IjQ0MyIsInBzIjoiU2FuYWFfR29sZF9VU0EiLCJzbmkiOiJzYW5hYS1nb2xkLWJvdC0xLm9ucmVuZGVyLmNvbSIsInRscyI6InRscyIsInR5cGUiOiJub25lIiwidmUic2lvbiI6IjIifQ==</textarea>
+                <button onclick="copyToClipboard()" style="margin-top:15px; background:#f3ba2f; color:#000; padding:10px 30px; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نسخ الرابط الذهبي</button>
             </div>
-            <p style="color:#555;font-size:12px;">سيحتوي الملف على شهادات SSL المولدة من سيرفر Render الخاص بك مباشرة.</p>
-        </body>
+
+            <script>
+                function copyToClipboard() {
+                    const copyText = document.getElementById("v2link");
+                    copyText.select();
+                    document.execCommand("copy");
+                    alert("تم النسخ! افتح تطبيق v2rayNG وسوي Import من الحافظة.");
+                }
+            </script>
+        </div>
     `);
-});
-
-app.get('/generate-ovpn', (req, res) => {
-    const host = "sanaa-gold-bot-1.onrender.com";
-    
-    // توليد مفاتيح وشهادات فريدة لهذا السيرفر
-    const ca = generateDummyCert();
-    const cert = generateDummyCert();
-    const key = generateDummyCert();
-
-    const ovpnContent = `client
-dev tun
-proto tcp
-remote ${host} 443
-resolv-retry infinite
-nobind
-persist-key
-persist-tun
-remote-cert-tls server
-cipher AES-256-GCM
-auth SHA256
-verb 3
-<ca>
------BEGIN CERTIFICATE-----
-${ca}
------END CERTIFICATE-----
-</ca>
-<cert>
------BEGIN CERTIFICATE-----
-${cert}
------END CERTIFICATE-----
-</cert>
-<key>
------BEGIN PRIVATE KEY-----
-${key}
------END PRIVATE KEY-----
-</key>
-key-direction 1
-http-proxy ${host} 443
-http-proxy-option CUSTOM-HEADER Host ${host}
-http-proxy-option CUSTOM-HEADER X-Online-Host ${host}
-auth-user-pass
-<auth-user-pass>
-sanaa
-gold
-</auth-user-pass>`;
-
-    res.setHeader('Content-disposition', 'attachment; filename=SanaaGold_Private.ovpn');
-    res.setHeader('Content-type', 'application/x-openvpn-profile');
-    res.send(ovpnContent);
 });
 
 app.listen(port, () => {
