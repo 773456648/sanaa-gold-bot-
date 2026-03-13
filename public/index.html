@@ -1,287 +1,53 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ميزان الهيبة | الدقة والعدالة</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;500;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --gold: #d4af37; --bg: #030305; --red: #ff4d4d; --green: #2ecc71; }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Changa', sans-serif; overflow-x: hidden; }
-        .kufi { font-family: 'Noto Kufi Arabic', sans-serif; }
-        .glass { background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 30px; }
-        .gold-glow { color: var(--gold); text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
-        .btn-gold { background: linear-gradient(135deg, #d4af37, #8a6d3b); color: #000; font-weight: bold; border-radius: 15px; transition: 0.3s; }
-        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); }
-        .input-h { background: #000; border: 1px solid #1a1a1a; border-radius: 15px; padding: 15px; color: var(--gold); width: 100%; outline: none; }
-        .input-h:focus { border-color: var(--gold); }
-        .debt-card { border-right: 4px solid var(--red); background: rgba(255, 0, 0, 0.03); }
-        .payment-card { border-right: 4px solid var(--green); background: rgba(46, 204, 113, 0.03); }
-        .badge { font-size: 10px; padding: 2px 8px; border-radius: 5px; }
-    </style>
-</head>
-<body class="p-4 md:p-10">
+const express = require('express');
+const fs = require('fs');
+const app = express();
+const PORT = process.env.PORT || 3000;
+const DB_PATH = './heiba_ordered_finance.json';
 
-    <!-- الواجهة الرئيسية -->
-    <div id="home-view" class="max-w-4xl mx-auto space-y-12">
-        <header class="text-center">
-            <h1 class="text-7xl font-black kufi gold-glow italic mb-4">HEIBA</h1>
-            <p class="text-gray-600 tracking-[0.8em] text-[10px] uppercase">The Ultimate Financial Justice System</p>
-        </header>
+app.use(express.json());
+app.use(express.static('public'));
 
-        <!-- رادار البحث عن الديون -->
-        <div class="glass p-8 border-t-2 border-gold/40">
-            <h2 class="text-center text-xl font-bold mb-8 gold-glow">🔍 رادار البحث عن المدينين</h2>
-            <div class="flex flex-col md:flex-row gap-3">
-                <input type="text" id="global-search" class="input-h" placeholder="اكتب اسم الشخص الرباعي لفحص ديونه...">
-                <button onclick="globalSearch()" class="btn-gold px-10 py-4">فحص الآن</button>
-            </div>
-            <div id="global-results" class="mt-8 space-y-4"></div>
-        </div>
+let db = { users: [] };
+if (fs.existsSync(DB_PATH)) db = JSON.parse(fs.readFileSync(DB_PATH));
+const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- الدخول -->
-            <div class="glass p-8">
-                <h3 class="text-lg font-bold mb-6">🚪 دخول الخزنة</h3>
-                <div class="space-y-4">
-                    <input type="text" id="login-name" class="input-h" placeholder="اسم الصفحة">
-                    <input type="password" id="login-pass" class="input-h" placeholder="كلمة السر">
-                    <button onclick="login()" class="w-full btn-gold py-4">فتح المنظومة</button>
-                </div>
-            </div>
-            <!-- الإنشاء -->
-            <div class="glass p-8 border-b-2 border-gold/20">
-                <h3 class="text-lg font-bold mb-6 text-gray-400">🆕 تسجيل مستخدم جديد</h3>
-                <div class="space-y-4">
-                    <input type="text" id="reg-name" class="input-h" placeholder="الاسم الكامل للمستخدم">
-                    <input type="password" id="reg-pass" class="input-h" placeholder="كلمة السر الخاصة بك">
-                    <button onclick="register()" class="w-full border border-gold/40 text-gold py-4 rounded-2xl hover:bg-gold/5 transition">تنشيط الحساب</button>
-                </div>
-            </div>
-        </div>
-    </div>
+// إنشاء حساب
+app.post('/api/auth/register', (req, res) => {
+    const { name, password, type } = req.body;
+    if (db.users.find(u => u.name.toLowerCase() === name.toLowerCase())) {
+        return res.status(400).json({ error: "الاسم مستخدم بالفعل" });
+    }
+    const newUser = {
+        id: "U" + Date.now(),
+        name: name.trim(),
+        password,
+        type: type || 'merchant',
+        merchants: [],
+        history: [],
+        createdAt: new Date().toISOString()
+    };
+    db.users.push(newUser);
+    saveDB();
+    res.json({ success: true, user: newUser });
+});
 
-    <!-- لوحة التحكم الشخصية -->
-    <div id="vault-view" class="hidden max-w-6xl mx-auto">
-        <div class="glass p-6 mb-8 flex justify-between items-center border-b-2 border-gold/30">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-gold rounded-full flex items-center justify-center text-black font-black text-2xl">⚖️</div>
-                <div>
-                    <h2 id="user-display-name" class="text-2xl font-black gold-glow"></h2>
-                    <p class="text-[10px] text-gray-500 uppercase">Financial Management Hub</p>
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="saveData()" class="bg-green-600/20 text-green-500 border border-green-500/30 px-6 py-2 rounded-xl font-bold">حفظ السحابة</button>
-                <button onclick="location.reload()" class="bg-white/5 text-gray-500 px-4 py-2 rounded-xl text-xs">خروج</button>
-            </div>
-        </div>
+// دخول
+app.post('/api/auth/login', (req, res) => {
+    const { name, password } = req.body;
+    const user = db.users.find(u => u.name.toLowerCase() === name.toLowerCase() && u.password === password);
+    if (!user) return res.status(403).json({ error: "بيانات خاطئة" });
+    res.json(user);
+});
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- المدينين -->
-            <div class="lg:col-span-4 space-y-6">
-                <div class="glass p-6">
-                    <h3 class="text-xs font-bold mb-6 text-gray-500 uppercase tracking-widest">📋 قائمة المدينين لديك</h3>
-                    <div class="flex gap-2 mb-6">
-                        <input id="new-debtor" class="input-h text-sm py-3" placeholder="اسم مدين جديد">
-                        <button onclick="addDebtor()" class="btn-gold px-4">+</button>
-                    </div>
-                    <div id="debtors-list" class="space-y-2 max-h-96 overflow-y-auto pr-2"></div>
-                </div>
-            </div>
+// مزامنة تلقائية
+app.post('/api/user/sync', (req, res) => {
+    const { id, password, data } = req.body;
+    const idx = db.users.findIndex(u => u.id === id && u.password === password);
+    if (idx === -1) return res.status(403).send("Error");
+    db.users[idx].merchants = data.merchants;
+    db.users[idx].history = data.history;
+    saveDB();
+    res.json({ success: true });
+});
 
-            <!-- سجل العمليات التفصيلي -->
-            <div class="lg:col-span-8 space-y-6">
-                <div id="debtor-panel" class="glass p-8 hidden border-l-2 border-gold/30">
-                    <div class="flex justify-between items-end mb-8">
-                        <div>
-                            <p class="text-[10px] text-gray-500 uppercase mb-1">بيانات المدين</p>
-                            <h3 id="active-debtor-name" class="text-3xl font-black gold-glow"></h3>
-                        </div>
-                        <div class="text-right">
-                            <div id="stat-yer" class="text-blue-400 font-bold text-xl">0 YER</div>
-                            <div id="stat-usd" class="text-green-400 font-bold text-xl">0 USD</div>
-                            <p class="text-[9px] text-gray-600">صافي المديونية الحالية</p>
-                        </div>
-                    </div>
-
-                    <div id="operations-log" class="space-y-3 mb-8 max-h-[400px] overflow-y-auto pr-2"></div>
-
-                    <!-- إضافة عملية جديدة -->
-                    <div class="bg-black/50 p-6 rounded-3xl border border-white/5 space-y-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <input id="op-amount" type="number" class="input-h text-sm" placeholder="المبلغ">
-                            <select id="op-currency" class="input-h text-sm">
-                                <option value="YER">ريال يمني</option>
-                                <option value="USD">دولار $</option>
-                            </select>
-                            <select id="op-type" class="input-h text-sm">
-                                <option value="دين" class="text-red-500">سحب (دين)</option>
-                                <option value="سداد" class="text-green-500">سداد (خصم)</option>
-                            </select>
-                            <input id="op-reason" class="input-h text-sm" placeholder="السبب/الملاحظة">
-                        </div>
-                        <button onclick="submitOperation()" class="w-full btn-gold py-4 text-lg">تثبيت العملية في السجل</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let userData = null;
-        let currentDebtor = null;
-
-        // --- نظام الحسابات والأسماء ---
-        async function register() {
-            const name = document.getElementById('reg-name').value;
-            const password = document.getElementById('reg-pass').value;
-            if(!name || !password) return;
-            const res = await fetch('/api/pages/create', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, description: "خزنة مالية" }) });
-            const data = await res.json();
-            if(res.ok) { alert("✅ تم إنشاء صفحتك بنجاح!"); location.reload(); } else alert(data.error);
-        }
-
-        async function login() {
-            const name = document.getElementById('login-name').value;
-            const password = document.getElementById('login-pass').value;
-            const res = await fetch('/api/pages/access', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password }) });
-            if(res.ok) {
-                userData = await res.json();
-                openVault();
-            } else alert("❌ بيانات الدخول خاطئة");
-        }
-
-        // --- رادار البحث (محد يغوي حد) ---
-        async function globalSearch() {
-            const name = document.getElementById('global-search').value;
-            if(!name) return;
-            const res = await fetch(`/api/global/search-debt?name=${name}`);
-            const results = await res.json();
-            
-            let html = `<div class="p-6 bg-white/5 rounded-3xl border border-white/10">
-                          <h4 class="text-xl font-bold mb-6 text-center gold-glow">📊 سجل الذمة المالية لـ: ${name}</h4>`;
-            
-            if(results.length === 0) {
-                html += `<p class="text-center text-gray-600 py-10">نظيف! لا توجد ديون مسجلة لهذا الاسم.</p>`;
-            } else {
-                let sums = { YER: 0, USD: 0 };
-                results.forEach(r => {
-                    const amt = parseFloat(r.amount);
-                    if(r.type === 'دين') sums[r.currency] += amt; else sums[r.currency] -= amt;
-                    
-                    html += `
-                    <div class="flex justify-between items-center py-4 border-b border-white/5">
-                        <div>
-                            <div class="text-sm font-bold text-gray-200">${r.type === 'دين' ? '⚠️ استلام مبلغ' : '✅ سداد مبلغ'}</div>
-                            <div class="text-[10px] text-gray-500">${new Date(r.date).toLocaleString('ar-YE')} | عند: <span class="text-gold">${r.creditor}</span></div>
-                            <div class="text-[10px] text-gray-400 italic mt-1">السبب: ${r.reason}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-lg font-black ${r.type === 'دين' ? 'text-red-500' : 'text-green-500'}">${r.type === 'دين' ? '+' : '-'}${amt} ${r.currency}</div>
-                        </div>
-                    </div>`;
-                });
-                html += `
-                <div class="mt-8 p-6 bg-gold/5 rounded-2xl border border-gold/20 flex justify-around text-center">
-                    <div><p class="text-[10px] text-gray-500">إجمالي الذمة (ريال)</p><p class="text-2xl font-black text-blue-400">${sums.YER}</p></div>
-                    <div><p class="text-[10px] text-gray-500">إجمالي الذمة (دولار)</p><p class="text-2xl font-black text-green-400">$${sums.USD}</p></div>
-                </div>`;
-            }
-            html += `</div>`;
-            document.getElementById('global-results').innerHTML = html;
-        }
-
-        // --- لوحة التحكم الشخصية ---
-        function openVault() {
-            document.getElementById('home-view').classList.add('hidden');
-            document.getElementById('vault-view').classList.remove('hidden');
-            document.getElementById('user-display-name').innerText = userData.name;
-            renderDebtors();
-        }
-
-        function renderDebtors() {
-            const names = [...new Set(userData.content.debts.map(d => d.debtorName))];
-            document.getElementById('debtors-list').innerHTML = names.map(name => `
-                <div onclick="selectDebtor('${name}')" class="p-4 bg-white/5 rounded-2xl border border-transparent hover:border-gold/30 cursor-pointer transition flex justify-between items-center group">
-                    <span class="font-bold text-gray-300 group-hover:text-gold">${name}</span>
-                    <span class="text-[10px] text-gray-600">تفاصيل ›</span>
-                </div>
-            `).reverse().join('');
-        }
-
-        function addDebtor() {
-            const name = document.getElementById('new-debtor').value.trim();
-            if(!name) return;
-            selectDebtor(name);
-            document.getElementById('new-debtor').value = "";
-        }
-
-        function selectDebtor(name) {
-            currentDebtor = name;
-            document.getElementById('debtor-panel').classList.remove('hidden');
-            document.getElementById('active-debtor-name').innerText = name;
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const history = userData.content.debts.filter(d => d.debtorName === currentDebtor);
-            let sums = { YER: 0, USD: 0 };
-            
-            document.getElementById('operations-log').innerHTML = history.map((op, i) => {
-                const amt = parseFloat(op.amount);
-                const isDebt = op.type === 'دين';
-                if(isDebt) sums[op.currency] += amt; else sums[op.currency] -= amt;
-
-                return `
-                <div class="p-4 rounded-2xl flex justify-between items-center ${isDebt ? 'debt-card' : 'payment-card'}">
-                    <div>
-                        <div class="text-xs font-bold">${op.type} - ${op.reason}</div>
-                        <div class="text-[9px] text-gray-500">${new Date(op.date).toLocaleDateString()}</div>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-black ${isDebt ? 'text-red-400' : 'text-green-400'}">${isDebt ? '+' : '-'}${amt} ${op.currency}</div>
-                    </div>
-                </div>`;
-            }).reverse().join('');
-
-            document.getElementById('stat-yer').innerText = `${sums.YER} YER`;
-            document.getElementById('stat-usd').innerText = `${sums.USD} USD`;
-        }
-
-        function submitOperation() {
-            const amt = document.getElementById('op-amount').value;
-            const cur = document.getElementById('op-currency').value;
-            const type = document.getElementById('op-type').value;
-            const reason = document.getElementById('op-reason').value || "سلفة";
-            
-            if(!amt) return;
-
-            userData.content.debts.push({
-                debtorName: currentDebtor,
-                amount: amt,
-                currency: cur,
-                type: type,
-                reason: reason,
-                date: new Date().toISOString()
-            });
-
-            renderHistory();
-            renderDebtors();
-            // تصفير المدخلات
-            document.getElementById('op-amount').value = "";
-            document.getElementById('op-reason').value = "";
-        }
-
-        async function saveData() {
-            const res = await fetch('/api/pages/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id: userData.id, password: userData.password, content: userData.content })
-            });
-            if(res.ok) alert("✅ تم تأمين جميع السجلات المالية في السحابة");
-        }
-    </script>
-</body>
-</html>
+app.listen(PORT, () => console.log(`🚀 HEIBA ORDERED SYSTEM ONLINE`));
