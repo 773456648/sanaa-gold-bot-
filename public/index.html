@@ -1,53 +1,345 @@
-const express = require('express');
-const fs = require('fs');
-const app = express();
-const PORT = process.env.PORT || 3000;
-const DB_PATH = './heiba_ordered_finance.json';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة الهيبة | سجل مرتب</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #0f172a; 
+            color: #f8fafc; 
+            font-family: 'Tajawal', sans-serif;
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .debt-item {
+            border-right: 6px solid #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+            transition: all 0.3s ease;
+        }
+        .payment-item {
+            border-right: 6px solid #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+            transition: all 0.3s ease;
+        }
+        .gold-border { border: 1px solid #d4af37; }
+        .gold-text { color: #d4af37; }
+        .gold-bg { background: #d4af37; color: #000; }
+        
+        input, select {
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: #fff !important;
+            border-radius: 12px !important;
+        }
+        input:focus { border-color: #d4af37 !important; outline: none; }
+        
+        .scroll-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
 
-app.use(express.json());
-app.use(express.static('public'));
+    <!-- شاشة الدخول -->
+    <div id="auth-screen" class="max-w-md mx-auto mt-20 space-y-6">
+        <div class="text-center mb-10">
+            <h1 class="text-5xl font-black gold-text mb-2">HEIBA</h1>
+            <p class="text-gray-400 text-sm tracking-widest">النظام المحاسبي المرتب</p>
+        </div>
+        
+        <div class="glass-card p-8">
+            <div class="flex mb-6 p-1 bg-slate-800 rounded-xl">
+                <button onclick="setAuthMode('login')" id="tab-login" class="flex-1 py-2 rounded-lg gold-bg font-bold">دخول</button>
+                <button onclick="setAuthMode('reg')" id="tab-reg" class="flex-1 py-2 rounded-lg text-gray-400">جديد</button>
+            </div>
+            
+            <div class="space-y-4">
+                <input type="text" id="auth-name" class="w-full p-4" placeholder="الاسم الكامل">
+                <input type="password" id="auth-pass" class="w-full p-4" placeholder="كلمة السر">
+                <select id="auth-type" class="w-full p-4 hidden">
+                    <option value="merchant">صاحب عمل (تاجر)</option>
+                    <option value="debtor">مستلف (مدين)</option>
+                </select>
+                <button onclick="authAction()" class="w-full py-4 gold-bg rounded-xl font-bold text-lg mt-4 shadow-lg shadow-yellow-900/20">ابدأ الآن</button>
+            </div>
+        </div>
+    </div>
 
-let db = { users: [] };
-if (fs.existsSync(DB_PATH)) db = JSON.parse(fs.readFileSync(DB_PATH));
-const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+    <!-- لوحة التحكم -->
+    <div id="main-screen" class="hidden max-w-5xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h2 id="display-name" class="text-3xl font-black gold-text italic"></h2>
+                <div class="flex gap-2 items-center mt-1">
+                    <span id="type-badge" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 border border-slate-700"></span>
+                    <span class="text-[10px] text-gray-500">متصل الآن بالسحابة</span>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="p-3 bg-slate-800 rounded-full hover:bg-red-900/20 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+            </button>
+        </header>
 
-// إنشاء حساب
-app.post('/api/auth/register', (req, res) => {
-    const { name, password, type } = req.body;
-    if (db.users.find(u => u.name.toLowerCase() === name.toLowerCase())) {
-        return res.status(400).json({ error: "الاسم مستخدم بالفعل" });
-    }
-    const newUser = {
-        id: "U" + Date.now(),
-        name: name.trim(),
-        password,
-        type: type || 'merchant',
-        merchants: [],
-        history: [],
-        createdAt: new Date().toISOString()
-    };
-    db.users.push(newUser);
-    saveDB();
-    res.json({ success: true, user: newUser });
-});
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- قائمة السجلات -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card p-6">
+                    <h3 class="text-sm font-bold text-gray-400 mb-6 flex justify-between items-center">
+                        <span>📖 سجلات التجار</span>
+                        <span id="merchant-count" class="bg-slate-700 px-2 rounded text-[10px]">0</span>
+                    </h3>
+                    
+                    <div id="merchant-input-box" class="mb-6 space-y-2">
+                        <input id="new-m-name" class="w-full p-3 text-sm" placeholder="إضافة سجل لتاجر جديد...">
+                        <button onclick="addMerchant()" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs transition font-bold">+ إضافة السجل</button>
+                    </div>
 
-// دخول
-app.post('/api/auth/login', (req, res) => {
-    const { name, password } = req.body;
-    const user = db.users.find(u => u.name.toLowerCase() === name.toLowerCase() && u.password === password);
-    if (!user) return res.status(403).json({ error: "بيانات خاطئة" });
-    res.json(user);
-});
+                    <div id="merchants-list" class="space-y-3 max-h-96 overflow-y-auto scroll-hide"></div>
+                </div>
 
-// مزامنة تلقائية
-app.post('/api/user/sync', (req, res) => {
-    const { id, password, data } = req.body;
-    const idx = db.users.findIndex(u => u.id === id && u.password === password);
-    if (idx === -1) return res.status(403).send("Error");
-    db.users[idx].merchants = data.merchants;
-    db.users[idx].history = data.history;
-    saveDB();
-    res.json({ success: true });
-});
+                <!-- إحصائيات الميزان -->
+                <div class="glass-card p-6 border-t-2 border-yellow-600/30">
+                    <h3 class="text-xs font-bold text-gold mb-4 uppercase tracking-tighter">الميزان الكلي للمنظومة</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-white/5">
+                            <p class="text-[9px] text-gray-500 mb-1">صافي يمني</p>
+                            <p id="total-yer" class="text-xl font-black text-blue-400">0</p>
+                        </div>
+                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-white/5">
+                            <p class="text-[9px] text-gray-500 mb-1">صافي دولار</p>
+                            <p id="total-usd" class="text-xl font-black text-green-400">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-app.listen(PORT, () => console.log(`🚀 HEIBA ORDERED SYSTEM ONLINE`));
+            <!-- تفاصيل العمليات -->
+            <div class="lg:col-span-8">
+                <div id="ops-container" class="hidden space-y-6">
+                    <div class="glass-card p-8">
+                        <div class="flex justify-between items-start mb-8">
+                            <div>
+                                <h3 id="active-merchant-name" class="text-4xl font-black gold-text mb-1"></h3>
+                                <div class="flex gap-4">
+                                    <span id="m-yer-sum" class="text-xs text-blue-400 font-bold"></span>
+                                    <span id="m-usd-sum" class="text-xs text-green-400 font-bold"></span>
+                                </div>
+                            </div>
+                            <button onclick="deleteCurrentMerchant()" class="text-[10px] text-red-500 hover:underline uppercase">حذف السجل</button>
+                        </div>
+
+                        <!-- العمليات المرتبة -->
+                        <div class="space-y-4 mb-8" id="ops-list"></div>
+
+                        <!-- فورم الإضافة -->
+                        <div id="add-form" class="p-6 bg-slate-900/40 rounded-3xl border border-white/5 space-y-4">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <input id="op-amt" type="number" class="w-full p-3 text-sm" placeholder="المبلغ">
+                                <select id="op-cur" class="w-full p-3 text-sm">
+                                    <option value="YER">ريال يمني</option>
+                                    <option value="USD">دولار $</option>
+                                </select>
+                                <select id="op-type" class="w-full p-3 text-sm font-bold">
+                                    <option value="دين" class="text-red-500">شليت (دين)</option>
+                                    <option value="سداد" class="text-green-500">سددت (خصم)</option>
+                                </select>
+                                <input id="op-note" class="w-full p-3 text-sm" placeholder="السبب/ملاحظة">
+                            </div>
+                            <button onclick="saveOperation()" class="w-full py-4 gold-bg rounded-2xl font-black shadow-xl shadow-yellow-900/10">تسجيل العملية وحفظ تلقائي</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="empty-state" class="glass-card p-20 text-center">
+                    <div class="text-6xl mb-4 opacity-20">📂</div>
+                    <p class="text-gray-500">اختر سجلاً من القائمة الجانبية لعرض العمليات والديون بشكل مرتب</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let activeM = null;
+        let authMode = 'login';
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            document.getElementById('auth-type').classList.toggle('hidden', mode === 'login');
+            document.getElementById('tab-login').className = mode === 'login' ? 'flex-1 py-2 rounded-lg gold-bg font-bold' : 'flex-1 py-2 rounded-lg text-gray-400';
+            document.getElementById('tab-reg').className = mode === 'reg' ? 'flex-1 py-2 rounded-lg gold-bg font-bold' : 'flex-1 py-2 rounded-lg text-gray-400';
+        }
+
+        async function authAction() {
+            const name = document.getElementById('auth-name').value;
+            const password = document.getElementById('auth-pass').value;
+            const type = document.getElementById('auth-type').value;
+            const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+            
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, password, type })
+            });
+            const data = await res.json();
+            if(res.ok) { currentUser = data; launch(); } else alert(data.error);
+        }
+
+        function launch() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+            document.getElementById('display-name').innerText = currentUser.name;
+            document.getElementById('type-badge').innerText = currentUser.type === 'merchant' ? 'تاجر' : 'مدين';
+            renderMerchants();
+            updateTotals();
+        }
+
+        function renderMerchants() {
+            const list = document.getElementById('merchants-list');
+            list.innerHTML = currentUser.merchants.map(m => `
+                <div onclick="selectMerchant('${m.name}')" class="p-4 glass-card border-r-4 ${activeM === m.name ? 'border-yellow-500 bg-yellow-500/5' : 'border-transparent'} cursor-pointer hover:bg-slate-700/30 transition flex justify-between items-center group">
+                    <span class="font-bold ${activeM === m.name ? 'gold-text' : 'text-gray-300'}">${m.name}</span>
+                    <span class="text-[10px] opacity-0 group-hover:opacity-100 transition">عرض ›</span>
+                </div>
+            `).join('');
+            document.getElementById('merchant-count').innerText = currentUser.merchants.length;
+        }
+
+        function addMerchant() {
+            const name = document.getElementById('new-m-name').value.trim();
+            if(!name || currentUser.merchants.find(m => m.name === name)) return;
+            currentUser.merchants.push({ name, date: new Date() });
+            renderMerchants();
+            sync();
+            document.getElementById('new-m-name').value = "";
+        }
+
+        function selectMerchant(name) {
+            activeM = name;
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('ops-container').classList.remove('hidden');
+            document.getElementById('active-merchant-name').innerText = name;
+            renderMerchants();
+            renderOperations();
+        }
+
+        function renderOperations() {
+            const ops = currentUser.history.filter(h => h.merchant === activeM);
+            const list = document.getElementById('ops-list');
+            
+            let mYer = 0; let mUsd = 0;
+            
+            list.innerHTML = ops.map((op, i) => {
+                const isDebt = op.type === 'دين';
+                const val = parseFloat(op.amount);
+                if(op.currency === 'YER') mYer += (isDebt ? val : -val);
+                else mUsd += (isDebt ? val : -val);
+
+                return `
+                <div class="flex flex-col p-5 rounded-2xl ${isDebt ? 'debt-item' : 'payment-item'} shadow-sm relative group">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] px-2 py-0.5 rounded-full ${isDebt ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'} font-bold">
+                                    ${op.type}
+                                </span>
+                                <span class="text-[10px] text-gray-500">${new Date(op.date).toLocaleString('ar-YE')}</span>
+                            </div>
+                            <p class="text-sm font-bold text-gray-200">${op.note}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xl font-black ${isDebt ? 'text-red-500' : 'text-green-500'}">
+                                ${isDebt ? '+' : '-'}${op.amount} <span class="text-[10px]">${op.currency}</span>
+                            </p>
+                            <button onclick="deleteOp('${op.id}')" class="opacity-0 group-hover:opacity-100 text-[10px] text-red-400 hover:underline transition">حذف السجل</button>
+                        </div>
+                    </div>
+                </div>`;
+            }).reverse().join('');
+
+            document.getElementById('m-yer-sum').innerText = `يمني: ${mYer}`;
+            document.getElementById('m-usd-sum').innerText = `دولار: ${mUsd}`;
+        }
+
+        function saveOperation() {
+            const amt = document.getElementById('op-amt').value;
+            const cur = document.getElementById('op-cur').value;
+            const type = document.getElementById('op-type').value;
+            const note = document.getElementById('op-note').value || "بدون بيان";
+            
+            if(!amt) return;
+
+            currentUser.history.push({
+                id: "OP" + Date.now(),
+                merchant: activeM,
+                amount: amt,
+                currency: cur,
+                type: type,
+                note: note,
+                date: new Date().toISOString()
+            });
+
+            renderOperations();
+            updateTotals();
+            sync();
+
+            document.getElementById('op-amt').value = "";
+            document.getElementById('op-note').value = "";
+        }
+
+        function deleteOp(id) {
+            if(!confirm("حذف هذه العملية؟")) return;
+            currentUser.history = currentUser.history.filter(h => h.id !== id);
+            renderOperations();
+            updateTotals();
+            sync();
+        }
+
+        function deleteCurrentMerchant() {
+            if(!confirm("سيتم حذف سجل التاجر بالكامل وكل ديونه! هل أنت متأكد؟")) return;
+            currentUser.merchants = currentUser.merchants.filter(m => m.name !== activeM);
+            currentUser.history = currentUser.history.filter(h => h.merchant !== activeM);
+            document.getElementById('ops-container').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            activeM = null;
+            renderMerchants();
+            updateTotals();
+            sync();
+        }
+
+        function updateTotals() {
+            let yer = 0; let usd = 0;
+            currentUser.history.forEach(op => {
+                const val = parseFloat(op.amount);
+                const isDebt = op.type === 'دين';
+                if(op.currency === 'YER') yer += (isDebt ? val : -val);
+                else usd += (isDebt ? val : -val);
+            });
+            document.getElementById('total-yer').innerText = yer.toLocaleString();
+            document.getElementById('total-usd').innerText = usd.toLocaleString();
+        }
+
+        async function sync() {
+            await fetch('/api/user/sync', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    id: currentUser.id, 
+                    password: currentUser.password, 
+                    data: { merchants: currentUser.merchants, history: currentUser.history } 
+                })
+            });
+        }
+    </script>
+</body>
+</html>
