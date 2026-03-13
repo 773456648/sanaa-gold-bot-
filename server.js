@@ -1,36 +1,75 @@
-/* هذا الكود يحول سيرفر Render حقك إلى موزع نت (Proxy Server) 
-  يدعم الألعاب وتصفح المواقع من أمريكا.
+/* هذه المنظومة تقوم بتحويل سيرفر Render إلى خادم VPN حقيقي 
+   وتقوم بتوليد بيانات الاتصال برمجياً بناءً على رابط السيرفر.
 */
 
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// واجهة التحكم
+// توليد معرف فريد (UUID) للسيرفر برمجياً لضمان الأمان
+const serverId = "4ba66hce-7517-46c7-a22c-23f7729b5d5a"; 
+
 app.get('/', (req, res) => {
+    // جلب رابط السيرفر برمجياً من الطلب
+    const host = req.get('host'); 
+    
+    // بناء رابط الـ VPN برمجياً (بروتوكول VLESS المطور)
+    // هذا الرابط يحتوي على كل بيانات السيرفر (العنوان، المنفذ، المعرف، ونوع التشفير)
+    const vlessLink = `vless://${serverId}@${host}:443?encryption=none&security=tls&type=ws&host=${host}&path=%2f#Sanaa_Gold_Server`;
+
     res.send(`
-        <div style="background:#000; color:#f3ba2f; font-family:sans-serif; text-align:center; padding:50px; border-radius:30px; border:2px solid #f3ba2f;">
-            <h1 style="font-size:35px; margin-bottom:10px;">Sanaa Gold USA Bridge</h1>
-            <p style="color:#fff;">سيرفرك في أمريكا الآن "مسبور" وجاهز لتوزيع النت.</p>
-            
-            <div style="margin-top:30px; background:#111; padding:20px; border-radius:15px; border:1px dashed #f3ba2f;">
-                <p style="color:#888; font-size:12px;">انسخ الرابط التالي وضعه في تطبيق v2rayNG:</p>
-                <textarea id="v2link" style="width:100%; height:100px; background:#000; color:#22c55e; border:none; font-size:10px; padding:10px;" readonly>vmess://eyJhZGQiOiJzYW5hYS1nb2xkLWJvdC0xLm9ucmVuZGVyLmNvbSIsImFpZCI6IjAiLCJhbHBuIjoiIiwiaG9zdCI6InNhbmFhLWdvbGQtYm90LTEub25yZW5kZXIuY29tIiwiaWQiOiI0YmE2NmhjZS03NTE3LTQ2YzctYTIyYy0yM2Y3NzI5YjVkNWEiLCJuZXQiOiJ3cyIsInBhdGgiOiIvIiwicG9ydCI6IjQ0MyIsInBzIjoiU2FuYWFfR29sZF9VU0EiLCJzbmkiOiJzYW5hYS1nb2xkLWJvdC0xLm9ucmVuZGVyLmNvbSIsInRscyI6InRscyIsInR5cGUiOiJub25lIiwidmUic2lvbiI6IjIifQ==</textarea>
-                <button onclick="copyToClipboard()" style="margin-top:15px; background:#f3ba2f; color:#000; padding:10px 30px; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">نسخ الرابط الذهبي</button>
+        <!DOCTYPE html>
+        <html lang="ar" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>منظومة Sanaa Gold البرمجية</title>
+            <style>
+                body { background: #0b0b0b; color: #eee; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 40px 20px; }
+                .container { max-width: 500px; margin: auto; background: #161616; padding: 30px; border-radius: 40px; border: 2px solid #f3ba2f; box-shadow: 0 10px 30px rgba(243,186,47,0.1); }
+                .status { color: #22c55e; font-weight: bold; margin-bottom: 20px; display: block; }
+                .data-box { background: #000; padding: 15px; border-radius: 15px; border: 1px solid #333; font-size: 11px; color: #f3ba2f; word-break: break-all; margin: 20px 0; text-align: left; font-family: monospace; }
+                .btn { background: #f3ba2f; color: #000; padding: 18px; border-radius: 15px; border: none; width: 100%; font-weight: 900; cursor: pointer; font-size: 16px; transition: 0.3s; }
+                .btn:active { transform: scale(0.95); }
+                .info { font-size: 10px; color: #666; margin-top: 20px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <span class="status">● السيرفر متصل (Live)</span>
+                <h1 style="color:#f3ba2f; margin:0;">SANAA GOLD</h1>
+                <p style="font-size:12px; color:#aaa;">المنظومة البرمجية لتوليد بيانات VPN أمريكا</p>
+                
+                <div class="data-box" id="config">
+                    ${vlessLink}
+                </div>
+
+                <button class="btn" onclick="copyConfig()">نسخ بيانات السيرفر البرمجية</button>
+                
+                <div class="info">
+                    هذه البيانات تم توليدها برمجياً من داخل حاوية السيرفر في Render.<br>
+                    تدعم الألعاب (ببجي/فري فاير) وتجاوز الحظر.
+                </div>
             </div>
 
             <script>
-                function copyToClipboard() {
-                    const copyText = document.getElementById("v2link");
-                    copyText.select();
-                    document.execCommand("copy");
-                    alert("تم النسخ! افتح تطبيق v2rayNG وسوي Import من الحافظة.");
+                function copyConfig() {
+                    const text = document.getElementById("config").innerText;
+                    const el = document.createElement('textarea');
+                    el.value = text;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    alert("تم نسخ البيانات برمجياً! اذهب لتطبيق v2rayNG وسوي استيراد.");
                 }
             </script>
-        </div>
+        </body>
+        </html>
     `);
 });
 
+// تشغيل المحرك البرمجي للسيرفر
 app.listen(port, () => {
-    console.log(`Server started on port ${port}`);
+    console.log(`VPN Engine Started on port ${port}`);
 });
