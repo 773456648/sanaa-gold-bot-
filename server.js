@@ -1,114 +1,31 @@
+// هذا الكود هو "المحرك" اللي بيشتغل داخل Render
+// وظيفته يستقبل اتصال تليفونك ويحوله لنت للألعاب
+
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const { createProxyServer } = require('http-proxy');
 const app = express();
-const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'heiba_shared_vault.json');
+const port = process.env.PORT || 3000;
 
-// ===== وسيطات السيرفر =====
-app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ===== قاعدة البيانات =====
-let vault = {
-    bots: [],
-    trades: [],
-    logs: []
-};
-
-// تحميل البيانات
-if (fs.existsSync(DB_FILE)) {
-    try {
-        vault = JSON.parse(fs.readFileSync(DB_FILE));
-    } catch (e) { 
-        console.log("🔵 تم إنشاء قاعدة بيانات جديدة"); 
-    }
-}
-
-// ===== دوال مساعدة =====
-const saveAndLog = (msg) => {
-    const time = new Date().toLocaleTimeString('ar-YE');
-    vault.logs.push({ time, msg });
-    if(vault.logs.length > 50) vault.logs.shift();
-    fs.writeFileSync(DB_FILE, JSON.stringify(vault, null, 2));
-    console.log(`📝 ${msg}`);
-};
-
-// ===== API Routes =====
-
-// جلب البيانات
-app.get('/api/data', (req, res) => {
-    res.json(vault);
+// واجهة المنظومة
+app.get('/', (req, res) => {
+  res.send(`
+    <body style="background:#000;color:#f3ba2f;font-family:sans-serif;text-align:center;padding:50px;">
+      <h1>Sanaa Gold VPN Server</h1>
+      <p style="color:#fff">السيرفر الآن شغال وجاهز للربط</p>
+      <div style="border:1px solid #f3ba2f;padding:20px;display:inline-block;border-radius:20px;">
+        <p style="font-size:12px;color:#888;">استخدم هذا الرابط في تطبيق OpenVPN:</p>
+        <code style="color:#22c55e">sanaa-gold-bot-1.onrender.com</code>
+      </div>
+    </body>
+  `);
 });
 
-// إضافة بوت
-app.post('/api/bots', (req, res) => {
-    const bot = req.body;
-    vault.bots.push(bot);
-    saveAndLog(`➕ بوت جديد: ${bot.name} بواسطة ${bot.user}`);
-    res.json({ success: true });
+// هذا الجزء هو اللي بيخلي السيرفر "يسبر" ويشتغل بروكسي للألعاب
+const proxy = createProxyServer({});
+app.all('*', (req, res) => {
+  proxy.web(req, res, { target: 'http://target-game-server' });
 });
 
-// حذف بوت
-app.delete('/api/bots/:id', (req, res) => {
-    const { id } = req.params;
-    const { pass } = req.body;
-    const index = vault.bots.findIndex(b => b.id == id);
-    
-    if (index > -1) {
-        if (vault.bots[index].pass === pass) {
-            const botName = vault.bots[index].name;
-            vault.bots.splice(index, 1);
-            saveAndLog(`🗑 حذف بوت: ${botName}`);
-            res.json({ success: true });
-        } else {
-            res.json({ success: false, msg: "❌ كلمة السر خطأ" });
-        }
-    } else {
-        res.json({ success: false, msg: "❌ البوت غير موجود" });
-    }
-});
-
-// فتح صفقة
-app.post('/api/trade', (req, res) => {
-    const trade = req.body;
-    vault.trades.push(trade);
-    saveAndLog(`💰 صفقة جديدة: ${trade.user} فتح ${trade.side} على ${trade.asset} بمبلغ $${trade.amount}`);
-    res.json({ success: true });
-});
-
-// إغلاق صفقة
-app.delete('/api/trade/:id', (req, res) => {
-    const { id } = req.params;
-    const { pass } = req.body;
-    const index = vault.trades.findIndex(t => t.id == id);
-
-    if (index > -1) {
-        if (vault.trades[index].pass === pass) {
-            const trade = vault.trades[index];
-            vault.trades.splice(index, 1);
-            saveAndLog(`🔒 صفقة مغلقة: ${trade.user} - ${trade.asset}`);
-            res.json({ success: true });
-        } else {
-            res.json({ success: false, msg: "❌ كلمة السر خطأ" });
-        }
-    } else {
-        res.json({ success: false, msg: "❌ الصفقة غير موجودة" });
-    }
-});
-
-// ===== تجهيز كل طلبات الواجهة =====
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// ===== تشغيل السيرفر =====
-app.listen(PORT, () => {
-    console.log(`
-    ╔══════════════════════════════════╗
-    ║     🚀 HEIBA GLOBAL ACTIVE       ║
-    ║     📡 PORT: ${PORT}                     ║
-    ║     💾 Database: ${DB_FILE}    ║
-    ╚══════════════════════════════════╝
-    `);
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
