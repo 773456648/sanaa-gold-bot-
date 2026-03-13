@@ -3,102 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة الهيبة | الخصوصية المطلقة</title>
+    <title>منظومة الهيبة | الإدارة الكاملة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --bg: #0a0a0c; }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Changa', sans-serif; }
-        .glass { background: rgba(20, 20, 25, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 20px; }
-        .gold-text { color: var(--gold); text-shadow: 0 0 10px rgba(212, 175, 55, 0.3); }
-        .input-h { background: #000; border: 1px solid #222; border-radius: 12px; padding: 12px; color: var(--gold); outline: none; width: 100%; }
-        .btn-h { background: linear-gradient(135deg, #d4af37, #8a6d3b); color: #000; font-weight: bold; transition: 0.3s; }
-        .btn-h:hover { transform: scale(1.02); box-shadow: 0 0 15px var(--gold); }
-        .page-card { transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
-        .page-card:hover { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+        :root { --gold: #d4af37; --bg: #08080a; }
+        body { background: var(--bg); color: #f0f0f0; font-family: 'Changa', sans-serif; }
+        .glass { background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.15); border-radius: 24px; }
+        .gold-glow { color: var(--gold); text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .input-h { background: #000; border: 1px solid #222; border-radius: 12px; padding: 12px; color: var(--gold); outline: none; width: 100%; transition: 0.3s; }
+        .input-h:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(212, 175, 55, 0.2); }
+        .btn-h { background: linear-gradient(135deg, #d4af37, #8a6d3b); color: #000; font-weight: 900; transition: 0.3s; cursor: pointer; }
+        .btn-h:active { transform: scale(0.95); }
+        .card-inner { background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; border: 1px solid rgba(255,255,255,0.05); }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-3 md:p-8">
 
-    <div id="home-view" class="max-w-4xl mx-auto">
+    <!-- شاشة الدخول الرئيسية -->
+    <div id="home-view" class="max-w-4xl mx-auto py-10">
         <header class="text-center mb-12">
-            <h1 class="text-5xl font-black gold-text mb-4 italic">HEIBA VAULT</h1>
-            <p class="text-gray-500 text-sm tracking-widest uppercase">منصة الصفحات المشفرة والخصوصية التامة</p>
+            <h1 class="text-6xl font-black gold-glow mb-4 orbitron italic">HEIBA</h1>
+            <p class="text-gray-500 text-[10px] tracking-[0.5em] uppercase">المنظومة الأمنية المتكاملة</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- قسم البحث -->
             <div class="glass p-8">
-                <h2 class="text-xl font-bold mb-6 gold-text">🔎 ابحث عن صفحة</h2>
-                <input type="text" id="search-in" class="input-h mb-4" placeholder="اكتب اسم الصفحة هنا..." oninput="search()">
-                <div id="results" class="space-y-3 max-h-60 overflow-y-auto pr-2">
-                    <p class="text-gray-600 text-xs text-center">ابدأ البحث للعثور على الأصدقاء</p>
-                </div>
+                <h2 class="text-lg font-bold mb-6 flex items-center gap-2">🔎 بحث الصفحات</h2>
+                <input type="text" id="search-in" class="input-h mb-6" placeholder="اكتب الاسم للبحث..." oninput="search()">
+                <div id="results" class="space-y-3 max-h-80 overflow-y-auto pr-2"></div>
             </div>
 
-            <!-- قسم الإنشاء -->
             <div class="glass p-8 border-t-4 border-gold">
-                <h2 class="text-xl font-bold mb-6 gold-text">✨ أنشئ صفحتك الخاصة</h2>
+                <h2 class="text-lg font-bold mb-6">✨ إنشاء هويتك السحابية</h2>
                 <div class="space-y-4">
-                    <input type="text" id="reg-name" class="input-h" placeholder="اسم الصفحة (يظهر للكل)">
-                    <input type="password" id="reg-pass" class="input-h" placeholder="كلمة سر الخصوصية">
-                    <textarea id="reg-desc" class="input-h" placeholder="وصف بسيط للصفحة"></textarea>
-                    <button onclick="createPage()" class="w-full btn-h py-3 rounded-xl">تفعيل صفحة الهيبة</button>
+                    <input type="text" id="reg-name" class="input-h" placeholder="اسم الصفحة">
+                    <input type="password" id="reg-pass" class="input-h" placeholder="كلمة السر">
+                    <input id="reg-desc" class="input-h" placeholder="وصف المختصر">
+                    <button onclick="createPage()" class="w-full btn-h py-4 rounded-xl uppercase tracking-widest">تنشيط</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- واجهة الصفحة الشخصية بعد الدخول -->
-    <div id="page-view" class="hidden max-w-5xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <button onclick="location.reload()" class="text-gray-500 hover:text-white">← العودة للرئيسية</button>
-            <h2 id="view-title" class="text-3xl font-black gold-text"></h2>
-            <button onclick="deletePage()" class="text-red-500 text-xs border border-red-500/20 px-3 py-1 rounded">حذف صفحتي</button>
-        </div>
+    <!-- لوحة التحكم الشخصية -->
+    <div id="page-view" class="hidden max-w-6xl mx-auto">
+        <nav class="flex justify-between items-center mb-8 glass px-6 py-4">
+            <button onclick="location.reload()" class="text-xs text-gray-500">← خروج</button>
+            <h2 id="view-title" class="text-2xl font-black gold-glow uppercase"></h2>
+            <div class="flex gap-2">
+                <button onclick="saveChanges()" class="bg-green-600/20 text-green-500 text-[10px] px-4 py-2 rounded-full border border-green-500/20">حفظ الكل</button>
+                <button onclick="deletePage()" class="text-red-500 text-[10px] px-2">حذف</button>
+            </div>
+        </nav>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- نصوص وديون -->
-            <div class="lg:col-span-8 space-y-6">
+            
+            <!-- العمود الأول: مذكرات وديون -->
+            <div class="lg:col-span-4 space-y-6">
                 <div class="glass p-6">
-                    <h3 class="text-sm font-bold mb-4 gold-text">📝 مذكراتك وخصوصيتك</h3>
-                    <textarea id="page-text" class="input-h h-40" placeholder="اكتب هنا أسرارك أو أي شيء تود حفظه..."></textarea>
+                    <h3 class="text-xs font-bold mb-4 text-gray-400">📝 المذكرات</h3>
+                    <textarea id="page-text" class="input-h h-32 text-sm" placeholder="اكتب هنا..."></textarea>
                 </div>
 
                 <div class="glass p-6">
-                    <h3 class="text-sm font-bold mb-4 gold-text">💸 سجل الديون والمالية</h3>
-                    <div id="debts-ui" class="space-y-2 mb-4"></div>
-                    <div class="flex gap-2">
-                        <input id="debt-name" class="input-h text-xs" placeholder="اسم الشخص">
-                        <input id="debt-amt" class="input-h text-xs" placeholder="المبلغ">
-                        <button onclick="addDebt()" class="btn-h px-4 rounded-lg">+</button>
+                    <h3 class="text-xs font-bold mb-4 text-gray-400">💸 سجل الديون الذكي</h3>
+                    <div id="debts-ui" class="space-y-3 mb-6"></div>
+                    <div class="space-y-2">
+                        <input id="debt-name" class="input-h text-xs" placeholder="اسم الغريم">
+                        <input id="debt-amt" type="number" class="input-h text-xs" placeholder="المبلغ">
+                        <button onclick="addDebt()" class="w-full btn-h py-2 rounded-lg text-xs">إضافة دين</button>
                     </div>
                 </div>
             </div>
 
-            <!-- وسائط (صور وفيديو) -->
-            <div class="lg:col-span-4 space-y-6">
+            <!-- العمود الثاني: الإيجارات والوسائط -->
+            <div class="lg:col-span-8 space-y-6">
+                <!-- قسم الإيجارات -->
                 <div class="glass p-6">
-                    <h3 class="text-sm font-bold mb-4 gold-text">🖼 معرض الصور والفيديو</h3>
-                    <input type="file" id="file-in" class="hidden" onchange="uploadFile()">
-                    <button onclick="document.getElementById('file-in').click()" class="w-full bg-white/5 border border-white/10 py-3 rounded-xl text-xs mb-4 hover:bg-white/10">رفع ملف جديد</button>
-                    
-                    <div id="media-ui" class="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto">
-                        <!-- ملفات الميديا تظهر هنا -->
+                    <h3 class="text-xs font-bold mb-4 text-blue-400 flex justify-between">
+                        🏠 رادار الإيجارات
+                        <span id="rental-stats" class="text-[10px] text-gray-500"></span>
+                    </h3>
+                    <div id="rentals-ui" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+                    <div class="flex flex-wrap gap-2">
+                        <input id="rent-name" class="input-h flex-1 text-xs" placeholder="وصف الإيجار (مثلاً: إيجار المحل)">
+                        <input id="rent-amt" type="number" class="input-h w-24 text-xs" placeholder="شهرياً">
+                        <input id="rent-date" type="date" class="input-h w-32 text-xs">
+                        <button onclick="addRental()" class="btn-h px-6 rounded-lg">إضافة</button>
                     </div>
                 </div>
-                <button onclick="saveChanges()" class="w-full btn-h py-4 rounded-2xl shadow-xl">حفظ جميع التغييرات</button>
+
+                <!-- قسم الوسائط -->
+                <div class="glass p-6">
+                    <h3 class="text-xs font-bold mb-4 text-purple-400">🎬 الاستوديو المشفر</h3>
+                    <input type="file" id="file-in" class="hidden" onchange="uploadFile()">
+                    <button onclick="document.getElementById('file-in').click()" class="w-full bg-white/5 border border-dashed border-white/20 py-4 rounded-xl text-xs mb-6 hover:bg-white/10 transition">إضافة صورة أو فيديو (Upload)</button>
+                    
+                    <div id="media-ui" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة طلب كلمة السر -->
-    <div id="auth-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-6 z-[200]">
+    <!-- مودال كلمة السر -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/95 hidden items-center justify-center p-6 z-[200]">
         <div class="glass p-10 max-w-sm w-full text-center">
-            <h3 id="auth-target" class="text-xl font-bold gold-text mb-6"></h3>
+            <div class="w-16 h-16 border-2 border-gold rounded-full flex items-center justify-center mx-auto mb-6 gold-glow font-black italic">H</div>
+            <h3 id="auth-target" class="text-lg font-bold mb-6"></h3>
             <input type="password" id="auth-pass" class="input-h text-center text-2xl mb-6" placeholder="••••">
-            <button onclick="accessPage()" class="w-full btn-h py-3 rounded-xl">فتح الخصوصية</button>
-            <button onclick="closeModal()" class="mt-4 text-gray-500 text-xs">إلغاء</button>
+            <button onclick="accessPage()" class="w-full btn-h py-4 rounded-xl shadow-lg">فتح الخصوية</button>
+            <button onclick="closeModal()" class="mt-4 text-gray-600 text-[10px]">رجوع</button>
         </div>
     </div>
 
@@ -107,23 +124,9 @@
         let selectedPageName = "";
 
         async function createPage() {
-            const body = {
-                name: document.getElementById('reg-name').value,
-                password: document.getElementById('reg-pass').value,
-                description: document.getElementById('reg-desc').value
-            };
-            const res = await fetch('/api/pages/create', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(body)
-            });
-            if(res.ok) {
-                alert("✅ تم إنشاء صفحة الهيبة الخاصة بك! ابحث عنها الآن للدخول.");
-                location.reload();
-            } else {
-                const err = await res.json();
-                alert(err.error);
-            }
+            const body = { name: document.getElementById('reg-name').value, password: document.getElementById('reg-pass').value, description: document.getElementById('reg-desc').value };
+            const res = await fetch('/api/pages/create', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            if(res.ok) { alert("تم إنشاء منظومتك!"); location.reload(); }
         }
 
         async function search() {
@@ -131,107 +134,150 @@
             const res = await fetch(`/api/pages/search?q=${q}`);
             const data = await res.json();
             document.getElementById('results').innerHTML = data.map(p => `
-                <div onclick="openAuth('${p.name}')" class="glass p-4 page-card">
-                    <div class="font-bold gold-text">${p.name}</div>
-                    <div class="text-[10px] text-gray-500">${p.description}</div>
+                <div onclick="openAuth('${p.name}')" class="card-inner flex justify-between items-center cursor-pointer hover:border-gold/50 transition border border-transparent">
+                    <div>
+                        <div class="font-bold text-sm">${p.name}</div>
+                        <div class="text-[9px] text-gray-500">${p.description}</div>
+                    </div>
+                    <span class="text-gold text-lg">›</span>
                 </div>
-            `).join('') || '<p class="text-center text-gray-600 text-xs">لا توجد نتائج</p>';
+            `).join('');
         }
 
         function openAuth(name) {
             selectedPageName = name;
-            document.getElementById('auth-target').innerText = `دخول صفحة: ${name}`;
+            document.getElementById('auth-target').innerText = name;
             document.getElementById('auth-modal').style.display = 'flex';
         }
 
         function closeModal() { document.getElementById('auth-modal').style.display = 'none'; }
 
         async function accessPage() {
-            const pass = document.getElementById('auth-pass').value;
-            const res = await fetch('/api/pages/access', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name: selectedPageName, password: pass })
-            });
-            if(res.ok) {
-                currentPage = await res.json();
-                showPage();
-            } else { alert("❌ كلمة السر خاطئة!"); }
+            const res = await fetch('/api/pages/access', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name: selectedPageName, password: document.getElementById('auth-pass').value }) });
+            if(res.ok) { currentPage = await res.json(); showPage(); } else alert("خطأ!");
         }
 
         function showPage() {
             closeModal();
-            document.getElementById('home-view').classList.add('hidden');
-            document.getElementById('page-view').classList.remove('hidden');
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('page-view').style.display = 'block';
             document.getElementById('view-title').innerText = currentPage.name;
             document.getElementById('page-text').value = currentPage.content.text;
-            renderDebts();
-            renderMedia();
+            renderAll();
         }
 
+        function renderAll() {
+            renderDebts();
+            renderMedia();
+            renderRentals();
+        }
+
+        // --- نظام الديون ---
         function renderDebts() {
-            document.getElementById('debts-ui').innerHTML = currentPage.content.debts.map((d, i) => `
-                <div class="flex justify-between items-center bg-white/5 p-2 rounded text-xs">
-                    <span>${d.name}</span>
-                    <span class="gold-text font-bold">${d.amount}</span>
-                    <button onclick="removeDebt(${i})" class="text-red-500">×</button>
-                </div>
-            `).join('');
+            document.getElementById('debts-ui').innerHTML = (currentPage.content.debts || []).map((d, i) => {
+                const days = Math.floor((new Date() - new Date(d.date)) / (1000 * 60 * 60 * 24));
+                return `
+                <div class="card-inner flex justify-between items-center">
+                    <div>
+                        <div class="text-xs font-bold">${d.name}</div>
+                        <div class="text-[9px] text-gray-500">${d.date.split('T')[0]} (${days} يوم)</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-red-400 font-black text-sm">$${d.amount}</span>
+                        <button onclick="removeDebt(${i})" class="text-gray-600 hover:text-white">×</button>
+                    </div>
+                </div>`;
+            }).join('');
         }
 
         function addDebt() {
             const name = document.getElementById('debt-name').value;
             const amount = document.getElementById('debt-amt').value;
             if(!name || !amount) return;
-            currentPage.content.debts.push({ name, amount });
-            renderDebts();
-            document.getElementById('debt-name').value = "";
-            document.getElementById('debt-amt').value = "";
-        }
-
-        function removeDebt(i) {
-            currentPage.content.debts.splice(i, 1);
+            currentPage.content.debts.push({ name, amount, date: new Date().toISOString() });
             renderDebts();
         }
 
+        function removeDebt(i) { currentPage.content.debts.splice(i, 1); renderDebts(); }
+
+        // --- نظام الإيجارات ---
+        function renderRentals() {
+            document.getElementById('rentals-ui').innerHTML = (currentPage.content.rentals || []).map((r, i) => {
+                const start = new Date(r.startDate);
+                const now = new Date();
+                const diffDays = Math.floor((now - start) / (1000*60*60*24)) % 30;
+                const progress = (diffDays / 30) * 100;
+                const daily = (r.amount / 30).toFixed(2);
+                const isUrgent = diffDays > 25;
+
+                return `
+                <div class="card-inner relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-gray-300">${r.name}</span>
+                        <button onclick="removeRental(${i})" class="text-gray-700">×</button>
+                    </div>
+                    <div class="flex justify-between text-[10px] mb-3">
+                        <span class="gold-glow">$${r.amount}/شهر</span>
+                        <span class="text-gray-500">يومياً: $${daily}</span>
+                    </div>
+                    <div class="w-full bg-black h-1 rounded-full mb-1">
+                        <div class="h-full rounded-full ${isUrgent ? 'bg-red-500 animate-pulse' : 'bg-blue-500'}" style="width: ${progress}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[8px] uppercase">
+                        <span>يوم ${diffDays}</span>
+                        <span>${isUrgent ? '⚠️ موعد الدفع اقترب' : 'باقي '+(30-diffDays)+' يوم'}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function addRental() {
+            const name = document.getElementById('rent-name').value;
+            const amount = document.getElementById('rent-amt').value;
+            const date = document.getElementById('rent-date').value;
+            if(!name || !amount) return;
+            currentPage.content.rentals.push({ name, amount, startDate: date || new Date().toISOString() });
+            renderRentals();
+        }
+
+        function removeRental(i) { currentPage.content.rentals.splice(i, 1); renderRentals(); }
+
+        // --- نظام الوسائط ---
         async function uploadFile() {
             const file = document.getElementById('file-in').files[0];
-            const formData = new FormData();
-            formData.append('file', file);
-            const res = await fetch('/api/pages/upload', { method: 'POST', body: formData });
+            const fd = new FormData(); fd.append('file', file);
+            const res = await fetch('/api/pages/upload', { method: 'POST', body: fd });
             const data = await res.json();
             currentPage.content.media.push(data);
             renderMedia();
         }
 
         function renderMedia() {
-            document.getElementById('media-ui').innerHTML = currentPage.content.media.map(m => {
-                if(m.type.startsWith('image')) return `<img src="${m.url}" class="w-full h-24 object-cover rounded-lg">`;
-                return `<video src="${m.url}" class="w-full h-24 object-cover rounded-lg"></video>`;
-            }).join('');
+            document.getElementById('media-ui').innerHTML = (currentPage.content.media || []).map((m, i) => `
+                <div class="group relative card-inner p-2">
+                    ${m.type.startsWith('image') ? `<img src="${m.url}" class="w-full h-32 object-cover rounded-lg">` : `<video src="${m.url}" class="w-full h-32 object-cover rounded-lg" controls></video>`}
+                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition rounded-lg">
+                        <a href="${m.url}" download class="text-xs text-white bg-blue-600 px-3 py-1 rounded">Download</a>
+                        <button onclick="removeMedia(${i})" class="text-xs text-white bg-red-600 px-3 py-1 rounded">Delete</button>
+                    </div>
+                </div>
+            `).join('');
         }
+
+        function removeMedia(i) { currentPage.content.media.splice(i, 1); renderMedia(); }
 
         async function saveChanges() {
             currentPage.content.text = document.getElementById('page-text').value;
-            const res = await fetch('/api/pages/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id: currentPage.id, password: currentPage.password, content: currentPage.content })
-            });
-            if(res.ok) alert("✅ تم حفظ أسرارك بنجاح!");
+            await fetch('/api/pages/update', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: currentPage.id, password: currentPage.password, content: currentPage.content }) });
+            alert("✅ تم التزامن مع السحابة بنجاح");
         }
 
         async function deletePage() {
-            if(!confirm("هل أنت متأكد من حذف صفحتك نهائياً؟")) return;
-            const res = await fetch('/api/pages/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id: currentPage.id, password: currentPage.password })
-            });
-            if(res.ok) location.reload();
+            if(!confirm("سيتم تدمير الصفحة نهائياً، موافق؟")) return;
+            await fetch('/api/pages/delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ id: currentPage.id, password: currentPage.password }) });
+            location.reload();
         }
-        
-        // البحث الأولي
+
         search();
     </script>
 </body>
