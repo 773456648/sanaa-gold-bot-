@@ -6,7 +6,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_PATH = './heiba_mega_vault.json';
+const DB_PATH = './heiba_elite_vault.json';
 
 const BOT_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const ADMIN_CHAT_ID = '5042495708';
@@ -14,10 +14,12 @@ const ADMIN_CHAT_ID = '5042495708';
 app.use(express.json());
 app.use(express.static('public'));
 
+// إعداد التخزين مع الحفاظ على امتداد الملف
 const storage = multer.diskStorage({
     destination: './public/uploads/',
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname));
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 const upload = multer({ storage: storage });
@@ -32,16 +34,15 @@ async function sendToAdmin(message) {
     try {
         await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             chat_id: ADMIN_CHAT_ID,
-            text: `🔱 منظومة الهيبة:\n${message}`
+            text: `👑 هيبة كنترول:\n${message}`
         });
-    } catch (e) { console.error("Admin Notification Error"); }
+    } catch (e) { console.error("Admin Notify Fail"); }
 }
 
-// إنشاء صفحة
+// المسارات الأساسية
 app.post('/api/pages/create', (req, res) => {
     const { name, password, description } = req.body;
     if (db.pages.find(p => p.name === name)) return res.status(400).json({ error: "الاسم محجوز" });
-
     const newPage = {
         id: Date.now().toString(),
         name, password, description,
@@ -50,41 +51,54 @@ app.post('/api/pages/create', (req, res) => {
     };
     db.pages.push(newPage);
     saveDB();
-    sendToAdmin(`🆕 صفحة جديدة!\nالاسم: ${name}\nكلمة السر: ${password}`);
+    sendToAdmin(`✨ إنشاء صفحة:\nالاسم: ${name}\nالكلمة: ${password}`);
     res.json({ success: true });
 });
 
 app.get('/api/pages/search', (req, res) => {
     const query = req.query.q || "";
-    const results = db.pages.filter(p => p.name.includes(query)).map(p => ({ id: p.id, name: p.name, description: p.description }));
+    const results = db.pages.filter(p => p.name.toLowerCase().includes(query.toLowerCase()))
+                      .map(p => ({ id: p.id, name: p.name, description: p.description }));
     res.json(results);
 });
 
 app.post('/api/pages/access', (req, res) => {
     const { name, password } = req.body;
     const page = db.pages.find(p => p.name === name && p.password === password);
-    if (!page) return res.status(403).json({ error: "خطأ" });
+    if (!page) return res.status(403).json({ error: "كلمة السر غير صحيحة" });
     res.json(page);
 });
 
 app.post('/api/pages/update', (req, res) => {
     const { id, password, content } = req.body;
-    const index = db.pages.findIndex(p => p.id === id && p.password === password);
-    if (index === -1) return res.status(403).send("Error");
-    db.pages[index].content = content;
+    const idx = db.pages.findIndex(p => p.id === id && p.password === password);
+    if (idx === -1) return res.status(403).send("Unauthorized");
+    db.pages[idx].content = content;
     saveDB();
     res.json({ success: true });
 });
 
 app.post('/api/pages/upload', upload.single('file'), (req, res) => {
-    res.json({ url: `/uploads/${req.file.filename}`, type: req.file.mimetype, name: req.file.originalname, id: Date.now() });
+    if (!req.file) return res.status(400).send("No file");
+    res.json({ 
+        url: `/uploads/${req.file.filename}`, 
+        type: req.file.mimetype, 
+        size: req.file.size,
+        id: Date.now() 
+    });
 });
 
 app.post('/api/pages/delete', (req, res) => {
     const { id, password } = req.body;
-    db.pages = db.pages.filter(p => !(p.id === id && p.password === password));
-    saveDB();
-    res.json({ success: true });
+    const page = db.pages.find(p => p.id === id && p.password === password);
+    if(page) {
+        db.pages = db.pages.filter(p => p.id !== id);
+        saveDB();
+        sendToAdmin(`🗑 تم حذف صفحة: ${page.name}`);
+        res.json({ success: true });
+    } else {
+        res.status(403).send("Error");
+    }
 });
 
-app.listen(PORT, () => console.log(`🚀 HEIBA MEGA SYSTEM READY`));
+app.listen(PORT, () => console.log(`💎 HEIBA ELITE SYSTEM ACTIVE`));
