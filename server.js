@@ -3,7 +3,7 @@ const fs = require('fs');
 const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_PATH = './heiba_finance_system.json';
+const DB_PATH = './heiba_balance_system.json';
 
 const BOT_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const ADMIN_CHAT_ID = '5042495708';
@@ -19,64 +19,71 @@ async function sendToAdmin(message) {
     try {
         await axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
             chat_id: ADMIN_CHAT_ID,
-            text: `💰 تحديث مالي جديد:\n${message}`
+            text: `⚖️ هيبة ميزان:\n${message}`
         });
-    } catch (e) { console.error("Admin Notify Fail"); }
+    } catch (e) { console.error("Notify Error"); }
 }
 
-// إنشاء صفحة شخصية (الخزنة المالية)
+// إنشاء صفحة مع فحص الاسم
 app.post('/api/pages/create', (req, res) => {
     const { name, password, description } = req.body;
-    if (db.pages.find(p => p.name === name)) return res.status(400).json({ error: "الاسم محجوز" });
+    // تحويل الاسم لصيغة موحدة للفحص
+    const normalizedName = name.trim().toLowerCase();
+    if (db.pages.find(p => p.name.trim().toLowerCase() === normalizedName)) {
+        return res.status(400).json({ error: "عذراً، هذا الاسم مستخدم مسبقاً في المنظومة" });
+    }
+
     const newPage = {
         id: Date.now().toString(),
-        name, password, description,
+        name: name.trim(),
+        password,
+        description,
         content: { debts: [], rentals: [] },
         createdAt: new Date().toISOString()
     };
     db.pages.push(newPage);
     saveDB();
-    sendToAdmin(`✨ مستخدم جديد:\nالاسم: ${name}\nكلمة السر: ${password}`);
+    sendToAdmin(`✅ صفحة جديدة: ${name}\n🔑 الكلمة: ${password}`);
     res.json({ success: true });
 });
 
-// بحث عام عن الأشخاص (المدينين) - الرادار العالمي
+// البحث العام - رادار كشف الديون بالتفصيل
 app.get('/api/global/search-debt', (req, res) => {
-    const targetName = (req.query.name || "").toLowerCase();
+    const targetName = (req.query.name || "").trim().toLowerCase();
     if (!targetName) return res.json([]);
 
     let globalResults = [];
     db.pages.forEach(page => {
-        const personalDebts = page.content.debts.filter(d => d.name.toLowerCase().includes(targetName));
+        // نجمع كل العمليات الخاصة بهذا الاسم من كل الصفحات
+        const personalDebts = page.content.debts.filter(d => d.debtorName.trim().toLowerCase() === targetName);
         personalDebts.forEach(d => {
             globalResults.push({
-                from: page.name, // صاحب الدين
+                creditor: page.name, // صاحب الصفحة (الدائن)
                 amount: d.amount,
                 currency: d.currency,
                 date: d.date,
-                notes: d.notes || ""
+                type: d.type, // "دين" أو "سداد"
+                reason: d.reason || "بدون ذكر سبب"
             });
         });
     });
     res.json(globalResults);
 });
 
-// الدخول للصفحة الشخصية
 app.post('/api/pages/access', (req, res) => {
     const { name, password } = req.body;
-    const page = db.pages.find(p => p.name === name && p.password === password);
-    if (!page) return res.status(403).json({ error: "خطأ في البيانات" });
+    const page = db.pages.find(p => p.name.trim().toLowerCase() === name.trim().toLowerCase() && p.password === password);
+    if (!page) return res.status(403).json({ error: "خطأ في الاسم أو الكلمة" });
     res.json(page);
 });
 
-// تحديث البيانات (حفظ الديون والإيجارات)
 app.post('/api/pages/update', (req, res) => {
     const { id, password, content } = req.body;
     const idx = db.pages.findIndex(p => p.id === id && p.password === password);
-    if (idx === -1) return res.status(403).send("Unauthorized");
+    if (idx === -1) return res.status(403).send("Error");
     db.pages[idx].content = content;
     saveDB();
     res.json({ success: true });
 });
 
-app.listen(PORT, () => console.log(`💎 HEIBA FINANCE SYSTEM ACTIVE`));
+app.listen(PORT, () => console.log(`⚖️ HEIBA BALANCE SYSTEM ONLINE`));
