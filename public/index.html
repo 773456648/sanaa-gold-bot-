@@ -3,132 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>هيبة | المزامنة التلقائية</title>
+    <title>منظومة الهيبة | المزامنة والتحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #08080a; color: #eee; font-family: 'Changa', sans-serif; }
+        body { background: #050507; color: #eee; font-family: 'Changa', sans-serif; overflow-x: hidden; }
         .gold-grad { background: linear-gradient(135deg, #d4af37, #aa8a2e); }
-        .glass { background: rgba(15, 15, 20, 0.98); border: 1px solid #222; border-radius: 20px; }
-        .card-op { border-right: 4px solid #d4af37; background: #111; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
-        .debt { border-right-color: #ef4444; }
-        .pay { border-right-color: #22c55e; }
-        input, select { background: #121212 !important; border: 1px solid #333 !important; color: #fff; border-radius: 10px; padding: 12px; outline: none; }
-        input:focus { border-color: #d4af37 !important; }
-        .active-tab { border-color: #d4af37 !important; background: rgba(212, 175, 55, 0.05); }
+        .glass { background: rgba(15, 15, 20, 0.95); border: 1px solid #222; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .card-op { border-right: 5px solid #d4af37; background: #0f0f12; padding: 20px; border-radius: 15px; margin-bottom: 15px; transition: transform 0.2s; }
+        .card-op:hover { transform: scale(1.01); }
+        .debt { border-right-color: #ef4444; background: rgba(239, 68, 68, 0.02); }
+        .pay { border-right-color: #22c55e; background: rgba(34, 197, 94, 0.02); }
+        input, select { background: #121217 !important; border: 1px solid #333 !important; color: #fff; border-radius: 12px; padding: 14px; outline: none; width: 100%; transition: 0.3s; }
+        input:focus { border-color: #d4af37 !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.1); }
+        .side-item { padding: 15px; background: #111; border-radius: 15px; cursor: pointer; border: 1px solid transparent; transition: 0.3s; }
+        .side-item:hover { background: #1a1a20; }
+        .side-item.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
+        .scroll-v::-webkit-scrollbar { width: 4px; }
+        .scroll-v::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-10">
 
-    <!-- تسجيل الدخول -->
-    <div id="auth-ui" class="max-w-md mx-auto mt-10 space-y-6">
+    <!-- شاشة الدخول -->
+    <div id="auth-ui" class="max-w-md mx-auto mt-10 space-y-8">
         <div class="text-center">
-            <h1 class="text-6xl font-bold text-[#d4af37] italic">HEIBA</h1>
-            <p class="text-gray-500 text-xs mt-2 tracking-widest uppercase">Smart Finance Network</p>
+            <h1 class="text-7xl font-black text-[#d4af37] italic tracking-tighter">HEIBA</h1>
+            <p class="text-gray-500 text-[10px] mt-2 tracking-[0.3em] uppercase opacity-50">Centralized Financial Authority</p>
         </div>
         <div class="glass p-8 space-y-4">
-            <input id="u-name" type="text" class="w-full" placeholder="الاسم الكامل">
-            <input id="u-pass" type="password" class="w-full" placeholder="كلمة السر">
-            <select id="u-type" class="w-full">
-                <option value="merchant">أنا تاجر (صاحب عمل)</option>
-                <option value="debtor">أنا مدين (أتابع ديوني)</option>
+            <input id="u-name" type="text" placeholder="الاسم الكامل">
+            <input id="u-pass" type="password" placeholder="كلمة السر">
+            <select id="u-type">
+                <option value="merchant">دخول كتاجر (إدارة ديون)</option>
+                <option value="debtor">دخول كمدين (كشف حساب)</option>
             </select>
-            <div class="grid grid-cols-2 gap-3 pt-2">
-                <button onclick="doAuth('login')" class="py-3 bg-zinc-800 rounded-xl font-bold hover:bg-zinc-700 transition">دخول</button>
-                <button onclick="doAuth('reg')" class="py-3 gold-grad text-black rounded-xl font-bold hover:opacity-90 transition">تسجيل</button>
+            <div class="grid grid-cols-2 gap-4 pt-4">
+                <button onclick="doAuth('login')" class="py-4 bg-zinc-800 rounded-2xl font-bold hover:bg-zinc-700 transition">دخول</button>
+                <button onclick="doAuth('reg')" class="py-4 gold-grad text-black rounded-2xl font-black hover:brightness-110 transition shadow-lg shadow-yellow-900/20">تسجيل جديد</button>
             </div>
         </div>
     </div>
 
     <!-- النظام الرئيسي -->
     <div id="main-ui" class="hidden max-w-6xl mx-auto space-y-6">
-        <header class="flex justify-between items-center glass p-5">
-            <div>
-                <h2 id="user-display-name" class="text-2xl font-bold text-[#d4af37]"></h2>
-                <span id="user-role-badge" class="text-[9px] bg-white/5 px-2 py-0.5 rounded text-gray-400"></span>
+        <header class="flex justify-between items-center glass p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 gold-grad rounded-full flex items-center justify-center text-black font-bold text-xl">H</div>
+                <div>
+                    <h2 id="user-display-name" class="text-2xl font-black text-[#d4af37] leading-none mb-1"></h2>
+                    <span id="user-role-badge" class="text-[9px] bg-white/5 px-2 py-0.5 rounded text-gray-500 uppercase tracking-widest"></span>
+                </div>
             </div>
-            <button onclick="location.reload()" class="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-xs font-bold">خروج</button>
+            <button onclick="location.reload()" class="bg-red-500/5 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/10 hover:bg-red-500 hover:text-white transition">خروج آمن</button>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- القائمة الجانبية -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- اليمين -->
             <div class="lg:col-span-4 space-y-6">
                 
-                <!-- للتاجر: قائمة الناس اللي شلوا منه -->
-                <div id="merchant-pane" class="hidden glass p-5">
-                    <h3 class="text-xs font-bold text-gray-500 mb-4">👥 سجلات المدينين (الأسماء)</h3>
-                    <div class="flex gap-2 mb-4">
-                        <input id="new-target" class="w-full text-sm" placeholder="اسم المدين الجديد">
-                        <button onclick="addTarget()" class="gold-grad text-black px-4 rounded-xl font-bold text-lg">+</button>
+                <div id="merchant-pane" class="hidden glass p-6">
+                    <h3 class="text-xs font-bold text-gray-500 mb-6 flex justify-between">
+                        <span>قائمة الأشخاص</span>
+                        <span id="target-count" class="text-[#d4af37]">0</span>
+                    </h3>
+                    <div class="flex gap-2 mb-6">
+                        <input id="new-target" class="text-sm" placeholder="اسم المدين...">
+                        <button onclick="addTarget()" class="gold-grad text-black px-5 rounded-xl font-bold text-xl">+</button>
                     </div>
-                    <div id="targets-list" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+                    <div id="targets-list" class="space-y-3 max-h-[400px] overflow-y-auto scroll-v pr-2"></div>
                 </div>
 
-                <!-- للمدين: قائمة التجار اللي سجلوا عليه تلقائياً -->
-                <div id="debtor-pane" class="hidden glass p-5">
-                    <h3 class="text-xs font-bold text-[#d4af37] mb-4">🏢 تجار سجلوا مبالغ باسمك</h3>
-                    <div id="auto-merchants" class="space-y-2">
-                        <!-- تظهر هنا الأسماء تلقائياً -->
-                    </div>
-                    <div id="no-merchants-hint" class="text-[10px] text-gray-600 text-center py-4">لا يوجد تجار سجلوا عليك ديون حالياً</div>
+                <div id="debtor-pane" class="hidden glass p-6">
+                    <h3 class="text-xs font-bold text-[#d4af37] mb-6 tracking-widest uppercase">التجار المرتبطين تلقائياً</h3>
+                    <div id="auto-merchants" class="space-y-3"></div>
+                    <div id="no-merchants-hint" class="text-[11px] text-gray-700 text-center py-10 italic">سيظهر التجار هنا تلقائياً بمجرد تسجيل ديون باسمك</div>
                 </div>
 
-                <!-- الميزان الكلي -->
-                <div class="glass p-5 border-t-2 border-[#d4af37]">
-                    <h3 class="text-xs font-bold text-[#d4af37] mb-4">الميزان الختامي</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
-                            <p class="text-[9px] text-gray-500 uppercase">يمني</p>
-                            <p id="total-yer" class="text-xl font-bold text-blue-400">0</p>
+                <div class="glass p-6">
+                    <h3 class="text-[10px] font-bold text-gray-500 mb-6 tracking-widest uppercase">الموقف المالي العام</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-end border-b border-white/5 pb-4">
+                            <span class="text-sm text-gray-400">الإجمالي يمني</span>
+                            <span id="total-yer" class="text-3xl font-black text-blue-400">0</span>
                         </div>
-                        <div class="bg-green-500/5 p-3 rounded-xl border border-green-500/10">
-                            <p class="text-[9px] text-gray-500 uppercase">دولار</p>
-                            <p id="total-usd" class="text-xl font-bold text-green-400">0</p>
+                        <div class="flex justify-between items-end">
+                            <span class="text-sm text-gray-400">الإجمالي دولار</span>
+                            <span id="total-usd" class="text-3xl font-black text-green-400">0</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- تفاصيل العمليات -->
+            <!-- الشمال -->
             <div class="lg:col-span-8">
-                <div id="ops-pane" class="hidden glass p-6">
-                    <div class="flex justify-between items-center mb-8 pb-4 border-b border-white/5">
+                <div id="ops-pane" class="hidden glass p-8 min-h-[600px] flex flex-col">
+                    <div class="flex justify-between items-start mb-10">
                         <div>
-                            <h3 id="active-name" class="text-3xl font-bold text-[#d4af37]"></h3>
-                            <p class="text-[10px] text-gray-500">سجل المعاملات والبيانات</p>
+                            <h3 id="active-name" class="text-4xl font-black text-white mb-2"></h3>
+                            <p class="text-xs text-[#d4af37] font-bold uppercase tracking-widest">سجل الديون والتحصيل</p>
                         </div>
-                        <div class="text-right">
-                            <div id="sum-yer" class="text-blue-400 font-bold text-lg"></div>
-                            <div id="sum-usd" class="text-green-400 font-bold text-lg"></div>
+                        <div class="flex flex-col items-end gap-1">
+                            <div id="sum-yer" class="text-blue-400 font-bold bg-blue-400/5 px-4 py-1 rounded-full border border-blue-400/10 text-sm"></div>
+                            <div id="sum-usd" class="text-green-400 font-bold bg-green-400/5 px-4 py-1 rounded-full border border-green-400/10 text-sm"></div>
                         </div>
                     </div>
 
-                    <div id="ops-list" class="space-y-3 mb-8 max-h-96 overflow-y-auto pr-2"></div>
+                    <div id="ops-list" class="space-y-4 mb-10 flex-grow max-h-[500px] overflow-y-auto scroll-v pr-2"></div>
 
-                    <!-- فورم الإضافة (يظهر فقط للتاجر) -->
-                    <div id="merchant-form" class="hidden bg-white/5 p-5 rounded-2xl space-y-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <input id="op-amt" type="number" placeholder="المبلغ">
-                            <select id="op-cur">
-                                <option value="YER">ريال يمني</option>
-                                <option value="USD">دولار $</option>
-                            </select>
-                            <select id="op-type">
-                                <option value="دين">شليت (دين)</option>
-                                <option value="سداد">سددت (خصم)</option>
-                            </select>
-                            <input id="op-note" placeholder="البيان (ليش؟)">
+                    <div id="merchant-form" class="hidden bg-[#0a0a0c] p-6 rounded-3xl border border-white/5 space-y-4 shadow-inner">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-gray-500 px-2 uppercase">المبلغ</label>
+                                <input id="op-amt" type="number" placeholder="0.00">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-gray-500 px-2 uppercase">العملة</label>
+                                <select id="op-cur">
+                                    <option value="YER">ريال يمني</option>
+                                    <option value="USD">دولار $</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-gray-500 px-2 uppercase">النوع</label>
+                                <select id="op-type">
+                                    <option value="دين">شليت (دين)</option>
+                                    <option value="سداد">سددت (خصم)</option>
+                                </select>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] text-gray-500 px-2 uppercase">البيان</label>
+                                <input id="op-note" placeholder="...">
+                            </div>
                         </div>
-                        <button onclick="saveNewOp()" class="w-full py-4 gold-grad text-black font-black rounded-xl shadow-lg">تثبيت العملية فوراً</button>
+                        <button onclick="saveNewOp()" class="w-full py-5 gold-grad text-black font-black rounded-2xl shadow-xl shadow-yellow-900/10 active:scale-[0.98] transition">تسجيل العملية في المنظومة</button>
                     </div>
-                    
-                    <div id="debtor-info" class="hidden text-center p-4 bg-blue-500/5 rounded-xl border border-blue-500/10 text-[11px] text-blue-400">
-                        ملاحظة: هذه البيانات مسجلة في منصة التاجر، ولا يمكنك تعديلها.
+
+                    <div id="debtor-info" class="hidden text-center p-6 bg-blue-500/5 rounded-2xl border border-blue-500/10 text-xs text-blue-300">
+                        🛡️ هذه البيانات محمية وتتم مزامنتها مباشرة من حساب التاجر.
                     </div>
                 </div>
 
-                <div id="empty-hint" class="glass p-20 text-center text-gray-700 italic">
-                    اختر اسماً من القائمة لعرض السجل المرتب...
+                <div id="empty-hint" class="glass p-20 text-center flex flex-col items-center justify-center min-h-[600px]">
+                    <div class="w-24 h-24 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-white/5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 font-bold">بانتظار اختيار سجل لبدء العرض المرتب</p>
+                    <p class="text-[10px] text-gray-800 mt-2 uppercase tracking-widest">Heiba Financial Secure Node</p>
                 </div>
             </div>
         </div>
@@ -137,7 +160,7 @@
     <script>
         let user = null;
         let activeName = null;
-        let autoData = []; // للبيانات المكتشفة تلقائياً للمدين
+        let autoData = [];
 
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim();
@@ -158,7 +181,7 @@
             document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('user-display-name').innerText = user.name;
-            document.getElementById('user-role-badge').innerText = user.type === 'merchant' ? 'حساب تاجر' : 'حساب مدين';
+            document.getElementById('user-role-badge').innerText = user.type === 'merchant' ? 'Power Account' : 'Standard Node';
             
             if(user.type === 'merchant') {
                 document.getElementById('merchant-pane').classList.remove('hidden');
@@ -172,7 +195,6 @@
             updateTotalBalance();
         }
 
-        // --- منطق التاجر ---
         function addTarget() {
             const name = document.getElementById('new-target').value.trim();
             if(!name) return;
@@ -184,30 +206,31 @@
 
         function renderMerchantList() {
             const targets = [...new Set(user.myRecords.map(r => r.targetName))];
+            document.getElementById('target-count').innerText = targets.length;
             document.getElementById('targets-list').innerHTML = targets.map(t => `
-                <div onclick="showOps('${t}')" class="p-3 bg-zinc-900 rounded-xl cursor-pointer hover:bg-zinc-800 transition ${activeName === t ? 'active-tab' : ''}">${t}</div>
+                <div onclick="showOps('${t}')" class="side-item flex justify-between items-center ${activeName === t ? 'active' : ''}">
+                    <span class="font-bold text-sm">${t}</span>
+                    <span class="text-[10px] text-gray-600">عرض ›</span>
+                </div>
             `).join('');
         }
 
-        // --- منطق المدين (المزامنة التلقائية بالاسم) ---
         async function fetchAutoDebts() {
             const res = await fetch(`/api/auto-discover?debtorName=${user.name}`);
             autoData = await res.json();
-            
             const list = document.getElementById('auto-merchants');
             if(autoData.length > 0) {
                 document.getElementById('no-merchants-hint').classList.add('hidden');
                 list.innerHTML = autoData.map(m => `
-                    <div onclick="showOps('${m.merchantName}', true)" class="p-4 bg-zinc-900 rounded-xl cursor-pointer border border-white/5 hover:border-[#d4af37] transition ${activeName === m.merchantName ? 'active-tab' : ''}">
-                        <p class="font-bold text-sm text-gray-200">${m.merchantName}</p>
-                        <p class="text-[9px] text-gray-500">تم اكتشاف سجل باسمك عند هذا التاجر</p>
+                    <div onclick="showOps('${m.merchantName}', true)" class="side-item flex flex-col ${activeName === m.merchantName ? 'active' : ''}">
+                        <span class="font-bold text-sm">${m.merchantName}</span>
+                        <span class="text-[9px] text-blue-500 uppercase font-bold mt-1">سجلات مكتشفة</span>
                     </div>
                 `).join('');
             }
         }
 
-        // --- عرض السجلات والعمليات ---
-        function showOps(name, isDiscovery = false) {
+        function showOps(name) {
             activeName = name;
             document.getElementById('empty-hint').classList.add('hidden');
             document.getElementById('ops-pane').classList.remove('hidden');
@@ -222,8 +245,7 @@
             }
 
             renderOpsList(records);
-            renderMerchantList();
-            if(user.type === 'debtor') fetchAutoDebts();
+            if(user.type === 'merchant') renderMerchantList(); else fetchAutoDebts();
         }
 
         function renderOpsList(records) {
@@ -237,15 +259,15 @@
                 <div class="card-op ${isDebt ? 'debt' : 'pay'}">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-sm font-bold text-gray-200">${r.note}</p>
-                            <p class="text-[10px] text-gray-600">${new Date(r.date).toLocaleString('ar-YE')}</p>
+                            <p class="font-bold text-lg text-gray-100">${r.note}</p>
+                            <p class="text-[10px] text-gray-600 mt-1 uppercase">${new Date(r.date).toLocaleDateString('ar-YE')} | ${new Date(r.date).toLocaleTimeString('ar-YE')}</p>
                         </div>
                         <div class="text-right">
-                            <p class="text-lg font-black ${isDebt ? 'text-red-500' : 'text-green-500'}">
+                            <p class="text-2xl font-black ${isDebt ? 'text-red-500' : 'text-green-500'}">
                                 ${isDebt ? '+' : '-'}${amt.toLocaleString()} 
-                                <span class="text-[10px]">${r.currency}</span>
+                                <span class="text-xs opacity-50">${r.currency}</span>
                             </p>
-                            ${user.type === 'merchant' ? `<button onclick="deleteOp(${r.id})" class="text-[9px] text-gray-700 hover:text-red-500">حذف السجل</button>` : ''}
+                            ${user.type === 'merchant' ? `<button onclick="deleteOp(${r.id})" class="text-[9px] text-zinc-700 hover:text-red-500 mt-2 uppercase font-bold tracking-widest transition">Delete Record</button>` : ''}
                         </div>
                     </div>
                 </div>`;
@@ -259,8 +281,7 @@
             const amt = document.getElementById('op-amt').value;
             const cur = document.getElementById('op-cur').value;
             const type = document.getElementById('op-type').value;
-            const note = document.getElementById('op-note').value || "عملية مسجلة";
-            
+            const note = document.getElementById('op-note').value || "عملية مالية";
             if(!amt || !activeName) return;
 
             user.myRecords.push({
@@ -281,7 +302,6 @@
         }
 
         function deleteOp(id) {
-            if(!confirm("حذف هذه العملية نهائياً؟")) return;
             user.myRecords = user.myRecords.filter(r => r.id !== id);
             showOps(activeName);
             updateTotalBalance();
