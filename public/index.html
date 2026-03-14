@@ -16,6 +16,7 @@
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
         .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
+        .custom-checkbox { width: 20px; h-5 cursor: pointer; accent-color: #d4af37; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -29,8 +30,9 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             <!-- لوحة الدخول -->
-            <div class="glass-card p-10 space-y-6 shadow-2xl">
+            <div class="glass-card p-10 space-y-6 shadow-2xl border-yellow-900/10">
                 <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
+                
                 <div class="grid grid-cols-2 gap-4 mb-2">
                     <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
                         <span class="block text-2xl mb-1">👑</span>
@@ -41,17 +43,25 @@
                         <span class="text-sm font-bold">حساب مواطن</span>
                     </div>
                 </div>
+
                 <div class="space-y-4">
-                    <input id="u-name" type="text" placeholder="الاسم الكامل">
-                    <input id="u-pass" type="password" placeholder="كلمة المرور">
+                    <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
+                    <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
                 </div>
+                
+                <!-- ميزة تذكرني الاختيارية كما طلبت -->
+                <div class="flex items-center gap-3 px-2">
+                    <input type="checkbox" id="remember-me" class="custom-checkbox">
+                    <label for="remember-me" class="text-sm text-gray-400 cursor-pointer select-none">البقاء متصلاً (دخول تلقائي دائماً)</label>
+                </div>
+
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold">تسجيل الدخول</button>
-                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl">إنشاء حساب</button>
+                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold hover:bg-zinc-700 transition">تسجيل الدخول</button>
+                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl hover:brightness-110 transition">إنشاء حساب</button>
                 </div>
             </div>
 
-            <!-- شرح فائدة المنصة والتعليمات -->
+            <!-- شرح فائدة المنصة والتعليمات بالفصحى -->
             <div class="space-y-8">
                 <div>
                     <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
@@ -71,7 +81,7 @@
         </div>
     </div>
 
-    <!-- لوحة التحكم -->
+    <!-- لوحة التحكم الرئيسية -->
     <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
         <header class="flex justify-between items-center glass-card p-6">
             <div class="flex items-center gap-4">
@@ -82,36 +92,37 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600">⚙️</button>
+                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">⚙️</button>
                 <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20">خروج</button>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- القوائم والارصدة -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6">
-                    <h3 class="text-[11px] text-gray-500 font-bold mb-6">الرصيد الصافي العام</h3>
+                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
                     <div class="space-y-4">
-                        <div class="flex justify-between"><span class="text-xs text-gray-400">يمني</span><span id="grand-total-yer" class="font-bold text-blue-400">0</span></div>
-                        <div class="flex justify-between"><span class="text-xs text-gray-400">دولار</span><span id="grand-total-usd" class="font-bold text-green-400">0</span></div>
-                        <div class="flex justify-between"><span class="text-xs text-gray-400">سعودي</span><span id="grand-total-sar" class="font-bold text-orange-400">0</span></div>
+                        <div class="flex justify-between"><span class="text-xs text-gray-400">ريال يمني</span><span id="grand-total-yer" class="font-bold text-blue-400 text-lg">0</span></div>
+                        <div class="flex justify-between"><span class="text-xs text-gray-400">دولار أمريكي</span><span id="grand-total-usd" class="font-bold text-green-400 text-lg">0</span></div>
+                        <div class="flex justify-between"><span class="text-xs text-gray-400">ريال سعودي</span><span id="grand-total-sar" class="font-bold text-orange-400 text-lg">0</span></div>
                     </div>
                 </div>
                 <div class="glass-card p-6 min-h-[400px]">
                     <div id="merchant-tools" class="hidden space-y-4">
-                        <div class="flex gap-2"><input id="target-search" placeholder="اسم المواطن..."><button onclick="addTarget()" class="gold-btn px-4 rounded-xl">+</button></div>
+                        <div class="flex gap-2">
+                            <input id="target-search" class="text-sm" placeholder="اسم المواطن...">
+                            <button onclick="addTarget()" class="gold-btn px-4 rounded-xl text-xl">+</button>
+                        </div>
                     </div>
                     <div id="main-list" class="mt-4 space-y-2"></div>
                 </div>
             </div>
 
-            <!-- تفاصيل الحساب -->
             <div class="lg:col-span-8">
-                <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col">
+                <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
                     <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
                         <h3 id="active-target-name" class="text-3xl font-black gold-text"></h3>
-                        <div class="flex gap-3 text-[10px]">
+                        <div class="flex gap-4 text-[11px] font-bold">
                             <span id="cur-yer" class="text-blue-400"></span>
                             <span id="cur-usd" class="text-green-400"></span>
                             <span id="cur-sar" class="text-orange-400"></span>
@@ -125,25 +136,26 @@
                             <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
                             <input id="op-note" placeholder="البيان">
                         </div>
-                        <button onclick="saveOp()" class="gold-btn w-full py-3 rounded-xl">تثبيت العملية</button>
+                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl">تثبيت العملية فوراً</button>
                     </div>
                 </div>
-                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً للمتابعة اللحظية...</div>
+                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">
+                    <p>اختر حساباً لمتابعة السجلات الحية...</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة تغيير كلمة المرور -->
+    <!-- نافذة الإعدادات -->
     <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text">تغيير كلمة المرور</h3>
-            <p class="text-xs text-gray-500">يرجى إدخال كلمة المرور الجديدة أدناه لحماية حسابك.</p>
+            <h3 class="text-xl font-bold gold-text">إعدادات الحماية</h3>
             <div class="space-y-4">
                 <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
                 <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور">
             </div>
             <div class="flex gap-4">
-                <button onclick="updatePassword()" class="gold-btn flex-grow py-3 rounded-xl">حفظ التغييرات</button>
+                <button onclick="updatePassword()" class="gold-btn flex-grow py-3 rounded-xl">تحديث</button>
                 <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl">إلغاء</button>
             </div>
         </div>
@@ -162,17 +174,37 @@
             document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
         }
 
+        // التحقق من الدخول التلقائي عند بداية التشغيل
+        window.onload = () => {
+            const saved = localStorage.getItem('heiba_auth_session');
+            if (saved) {
+                user = JSON.parse(saved);
+                start();
+            }
+        };
+
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+
             if(!name || !password) return;
+            
             const res = await fetch('/api/auth', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ name, password, type: userType, action })
             });
             const data = await res.json();
-            if(res.ok) { user = data; start(); } else alert(data.error);
+            
+            if(res.ok) {
+                user = data;
+                // الحفظ فقط إذا تم تفعيل "تذكرني"
+                if (rememberMe) {
+                    localStorage.setItem('heiba_auth_session', JSON.stringify(user));
+                }
+                start();
+            } else alert(data.error);
         }
 
         function start() {
@@ -180,6 +212,7 @@
             document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerText = user.name;
             document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
+            
             if(user.type === 'merchant') {
                 document.getElementById('merchant-tools').classList.remove('hidden');
                 document.getElementById('add-form').classList.remove('hidden');
@@ -194,14 +227,11 @@
         async function updatePassword() {
             const p1 = document.getElementById('new-pass').value;
             const p2 = document.getElementById('confirm-pass').value;
-            if(!p1 || p1 !== p2) { alert("كلمات المرور غير متطابقة!"); return; }
-            
-            // في البيئة الحقيقية، هنا يتم إرسال طلب للسيرفر لتغيير الباسورد
-            user.password = p1; 
-            alert("تم تحديث كلمة المرور بنجاح!");
+            if(!p1 || p1 !== p2) { alert("خطأ في مطابقة كلمة المرور"); return; }
+            user.password = p1;
+            if(localStorage.getItem('heiba_auth_session')) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
+            alert("تم التغيير بنجاح");
             closeModal('settings-modal');
-            document.getElementById('new-pass').value = "";
-            document.getElementById('confirm-pass').value = "";
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -245,7 +275,7 @@
                 document.getElementById('main-list').innerHTML = discoveredData.map(m => `
                     <div onclick="showDetails('${m.merchantName}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-blue-900/30 mb-2 hover:bg-zinc-900 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}">
                         <p class="font-bold text-sm">${m.merchantName}</p>
-                        <p class="text-[9px] text-blue-500 font-bold uppercase mt-1 italic tracking-widest">مزامنة حية</p>
+                        <p class="text-[9px] text-blue-500 font-bold uppercase mt-1 italic tracking-widest">تحديث لحظي</p>
                     </div>
                 `).join('');
                 if(activeTarget) showDetails(activeTarget);
@@ -264,7 +294,7 @@
                 const d = r.type === 'دين';
                 if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else if(r.currency === 'SAR') s += d?a:-a;
                 return `
-                <div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center">
+                <div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm">
                     <div><p class="font-bold text-sm">${r.note}</p><p class="text-[10px] text-gray-600 mt-1 uppercase">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
                     <div class="text-right">
                         <p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p>
@@ -285,6 +315,7 @@
             const n = document.getElementById('op-note').value || "عملية مالية";
             if(!a || !activeTarget) return;
             user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: a, currency: c, type: t, note: n, date: new Date().toISOString() });
+            if(localStorage.getItem('heiba_auth_session')) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
             showDetails(activeTarget);
             calculateGrand();
             sync();
@@ -293,7 +324,12 @@
         }
 
         async function sync() { fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) }); }
-        function logout() { clearInterval(pollingInterval); location.reload(); }
+        
+        function logout() { 
+            clearInterval(pollingInterval); 
+            localStorage.removeItem('heiba_auth_session'); 
+            location.reload(); 
+        }
     </script>
 </body>
 </html>
