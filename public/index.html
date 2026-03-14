@@ -16,7 +16,7 @@
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
         .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
-        .custom-checkbox { width: 20px; h-5 cursor: pointer; accent-color: #d4af37; }
+        .custom-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: #d4af37; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -29,10 +29,8 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <!-- لوحة الدخول -->
             <div class="glass-card p-10 space-y-6 shadow-2xl border-yellow-900/10">
                 <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
-                
                 <div class="grid grid-cols-2 gap-4 mb-2">
                     <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
                         <span class="block text-2xl mb-1">👑</span>
@@ -43,25 +41,20 @@
                         <span class="text-sm font-bold">حساب مواطن</span>
                     </div>
                 </div>
-
                 <div class="space-y-4">
                     <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
                     <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
                 </div>
-                
-                <!-- ميزة تذكرني الاختيارية كما طلبت -->
                 <div class="flex items-center gap-3 px-2">
                     <input type="checkbox" id="remember-me" class="custom-checkbox">
                     <label for="remember-me" class="text-sm text-gray-400 cursor-pointer select-none">البقاء متصلاً (دخول تلقائي دائماً)</label>
                 </div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold hover:bg-zinc-700 transition">تسجيل الدخول</button>
                     <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl hover:brightness-110 transition">إنشاء حساب</button>
                 </div>
             </div>
 
-            <!-- شرح فائدة المنصة والتعليمات بالفصحى -->
             <div class="space-y-8">
                 <div>
                     <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
@@ -101,7 +94,7 @@
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6">
                     <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
-                    <div class="space-y-4">
+                    <div class="space-y-4" id="grand-totals">
                         <div class="flex justify-between"><span class="text-xs text-gray-400">ريال يمني</span><span id="grand-total-yer" class="font-bold text-blue-400 text-lg">0</span></div>
                         <div class="flex justify-between"><span class="text-xs text-gray-400">دولار أمريكي</span><span id="grand-total-usd" class="font-bold text-green-400 text-lg">0</span></div>
                         <div class="flex justify-between"><span class="text-xs text-gray-400">ريال سعودي</span><span id="grand-total-sar" class="font-bold text-orange-400 text-lg">0</span></div>
@@ -139,14 +132,12 @@
                         <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl">تثبيت العملية فوراً</button>
                     </div>
                 </div>
-                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">
-                    <p>اختر حساباً لمتابعة السجلات الحية...</p>
-                </div>
+                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لمتابعة السجلات الحية...</div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة الإعدادات -->
+    <!-- نافذة الإعدادات (إصلاح كلمة المرور) -->
     <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-6">
             <h3 class="text-xl font-bold gold-text">إعدادات الحماية</h3>
@@ -154,8 +145,9 @@
                 <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
                 <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور">
             </div>
+            <div id="pass-msg" class="text-xs text-center hidden"></div>
             <div class="flex gap-4">
-                <button onclick="updatePassword()" class="gold-btn flex-grow py-3 rounded-xl">تحديث</button>
+                <button id="btn-update-pass" onclick="updatePassword()" class="gold-btn flex-grow py-3 rounded-xl">تحديث الآن</button>
                 <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl">إلغاء</button>
             </div>
         </div>
@@ -174,7 +166,6 @@
             document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
         }
 
-        // التحقق من الدخول التلقائي عند بداية التشغيل
         window.onload = () => {
             const saved = localStorage.getItem('heiba_auth_session');
             if (saved) {
@@ -199,10 +190,7 @@
             
             if(res.ok) {
                 user = data;
-                // الحفظ فقط إذا تم تفعيل "تذكرني"
-                if (rememberMe) {
-                    localStorage.setItem('heiba_auth_session', JSON.stringify(user));
-                }
+                if (rememberMe) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
                 start();
             } else alert(data.error);
         }
@@ -224,14 +212,48 @@
             calculateGrand();
         }
 
+        // الإصلاح الجذري لتغيير كلمة المرور
         async function updatePassword() {
             const p1 = document.getElementById('new-pass').value;
             const p2 = document.getElementById('confirm-pass').value;
-            if(!p1 || p1 !== p2) { alert("خطأ في مطابقة كلمة المرور"); return; }
-            user.password = p1;
-            if(localStorage.getItem('heiba_auth_session')) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
-            alert("تم التغيير بنجاح");
-            closeModal('settings-modal');
+            const btn = document.getElementById('btn-update-pass');
+            const msg = document.getElementById('pass-msg');
+
+            if(!p1 || p1 !== p2) {
+                alert("كلمات المرور غير متطابقة أو فارغة!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "جاري الحفظ...";
+
+            try {
+                // إرسال الطلب للسيرفر لضمان الحفظ الدائم
+                const res = await fetch('/api/update-password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ userId: user.id, newPassword: p1 })
+                });
+
+                if(res.ok) {
+                    user.password = p1; // تحديث الكائن المحلي
+                    // تحديث التخزين المحلي إذا كان المستخدم قد اختار "تذكرني"
+                    if(localStorage.getItem('heiba_auth_session')) {
+                        localStorage.setItem('heiba_auth_session', JSON.stringify(user));
+                    }
+                    alert("تم تحديث كلمة المرور بنجاح في قاعدة البيانات!");
+                    closeModal('settings-modal');
+                } else {
+                    alert("فشل التحديث، يرجى المحاولة لاحقاً.");
+                }
+            } catch (e) {
+                alert("حدث خطأ في الاتصال بالسيرفر.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "تحديث الآن";
+                document.getElementById('new-pass').value = "";
+                document.getElementById('confirm-pass').value = "";
+            }
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -275,7 +297,7 @@
                 document.getElementById('main-list').innerHTML = discoveredData.map(m => `
                     <div onclick="showDetails('${m.merchantName}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-blue-900/30 mb-2 hover:bg-zinc-900 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}">
                         <p class="font-bold text-sm">${m.merchantName}</p>
-                        <p class="text-[9px] text-blue-500 font-bold uppercase mt-1 italic tracking-widest">تحديث لحظي</p>
+                        <p class="text-[9px] text-blue-500 font-bold uppercase mt-1 italic tracking-widest">مزامنة فورية</p>
                     </div>
                 `).join('');
                 if(activeTarget) showDetails(activeTarget);
