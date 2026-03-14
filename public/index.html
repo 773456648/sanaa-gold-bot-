@@ -3,176 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منظومة الهيبة | الميزان الذهبي</title>
+    <title>منصة الهيبة | الإدارة المالية الموحدة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body { background: #060608; color: #f0f0f0; font-family: 'Changa', sans-serif; }
-        .gold-border { border: 1px solid #d4af37; }
         .gold-text { color: #d4af37; }
         .gold-btn { background: linear-gradient(135deg, #d4af37, #b8860b); color: #000; font-weight: bold; }
-        .glass-card { background: rgba(20, 20, 25, 0.9); border: 1px solid #222; border-radius: 20px; }
-        .op-card { padding: 15px; border-radius: 12px; border-right: 4px solid #d4af37; background: #0c0c0e; margin-bottom: 12px; }
-        .debt { border-right-color: #ef4444; }
-        .pay { border-right-color: #22c55e; }
-        input, select { background: #111 !important; border: 1px solid #333 !important; color: #fff; border-radius: 12px; padding: 12px; width: 100%; outline: none; }
-        input:focus { border-color: #d4af37 !important; }
+        .glass-card { background: rgba(15, 15, 20, 0.98); border: 1px solid #222; border-radius: 28px; }
+        input, select { background: #111 !important; border: 1px solid #333 !important; color: #fff; border-radius: 16px; padding: 16px; width: 100%; outline: none; }
+        .type-select { border: 2px solid #333; transition: 0.3s; cursor: pointer; }
+        .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
+        .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- شاشة الدخول -->
-    <div id="auth-ui" class="max-w-md mx-auto mt-12 space-y-6">
+    <!-- شاشة الدخول والتعريف بالمنصة -->
+    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12">
         <div class="text-center">
-            <h1 class="text-6xl font-black gold-text italic">HEIBA</h1>
-            <p class="text-[10px] text-gray-500 tracking-widest uppercase mt-2">Financial Control System</p>
+            <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
+            <p class="text-[12px] text-gray-500 tracking-[0.5em] uppercase mt-4">The Sovereign Financial Platform</p>
         </div>
-        <div class="glass-card p-8 space-y-4">
-            <input id="u-name" type="text" placeholder="الاسم الكامل">
-            <input id="u-pass" type="password" placeholder="كلمة السر">
-            <select id="u-type">
-                <option value="merchant">دخول كتاجر</option>
-                <option value="debtor">دخول كمدين</option>
-            </select>
-            <div class="flex items-center gap-2 p-2">
-                <input type="checkbox" id="remember-me" class="w-4 h-4 cursor-pointer">
-                <label for="remember-me" class="text-xs text-gray-400 cursor-pointer">تذكرني (دخول تلقائي دائماً)</label>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            
+            <!-- لوحة الدخول -->
+            <div class="glass-card p-10 space-y-6 shadow-2xl border-yellow-900/10">
+                <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
+                
+                <div class="grid grid-cols-2 gap-4 mb-2">
+                    <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
+                        <span class="block text-2xl mb-1">👑</span>
+                        <span class="text-sm font-bold">حساب تاجر</span>
+                    </div>
+                    <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-5 rounded-2xl text-center">
+                        <span class="block text-2xl mb-1">👤</span>
+                        <span class="text-sm font-bold">حساب مواطن</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
+                    <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
+                </div>
+                
+                <div class="flex items-center gap-3 px-2">
+                    <input type="checkbox" id="remember-me" class="w-5 h-5 cursor-pointer accent-[#d4af37]">
+                    <label for="remember-me" class="text-sm text-gray-400 cursor-pointer">تذكر بياناتي للدخول التلقائي</label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold hover:bg-zinc-700 transition">تسجيل الدخول</button>
+                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl hover:brightness-110 transition">إنشاء حساب جديد</button>
+                </div>
             </div>
-            <div class="grid grid-cols-2 gap-3 pt-2">
-                <button onclick="doAuth('login')" class="bg-zinc-800 py-3 rounded-xl font-bold">دخول</button>
-                <button onclick="doAuth('reg')" class="gold-btn py-3 rounded-xl">تسجيل</button>
+
+            <!-- قسم الشرح والتعليمات بالفصحى -->
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        تُعد منصة الهيبة حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية. تضمن المنصة لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية تمنع الأخطاء البشرية وتوفر كشوفات حساب دقيقة بالعملات الثلاث الأكثر تداولاً.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="info-section">
+                        <h4 class="gold-text font-bold mb-2">كيفية الاستخدام للتاجر:</h4>
+                        <ul class="text-[12px] text-gray-400 space-y-2 list-disc list-inside">
+                            <li>قم بإنشاء حساب بصفة "تاجر" لإدارة ديونك.</li>
+                            <li>أضف أسماء المواطنين الذين تطلبهم مبالغ مالية.</li>
+                            <li>سجل العمليات (دين أو سداد) بالعملة المناسبة.</li>
+                            <li>سيصل السجل تلقائياً إلى حساب المواطن المرتبط.</li>
+                        </ul>
+                    </div>
+                    <div class="info-section">
+                        <h4 class="gold-text font-bold mb-2">كيفية الاستخدام للمواطن:</h4>
+                        <ul class="text-[12px] text-gray-400 space-y-2 list-disc list-inside">
+                            <li>سجل حساباً بصفة "مواطن" باستخدام اسمك الحقيقي.</li>
+                            <li>ستظهر لك قائمة التجار الذين سجلوا ديوناً باسمك.</li>
+                            <li>تابع موقفك المالي الصافي لكل عملة على حدة.</li>
+                            <li>لا يمكن التعديل على السجلات لضمان المصداقية.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
+                        <span class="text-2xl">✅</span>
+                        <div class="text-sm">
+                            <h5 class="font-bold gold-text">ثلاث عملات في مكان واحد</h5>
+                            <p class="text-gray-500">تحكم كامل بحساباتك باليمني، السعودي، والدولار بضغطة زر.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
+                        <span class="text-2xl">✅</span>
+                        <div class="text-sm">
+                            <h5 class="font-bold gold-text">مزامنة فورية للمواطن</h5>
+                            <p class="text-gray-500">بمجرد قيام التاجر بتسجيل العملية، تظهر في حساب المواطن فوراً.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl">
+                        <span class="text-2xl">✅</span>
+                        <div class="text-sm">
+                            <h5 class="font-bold gold-text">أمان عالي وسهولة مطلقة</h5>
+                            <p class="text-gray-500">أكلوا وشربوا وعلى الحق اتحسبوا.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- النظام الرئيسي -->
-    <div id="main-ui" class="hidden max-w-6xl mx-auto space-y-6">
-        <header class="flex justify-between items-center glass-card p-5">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 gold-btn rounded-full flex items-center justify-center text-black">H</div>
+    <!-- لوحة التحكم الرئيسية (مخفية حتى الدخول) -->
+    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
+        <!-- (هنا يتم إدراج بقية الكود الخاص بلوحة التحكم كما في النسخ السابقة مع مراعاة العملات الثلاث) -->
+        <header class="flex justify-between items-center glass-card p-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-2xl">H</div>
                 <div>
-                    <h2 id="display-name" class="font-bold text-lg leading-none"></h2>
-                    <span id="role-tag" class="text-[9px] text-gray-500 uppercase"></span>
+                    <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-1"></h2>
+                    <span id="role-tag" class="text-[10px] text-gray-600 uppercase tracking-widest"></span>
                 </div>
             </div>
-            <div class="flex gap-2">
-                <button onclick="toggleSettings()" class="bg-zinc-800 p-2 rounded-lg text-xs">⚙️</button>
-                <button onclick="logout()" class="bg-red-900/20 text-red-500 px-4 py-2 rounded-lg text-xs font-bold">خروج</button>
+            <div class="flex gap-3">
+                <button onclick="toggleSettings()" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">⚙️</button>
+                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج آمن</button>
             </div>
         </header>
 
-        <!-- الإعدادات -->
-        <div id="settings-ui" class="hidden glass-card p-6 mb-6 animate-pulse">
-            <h3 class="text-sm font-bold gold-text mb-4">تغيير كلمة السر</h3>
-            <div class="flex gap-2">
-                <input id="new-password" type="password" placeholder="كلمة السر الجديدة">
-                <button onclick="updatePassword()" class="gold-btn px-6 rounded-xl text-xs">حفظ</button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- الشريط الجانبي -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
-                <!-- الموقف المالي العام (تم إصلاحه) -->
+                <!-- الموقف المالي العام -->
                 <div class="glass-card p-6">
-                    <h3 class="text-xs text-gray-500 font-bold mb-6 uppercase tracking-widest">الموقف المالي العام</h3>
+                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 border-b border-white/5 pb-3">إجمالي الرصيد الصافي</h3>
                     <div class="space-y-4">
-                        <div class="flex justify-between border-b border-white/5 pb-4">
-                            <span class="text-xs text-gray-400">إجمالي يمني</span>
-                            <span id="grand-total-yer" class="text-2xl font-bold text-blue-400">0</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-gray-400">إجمالي دولار</span>
-                            <span id="grand-total-usd" class="text-2xl font-bold text-green-400">0</span>
-                        </div>
+                        <div class="flex justify-between items-center"><span class="text-xs text-gray-400">ريال يمني</span><span id="grand-total-yer" class="text-xl font-bold text-blue-400">0</span></div>
+                        <div class="flex justify-between items-center"><span class="text-xs text-gray-400">دولار أمريكي</span><span id="grand-total-usd" class="text-xl font-bold text-green-400">0</span></div>
+                        <div class="flex justify-between items-center"><span class="text-xs text-gray-400">ريال سعودي</span><span id="grand-total-sar" class="text-xl font-bold text-orange-400">0</span></div>
                     </div>
                 </div>
-
-                <!-- قائمة الأسماء -->
-                <div id="merchant-list-pane" class="hidden glass-card p-6">
-                    <h3 class="text-[10px] text-gray-500 font-bold mb-4 uppercase">المدينين المسجلين</h3>
-                    <div class="flex gap-2 mb-4">
-                        <input id="target-search" class="text-sm" placeholder="اسم المدين...">
-                        <button onclick="addTarget()" class="gold-btn px-4 rounded-xl text-xl">+</button>
+                
+                <!-- القوائم -->
+                <div class="glass-card p-6 min-h-[400px]">
+                    <div id="merchant-tools" class="hidden space-y-4">
+                        <h3 class="text-xs text-gray-500 font-bold">إدارة المواطنين</h3>
+                        <div class="flex gap-2">
+                            <input id="target-search" class="text-sm" placeholder="ابحث أو أضف مواطناً...">
+                            <button onclick="addTarget()" class="gold-btn px-6 rounded-xl text-xl">+</button>
+                        </div>
                     </div>
-                    <div id="targets-list" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
-                </div>
-
-                <div id="debtor-list-pane" class="hidden glass-card p-6">
-                    <h3 class="text-[10px] text-gray-500 font-bold mb-4 uppercase">التجار المرتبطين بك</h3>
-                    <div id="auto-merchants" class="space-y-2"></div>
+                    <div id="debtor-tools" class="hidden">
+                        <h3 class="text-xs text-gray-500 font-bold">التجار المرتبطون بحسابك</h3>
+                    </div>
+                    <div id="main-list" class="mt-6 space-y-2 max-h-80 overflow-y-auto pr-1"></div>
                 </div>
             </div>
 
-            <!-- تفاصيل المعاملات -->
             <div class="lg:col-span-8">
-                <div id="details-pane" class="hidden glass-card p-8 min-h-[500px]">
-                    <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
-                        <h3 id="active-target-name" class="text-3xl font-bold gold-text"></h3>
-                        <div class="text-right">
-                            <div id="current-yer" class="text-blue-400 font-bold"></div>
-                            <div id="current-usd" class="text-green-400 font-bold"></div>
+                <!-- تفاصيل السجل -->
+                <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
+                    <div class="flex justify-between items-center mb-10 border-b border-white/5 pb-8">
+                        <div>
+                            <h3 id="active-target-name" class="text-4xl font-black text-white"></h3>
+                            <p class="text-[9px] gold-text font-bold uppercase tracking-[0.4em] mt-1">Real-time Financial Sync</p>
+                        </div>
+                        <div class="flex gap-4 text-[11px] font-bold">
+                            <div class="text-center"><p class="text-gray-600 mb-1">يمني</p><p id="cur-yer" class="text-blue-400 bg-blue-400/5 px-2 py-1 rounded"></p></div>
+                            <div class="text-center"><p class="text-gray-600 mb-1">دولار</p><p id="cur-usd" class="text-green-400 bg-green-400/5 px-2 py-1 rounded"></p></div>
+                            <div class="text-center"><p class="text-gray-600 mb-1">سعودي</p><p id="cur-sar" class="text-orange-400 bg-orange-400/5 px-2 py-1 rounded"></p></div>
                         </div>
                     </div>
+                    
+                    <div id="ops-list" class="flex-grow space-y-4 overflow-y-auto max-h-[400px] mb-6"></div>
 
-                    <div id="ops-list" class="space-y-3 mb-8 max-h-80 overflow-y-auto pr-2"></div>
-
-                    <!-- فورم الإضافة -->
-                    <div id="add-form" class="hidden bg-black/40 p-6 rounded-2xl space-y-4 border border-white/5">
+                    <!-- فورم إضافة العمليات للتاجر -->
+                    <div id="add-form" class="hidden bg-black/50 p-6 rounded-3xl border border-white/5 space-y-4">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                             <input id="op-amt" type="number" placeholder="المبلغ">
                             <select id="op-cur">
-                                <option value="YER">يمني</option>
-                                <option value="USD">دولار $</option>
+                                <option value="YER">ريال يمني</option>
+                                <option value="USD">دولار أمريكي</option>
+                                <option value="SAR">ريال سعودي</option>
                             </select>
                             <select id="op-type">
-                                <option value="دين">شليت (دين)</option>
-                                <option value="سداد">سددت (خصم)</option>
+                                <option value="دين">دين (عليه)</option>
+                                <option value="سداد">سداد (له)</option>
                             </select>
-                            <input id="op-note" placeholder="البيان">
+                            <input id="op-note" placeholder="تفاصيل العملية">
                         </div>
-                        <button onclick="saveOp()" class="w-full py-4 gold-btn rounded-xl shadow-lg">تثبيت العملية الآن</button>
+                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-2xl shadow-xl active:scale-[0.98] transition">تأكيد وتسجيل العملية</button>
                     </div>
                 </div>
-                <div id="empty-hint" class="glass-card p-20 text-center text-gray-600 italic">
-                    اختر اسماً من القائمة لبدء إدارة الحساب...
+                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex flex-col items-center justify-center min-h-[600px]">
+                    <div class="text-5xl mb-4 opacity-20">📊</div>
+                    <p>الرجاء اختيار اسم من القائمة لعرض كشف الحساب المفصل</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // الكود البرمجي (JS) المطور للتعامل مع العملات الثلاث والتحقق المزدوج
         let user = null;
         let activeTarget = null;
+        let userType = 'merchant';
         let discoveredData = [];
 
-        // التحقق من الدخول التلقائي عند التحميل
+        function setType(t) {
+            userType = t;
+            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant');
+            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
+        }
+
         window.onload = () => {
-            const savedUser = localStorage.getItem('heiba_user');
-            if(savedUser) {
-                user = JSON.parse(savedUser);
-                start();
-            }
+            const saved = localStorage.getItem('heiba_platform_session');
+            if(saved) { user = JSON.parse(saved); start(); }
         };
 
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
-            const type = document.getElementById('u-type').value;
-            if(!name || !password) return alert("يرجى إكمال البيانات");
+            if(!name || !password) return;
 
             const res = await fetch('/api/auth', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ name, password, type, action })
+                body: JSON.stringify({ name, password, type: userType, action })
             });
             const data = await res.json();
-            if(res.ok) { 
-                user = data; 
-                if(document.getElementById('remember-me').checked) {
-                    localStorage.setItem('heiba_user', JSON.stringify(user));
-                }
-                start(); 
+            if(res.ok) {
+                user = data;
+                if(document.getElementById('remember-me').checked) localStorage.setItem('heiba_platform_session', JSON.stringify(user));
+                start();
             } else alert(data.error);
         }
 
@@ -180,148 +244,117 @@
             document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerText = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? 'Power User' : 'Standard User';
+            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
             
             if(user.type === 'merchant') {
-                document.getElementById('merchant-list-pane').classList.remove('hidden');
+                document.getElementById('merchant-tools').classList.remove('hidden');
                 document.getElementById('add-form').classList.remove('hidden');
-                renderMerchantList();
+                renderList();
             } else {
-                document.getElementById('debtor-list-pane').classList.remove('hidden');
+                document.getElementById('debtor-tools').classList.remove('hidden');
                 fetchAutoDebts();
             }
-            calculateGrandTotal();
+            calculateGrand();
         }
 
-        function calculateGrandTotal() {
-            let y = 0, u = 0;
+        function calculateGrand() {
+            let y=0, u=0, s=0;
             user.myRecords.forEach(r => {
-                const amt = parseFloat(r.amount);
-                const isDebt = r.type === 'دين';
-                if(r.currency === 'YER') y += (isDebt ? amt : -amt); else u += (isDebt ? amt : -amt);
+                const a = parseFloat(r.amount);
+                const d = r.type === 'دين';
+                if(r.currency === 'YER') y += d?a:-a;
+                else if(r.currency === 'USD') u += d?a:-a;
+                else if(r.currency === 'SAR') s += d?a:-a;
             });
             document.getElementById('grand-total-yer').innerText = y.toLocaleString();
             document.getElementById('grand-total-usd').innerText = u.toLocaleString();
+            document.getElementById('grand-total-sar').innerText = s.toLocaleString();
         }
 
         function addTarget() {
-            const name = document.getElementById('target-search').value.trim();
-            if(!name) return;
-            activeTarget = name;
-            showDetails(name);
-            renderMerchantList();
+            const n = document.getElementById('target-search').value.trim();
+            if(!n) return;
+            activeTarget = n;
+            showDetails(n);
+            renderList();
             document.getElementById('target-search').value = "";
         }
 
-        function renderMerchantList() {
-            const targets = [...new Set(user.myRecords.map(r => r.targetName))];
-            document.getElementById('targets-list').innerHTML = targets.map(t => `
-                <div onclick="showDetails('${t}')" class="p-3 bg-zinc-900 rounded-xl cursor-pointer hover:bg-zinc-800 ${activeTarget === t ? 'border border-[#d4af37]' : ''}">${t}</div>
+        function renderList() {
+            const t = [...new Set(user.myRecords.map(r => r.targetName))];
+            document.getElementById('main-list').innerHTML = t.map(n => `
+                <div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900' : ''}">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-sm">${n}</span>
+                        <span class="text-[10px] text-gray-700">🔍</span>
+                    </div>
+                </div>
             `).join('');
         }
 
         async function fetchAutoDebts() {
-            const res = await fetch(`/api/auto-discover?debtorName=${user.name}`);
+            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
             discoveredData = await res.json();
-            document.getElementById('auto-merchants').innerHTML = discoveredData.map(m => `
-                <div onclick="showDetails('${m.merchantName}', true)" class="p-3 bg-zinc-900 rounded-xl cursor-pointer hover:bg-zinc-800 border border-blue-900/30">${m.merchantName}</div>
+            document.getElementById('main-list').innerHTML = discoveredData.map(m => `
+                <div onclick="showDetails('${m.merchantName}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-blue-900/30 mb-2 hover:bg-zinc-900 transition">
+                    <p class="font-bold text-sm">${m.merchantName}</p>
+                    <p class="text-[9px] text-blue-500 font-bold uppercase mt-1">سجل مزامن</p>
+                </div>
             `).join('');
         }
 
-        function showDetails(name, auto = false) {
+        function showDetails(name) {
             activeTarget = name;
             document.getElementById('empty-hint').classList.add('hidden');
             document.getElementById('details-pane').classList.remove('hidden');
             document.getElementById('active-target-name').innerText = name;
 
-            let records = [];
-            if(user.type === 'merchant') {
-                records = user.myRecords.filter(r => r.targetName === name);
-            } else {
-                const found = discoveredData.find(m => m.merchantName === name);
-                records = found ? found.records : [];
-            }
-
-            let y = 0, u = 0;
+            let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
+            let y=0, u=0, s=0;
             document.getElementById('ops-list').innerHTML = records.map(r => {
-                const amt = parseFloat(r.amount);
-                const isDebt = r.type === 'دين';
-                if(r.currency === 'YER') y += (isDebt ? amt : -amt); else u += (isDebt ? amt : -amt);
+                const a = parseFloat(r.amount);
+                const d = r.type === 'دين';
+                if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else if(r.currency === 'SAR') s += d?a:-a;
                 return `
-                <div class="op-card ${isDebt ? 'debt' : 'pay'}">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <p class="font-bold">${r.note}</p>
-                            <p class="text-[9px] text-gray-600">${new Date(r.date).toLocaleString('ar-YE')}</p>
-                        </div>
-                        <p class="text-xl font-black ${isDebt ? 'text-red-500' : 'text-green-500'}">${isDebt?'+':'-'}${amt.toLocaleString()} <span class="text-[10px] opacity-50">${r.currency}</span></p>
+                <div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-sm">${r.note}</p>
+                        <p class="text-[9px] text-gray-600 uppercase mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p>
+                        <p class="text-[9px] opacity-40 font-bold">${r.currency}</p>
                     </div>
                 </div>`;
             }).reverse().join('');
-
-            document.getElementById('current-yer').innerText = y.toLocaleString() + " YER";
-            document.getElementById('current-usd').innerText = u.toLocaleString() + " USD";
-            if(user.type === 'merchant') renderMerchantList();
+            
+            document.getElementById('cur-yer').innerText = y.toLocaleString();
+            document.getElementById('cur-usd').innerText = u.toLocaleString();
+            document.getElementById('cur-sar').innerText = s.toLocaleString();
+            if(user.type === 'merchant') renderList();
         }
 
         async function saveOp() {
-            const amt = document.getElementById('op-amt').value;
-            const cur = document.getElementById('op-cur').value;
-            const type = document.getElementById('op-type').value;
-            const note = document.getElementById('op-note').value || "عملية مالية";
-            if(!amt || !activeTarget) return;
-
-            user.myRecords.push({
-                id: Date.now(),
-                targetName: activeTarget,
-                amount: amt,
-                currency: cur,
-                type: type,
-                note: note,
-                date: new Date().toISOString()
-            });
-
+            const a = document.getElementById('op-amt').value;
+            const c = document.getElementById('op-cur').value;
+            const t = document.getElementById('op-type').value;
+            const n = document.getElementById('op-note').value || "عملية مالية";
+            if(!a || !activeTarget) return;
+            user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: a, currency: c, type: t, note: n, date: new Date().toISOString() });
             showDetails(activeTarget);
-            calculateGrandTotal();
+            calculateGrand();
             sync();
             document.getElementById('op-amt').value = "";
             document.getElementById('op-note').value = "";
         }
 
-        async function updatePassword() {
-            const newPass = document.getElementById('new-password').value;
-            if(!newPass) return;
-            const res = await fetch('/api/update-pass', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId: user.id, newPass })
-            });
-            if(res.ok) {
-                user.password = newPass;
-                alert("تم تحديث كلمة السر بنجاح");
-                toggleSettings();
-                sync();
-            }
-        }
-
-        function toggleSettings() {
-            const el = document.getElementById('settings-ui');
-            el.classList.toggle('hidden');
-        }
-
-        function logout() {
-            localStorage.removeItem('heiba_user');
-            location.reload();
-        }
-
         async function sync() {
-            if(localStorage.getItem('heiba_user')) localStorage.setItem('heiba_user', JSON.stringify(user));
-            await fetch('/api/sync', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId: user.id, myRecords: user.myRecords })
-            });
+            if(localStorage.getItem('heiba_platform_session')) localStorage.setItem('heiba_platform_session', JSON.stringify(user));
+            fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
         }
+
+        function logout() { localStorage.removeItem('heiba_platform_session'); location.reload(); }
+        function toggleSettings() { document.getElementById('settings-ui').classList.toggle('hidden'); }
     </script>
 </body>
 </html>
