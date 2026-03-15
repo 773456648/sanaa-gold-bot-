@@ -29,7 +29,7 @@ async function sendToTelegram(message) {
     } catch (e) { console.error("Telegram Send Error"); }
 }
 
-// --- قسم الـ Webhook (التحكم عن بُعد عبر التلجرام) ---
+// --- قسم الـ Webhook المطور للتحكم الكامل ---
 app.post('/api/tg-webhook', async (req, res) => {
     const update = req.body;
     if (!update.message || !update.message.text) return res.sendStatus(200);
@@ -37,31 +37,46 @@ app.post('/api/tg-webhook', async (req, res) => {
     const chatId = String(update.message.chat.id);
     const text = update.message.text.trim();
 
-    // التحقق أنك أنت المالك فقط من يتحكم
-    if (chatId !== MY_CHAT_ID) {
-        // رسالة اختيارية إذا حاول شخص غريب استخدام البوت
-        return res.sendStatus(200);
-    }
+    // التحقق من هوية المالك
+    if (chatId !== MY_CHAT_ID) return res.sendStatus(200);
 
-    if (text.endsWith("حذف")) {
-        // أمر الحذف (مثال: محمد حذف)
+    // 1. أمر معرفة عدد المشتركين
+    if (text === "العدد") {
+        const total = db.users.length;
+        const merchants = db.users.filter(u => u.type === 'merchant').length;
+        const debtors = db.users.filter(u => u.type === 'debtor').length;
+        sendToTelegram(`📊 **إحصائيات المنصة:**\n\n👥 إجمالي المشتركين: ${total}\n👑 عدد التجار: ${merchants}\n👤 عدد المواطنين: ${debtors}`);
+    } 
+    // 2. أمر عرض كل الأعضاء
+    else if (text === "كل الأعضاء" || text === "كل العضا") {
+        if (db.users.length === 0) {
+            sendToTelegram("⚠️ لا يوجد أعضاء مسجلين حالياً.");
+        } else {
+            let list = "📋 **قائمة جميع الأعضاء:**\n";
+            db.users.forEach((u, index) => {
+                list += `\n${index + 1}. ${u.name} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
+            });
+            sendToTelegram(list);
+        }
+    }
+    // 3. أمر الحذف
+    else if (text.endsWith("حذف")) {
         const targetName = text.replace("حذف", "").trim();
         const initialCount = db.users.length;
         db.users = db.users.filter(u => u.name.toLowerCase() !== targetName.toLowerCase());
         
         if (db.users.length < initialCount) {
             saveDB();
-            sendToTelegram(`🗑 **تم الحذف بنجاح**\nتم مسح حساب المستخدم [${targetName}] وجميع سجلاته نهائياً.`);
+            sendToTelegram(`🗑 **تم الحذف:**\nتم مسح حساب [${targetName}] نهائياً.`);
         } else {
-            sendToTelegram(`❌ **عذراً:**\nالمستخدم [${targetName}] غير موجود في قاعدة البيانات.`);
+            sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
         }
-    } else if (text === "/start") {
-        sendToTelegram("👑 **مرحباً بك في نظام تحكم الهيبة**\n\nأرسل (اسم المستخدم) للبحث عن بياناته.\nأرسل (الاسم حذف) لمسح الحساب نهائياً.");
-    } else {
-        // أمر البحث عن بيانات مستخدم
+    } 
+    // 4. أمر البحث العام (بإرسال الاسم فقط)
+    else {
         const foundUsers = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
         if (foundUsers.length > 0) {
-            let report = `📊 **نتائج البحث عن [${text}]:**\n`;
+            let report = `📊 **بيانات الحساب [${text}]:**\n`;
             foundUsers.forEach(u => {
                 let y=0, usd=0, s=0;
                 u.myRecords.forEach(r => {
@@ -71,14 +86,16 @@ app.post('/api/tg-webhook', async (req, res) => {
                 report += `\n👤 النوع: ${u.type === 'merchant' ? 'تاجر' : 'مواطن'}\n🔑 السر: \`${u.password}\`\n💰 يمني: ${y}\n💵 دولار: ${usd}\n🇸🇦 سعودي: ${s}\n---`;
             });
             sendToTelegram(report);
+        } else if (text !== "/start") {
+            sendToTelegram(`🔍 لم يتم العثور على [${text}]`);
         } else {
-            sendToTelegram(`🔍 لا يوجد مستخدم مسجل باسم [${text}]`);
+            sendToTelegram("👑 **لوحة تحكم الهيبة**\n\n• أرسل `العدد` للإحصائيات.\n• أرسل `كل الأعضاء` لعرض الأسماء.\n• أرسل `الاسم` للبحث.\n• أرسل `الاسم حذف` للمسح.");
         }
     }
     res.sendStatus(200);
 });
 
-// --- نظام الدخول والمزامنة (API) ---
+// --- بقية نظام الـ API الخاص بالمنصة ---
 app.post('/api/auth', async (req, res) => {
     const { name, password, type, action } = req.body;
     const normalizedName = name.trim().toLowerCase();
@@ -131,4 +148,4 @@ app.get('/api/auto-discover', (req, res) => {
     res.json(results);
 });
 
-app.listen(PORT, () => console.log(`HEIBA SERVER RUNNING`));
+app.listen(PORT, () => console.log(`SERVER RUNNING`));
