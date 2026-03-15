@@ -44,12 +44,12 @@
                     <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
                     <div class="relative">
                         <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
-                        <button onclick="toggleView('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100 transition">👁️</button>
+                        <button onclick="toggleView('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100 transition text-xl">👁️</button>
                     </div>
                 </div>
-                <div class="flex items-center gap-3 px-2">
-                    <input type="checkbox" id="remember-me" class="w-5 h-5 accent-[#d4af37] cursor-pointer">
-                    <label for="remember-me" class="text-sm text-gray-400 cursor-pointer select-none">تذكرني (دخول تلقائي دائماً)</label>
+                <div class="flex items-center gap-3 px-2 text-sm text-gray-400">
+                    <input type="checkbox" id="remember-me" class="w-5 h-5 accent-[#d4af37]">
+                    <label for="remember-me">تذكرني (دخول تلقائي دائماً)</label>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold hover:bg-zinc-700 transition">تسجيل الدخول</button>
@@ -60,16 +60,16 @@
             <div class="space-y-8">
                 <div>
                     <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية. تضمن المنصة لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية تمنع الأخطاء البشرية.</p>
+                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4>
-                        <p class="text-gray-500 leading-relaxed">قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة.</p>
+                        <p class="text-gray-500 leading-relaxed">قم بإدارة المواطنين وسجل العمليات بالعملات الثلاث، وسيصلهم الإشعار فورياً.</p>
                     </div>
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4>
-                        <p class="text-gray-500 leading-relaxed">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
+                        <p class="text-gray-500 leading-relaxed">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً.</p>
                     </div>
                 </div>
             </div>
@@ -86,8 +86,8 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">⚙️</button>
-                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج</button>
+                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5">⚙️</button>
+                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20">خروج</button>
             </div>
         </header>
 
@@ -142,7 +142,7 @@
                             <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
                             <input id="op-note" placeholder="البيان (اختياري)">
                         </div>
-                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl shadow-lg">تثبيت العملية فوراً</button>
+                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl">تثبيت العملية فوراً</button>
                     </div>
                 </div>
                 <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لمتابعة السجلات الحية...</div>
@@ -151,8 +151,8 @@
     </div>
 
     <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-6 shadow-2xl border-yellow-600/30">
-            <h3 class="text-xl font-bold gold-text">إعدادات الحماية الملكية</h3>
+        <div class="glass-card w-full max-w-md p-8 space-y-6">
+            <h3 class="text-xl font-bold gold-text">إعدادات الحماية</h3>
             <div class="space-y-4">
                 <div class="relative">
                     <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
@@ -164,7 +164,7 @@
                 </div>
             </div>
             <div class="flex gap-4">
-                <button id="btn-update-pass" onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث الآن</button>
+                <button id="btn-update-pass" onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث</button>
                 <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl">إلغاء</button>
             </div>
         </div>
@@ -176,29 +176,66 @@
         let userType = 'merchant';
         let discoveredData = [];
 
-        // --- الميزات الجديدة المضافة ---
-        
         function toggleView(id) {
             const input = document.getElementById(id);
             input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // دالة تحويل الأرقام الاحترافية (حتى الملايين)
+        function formatArabicNumber(num) {
+            if (num == 0) return "صفر";
+            const singleUnits = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+
+            function convertGroup(n) {
+                let res = "";
+                const h = Math.floor(n / 100);
+                const t = n % 100;
+                if (h > 0) res += hundreds[h];
+                if (t > 0) {
+                    if (res !== "") res += " و ";
+                    if (t < 20) res += singleUnits[t];
+                    else {
+                        const s = t % 10;
+                        const ten = Math.floor(t / 10);
+                        if (s > 0) res += singleUnits[s] + " و ";
+                        res += tens[ten];
+                    }
+                }
+                return res;
+            }
+
+            let result = "";
+            const million = Math.floor(num / 1000000);
+            const thousand = Math.floor((num % 1000000) / 1000);
+            const remainder = num % 1000;
+
+            if (million > 0) {
+                if (million === 1) result += "مليون";
+                else if (million === 2) result += "مليونان";
+                else result += convertGroup(million) + " ملايين";
+            }
+            if (thousand > 0) {
+                if (result !== "") result += " و ";
+                if (thousand === 1) result += "ألف";
+                else if (thousand === 2) result += "ألفين";
+                else result += convertGroup(thousand) + " آلاف";
+            }
+            if (remainder > 0) {
+                if (result !== "") result += " و ";
+                result += convertGroup(remainder);
+            }
+            return result;
         }
 
         function applyTafqit() {
             const val = document.getElementById('op-amt').value;
             const target = document.getElementById('tafqit-text');
             if(!val || val <= 0) { target.innerText = ""; return; }
-            
-            const n = parseInt(val);
-            let txt = "يكتب: ";
-            if (n === 1000) txt += "ألف ريال";
-            else if (n === 2000) txt += "ألفين ريال";
-            else if (n >= 3000 && n <= 10000) txt += (n/1000) + " آلاف ريال";
-            else txt += n.toLocaleString('ar-YE') + " ريال";
-            
-            target.innerText = txt + " فقط لا غير";
+            const arabic = formatArabicNumber(parseInt(val));
+            target.innerText = "يكتب: " + arabic + " ريال فقط لا غير";
         }
-
-        // --- بقية الدوال الأصلية مع الحفاظ عليها ---
 
         function setType(t) {
             userType = t;
@@ -214,9 +251,7 @@
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
-            const rememberMe = document.getElementById('remember-me').checked;
             if(!name || !password) return;
-            
             const res = await fetch('/api/auth', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -225,7 +260,7 @@
             const data = await res.json();
             if(res.ok) {
                 user = data;
-                if(rememberMe) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
+                if(document.getElementById('remember-me').checked) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
                 start();
             } else alert(data.error);
         }
@@ -247,25 +282,14 @@
         }
 
         async function updatePassword() {
-            const p1 = document.getElementById('new-pass').value;
-            const p2 = document.getElementById('confirm-pass').value;
-            const btn = document.getElementById('btn-update-pass');
-            if(!p1 || p1 !== p2) return alert("تأكد من مطابقة كلمات المرور!");
-
-            btn.innerText = "جاري التحديث...";
+            const p = document.getElementById('new-pass').value;
+            if(!p || p !== document.getElementById('confirm-pass').value) return alert("خطأ في المطابقة");
             const res = await fetch('/api/update-pass', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ userId: user.id, newPass: p1 })
+                body: JSON.stringify({ userId: user.id, newPass: p })
             });
-
-            if(res.ok) {
-                user.password = p1;
-                if(localStorage.getItem('heiba_auth_session')) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
-                alert("تم التحديث بنجاح!");
-                closeModal('settings-modal');
-            } else alert("حدث خطأ.");
-            btn.innerText = "تحديث الآن";
+            if(res.ok) { alert("تم التحديث"); closeModal('settings-modal'); }
         }
 
         function calculateGrand() {
@@ -279,16 +303,10 @@
             document.getElementById('gt-sar').innerText = s.toLocaleString();
         }
 
-        function addTarget() {
-            const n = document.getElementById('target-search').value.trim();
-            if(!n) return; activeTarget = n; showDetails(n); renderList();
-            document.getElementById('target-search').value = "";
-        }
-
         function renderList() {
             const t = [...new Set(user.myRecords.map(r => r.targetName))];
             document.getElementById('main-list').innerHTML = t.map(n => `
-                <div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900 shadow-xl' : ''}">${n}</div>
+                <div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 ${activeTarget === n ? 'border-yellow-600' : ''}">${n}</div>
             `).join('');
         }
 
@@ -296,9 +314,9 @@
             const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
             discoveredData = await res.json();
             document.getElementById('main-list').innerHTML = discoveredData.map(m => `
-                <div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}">
+                <div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border rounded-2xl mb-2 ${activeTarget === m.merchantName ? 'border-blue-500' : 'border-blue-900/30'}">
                     <p class="font-bold text-sm">${m.merchantName}</p>
-                    <p class="text-[9px] text-blue-500 font-bold mt-1 uppercase italic">مزامنة حية 📶</p>
+                    <p class="text-[9px] text-blue-500 italic mt-1">مزامنة حية 📶</p>
                 </div>
             `).join('');
             if(activeTarget) showDetails(activeTarget);
@@ -315,9 +333,9 @@
                 const a = parseFloat(r.amount); const d = r.type === 'دين';
                 if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
                 return `
-                <div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm">
-                    <div><p class="font-bold text-sm">${r.note || 'عملية مالية'}</p><p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
-                    <div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p></div>
+                <div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center mb-2">
+                    <div><p class="font-bold text-sm">${r.note || 'عملية مالية'}</p><p class="text-[10px] opacity-40">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
+                    <div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] font-bold uppercase">${r.currency}</p></div>
                 </div>`;
             }).reverse().join('');
             document.getElementById('dt-yer').innerText = y.toLocaleString();
@@ -326,15 +344,19 @@
             if(user.type === 'merchant') renderList();
         }
 
+        function addTarget() {
+            const n = document.getElementById('target-search').value.trim();
+            if(!n) return; activeTarget = n; showDetails(n); renderList();
+            document.getElementById('target-search').value = "";
+        }
+
         async function saveOp() {
-            const a = document.getElementById('op-amt').value; const c = document.getElementById('op-cur').value;
-            const t = document.getElementById('op-type').value; const n = document.getElementById('op-note').value;
+            const a = document.getElementById('op-amt').value;
             if(!a || !activeTarget) return;
-            user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: a, currency: c, type: t, note: n, date: new Date().toISOString() });
+            user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
             showDetails(activeTarget); calculateGrand();
             fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
-            document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = "";
-            document.getElementById('tafqit-text').innerText = ""; // تصغير ميزة التفقيط بعد الحفظ
+            document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = ""; document.getElementById('tafqit-text').innerText = "";
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
