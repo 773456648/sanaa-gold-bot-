@@ -16,11 +16,11 @@
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
         .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
+        .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- شاشة الدخول مع التعليمات -->
     <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12">
         <div class="text-center">
             <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
@@ -42,7 +42,10 @@
                 </div>
                 <div class="space-y-4">
                     <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
-                    <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
+                    <div class="relative">
+                        <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
+                        <button onclick="toggleView('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100 transition">👁️</button>
+                    </div>
                 </div>
                 <div class="flex items-center gap-3 px-2">
                     <input type="checkbox" id="remember-me" class="w-5 h-5 accent-[#d4af37] cursor-pointer">
@@ -54,7 +57,6 @@
                 </div>
             </div>
 
-            <!-- قسم التعليمات (اللي طلبته يرجع) -->
             <div class="space-y-8">
                 <div>
                     <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
@@ -70,14 +72,10 @@
                         <p class="text-gray-500 leading-relaxed">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
                     </div>
                 </div>
-                <div class="p-4 border-r-2 border-yellow-600 bg-yellow-600/5 text-xs text-yellow-600/80">
-                    ملاحظة: المنصة تعتمد نظام التشفير الكامل، بياناتك وسجلاتك المالية في أمان تام.
-                </div>
             </div>
         </div>
     </div>
 
-    <!-- لوحة التحكم الرئيسية -->
     <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
         <header class="flex justify-between items-center glass-card p-6">
             <div class="flex items-center gap-4">
@@ -94,7 +92,6 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- القائمة الجانبية (الأرصدة) -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6">
                     <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
@@ -124,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- مساحة العرض (التفاصيل) -->
             <div class="lg:col-span-8">
                 <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
                     <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
@@ -138,7 +134,10 @@
                     <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
                     <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <input id="op-amt" type="number" placeholder="المبلغ">
+                            <div class="relative">
+                                <input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()">
+                                <div id="tafqit-text" class="tafqit-box"></div>
+                            </div>
                             <select id="op-cur"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
                             <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
                             <input id="op-note" placeholder="البيان (اختياري)">
@@ -151,14 +150,18 @@
         </div>
     </div>
 
-    <!-- نافذة الإعدادات -->
     <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-6 shadow-2xl border-yellow-600/30">
             <h3 class="text-xl font-bold gold-text">إعدادات الحماية الملكية</h3>
-            <p class="text-xs text-gray-500">سيتم حفظ كلمة السر الجديدة وإخطارك عبر التلجرام فوراً.</p>
             <div class="space-y-4">
-                <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
-                <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور">
+                <div class="relative">
+                    <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
+                    <button onclick="toggleView('new-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
+                </div>
+                <div class="relative">
+                    <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور">
+                    <button onclick="toggleView('confirm-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
+                </div>
             </div>
             <div class="flex gap-4">
                 <button id="btn-update-pass" onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث الآن</button>
@@ -172,6 +175,30 @@
         let activeTarget = null;
         let userType = 'merchant';
         let discoveredData = [];
+
+        // --- الميزات الجديدة المضافة ---
+        
+        function toggleView(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function applyTafqit() {
+            const val = document.getElementById('op-amt').value;
+            const target = document.getElementById('tafqit-text');
+            if(!val || val <= 0) { target.innerText = ""; return; }
+            
+            const n = parseInt(val);
+            let txt = "يكتب: ";
+            if (n === 1000) txt += "ألف ريال";
+            else if (n === 2000) txt += "ألفين ريال";
+            else if (n >= 3000 && n <= 10000) txt += (n/1000) + " آلاف ريال";
+            else txt += n.toLocaleString('ar-YE') + " ريال";
+            
+            target.innerText = txt + " فقط لا غير";
+        }
+
+        // --- بقية الدوال الأصلية مع الحفاظ عليها ---
 
         function setType(t) {
             userType = t;
@@ -219,7 +246,6 @@
             calculateGrand();
         }
 
-        // دالة تغيير كلمة السر المربوطة بالسيرفر والتلجرام
         async function updatePassword() {
             const p1 = document.getElementById('new-pass').value;
             const p2 = document.getElementById('confirm-pass').value;
@@ -236,11 +262,9 @@
             if(res.ok) {
                 user.password = p1;
                 if(localStorage.getItem('heiba_auth_session')) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
-                alert("تم تحديث كلمة المرور وإرسال إشعار التلجرام بنجاح!");
+                alert("تم التحديث بنجاح!");
                 closeModal('settings-modal');
-            } else {
-                alert("حدث خطأ، تأكد من اتصال السيرفر.");
-            }
+            } else alert("حدث خطأ.");
             btn.innerText = "تحديث الآن";
         }
 
@@ -310,6 +334,7 @@
             showDetails(activeTarget); calculateGrand();
             fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
             document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = "";
+            document.getElementById('tafqit-text').innerText = ""; // تصغير ميزة التفقيط بعد الحفظ
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
