@@ -1,4 +1,4 @@
-const express = require('express');
+ const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
 const app = express();
@@ -16,6 +16,7 @@ let db = { users: [] };
 if (fs.existsSync(DB_PATH)) {
     try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [] }; }
 }
+
 const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 
 async function sendToTelegram(message) {
@@ -25,107 +26,126 @@ async function sendToTelegram(message) {
             text: message,
             parse_mode: 'Markdown'
         });
-    } catch (e) {}
+    } catch (e) { console.error("Telegram Send Error"); }
 }
 
-// نظام الويب هوك الخاص بالإدارة
+// --- قسم الـ Webhook المطور للتحكم الكامل ---
 app.post('/api/tg-webhook', async (req, res) => {
     const update = req.body;
     if (!update.message || !update.message.text) return res.sendStatus(200);
+
     const chatId = String(update.message.chat.id);
     const text = update.message.text.trim();
+
+    // التحقق من هوية المالك
     if (chatId !== MY_CHAT_ID) return res.sendStatus(200);
 
+    // 1. أمر معرفة عدد المشتركين
     if (text === "العدد") {
-        sendToTelegram(`📊 **إجمالي المشتركين:** ${db.users.length}`);
-    } else if (text === "كل الأعضاء") {
-        let list = "📋 **قائمة الأعضاء:**\n" + db.users.map((u, i) => `${i + 1}. ${u.name} (${u.type})`).join('\n');
-        sendToTelegram(list);
-    } else if (text.endsWith("حذف")) {
-        const target = text.replace("حذف", "").trim();
-        db.users = db.users.filter(u => u.name.toLowerCase() !== target.toLowerCase());
-        saveDB();
-        sendToTelegram(`🗑 تم حذف الحساب: [${target}] بنجاح.`);
-    } else {
-        const found = db.users.find(u => u.name.toLowerCase() === text.toLowerCase());
-        if (found) {
-            sendToTelegram(`🔍 **بيانات الحساب:**\nالاسم: ${found.name}\nكلمة السر: \`${found.password}\`\nالنوع: ${found.type}`);
+        const total = db.users.length;
+        const merchants = db.users.filter(u => u.type === 'merchant').length;
+        const debtors = db.users.filter(u => u.type === 'debtor').length;
+        sendToTelegram(`📊 **إحصائيات المنصة:**\n\n👥 إجمالي المشتركين: ${total}\n👑 عدد التجار: ${merchants}\n👤 عدد المواطنين: ${debtors}`);
+    } 
+    // 2. أمر عرض كل الأعضاء
+    else if (text === "كل الأعضاء" || text === "كل العضا") {
+        if (db.users.length === 0) {
+            sendToTelegram("⚠️ لا يوجد أعضاء مسجلين حالياً.");
+        } else {
+            let list = "📋 **قائمة جميع الأعضاء:**\n";
+            db.users.forEach((u, index) => {
+                list += `\n${index + 1}. ${u.name} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
+            });
+            sendToTelegram(list);
+        }
+    }
+    // 3. أمر الحذف
+    else if (text.endsWith("حذف")) {
+        const targetName = text.replace("حذف", "").trim();
+        const initialCount = db.users.length;
+        db.users = db.users.filter(u => u.name.toLowerCase() !== targetName.toLowerCase());
+        
+        if (db.users.length < initialCount) {
+            saveDB();
+            sendToTelegram(`🗑 **تم الحذف:**\nتم مسح حساب [${targetName}] نهائياً.`);
+        } else {
+            sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
+        }
+    } 
+    // 4. أمر البحث العام (بإرسال الاسم فقط)
+    else {
+        const foundUsers = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
+        if (foundUsers.length > 0) {
+            let report = `📊 **بيانات الحساب [${text}]:**\n`;
+            foundUsers.forEach(u => {
+                let y=0, usd=0, s=0;
+                u.myRecords.forEach(r => {
+                    const a = parseFloat(r.amount); const d = r.type === 'دين';
+                    if(r.currency === 'YER') y+=d?a:-a; else if(r.currency === 'USD') usd+=d?a:-a; else s+=d?a:-a;
+                });
+                report += `\n👤 النوع: ${u.type === 'merchant' ? 'تاجر' : 'مواطن'}\n🔑 السر: \`${u.password}\`\n💰 يمني: ${y}\n💵 دولار: ${usd}\n🇸🇦 سعودي: ${s}\n---`;
+            });
+            sendToTelegram(report);
+        } else if (text !== "/start") {
+            sendToTelegram(`🔍 لم يتم العثور على [${text}]`);
+        } else {
+            sendToTelegram("👑 **لوحة تحكم الهيبة**\n\n• أرسل `العدد` للإحصائيات.\n• أرسل `كل الأعضاء` لعرض الأسماء.\n• أرسل `الاسم` للبحث.\n• أرسل `الاسم حذف` للمسح.");
         }
     }
     res.sendStatus(200);
 });
 
-// تحديث حالة العملية (موافقة/رفض)
-app.post('/api/op-status', (req, res) => {
-    const { opId, newStatus, reason, merchantName, debtorName } = req.body;
-    const merchant = db.users.find(u => u.name === merchantName && u.type === 'merchant');
-    if (merchant) {
-        const op = merchant.myRecords.find(r => r.id === opId);
-        if (op) {
-            op.status = newStatus;
-            if (newStatus === 'rejected') {
-                op.rejectReason = reason;
-                sendToTelegram(`⚠️ **اعتراض (سد):**\nالمواطن: ${debtorName}\nالتاجر: ${merchantName}\nالسبب: ${reason}`);
-            } else if (newStatus === 'confirmed') {
-                sendToTelegram(`✅ **دكيد (موافقة):**\nوافق المواطن ${debtorName} لـ ${merchantName} مبلغ ${op.amount}`);
-            }
-            saveDB();
-            return res.json({ success: true });
-        }
-    }
-    res.status(404).send();
-});
-
-// تعديل العملية المرفوضة
-app.post('/api/edit-op', (req, res) => {
-    const { userId, opId, amount, note, currency } = req.body;
-    const user = db.users.find(u => u.id === userId);
-    if (user) {
-        const op = user.myRecords.find(r => r.id === opId);
-        if (op) {
-            op.amount = amount;
-            op.note = note;
-            op.currency = currency;
-            op.status = 'pending';
-            op.rejectReason = null;
-            saveDB();
-            sendToTelegram(`🔄 **تعديل العملية:** التاجر ${user.name} قام بتعديل المبلغ إلى ${amount} للمواطن ${op.targetName}`);
-            return res.json({ success: true });
-        }
-    }
-    res.status(404).send();
-});
-
+// --- بقية نظام الـ API الخاص بالمنصة ---
 app.post('/api/auth', async (req, res) => {
     const { name, password, type, action } = req.body;
-    const existing = db.users.find(u => u.name.toLowerCase() === name.trim().toLowerCase() && u.type === type);
+    const normalizedName = name.trim().toLowerCase();
+    const existingUser = db.users.find(u => u.name.toLowerCase() === normalizedName && u.type === type);
+
     if (action === 'reg') {
-        if (existing) return res.status(400).json({ error: "الاسم مسجل مسبقاً" });
-        const newUser = { id: "H" + Date.now(), name: name.trim(), password, type, myRecords: [] };
-        db.users.push(newUser); saveDB();
-        sendToTelegram(`✨ **انضمام عضو:** ${name}\nالسر: ${password}`);
+        if (existingUser) return res.status(400).json({ error: "الاسم مسجل مسبقاً." });
+        const newUser = {
+            id: "H" + Math.random().toString(36).substr(2, 7),
+            name: name.trim(), password, type, myRecords: [], createdAt: new Date().toISOString()
+        };
+        db.users.push(newUser);
+        saveDB();
+        sendToTelegram(`✨ **تسجيل جديد:**\nالاسم: ${newUser.name}\nالنوع: ${type}\nالسر: \`${password}\``);
         return res.json(newUser);
     } else {
-        const user = db.users.find(u => u.name.toLowerCase() === name.trim().toLowerCase() && u.password === password && u.type === type);
-        return user ? res.json(user) : res.status(403).json({ error: "البيانات غير صحيحة" });
+        const user = db.users.find(u => u.name.toLowerCase() === normalizedName && u.password === password && u.type === type);
+        if (!user) return res.status(403).json({ error: "بيانات خاطئة." });
+        return res.json(user);
     }
 });
 
-app.get('/api/merchant-sync', (req, res) => {
-    const user = db.users.find(u => u.id === req.query.userId);
-    res.json({ myRecords: user ? user.myRecords : [] });
+app.post('/api/update-pass', (req, res) => {
+    const { userId, newPass } = req.body;
+    const user = db.users.find(u => u.id === userId);
+    if (user) {
+        const old = user.password;
+        user.password = newPass;
+        saveDB();
+        sendToTelegram(`🔐 **تغيير سر:**\nالاسم: ${user.name}\nمن: \`${old}\` -> إلى: \`${newPass}\``);
+        res.json({ success: true });
+    } else { res.status(404).json({ error: "غير موجود" }); }
 });
 
 app.post('/api/sync', (req, res) => {
-    const user = db.users.find(u => u.id === req.body.userId);
-    if (user) { user.myRecords = req.body.myRecords; saveDB(); res.json({ success: true }); }
+    const { userId, myRecords } = req.body;
+    const idx = db.users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+        db.users[idx].myRecords = myRecords;
+        saveDB();
+        res.json({ success: true });
+    } else { res.status(404).send(); }
 });
 
 app.get('/api/auto-discover', (req, res) => {
-    const dName = req.query.debtorName.toLowerCase();
-    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === dName))
-    .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName.toLowerCase() === dName) }));
+    const { debtorName } = req.query;
+    if(!debtorName) return res.json([]);
+    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
+    .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) }));
     res.json(results);
 });
 
-app.listen(PORT, () => console.log(`HEIBA SYSTEM READY`));
+app.listen(PORT, () => console.log(`SERVER RUNNING`));
