@@ -16,7 +16,6 @@
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
         .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
         .verified-stamp { border: 1px dashed #10b981; color: #10b981; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
-        .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -26,24 +25,15 @@
             <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
             <p class="text-[12px] text-gray-500 tracking-[0.5em] uppercase mt-4">The Sovereign Financial Platform</p>
         </div>
-        <div class="glass-card p-10 max-w-xl mx-auto space-y-6 shadow-2xl">
-            <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
-            <div class="grid grid-cols-2 gap-4 mb-2">
-                <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
-                    <span class="block text-2xl mb-1">👑</span>
-                    <span class="text-sm font-bold">تاجر</span>
-                </div>
-                <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-5 rounded-2xl text-center">
-                    <span class="block text-2xl mb-1">👤</span>
-                    <span class="text-sm font-bold">مواطن</span>
-                </div>
+        <div class="glass-card p-10 max-w-xl mx-auto space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-2xl text-center">تاجر 👑</div>
+                <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 rounded-2xl text-center">مواطن 👤</div>
             </div>
             <input id="u-name" type="text" placeholder="الاسم الكامل">
             <input id="u-pass" type="password" placeholder="كلمة المرور">
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold hover:bg-zinc-700 transition">تسجيل الدخول</button>
-                <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl hover:brightness-110 transition">إنشاء حساب</button>
-            </div>
+            <button onclick="doAuth('login')" class="gold-btn w-full py-4 rounded-2xl">دخول</button>
+            <button onclick="doAuth('reg')" class="text-gray-500 w-full text-xs">تسجيل جديد</button>
         </div>
     </div>
 
@@ -51,104 +41,89 @@
         <header class="flex justify-between items-center glass-card p-6">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-2xl">H</div>
-                <div>
-                    <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-1"></h2>
-                    <span id="role-tag" class="text-[10px] text-gray-600 uppercase tracking-widest"></span>
-                </div>
+                <h2 id="display-name" class="text-xl font-bold gold-text"></h2>
             </div>
             <div class="flex gap-2">
-                <button onclick="openModal('search-stamp-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">🔍 بحث بصمة</button>
-                <button id="verify-nav-btn" onclick="openModal('verify-modal')" class="hidden bg-green-600/20 text-green-500 px-4 py-2 rounded-xl text-xs font-bold border border-green-600/20 hover:bg-green-600 hover:text-white transition">مطابقة البصمة ✅</button>
-                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج</button>
+                <button onclick="openModal('search-stamp-modal')" class="bg-zinc-900 px-4 py-2 rounded-xl text-xs border border-white/5">🔍 بحث بصمة</button>
+                <button id="verify-nav-btn" onclick="openModal('verify-modal')" class="hidden bg-green-900/20 text-green-500 px-4 py-2 rounded-xl text-xs border border-green-500/20">مطابقة بصمة ✅</button>
+                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-4 py-2 rounded-xl text-xs">خروج</button>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-4 space-y-6">
+            <div class="lg:col-span-4 space-y-4">
                 <div class="glass-card p-6">
-                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي (والموثق)</h3>
-                    <div id="grand-totals" class="space-y-4"></div>
+                    <p class="text-[10px] text-gray-500 mb-4 uppercase">الأرصدة (موثق + عادي)</p>
+                    <div id="grand-totals-display" class="space-y-3"></div>
                 </div>
-                <div class="glass-card p-6 min-h-[400px]">
-                    <div id="merchant-tools" class="hidden space-y-4">
-                        <div class="flex gap-2">
-                            <input id="target-search" class="text-sm" placeholder="اسم المواطن..." onchange="addTarget()">
-                            <button onclick="addTarget()" class="gold-btn px-4 rounded-xl text-xl">+</button>
-                        </div>
-                    </div>
-                    <div id="main-list" class="mt-4 space-y-2"></div>
+                <div class="glass-card p-4 min-h-[300px]">
+                    <div id="merchant-tools" class="hidden mb-4"><input id="target-search" placeholder="إضافة مواطن..." onchange="addTarget()"></div>
+                    <div id="main-list" class="space-y-2"></div>
                 </div>
             </div>
 
             <div class="lg:col-span-8">
-                <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
-                    <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
-                        <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
-                        <button id="stamp-all-btn" onclick="openStampModal('all')" class="hidden bg-blue-600 text-white px-3 py-1 rounded-lg text-xs font-bold">بصمة الكل ✋</button>
-                    </div>
-                    <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
+                <div id="details-pane" class="hidden glass-card p-8 min-h-[500px] flex flex-col shadow-2xl">
+                    <h3 id="active-target-name" class="text-2xl font-black gold-text italic mb-6"></h3>
+                    <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto mb-6"></div>
                     <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                             <input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()">
                             <select id="op-cur"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
                             <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
                             <input id="op-note" placeholder="البيان">
                         </div>
                         <div id="tafqit-text" class="tafqit-box"></div>
-                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl shadow-lg">تثبيت العملية فوراً</button>
+                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl">تثبيت العملية</button>
                     </div>
                 </div>
-                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لمتابعة السجلات الحية...</div>
+                <div id="empty-hint" class="glass-card p-20 text-center text-gray-700 italic flex items-center justify-center">اختر حساباً للمتابعة...</div>
             </div>
         </div>
     </div>
 
     <div id="search-stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text">🔍 بحث في سجلات البصمات</h3>
-            <input id="search-stamp-input" placeholder="أدخل كود البصمة الموثق">
-            <button onclick="searchStamp()" class="gold-btn w-full py-4 rounded-xl">استعلام</button>
-            <div id="search-result" class="hidden p-4 bg-white/5 rounded-2xl text-sm border border-white/10 space-y-2"></div>
-            <button onclick="closeModal('search-stamp-modal')" class="w-full text-gray-500 text-sm">إغلاق</button>
+        <div class="glass-card w-full max-w-md p-8 space-y-4">
+            <h3 class="gold-text font-bold text-center">🔍 محرك البحث عن البصمات</h3>
+            <input id="search-stamp-input" placeholder="أدخل كود البصمة للبحث...">
+            <button onclick="searchStamp()" class="gold-btn w-full py-3 rounded-xl">بحث</button>
+            <div id="search-result" class="hidden p-4 bg-white/5 rounded-xl text-xs space-y-2 border border-white/10"></div>
+            <button onclick="closeModal('search-stamp-modal')" class="w-full text-gray-500 text-xs">إغلاق</button>
         </div>
     </div>
 
     <div id="verify-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold text-green-500">تفعيل كود البصمة ✅</h3>
-            <input id="verify-code-input" placeholder="أدخل الكود الذي استلمته">
-            <button onclick="processVerify()" class="gold-btn w-full py-4 rounded-xl text-black">مطابقة الآن</button>
-            <button onclick="closeModal('verify-modal')" class="w-full text-gray-500 text-sm">إلغاء</button>
+        <div class="glass-card w-full max-w-md p-8 space-y-4">
+            <h3 class="text-green-500 font-bold text-center">تفعيل كود البصمة ✅</h3>
+            <input id="verify-code-input" placeholder="أدخل كود البصمة المستلم">
+            <button onclick="processVerify()" class="gold-btn w-full py-4 rounded-xl">تأكيد ومطابقة</button>
+            <button onclick="closeModal('verify-modal')" class="w-full text-gray-500 text-xs">إلغاء</button>
         </div>
     </div>
 
     <div id="stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text text-center">توليد بصمة توثيق ✋</h3>
-            <p class="text-xs text-center text-gray-500">سيتم قفل الكود لمدة 48 ساعة من تاريخه.</p>
-            <input id="stamp-code-input" placeholder="اكتب كود البصمة هنا">
+        <div class="glass-card w-full max-w-md p-8 space-y-4">
+            <h3 class="gold-text font-bold text-center">توليد بصمة توثيق ✋</h3>
+            <p class="text-[10px] text-gray-500 text-center">لا يمكن تغيير البصمة لنفس العملية إلا بعد 48 ساعة.</p>
+            <input id="stamp-code-input" placeholder="اكتب كود البصمة الخاص بك">
             <button onclick="submitStamp()" class="gold-btn w-full py-4 rounded-xl">إرسال البصمة</button>
-            <button onclick="closeModal('stamp-modal')" class="w-full text-gray-500 text-sm">تراجع</button>
+            <button onclick="closeModal('stamp-modal')" class="w-full text-gray-500 text-xs">تراجع</button>
         </div>
     </div>
 
     <script>
-        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
-        let currentStampOpId = null;
+        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = []; let currentStampOpId = null;
 
-        function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); }
+        function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t==='merchant'); document.getElementById('sel-debtor').classList.toggle('active', t==='debtor'); }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function logout() { localStorage.removeItem('heiba_auth'); location.reload(); }
-        
-        function applyTafqit() {
-            const v = document.getElementById('op-amt').value;
-            document.getElementById('tafqit-text').innerText = v > 0 ? "تنبيه: سيتم الخصم من الديون الموثقة أولاً." : "";
-        }
+        function logout() { localStorage.removeItem('heiba_auth_session'); location.reload(); }
 
+        // دالة الدخول
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
+            if(!name || !password) return;
             const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, type: userType, action }) });
             const data = await res.json();
             if(res.ok) { user = data; start(); } else alert(data.error);
@@ -158,79 +133,63 @@
             document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerText = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
             if(user.type === 'merchant') {
                 document.getElementById('merchant-tools').classList.remove('hidden');
                 document.getElementById('add-form').classList.remove('hidden');
                 document.getElementById('verify-nav-btn').classList.remove('hidden');
-                renderList(); calculateTotals(user.myRecords);
+                renderList(); calculateGrand();
             } else {
-                document.getElementById('stamp-all-btn').classList.remove('hidden');
-                fetchAuto(); setInterval(fetchAuto, 5000);
+                fetchAutoDebts(); setInterval(fetchAutoDebts, 4000);
             }
         }
 
-        function calculateTotals(recs) {
-            let t = { Y:0, U:0, S:0, VY:0, VU:0, VS:0 };
+        // حساب الأرصدة
+        function calculateGrand() {
+            let recs = (user.type === 'merchant') ? user.myRecords : [].concat(...discoveredData.map(m => m.records));
+            let y=0, u=0, s=0, vy=0, vu=0, vs=0;
             recs.forEach(r => {
                 const a = parseFloat(r.amount); const d = r.type === 'دين';
-                if(r.currency === 'YER') { t.Y += d?a:-a; if(r.isVerified) t.VY += d?a:-a; }
-                else if(r.currency === 'USD') { t.U += d?a:-a; if(r.isVerified) t.VU += d?a:-a; }
-                else { t.S += d?a:-a; if(r.isVerified) t.VS += d?a:-a; }
+                if(r.currency === 'YER') { y+=d?a:-a; if(r.isVerified) vy+=d?a:-a; }
+                else if(r.currency === 'USD') { u+=d?a:-a; if(r.isVerified) vu+=d?a:-a; }
+                else { s+=d?a:-a; if(r.isVerified) vs+=d?a:-a; }
             });
-            document.getElementById('grand-totals').innerHTML = `
-                <div class="bg-blue-500/5 p-3 rounded-xl border border-blue-500/10"><div class="flex justify-between"><span>يمني:</span><b>${t.Y.toLocaleString()}</b></div><div class="text-[9px] text-green-500 font-bold mt-1">الموثق: ${t.VY.toLocaleString()}</div></div>
-                <div class="bg-green-500/5 p-3 rounded-xl border border-green-500/10"><div class="flex justify-between"><span>دولار:</span><b>${t.U.toLocaleString()}</b></div><div class="text-[9px] text-green-500 font-bold mt-1">الموثق: ${t.VU.toLocaleString()}</div></div>
-                <div class="bg-orange-500/5 p-3 rounded-xl border border-orange-500/10"><div class="flex justify-between"><span>سعودي:</span><b>${t.S.toLocaleString()}</b></div><div class="text-[9px] text-green-500 font-bold mt-1">الموثق: ${t.VS.toLocaleString()}</div></div>
-            `;
+            document.getElementById('grand-totals-display').innerHTML = `
+                <div class="p-2 bg-blue-500/5 border rounded-xl flex justify-between"><span>يمني: ${y}</span><span class="text-green-500 font-bold text-[10px]">موثق: ${vy}</span></div>
+                <div class="p-2 bg-green-500/5 border rounded-xl flex justify-between"><span>دولار: ${u}</span><span class="text-green-500 font-bold text-[10px]">موثق: ${vu}</span></div>
+                <div class="p-2 bg-orange-500/5 border rounded-xl flex justify-between"><span>سعودي: ${s}</span><span class="text-green-500 font-bold text-[10px]">موثق: ${vs}</span></div>`;
         }
 
-        function addTarget() {
-            const n = document.getElementById('target-search').value.trim();
-            if(!n) return; activeTarget = n; showDetails(n); renderList();
-            document.getElementById('target-search').value = "";
-        }
+        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(!n) return; activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value = ""; }
 
         function renderList() {
-            const targets = [...new Set(user.myRecords.map(r => r.targetName))];
-            document.getElementById('main-list').innerHTML = targets.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900 shadow-xl' : ''}">${n}</div>`).join('');
+            const t = [...new Set(user.myRecords.map(r => r.targetName))];
+            document.getElementById('main-list').innerHTML = t.map(n => `<div onclick="showDetails('${n}')" class="p-3 bg-black border border-white/5 rounded-xl cursor-pointer ${activeTarget===n?'border-yellow-600':''}">${n}</div>`).join('');
         }
 
-        async function fetchAuto() {
-            const res = await fetch(`/api/auto-discover?name=${encodeURIComponent(user.name)}`);
+        async function fetchAutoDebts() {
+            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
             discoveredData = await res.json();
-            let all = []; discoveredData.forEach(m => all = all.concat(m.records)); calculateTotals(all);
-            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}"><p class="font-bold text-sm">${m.merchantName}</p><p class="text-[9px] text-blue-500 font-bold mt-1 uppercase italic">مزامنة حية 📶</p></div>`).join('');
+            renderListDebtor(); calculateGrand();
             if(activeTarget) showDetails(activeTarget);
+        }
+
+        function renderListDebtor() {
+            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-3 bg-zinc-900 rounded-xl mb-2 ${activeTarget===m.merchantName?'border border-blue-600':''}">${m.merchantName} <span class="text-[8px] text-blue-500 block">مزامنة حية</span></div>`).join('');
         }
 
         function showDetails(name) {
             activeTarget = name; document.getElementById('empty-hint').classList.add('hidden'); document.getElementById('details-pane').classList.remove('hidden');
             document.getElementById('active-target-name').innerText = name;
-            let recs = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
+            let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
             
-            document.getElementById('ops-list').innerHTML = recs.map(r => {
-                const isD = r.type === 'دين';
-                let action = "";
-                if(r.isVerified) action = `<span class="verified-stamp">بصمة موثقة: ${r.authCode} ✅</span>`;
-                else if(user.type === 'debtor' && isD) action = `<button onclick="openStampModal('${r.id}')" class="bg-blue-600 text-white px-3 py-1 rounded text-[10px]">إرسال بصمة ✋</button>`;
-                
-                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${isD?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm">
-                    <div><p class="font-bold text-sm">${r.note || 'عملية مالية'}</p><div class="mt-2">${action}</div></div>
-                    <div class="text-right"><p class="text-xl font-black ${isD?'text-red-500':'text-green-500'}">${isD?'+':'-'}${parseFloat(r.amount).toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase font-bold">${r.currency}</p></div>
+            document.getElementById('ops-list').innerHTML = records.map(r => {
+                const d = r.type === 'دين';
+                let action = r.isVerified ? `<span class="verified-stamp">بصمة مفعلة: ${r.authCode}</span>` : (user.type === 'debtor' && d ? `<button onclick="openStampModal('${r.id}')" class="text-blue-500 text-[10px] underline">إرسال بصمة ✋</button>` : '');
+                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center">
+                    <div><p class="font-bold text-sm">${r.note || 'عملية'}</p><div class="mt-2">${action}</div></div>
+                    <div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${r.amount}</p><p class="text-[9px] opacity-40 uppercase">${r.currency}</p></div>
                 </div>`;
             }).reverse().join('');
-            if(user.type === 'merchant') renderList();
-        }
-
-        async function saveOp() {
-            const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
-            const op = { id: Date.now().toString(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString(), isVerified: false };
-            const res = await fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, op }) });
-            const data = await res.json();
-            user.myRecords = data.newRecords; 
-            showDetails(activeTarget); calculateTotals(user.myRecords);
-            document.getElementById('op-amt').value = "";
         }
 
         function openStampModal(id) { currentStampOpId = id; openModal('stamp-modal'); }
@@ -239,24 +198,32 @@
             const code = document.getElementById('stamp-code-input').value.trim();
             if(!code) return;
             const res = await fetch('/api/verify-auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'create', debtorName: user.name, merchantName: activeTarget, opId: currentStampOpId, authCode: code }) });
-            const data = await res.json();
-            if(res.ok) { alert("تم إرسال البصمة!"); closeModal('stamp-modal'); } else alert(data.error);
+            if(res.ok) { alert("تم إرسال البصمة!"); closeModal('stamp-modal'); } else alert((await res.json()).error);
         }
 
         async function processVerify() {
             const code = document.getElementById('verify-code-input').value.trim();
             const res = await fetch('/api/verify-auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'check', authCode: code, merchantId: user.id }) });
             const data = await res.json();
-            if(res.ok) { user.myRecords = data.newRecords; calculateTotals(user.myRecords); showDetails(activeTarget); closeModal('verify-modal'); } else alert(data.error);
+            if(res.ok) { user.myRecords = data.newRecords; showDetails(activeTarget); calculateGrand(); closeModal('verify-modal'); } else alert(data.error);
         }
 
         async function searchStamp() {
             const code = document.getElementById('search-stamp-input').value.trim();
             const res = await fetch(`/api/search-stamp?code=${code}`);
             const data = await res.json();
-            const resDiv = document.getElementById('search-result'); resDiv.classList.remove('hidden');
-            if(res.ok) resDiv.innerHTML = `<p>المواطن: ${data.debtorName}</p><p>المبلغ الموثق: ${data.amount} ${data.currency}</p><p>الحالة: ${data.status}</p>`;
-            else resDiv.innerText = "الكود غير موجود أو مستوفى.";
+            const div = document.getElementById('search-result'); div.classList.remove('hidden');
+            if(res.ok) div.innerHTML = `👤 المواطن: ${data.debtorName}<br>💰 المبلغ: ${data.amount} ${data.currency}<br>👑 التاجر: ${data.merchantName}`;
+            else div.innerText = "البصمة غير موجودة أو مستوفاة";
+        }
+
+        async function saveOp() {
+            const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
+            const op = { id: Date.now().toString(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString(), isVerified: false };
+            const res = await fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, op }) });
+            const data = await res.json();
+            user.myRecords = data.newRecords; showDetails(activeTarget); calculateGrand();
+            document.getElementById('op-amt').value = "";
         }
     </script>
 </body>
