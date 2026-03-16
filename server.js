@@ -11,13 +11,40 @@ const MY_CHAT_ID = '5042495708';
 app.use(express.json());
 app.use(express.static('public'));
 
-let db = { users: [] };
-if (fs.existsSync(DB_PATH)) { try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [] }; } }
+let db = { users: [], authCodes: [] };
+if (fs.existsSync(DB_PATH)) { 
+    try { 
+        db = JSON.parse(fs.readFileSync(DB_PATH)); 
+        if(!db.authCodes) db.authCodes = [];
+    } catch (e) { db = { users: [], authCodes: [] }; } 
+}
 const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 
 async function sendToTelegram(message) {
     try { await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { chat_id: MY_CHAT_ID, text: message, parse_mode: 'Markdown' }); } catch (e) {}
 }
+
+// --- ميزة الكود (المواطن يولد كود) ---
+app.post('/api/generate-code', (req, res) => {
+    const { debtorName } = req.body;
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    db.authCodes.push({ code, owner: debtorName.toLowerCase(), used: false });
+    saveDB();
+    res.json({ code });
+});
+
+// --- ميزة فحص الكود (عند الإضافة من التاجر) ---
+app.post('/api/verify-code', (req, res) => {
+    const { code, debtorName } = req.body;
+    const idx = db.authCodes.findIndex(c => c.code === code && c.owner === debtorName.toLowerCase() && !c.used);
+    if (idx !== -1) {
+        db.authCodes[idx].used = true;
+        saveDB();
+        res.json({ success: true });
+    } else {
+        res.status(400).json({ error: "كود غير صالح" });
+    }
+});
 
 app.post('/api/auth', (req, res) => {
     const { name, password, type, action } = req.body;
@@ -41,27 +68,11 @@ app.post('/api/update-status', (req, res) => {
     db.users.forEach(u => {
         if (u.type === 'merchant') {
             const op = u.myRecords.find(r => r.id == opId && r.targetName.toLowerCase() === debtorName.toLowerCase());
-            if (op) { op.status = status; if(status === 'accepted') sendToTelegram(`✅ قبول: ${debtorName} وافق على مبلغ ${op.amount}`); }
+            if (op) {
+                op.status = status;
+                if(status === 'accepted') sendToTelegram(`✅ قبول: ${debtorName} وافق على مبلغ ${op.amount}`);
+            }
         }
-    });
-    saveDB(); res.json({ success: true });
-});
-
-app.post('/api/accept-all', (req, res) => {
-    const { debtorName, merchantName } = req.body;
-    const m = db.users.find(u => u.name.toLowerCase() === merchantName.toLowerCase() && u.type === 'merchant');
-    if (m) {
-        m.myRecords.forEach(r => { if (r.targetName.toLowerCase() === debtorName.toLowerCase() && r.status !== 'accepted') r.status = 'accepted'; });
-        saveDB(); sendToTelegram(`✅ قبول الكل من: ${debtorName}`);
-        res.json({ success: true });
-    } else res.status(404).send();
-});
-
-app.post('/api/send-chat', (req, res) => {
-    const { opId, msg } = req.body;
-    db.users.forEach(u => {
-        const op = u.myRecords.find(r => r.id == opId);
-        if (op) { op.chat = (op.chat || "") + "\n" + msg; sendToTelegram(`💬 نقاش: ${msg}`); }
     });
     saveDB(); res.json({ success: true });
 });
@@ -69,7 +80,8 @@ app.post('/api/send-chat', (req, res) => {
 app.post('/api/sync', (req, res) => {
     const { userId, myRecords } = req.body;
     const u = db.users.find(u => u.id === userId);
-    if (u) { u.myRecords = myRecords; saveDB(); res.json({ success: true }); } else res.status(404).send();
+    if (u) { u.myRecords = myRecords; saveDB(); res.json({ success: true }); }
+    else res.status(404).send();
 });
 
 app.get('/api/get-my-data', (req, res) => {
@@ -84,4 +96,4 @@ app.get('/api/auto-discover', (req, res) => {
     res.json(resArr);
 });
 
-app.listen(PORT, () => console.log(`SERVER ON ${PORT}`));
+app.listen(PORT, () => console.log(`HEIBA ROYAL SERVER RUNNING`));
