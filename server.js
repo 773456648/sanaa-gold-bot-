@@ -2,81 +2,91 @@ const express = require('express');
 const fs = require('fs');
 const app = express();
 app.use(express.json());
-app.use(express.static('public'));
 
-const DB_PATH = './heiba_royal_db.json';
-let db = { users: [], pendingStamps: [] };
+const DB_PATH = './royal_database.json';
+let db = { users: [], stamps: [] };
 
-if (fs.existsSync(DB_PATH)) {
-    try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [], pendingStamps: [] }; }
-}
-if(!db.pendingStamps) db.pendingStamps = [];
-
+if (fs.existsSync(DB_PATH)) db = JSON.parse(fs.readFileSync(DB_PATH));
 const save = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 
-// نظام البصمة والمطابقة
+// استعلام عن بصمة
+app.get('/api/search-stamp', (req, res) => {
+    const s = db.stamps.find(x => x.authCode === req.query.code);
+    if(s) res.json(s); else res.status(404).json({error: "Not found"});
+});
+
+// نظام البصمة
 app.post('/api/verify-auth', (req, res) => {
     const { action, debtorName, merchantName, opId, authCode, merchantId } = req.body;
 
     if (action === 'create') {
-        db.pendingStamps.push({ debtorName, merchantName, opId, authCode, status: 'pending' });
+        if(db.stamps.some(s => s.authCode === authCode)) return res.status(400).json({error: "الكود مستخدم سابقاً"});
+        
+        // قفل الـ 48 ساعة
+        const existing = db.stamps.find(s => s.debtorName === debtorName && s.opId === opId);
+        if(existing && (Date.now() - existing.createdAt < 172800000)) return res.status(400).json({error: "لا يمكن تعديل البصمة إلا بعد 48 ساعة"});
+
+        db.stamps = db.stamps.filter(s => !(s.debtorName === debtorName && s.opId === opId));
+        db.stamps.push({ debtorName, merchantName, opId, authCode, createdAt: Date.now(), status: 'pending' });
         save();
         return res.json({ success: true });
     }
 
     if (action === 'check') {
-        const merchant = db.users.find(u => u.id === merchantId);
-        if (!merchant) return res.status(404).send();
+        const merch = db.users.find(u => u.id === merchantId);
+        const stamp = db.stamps.find(s => s.authCode === authCode && s.merchantName === merch.name);
+        if(!stamp) return res.status(400).json({error: "كود خاطئ"});
 
-        const stampIdx = db.pendingStamps.findIndex(s => s.authCode === authCode && s.merchantName === merchant.name);
-        if (stampIdx !== -1) {
-            const stamp = db.pendingStamps[stampIdx];
-            let count = 0;
-            merchant.myRecords.forEach(r => {
-                if (r.targetName === stamp.debtorName && (stamp.opId === 'all' || r.id === stamp.opId)) {
-                    r.isVerified = true;
-                    r.authCode = authCode;
-                    count++;
-                }
-            });
-            db.pendingStamps.splice(stampIdx, 1);
-            save();
-            return res.json({ success: true, count, newRecords: merchant.myRecords });
-        }
-        return res.status(400).json({ error: "كود غير صحيح" });
+        merch.myRecords.forEach(r => {
+            if(r.id === stamp.opId || (stamp.opId === 'all' && r.targetName === stamp.debtorName)) {
+                r.isVerified = true; r.authCode = authCode;
+                stamp.status = 'active'; stamp.amount = r.amount; stamp.currency = r.currency;
+            }
+        });
+        save();
+        res.json({ newRecords: merch.myRecords });
     }
+});
+
+// الحفظ والخصم الذكي
+app.post('/api/sync', (req, res) => {
+    const { userId, op } = req.body;
+    const u = db.users.find(x => x.id === userId);
+    if(!u) return res.status(404).send();
+
+    if(op.type === 'سداد') {
+        let amt = parseFloat(op.amount);
+        u.myRecords.forEach(r => {
+            if(r.targetName === op.targetName && r.currency === op.currency && r.isVerified && amt > 0) {
+                let rAmt = parseFloat(r.amount);
+                let deduct = Math.min(rAmt, amt);
+                r.amount = (rAmt - deduct).toString();
+                amt -= deduct;
+                if(parseFloat(r.amount) <= 0) db.stamps = db.stamps.filter(s => s.authCode !== r.authCode);
+            }
+        });
+        op.amount = amt.toString();
+    }
+    u.myRecords.push(op); save();
+    res.json({ newRecords: u.myRecords });
 });
 
 app.post('/api/auth', (req, res) => {
     const { name, password, type, action } = req.body;
     let u = db.users.find(x => x.name === name && x.type === type);
-    if (action === 'reg') {
-        if (u) return res.status(400).json({ error: "الاسم مسجل" });
+    if(action === 'reg') {
+        if(u) return res.status(400).json({error: "مسجل مسبقاً"});
         u = { id: Date.now().toString(), name, password, type, myRecords: [] };
         db.users.push(u); save();
-    } else {
-        if (!u || u.password !== password) return res.status(403).json({ error: "خطأ في البيانات" });
     }
+    if(!u || u.password !== password) return res.status(403).json({error: "خطأ في الدخول"});
     res.json(u);
 });
 
-app.post('/api/sync', (req, res) => {
-    const { userId, myRecords } = req.body;
-    const u = db.users.find(x => x.id === userId);
-    if (u) { u.myRecords = myRecords; save(); res.json({ success: true }); }
-});
-
 app.get('/api/auto-discover', (req, res) => {
-    const { debtorName } = req.query;
-    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName === debtorName))
-        .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName === debtorName) }));
+    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName === req.query.name))
+        .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName === req.query.name) }));
     res.json(results);
 });
 
-app.post('/api/update-pass', (req, res) => {
-    const { userId, newPass } = req.body;
-    const u = db.users.find(x => x.id === userId);
-    if (u) { u.password = newPass; save(); res.json({ success: true }); }
-});
-
-app.listen(3000, () => console.log('Heiba Server Running on 3000'));
+app.listen(3000, () => console.log('Server running on 3000'));
