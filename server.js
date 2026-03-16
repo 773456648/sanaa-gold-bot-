@@ -1,34 +1,41 @@
 const express = require('express');
 const fs = require('fs');
+const axios = require('axios');
 const app = express();
+const PORT = process.env.PORT || 3000;
+const DB_PATH = './heiba_royal_db.json';
+
+const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
+const MY_CHAT_ID = '5042495708';
+
 app.use(express.json());
+app.use(express.static('public'));
 
-const DB_PATH = './royal_database.json';
 let db = { users: [], stamps: [] };
+if (fs.existsSync(DB_PATH)) {
+    try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [], stamps: [] }; }
+}
 
-if (fs.existsSync(DB_PATH)) db = JSON.parse(fs.readFileSync(DB_PATH));
-const save = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 
-// استعلام عن بصمة
+// نظام البحث عن البصمة
 app.get('/api/search-stamp', (req, res) => {
     const s = db.stamps.find(x => x.authCode === req.query.code);
     if(s) res.json(s); else res.status(404).json({error: "Not found"});
 });
 
-// نظام البصمة
+// تفعيل وتحقق البصمة
 app.post('/api/verify-auth', (req, res) => {
     const { action, debtorName, merchantName, opId, authCode, merchantId } = req.body;
 
     if (action === 'create') {
-        if(db.stamps.some(s => s.authCode === authCode)) return res.status(400).json({error: "الكود مستخدم سابقاً"});
+        if(db.stamps.some(s => s.authCode === authCode)) return res.status(400).json({error: "الكود مستخدم مسبقاً"});
+        const existing = db.stamps.find(s => s.opId === opId && s.debtorName === debtorName);
+        if(existing && (Date.now() - existing.createdAt < 172800000)) return res.status(400).json({error: "قفل 48 ساعة مفعل"});
         
-        // قفل الـ 48 ساعة
-        const existing = db.stamps.find(s => s.debtorName === debtorName && s.opId === opId);
-        if(existing && (Date.now() - existing.createdAt < 172800000)) return res.status(400).json({error: "لا يمكن تعديل البصمة إلا بعد 48 ساعة"});
-
-        db.stamps = db.stamps.filter(s => !(s.debtorName === debtorName && s.opId === opId));
+        db.stamps = db.stamps.filter(s => s.opId !== opId);
         db.stamps.push({ debtorName, merchantName, opId, authCode, createdAt: Date.now(), status: 'pending' });
-        save();
+        saveDB();
         return res.json({ success: true });
     }
 
@@ -38,55 +45,65 @@ app.post('/api/verify-auth', (req, res) => {
         if(!stamp) return res.status(400).json({error: "كود خاطئ"});
 
         merch.myRecords.forEach(r => {
-            if(r.id === stamp.opId || (stamp.opId === 'all' && r.targetName === stamp.debtorName)) {
+            if(r.id === stamp.opId) {
                 r.isVerified = true; r.authCode = authCode;
-                stamp.status = 'active'; stamp.amount = r.amount; stamp.currency = r.currency;
+                stamp.amount = r.amount; stamp.currency = r.currency;
             }
         });
-        save();
+        saveDB();
         res.json({ newRecords: merch.myRecords });
     }
 });
 
-// الحفظ والخصم الذكي
+// الخصم الذكي والمزامنة (لا ينقص من حقك شيء)
 app.post('/api/sync', (req, res) => {
     const { userId, op } = req.body;
     const u = db.users.find(x => x.id === userId);
-    if(!u) return res.status(404).send();
+    if (!u) return res.status(404).send();
 
+    // إذا كانت العملية سداد، ابدأ بخصم مبالغ البصمات أولاً
     if(op.type === 'سداد') {
-        let amt = parseFloat(op.amount);
+        let amountToPay = parseFloat(op.amount);
         u.myRecords.forEach(r => {
-            if(r.targetName === op.targetName && r.currency === op.currency && r.isVerified && amt > 0) {
-                let rAmt = parseFloat(r.amount);
-                let deduct = Math.min(rAmt, amt);
-                r.amount = (rAmt - deduct).toString();
-                amt -= deduct;
+            if(r.targetName === op.targetName && r.currency === op.currency && r.isVerified && amountToPay > 0) {
+                let currentDebt = parseFloat(r.amount);
+                let deduct = Math.min(currentDebt, amountToPay);
+                r.amount = (currentDebt - deduct).toString();
+                amountToPay -= deduct;
+                // إذا استوفت البصمة، احذفها من سجل البحث النشط
                 if(parseFloat(r.amount) <= 0) db.stamps = db.stamps.filter(s => s.authCode !== r.authCode);
             }
         });
-        op.amount = amt.toString();
+        op.amount = amountToPay.toString();
     }
-    u.myRecords.push(op); save();
+
+    u.myRecords.push(op);
+    saveDB();
     res.json({ newRecords: u.myRecords });
 });
 
-app.post('/api/auth', (req, res) => {
+// بقية الدوال (الدخول، التلجرام، الاكتشاف) تظل كما هي تماماً
+app.post('/api/auth', async (req, res) => {
     const { name, password, type, action } = req.body;
-    let u = db.users.find(x => x.name === name && x.type === type);
-    if(action === 'reg') {
-        if(u) return res.status(400).json({error: "مسجل مسبقاً"});
-        u = { id: Date.now().toString(), name, password, type, myRecords: [] };
-        db.users.push(u); save();
+    const normalizedName = name.trim().toLowerCase();
+    let user = db.users.find(u => u.name.toLowerCase() === normalizedName && u.type === type);
+
+    if (action === 'reg') {
+        if (user) return res.status(400).json({ error: "الاسم مسجل مسبقاً." });
+        user = { id: "H" + Math.random().toString(36).substr(2, 7), name: name.trim(), password, type, myRecords: [], createdAt: new Date().toISOString() };
+        db.users.push(user); saveDB();
+        return res.json(user);
+    } else {
+        if (!user || user.password !== password) return res.status(403).json({ error: "بيانات خاطئة." });
+        return res.json(user);
     }
-    if(!u || u.password !== password) return res.status(403).json({error: "خطأ في الدخول"});
-    res.json(u);
 });
 
 app.get('/api/auto-discover', (req, res) => {
-    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName === req.query.name))
-        .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName === req.query.name) }));
+    const { debtorName } = req.query;
+    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
+    .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) }));
     res.json(results);
 });
 
-app.listen(3000, () => console.log('Server running on 3000'));
+app.listen(PORT, () => console.log(`SYSTEM ACTIVE ON ${PORT}`));
