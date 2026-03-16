@@ -3,67 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الهيبة | النظام المالي المتكامل</title>
+    <title>منصة الهيبة | نظام البصمة المتناقصة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #060608; color: #f0f0f0; font-family: 'Changa', sans-serif; overflow-x: hidden; }
+        body { background: #060608; color: #f0f0f0; font-family: 'Changa', sans-serif; }
         .gold-text { color: #d4af37; }
         .gold-btn { background: linear-gradient(135deg, #d4af37, #b8860b); color: #000; font-weight: bold; }
         .glass-card { background: rgba(15, 15, 20, 0.98); border: 1px solid #222; border-radius: 28px; }
         input, select { background: #111 !important; border: 1px solid #333 !important; color: #fff; border-radius: 16px; padding: 16px; width: 100%; outline: none; }
-        .type-select { border: 2px solid #333; transition: 0.3s; cursor: pointer; }
+        .type-select { border: 2px solid #333; cursor: pointer; transition: 0.3s; }
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
-        .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
-        .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
-        .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
-        .stamp-badge { background: #10b981; color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-right: 5px; }
+        .stamp-card { background: linear-gradient(to bottom right, #1a1a1a, #0d0d0d); border: 1px dashed #d4af37; border-radius: 20px; padding: 15px; }
+        .modal-backdrop { background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- واجهة الدخول -->
-    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12">
-        <div class="text-center">
-            <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
-            <p class="text-[12px] text-gray-500 tracking-[0.5em] uppercase mt-4">The Sovereign Financial Platform</p>
+    <!-- شاشة الدخول -->
+    <div id="auth-ui" class="max-w-4xl mx-auto mt-10">
+        <div class="text-center mb-10">
+            <h1 class="text-7xl font-black gold-text italic">HEIBA</h1>
+            <p class="text-gray-500 uppercase tracking-widest text-xs mt-2">Royal Financial Management</p>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <div class="glass-card p-10 space-y-6 shadow-2xl border-yellow-900/10">
-                <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
-                <div class="grid grid-cols-2 gap-4 mb-2">
-                    <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👑</span><span class="text-sm font-bold">حساب تاجر</span>
-                    </div>
-                    <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👤</span><span class="text-sm font-bold">حساب مواطن</span>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
-                    <div class="relative">
-                        <input id="u-pass" type="password" placeholder="كلمة المرور">
-                        <button onclick="togglePass('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 px-2">
-                    <input type="checkbox" id="remember-me" class="w-5 h-5 accent-[#d4af37] cursor-pointer">
-                    <label for="remember-me" class="text-sm text-gray-400 cursor-pointer">تذكرني (دخول تلقائي دائماً)</label>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold">تسجيل الدخول</button>
-                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl">إنشاء حساب</button>
-                </div>
+        <div class="glass-card p-10 space-y-6 shadow-2xl">
+            <div class="grid grid-cols-2 gap-4">
+                <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-2xl text-center">👑 تاجر</div>
+                <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 rounded-2xl text-center">👤 مواطن</div>
             </div>
-            <div class="space-y-8">
-                <div>
-                    <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed italic">حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، تضمن لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
-                    <div class="info-section"><h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4><p class="text-gray-500">إدارة الديون والسداد بالعملات الثلاث مع إشعارات فورية.</p></div>
-                    <div class="info-section"><h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4><p class="text-gray-500">تابع موقفك المالي مع التجار لحظياً عبر البصمات الذكية.</p></div>
-                </div>
+            <input id="u-name" placeholder="الاسم بالكامل">
+            <input id="u-pass" type="password" placeholder="كلمة المرور">
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold">دخول</button>
+                <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl">إنشاء حساب</button>
             </div>
         </div>
     </div>
@@ -72,215 +44,208 @@
     <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
         <header class="flex justify-between items-center glass-card p-6">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-2xl">H</div>
+                <div class="w-12 h-12 gold-btn rounded-xl flex items-center justify-center font-bold text-xl">H</div>
                 <div>
-                    <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-1"></h2>
-                    <span id="role-tag" class="text-[10px] text-gray-600 uppercase tracking-widest"></span>
+                    <h2 id="display-name" class="text-xl font-bold gold-text"></h2>
+                    <span id="role-tag" class="text-[10px] text-gray-500"></span>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <button id="merchant-verify-btn" onclick="openModal('verify-stamp-modal')" class="hidden bg-green-900/20 text-green-500 border border-green-500/30 px-4 rounded-xl text-[11px] font-bold">مطابقة بصمة ✅</button>
-                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5">⚙️</button>
-                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20">خروج</button>
+            <div class="flex gap-2">
+                <button id="btn-search-stamp" onclick="openModal('search-modal')" class="hidden bg-blue-900/20 text-blue-400 border border-blue-500/30 px-4 rounded-xl text-xs">بحث بلاغ 🔍</button>
+                <button onclick="logout()" class="bg-red-900/20 text-red-500 px-4 py-2 rounded-xl text-xs">خروج</button>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-4 space-y-6">
+            <!-- القائمة الجانبية -->
+            <div class="lg:col-span-4 space-y-4">
                 <div class="glass-card p-6">
-                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase">الرصيد الصافي العام</h3>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10"><span class="text-xs text-gray-400">ريال يمني</span><span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span></div>
-                        <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10"><span class="text-xs text-gray-400">دولار أمريكي</span><span id="gt-usd" class="font-bold text-green-400 text-xl">0</span></div>
-                        <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10"><span class="text-xs text-gray-400">ريال سعودي</span><span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span></div>
+                    <h3 class="text-xs text-gray-500 mb-4 uppercase">بلاغات الخصم النشطة (البصمة)</h3>
+                    <div id="stamps-list" class="space-y-3">
+                        <!-- هنا تظهر كروت البصمات -->
                     </div>
                 </div>
-                <div class="glass-card p-6 min-h-[400px]">
-                    <div id="merchant-tools" class="hidden space-y-4">
-                        <div class="flex gap-2"><input id="target-search" class="text-sm" placeholder="اسم المواطن..." onchange="addTarget()"><button onclick="addTarget()" class="gold-btn px-4 rounded-xl text-xl">+</button></div>
+                <div class="glass-card p-6 min-h-[300px]">
+                    <h3 class="text-xs text-gray-500 mb-4">قائمة التجار / المواطنين</h3>
+                    <div id="merchant-tools" class="hidden mb-4">
+                        <input id="target-search" class="text-xs" placeholder="اسم المواطن..." onchange="addTarget()">
                     </div>
-                    <div id="main-list" class="mt-4 space-y-2"></div>
+                    <div id="main-list" class="space-y-2"></div>
                 </div>
             </div>
 
+            <!-- لوحة العمليات -->
             <div class="lg:col-span-8">
-                <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
-                    <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
-                        <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
-                        <button id="debtor-stamp-btn" onclick="openModal('create-stamp-modal')" class="hidden gold-btn px-4 py-2 rounded-xl text-[10px]">إرسال بصمة سداد ✋</button>
+                <div id="details-pane" class="hidden glass-card p-8 min-h-[500px] flex flex-col">
+                    <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
+                        <h3 id="active-target-name" class="text-2xl font-bold gold-text"></h3>
+                        <button id="btn-create-stamp" onclick="openModal('create-stamp-modal')" class="hidden gold-btn px-4 py-2 rounded-xl text-[10px]">إنشاء بلاغ خصم ✋</button>
                     </div>
-                    <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
-                    <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div class="relative"><input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()"><div id="tafqit-text" class="tafqit-box"></div></div>
-                            <select id="op-cur" onchange="applyTafqit()"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
+                    <div id="ops-list" class="flex-grow space-y-2 overflow-y-auto mb-4"></div>
+                    <div id="add-form" class="hidden bg-zinc-900/50 p-4 rounded-2xl border border-white/5 space-y-3">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                            <input id="op-amt" type="number" placeholder="المبلغ">
+                            <select id="op-cur"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
                             <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
-                            <input id="op-note" placeholder="البيان (اختياري)">
+                            <input id="op-note" placeholder="البيان">
                         </div>
-                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl">تثبيت العملية فوراً</button>
+                        <button onclick="saveOp()" class="gold-btn w-full py-3 rounded-xl">تثبيت العملية</button>
                     </div>
                 </div>
-                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لمتابعة السجلات...</div>
+                <div id="empty-hint" class="glass-card p-20 text-center text-gray-600 italic">يرجى تحديد حساب للمتابعة...</div>
             </div>
         </div>
     </div>
 
-    <!-- مودالات الحماية والبصمة -->
-    <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text">إعدادات الحماية</h3>
-            <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
-            <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور">
-            <div class="flex gap-4">
-                <button onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث</button>
-                <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl">إلغاء</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- مودال إنشاء بلاغ -->
     <div id="create-stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-xs p-8 space-y-4">
-            <h3 class="gold-text font-bold text-center">إنشاء كود بصمة</h3>
-            <input id="st-amt" type="number" placeholder="المبلغ">
+        <div class="glass-card w-full max-w-sm p-8 space-y-4">
+            <h3 class="gold-text font-bold text-center underline">إنشاء بلاغ خصم جديد</h3>
+            <p class="text-[10px] text-gray-400 text-center">سيتم تحويل هذا المبلغ إلى كود بصمة ليخصمه التاجر</p>
+            <input id="st-amt" type="number" placeholder="مبلغ البلاغ">
             <select id="st-cur"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
-            <input id="st-code" placeholder="أدخل كود سري">
-            <button onclick="submitStamp()" class="gold-btn w-full py-4 rounded-xl">إرسال البصمة</button>
-            <button onclick="closeModal('create-stamp-modal')" class="w-full text-xs text-gray-500">إغلاق</button>
+            <input id="st-code" placeholder="كود البصمة السري">
+            <button onclick="submitStamp()" class="gold-btn w-full py-4 rounded-xl">اعتماد البلاغ</button>
+            <button onclick="closeModal('create-stamp-modal')" class="w-full text-xs text-gray-500">إلغاء</button>
         </div>
     </div>
 
-    <div id="verify-stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-xs p-8 space-y-4">
-            <h3 class="text-green-500 font-bold text-center">تحقق من الكود</h3>
-            <input id="v-code" placeholder="أدخل كود المواطن">
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="checkStamp()" class="bg-zinc-800 py-4 rounded-xl text-xs">بحث 🔍</button>
-                <button onclick="verifyStamp()" class="gold-btn py-4 rounded-xl text-xs">تأكيد ✅</button>
+    <!-- مودال البحث والخصم (للتاجر) -->
+    <div id="search-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+        <div class="glass-card w-full max-w-sm p-8 space-y-4">
+            <h3 class="text-blue-400 font-bold text-center">بحث ومطابقة البلاغ</h3>
+            <input id="v-code" placeholder="أدخل كود البلاغ">
+            <button onclick="fetchStampInfo()" class="bg-blue-600 text-white w-full py-3 rounded-xl text-xs">بحث وتفقد الكود 🔍</button>
+            <div id="stamp-info-box" class="hidden p-4 bg-black/50 rounded-xl border border-blue-500/20 text-xs space-y-2">
+                <p>🙋 المواطن: <span id="inf-name" class="font-bold"></span></p>
+                <p>💰 المتبقي: <span id="inf-amt" class="text-green-500 font-bold"></span></p>
+                <div class="border-t border-white/5 pt-2">
+                    <input id="inf-discount" type="number" placeholder="المبلغ المراد خصمه الآن" class="!p-2 !text-xs">
+                    <button onclick="applyDiscount()" class="gold-btn w-full mt-2 py-2 rounded-lg text-xs">تأكيد الخصم الآن ✅</button>
+                </div>
             </div>
-            <button onclick="closeModal('verify-stamp-modal')" class="w-full text-xs text-gray-500">إلغاء</button>
+            <button onclick="closeModal('search-modal')" class="w-full text-xs text-gray-500">إغلاق</button>
         </div>
     </div>
 
     <script>
-        let user = null, activeTarget = null, userType = 'merchant', discoveredData = [];
-
-        function togglePass(id) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; }
-        function formatAr(num) {
-            if (num == 0) return "صفر";
-            const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
-            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
-            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
-            function conv(n) {
-                let r = ""; const h = Math.floor(n / 100); const t = n % 100;
-                if (h > 0) r += hundreds[h];
-                if (t > 0) { if (r !== "") r += " و "; if (t < 20) r += units[t]; else { const s = t % 10; const ten = Math.floor(t / 10); if (s > 0) r += units[s] + " و "; r += tens[ten]; } }
-                return r;
-            }
-            let res = ""; const m = Math.floor(num / 1000000); const th = Math.floor((num % 1000000) / 1000); const rem = num % 1000;
-            if (m > 0) res += (m === 1 ? "مليون" : (m === 2 ? "مليونان" : conv(m) + " ملايين"));
-            if (th > 0) { if (res !== "") res += " و "; res += (th === 1 ? "ألف" : (th === 2 ? "ألفين" : conv(th) + " آلاف")); }
-            if (rem > 0) { if (res !== "") res += " و "; res += conv(rem); }
-            return res;
-        }
-
-        function applyTafqit() {
-            const val = document.getElementById('op-amt').value;
-            const cur = document.getElementById('op-cur').options[document.getElementById('op-cur').selectedIndex].text;
-            document.getElementById('tafqit-text').innerText = val > 0 ? formatAr(parseInt(val)) + " " + cur : "";
-        }
+        let user = null, activeTarget = null, userType = 'merchant', discoveredData = [], activeStamps = [];
 
         function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); }
 
-        window.onload = () => { const saved = localStorage.getItem('heiba_auth_session'); if (saved) { user = JSON.parse(saved); start(); } };
+        window.onload = () => { const s = localStorage.getItem('heiba_auth_session'); if(s) { user = JSON.parse(s); start(); } };
 
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim(), password = document.getElementById('u-pass').value;
             if(!name || !password) return;
             const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, type: userType, action }) });
-            const data = await res.json();
-            if(res.ok) { user = data; if(document.getElementById('remember-me').checked) localStorage.setItem('heiba_auth_session', JSON.stringify(user)); start(); } else alert(data.error);
+            if(res.ok) { user = await res.json(); localStorage.setItem('heiba_auth_session', JSON.stringify(user)); start(); } else alert("خطأ في البيانات");
         }
 
         function start() {
             document.getElementById('auth-ui').classList.add('hidden'); document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerText = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
-            if(user.type === 'merchant') { 
-                document.getElementById('merchant-tools').classList.remove('hidden'); 
-                document.getElementById('add-form').classList.remove('hidden'); 
-                document.getElementById('merchant-verify-btn').classList.remove('hidden');
-                renderList(); calculateGrand(user.myRecords); 
-            }
-            else { 
-                document.getElementById('debtor-stamp-btn').classList.remove('hidden');
-                fetchAutoDebts(); setInterval(fetchAutoDebts, 4000); 
+            document.getElementById('role-tag').innerText = user.type === 'merchant' ? 'تاجر ملكي' : 'مواطن هيبة';
+            if(user.type === 'merchant') {
+                document.getElementById('merchant-tools').classList.remove('hidden');
+                document.getElementById('btn-search-stamp').classList.remove('hidden');
+                document.getElementById('add-form').classList.remove('hidden');
+                renderList();
+            } else {
+                document.getElementById('btn-create-stamp').classList.remove('hidden');
+                fetchAutoData(); setInterval(fetchAutoData, 5000);
             }
         }
 
-        function calculateGrand(recs) {
-            let y=0, u=0, s=0; recs.forEach(r => { const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; });
-            document.getElementById('gt-yer').innerText = y.toLocaleString(); document.getElementById('gt-usd').innerText = u.toLocaleString(); document.getElementById('gt-sar').innerText = s.toLocaleString();
+        async function fetchAutoData() {
+            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
+            const data = await res.json();
+            discoveredData = data.results;
+            activeStamps = data.myStamps;
+            renderStamps(activeStamps);
+            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-3 bg-zinc-900 rounded-xl cursor-pointer border border-white/5">${m.merchantName}</div>`).join('');
+            if(activeTarget) showDetails(activeTarget);
         }
 
-        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(!n) return; activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value = ""; }
+        function renderStamps(stamps) {
+            document.getElementById('stamps-list').innerHTML = stamps.map(s => `
+                <div class="stamp-card text-[11px]">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="gold-text font-bold">كود: ${s.code}</span>
+                        <span class="text-gray-500">${new Date(s.date).toLocaleDateString()}</span>
+                    </div>
+                    <p>التاجر: ${s.merchantName}</p>
+                    <div class="flex justify-between mt-2 border-t border-dashed border-white/10 pt-2">
+                        <span>الأصل: ${s.originalAmount}</span>
+                        <span class="text-green-500 font-bold">المتبقي: ${s.currentAmount}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(n) { activeTarget = n; showDetails(n); document.getElementById('target-search').value = ""; } }
 
         function renderList() {
             const t = [...new Set(user.myRecords.map(r => r.targetName))];
-            document.getElementById('main-list').innerHTML = t.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900 shadow-xl' : ''}">${n}</div>`).join('');
-        }
-
-        async function fetchAutoDebts() {
-            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
-            discoveredData = await res.json();
-            let all = []; discoveredData.forEach(m => all = all.concat(m.records)); calculateGrand(all);
-            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}"><p class="font-bold text-sm">${m.merchantName}</p><p class="text-[9px] text-blue-500 font-bold mt-1 uppercase italic">مزامنة حية 📶</p></div>`).join('');
-            if(activeTarget) showDetails(activeTarget);
+            document.getElementById('main-list').innerHTML = t.map(n => `<div onclick="showDetails('${n}')" class="p-3 bg-zinc-900 rounded-xl cursor-pointer ${activeTarget===n?'border-gold-text border':''}">${n}</div>`).join('');
         }
 
         function showDetails(name) {
             activeTarget = name; document.getElementById('empty-hint').classList.add('hidden'); document.getElementById('details-pane').classList.remove('hidden');
             document.getElementById('active-target-name').innerText = name;
-            let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
-            document.getElementById('ops-list').innerHTML = records.map(r => {
-                const d = r.type === 'دين';
-                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm"><div><p class="font-bold text-sm">${r.verified ? '<span class="stamp-badge">بصمة موثقة</span>' : ''}${r.note || 'عملية مالية'}</p><p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div><div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${parseFloat(r.amount).toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p></div></div>`;
-            }).reverse().join('');
-            if(user.type === 'merchant') renderList();
+            let recs = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
+            document.getElementById('ops-list').innerHTML = recs.map(r => `
+                <div class="p-4 bg-zinc-900/40 rounded-xl flex justify-between items-center border-l-2 ${r.type==='دين'?'border-red-500':'border-green-500'}">
+                    <div class="text-[11px]">
+                        <p class="font-bold">${r.note || 'عملية'}</p>
+                        <p class="text-gray-600">${new Date(r.date).toLocaleString()}</p>
+                    </div>
+                    <p class="font-black ${r.type==='دين'?'text-red-500':'text-green-500'}">${r.type==='دين'?'+':'-'}${r.amount}</p>
+                </div>
+            `).reverse().join('');
+            if(user.type==='merchant') renderList();
         }
 
         async function saveOp() {
             const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
-            user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
-            showDetails(activeTarget); calculateGrand(user.myRecords);
+            user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: parseFloat(a), currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
+            showDetails(activeTarget);
             fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
-            document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = ""; document.getElementById('tafqit-text').innerText = "";
+            document.getElementById('op-amt').value = "";
         }
 
-        // دوال البصمة الجديدة
+        // دوال البلاغات (البصمة المتناقصة)
         async function submitStamp() {
             const res = await fetch('/api/stamps/create', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ debtorName: user.name, merchantName: activeTarget, amount: document.getElementById('st-amt').value, currency: document.getElementById('st-cur').value, code: document.getElementById('st-code').value }) });
-            if(res.ok) { alert("✅ تم إرسال البصمة للتاجر."); closeModal('create-stamp-modal'); } else alert("❌ الكود مستخدم");
+            if(res.ok) { alert("✅ تم إنشاء البلاغ بنجاح"); closeModal('create-stamp-modal'); fetchAutoData(); } else alert("❌ الكود مستخدم");
         }
 
-        async function checkStamp() {
-            const res = await fetch(`/api/stamps/check/${document.getElementById('v-code').value}`);
-            if(res.ok) { const s = await res.json(); alert(`💡 بصمة موجودة:\nالمواطن: ${s.debtorName}\nالمبلغ: ${s.amount} ${s.currency}`); } else alert("❌ الكود غير صحيح");
+        async function fetchStampInfo() {
+            const code = document.getElementById('v-code').value;
+            const res = await fetch(`/api/stamps/info/${code}`);
+            if(res.ok) {
+                const s = await res.json();
+                document.getElementById('inf-name').innerText = s.debtorName;
+                document.getElementById('inf-amt').innerText = s.currentAmount + " " + s.currency;
+                document.getElementById('stamp-info-box').classList.remove('hidden');
+            } else alert("❌ لا يوجد بلاغ بهذا الكود");
         }
 
-        async function verifyStamp() {
-            const res = await fetch('/api/stamps/verify', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ merchantId: user.id, code: document.getElementById('v-code').value }) });
-            if(res.ok) { user = await res.json(); alert("✅ تم المطابقة والخصم!"); calculateGrand(user.myRecords); if(activeTarget) showDetails(activeTarget); closeModal('verify-stamp-modal'); }
-        }
-
-        async function updatePassword() {
-            const p1 = document.getElementById('new-pass').value; if(!p1 || p1 !== document.getElementById('confirm-pass').value) return alert("خطأ مطابقة");
-            const res = await fetch('/api/update-pass', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, newPass: p1 }) });
-            if(res.ok) { user.password = p1; alert("تم التحديث"); closeModal('settings-modal'); }
+        async function applyDiscount() {
+            const code = document.getElementById('v-code').value;
+            const amt = document.getElementById('inf-discount').value;
+            if(!amt) return;
+            const res = await fetch('/api/stamps/apply-discount', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ merchantId: user.id, code, discountAmount: amt }) });
+            if(res.ok) {
+                const data = await res.json(); user = data.merchant;
+                alert("✅ تم الخصم بنجاح من البلاغ!");
+                closeModal('search-modal'); if(activeTarget) showDetails(activeTarget);
+            } else { const e = await res.json(); alert(e.error); }
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function logout() { localStorage.removeItem('heiba_auth_session'); location.reload(); }
+        function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
 </html>
