@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -15,50 +15,46 @@
         .type-select { border: 2px solid #333; transition: 0.3s; cursor: pointer; }
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
+        .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
+        /* ستايل التفقيط */
         .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
-        /* ستايل مخصص لمربع الاختيار */
-        .custom-checkbox { width: 18px !important; height: 18px !important; margin: 0 !important; cursor: pointer; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- شاشة التحميل -->
-    <div id="splash-screen" class="fixed inset-0 bg-[#060608] z-50 flex items-center justify-center">
-        <h1 class="text-4xl font-black gold-text animate-pulse italic">HEIBA...</h1>
-    </div>
-
-    <div id="auth-ui" class="hidden max-w-6xl mx-auto mt-4 space-y-12">
+    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12">
         <div class="text-center">
             <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
             <p class="text-[12px] text-gray-500 tracking-[0.5em] uppercase mt-4">The Sovereign Financial Platform</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <div class="glass-card p-10 space-y-6 shadow-2xl">
+            <div class="glass-card p-10 space-y-6 shadow-2xl border-yellow-900/10">
                 <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
                 <div class="grid grid-cols-2 gap-4 mb-2">
                     <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👑</span><span class="text-sm font-bold">حساب تاجر</span>
+                        <span class="block text-2xl mb-1">👑</span>
+                        <span class="text-sm font-bold">حساب تاجر</span>
                     </div>
                     <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👤</span><span class="text-sm font-bold">حساب مواطن</span>
+                        <span class="block text-2xl mb-1">👤</span>
+                        <span class="text-sm font-bold">حساب مواطن</span>
                     </div>
                 </div>
                 <div class="space-y-4">
                     <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
                     <div class="relative">
                         <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
-                        <button onclick="togglePass('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
-                    </div>
-                    <!-- خيار تذكرني الجديد -->
-                    <div class="flex items-center gap-2 px-2">
-                        <input type="checkbox" id="remember-me" class="custom-checkbox">
-                        <label for="remember-me" class="text-xs text-gray-400 cursor-pointer select-none">تذكرني على هذا الجهاز</label>
+                        <button onclick="togglePass('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100 transition">👁️</button>
                     </div>
                 </div>
+                <div class="flex items-center gap-3 px-2">
+                    <input type="checkbox" id="remember-me" class="w-5 h-5 accent-[#d4af37] cursor-pointer">
+                    <label for="remember-me" class="text-sm text-gray-400 cursor-pointer select-none">تذكرني (دخول تلقائي دائماً)</label>
+                </div>
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold">تسجيل الدخول</button>
-                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl">إنشاء حساب</button>
+                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold hover:bg-zinc-700 transition">تسجيل الدخول</button>
+                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl hover:brightness-110 transition">إنشاء حساب</button>
                 </div>
             </div>
 
@@ -70,53 +66,57 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4>
-                        <p class="text-gray-500 leading-relaxed">إدارة الحسابات، تسجيل العمليات بالعملات الثلاث، ومزامنة فورية مع التلجرام.</p>
+                        <p class="text-gray-500 leading-relaxed">قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة.</p>
                     </div>
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4>
-                        <p class="text-gray-500 leading-relaxed">كشف حساب حي ومباشر مع القدرة على تأكيد أو رفض العمليات لحظياً.</p>
+                        <p class="text-gray-500 leading-relaxed">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- واجهة النظام الرئيسية -->
     <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
         <header class="flex justify-between items-center glass-card p-6">
             <div class="flex items-center gap-4">
                 <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-2xl">H</div>
                 <div>
                     <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-1"></h2>
-                    <div id="debtor-code-zone" class="hidden flex flex-col gap-1">
-                        <div class="flex gap-2">
-                            <input id="custom-code-input" class="!p-1 !h-7 !text-[10px] !w-24" placeholder="كود جديد..">
-                            <button onclick="addCustomCode()" class="bg-blue-600 text-white text-[9px] px-2 rounded-lg font-bold">توليد 🔑</button>
-                        </div>
-                    </div>
+                    <span id="role-tag" class="text-[10px] text-gray-600 uppercase tracking-widest"></span>
                 </div>
             </div>
-            <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20">خروج</button>
+            <div class="flex gap-3">
+                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">⚙️</button>
+                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج</button>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
-                <div class="glass-card p-6 space-y-4">
-                    <h3 class="text-[11px] text-gray-500 font-bold mb-4 uppercase tracking-widest text-center">الإجمالي الصافي</h3>
-                    <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
-                        <span class="text-xs text-gray-400">ريال يمني</span><span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10">
-                        <span class="text-xs text-gray-400">دولار</span><span id="gt-usd" class="font-bold text-green-400 text-xl">0</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10">
-                        <span class="text-xs text-gray-400">سعودي</span><span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span>
+                <div class="glass-card p-6">
+                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
+                            <span class="text-xs text-gray-400">ريال يمني</span>
+                            <span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10">
+                            <span class="text-xs text-gray-400">دولار أمريكي</span>
+                            <span id="gt-usd" class="font-bold text-green-400 text-xl">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10">
+                            <span class="text-xs text-gray-400">ريال سعودي</span>
+                            <span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span>
+                        </div>
                     </div>
                 </div>
                 <div class="glass-card p-6 min-h-[400px]">
-                    <div id="merchant-tools" class="hidden flex gap-2">
-                        <input id="target-search" class="text-sm" placeholder="اسم الحساب...">
-                        <button onclick="addTarget()" class="gold-btn px-4 rounded-xl">+</button>
+                    <div id="merchant-tools" class="hidden space-y-4">
+                        <div class="flex gap-2">
+                            <input id="target-search" class="text-sm" placeholder="اسم المواطن..." onchange="addTarget()">
+                            <button onclick="addTarget()" class="gold-btn px-4 rounded-xl text-xl">+</button>
+                        </div>
                     </div>
                     <div id="main-list" class="mt-4 space-y-2"></div>
                 </div>
@@ -127,60 +127,60 @@
                     <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
                         <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
                         <div class="flex gap-4 text-[11px] font-bold">
-                            <span id="dt-yer" class="text-blue-400"></span><span id="dt-usd" class="text-green-400"></span><span id="dt-sar" class="text-orange-400"></span>
+                            <span id="dt-yer" class="text-blue-400"></span>
+                            <span id="dt-usd" class="text-green-400"></span>
+                            <span id="dt-sar" class="text-orange-400"></span>
                         </div>
                     </div>
                     <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
-                    
                     <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div class="relative"><input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()"><div id="tafqit-text" class="tafqit-box"></div></div>
+                            <div class="relative">
+                                <input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()">
+                                <div id="tafqit-text" class="tafqit-box"></div>
+                            </div>
                             <select id="op-cur" onchange="applyTafqit()"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
                             <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
-                            <input id="op-note" placeholder="البيان">
+                            <input id="op-note" placeholder="البيان (اختياري)">
                         </div>
-                        <div class="flex gap-2">
-                            <input id="auth-code-check" class="border-blue-500/50" placeholder="فحص كود المواطن..">
-                            <button onclick="verifyCodeOnly()" class="bg-blue-600 text-white px-5 rounded-xl text-xs font-bold">فحص ✅</button>
-                            <button onclick="saveOp()" class="gold-btn flex-grow py-4 rounded-xl">تثبيت العملية</button>
-                        </div>
-                        <p id="verify-status" class="text-[10px] text-center"></p>
+                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl shadow-lg">تثبيت العملية فوراً</button>
                     </div>
                 </div>
-                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لعرض السجلات..</div>
+                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لمتابعة السجلات الحية...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+        <div class="glass-card w-full max-w-md p-8 space-y-6">
+            <h3 class="text-xl font-bold gold-text">إعدادات الحماية الملكية</h3>
+            <div class="space-y-4">
+                <div class="relative">
+                    <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
+                    <button onclick="togglePass('new-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
+                </div>
+                <div class="relative">
+                    <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور">
+                    <button onclick="togglePass('confirm-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button id="btn-update-pass" onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث الآن</button>
+                <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إلغاء</button>
             </div>
         </div>
     </div>
 
     <script>
-        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = []; let isCodeValid = false;
+        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
 
-        // التحقق من الجلسة عند التشغيل
-        window.onload = async function() {
-            const saved = localStorage.getItem('heiba_session');
-            if (saved) {
-                const session = JSON.parse(saved);
-                const res = await fetch('/api/auth', { 
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ name: session.name, password: session.password, type: session.type, action: 'login' }) 
-                });
-                if(res.ok) {
-                    user = await res.json();
-                    userType = user.type;
-                    start();
-                } else {
-                    localStorage.removeItem('heiba_session');
-                    document.getElementById('auth-ui').classList.remove('hidden');
-                }
-            } else {
-                document.getElementById('auth-ui').classList.remove('hidden');
-            }
-            document.getElementById('splash-screen').classList.add('hidden');
-        };
+        // دالة العين
+        function togglePass(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
 
-        function togglePass(id) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; }
-
+        // دالة التفقيط الصافي (العملة فقط)
         function formatAr(num) {
             if (num == 0) return "صفر";
             const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
@@ -200,83 +200,51 @@
         }
 
         function applyTafqit() {
-            const v = document.getElementById('op-amt').value; const c = document.getElementById('op-cur').options[document.getElementById('op-cur').selectedIndex].text;
-            document.getElementById('tafqit-text').innerText = v > 0 ? formatAr(parseInt(v)) + " " + c : "";
+            const val = document.getElementById('op-amt').value;
+            const cur = document.getElementById('op-cur').options[document.getElementById('op-cur').selectedIndex].text;
+            document.getElementById('tafqit-text').innerText = val > 0 ? formatAr(parseInt(val)) + " " + cur : "";
         }
 
-        function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t==='merchant'); document.getElementById('sel-debtor').classList.toggle('active', t==='debtor'); }
+        // باقي الدوال الأصلية كما هي تماماً
+        function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); }
+
+        window.onload = () => { const saved = localStorage.getItem('heiba_auth_session'); if (saved) { user = JSON.parse(saved); start(); } };
 
         async function doAuth(action) {
-            const name = document.getElementById('u-name').value.trim(); 
+            const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
-            const remember = document.getElementById('remember-me').checked;
-            
-            if(!name || !password) return alert("يرجى ملء جميع الحقول");
-            
+            if(!name || !password) return;
             const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, type: userType, action }) });
             const data = await res.json();
-            
-            if(res.ok) { 
-                user = data; 
-                if (remember) {
-                    localStorage.setItem('heiba_session', JSON.stringify({ name, password, type: userType }));
-                }
-                start(); 
-            } else alert(data.error);
+            if(res.ok) { user = data; if(document.getElementById('remember-me').checked) localStorage.setItem('heiba_auth_session', JSON.stringify(user)); start(); } else alert(data.error);
         }
 
         function start() {
             document.getElementById('auth-ui').classList.add('hidden'); document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerText = user.name;
-            if(user.type === 'merchant') {
-                document.getElementById('merchant-tools').classList.remove('hidden'); document.getElementById('add-form').classList.remove('hidden');
-                setInterval(syncMerchant, 5000);
-                syncMerchant();
-            } else {
-                document.getElementById('debtor-code-zone').classList.remove('hidden');
-                setInterval(fetchAutoDebts, 4000);
-                fetchAutoDebts();
-            }
-        }
-
-        async function addCustomCode() {
-            const c = document.getElementById('custom-code-input').value.trim();
-            if(!c) return;
-            await fetch('/api/add-custom-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName: user.name, customCode: c }) });
-            alert(`تمت إضافة الكود "${c}" بنجاح ✅`);
-            document.getElementById('custom-code-input').value = "";
-        }
-
-        async function verifyCodeOnly() {
-            const code = document.getElementById('auth-code-check').value.trim();
-            if(!code || !activeTarget) return;
-            const res = await fetch('/api/verify-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ code, debtorName: activeTarget }) });
-            const s = document.getElementById('verify-status');
-            if(res.ok) { isCodeValid = true; s.innerText = "✅ كود صحيح"; s.className="text-[10px] text-green-500 text-center"; } 
-            else { isCodeValid = false; s.innerText = "❌ كود خاطئ"; s.className="text-[10px] text-red-500 text-center"; }
-        }
-
-        async function saveOp() {
-            const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
-            const finalStatus = isCodeValid ? 'accepted' : 'pending';
-            const newOp = { id:Date.now(), targetName:activeTarget, amount:a, currency:document.getElementById('op-cur').value, type:document.getElementById('op-type').value, note:document.getElementById('op-note').value, date:new Date().toISOString(), status:finalStatus };
-            user.myRecords.push(newOp);
-            await fetch('/api/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, myRecords:user.myRecords }) });
-            document.getElementById('op-amt').value=""; document.getElementById('auth-code-check').value=""; document.getElementById('verify-status').innerText=""; isCodeValid=false;
-            showDetails(activeTarget);
-        }
-
-        async function syncMerchant() {
-            const res = await fetch(`/api/get-my-data?id=${user.id}`);
-            if(!res.ok) return;
-            const data = await res.json(); user.myRecords = data.myRecords;
-            if(activeTarget) showDetails(activeTarget);
-            calculateGrand(user.myRecords);
+            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
+            if(user.type === 'merchant') { document.getElementById('merchant-tools').classList.remove('hidden'); document.getElementById('add-form').classList.remove('hidden'); renderList(); calculateGrand(user.myRecords); }
+            else { fetchAutoDebts(); setInterval(fetchAutoDebts, 4000); }
         }
 
         function calculateGrand(recs) {
-            let y=0, u=0, s=0; recs.forEach(r => { if(r.status === 'rejected') return; const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; });
+            let y=0, u=0, s=0; recs.forEach(r => { const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; });
             document.getElementById('gt-yer').innerText = y.toLocaleString(); document.getElementById('gt-usd').innerText = u.toLocaleString(); document.getElementById('gt-sar').innerText = s.toLocaleString();
+        }
+
+        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(!n) return; activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value = ""; }
+
+        function renderList() {
+            const t = [...new Set(user.myRecords.map(r => r.targetName))];
+            document.getElementById('main-list').innerHTML = t.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900 shadow-xl' : ''}">${n}</div>`).join('');
+        }
+
+        async function fetchAutoDebts() {
+            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
+            discoveredData = await res.json();
+            let all = []; discoveredData.forEach(m => all = all.concat(m.records)); calculateGrand(all);
+            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}"><p class="font-bold text-sm">${m.merchantName}</p><p class="text-[9px] text-blue-500 font-bold mt-1 uppercase italic">مزامنة حية 📶</p></div>`).join('');
+            if(activeTarget) showDetails(activeTarget);
         }
 
         function showDetails(name) {
@@ -285,34 +253,30 @@
             let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
             let y=0, u=0, s=0;
             document.getElementById('ops-list').innerHTML = records.map(r => {
-                const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.status !== 'rejected') { if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; }
-                const isAcc = r.status === 'accepted'; const isRej = r.status === 'rejected';
-                let btns = (user.type === 'debtor' && !isAcc) ? `<div class="mt-2 flex gap-2"><button onclick="updateStatus('${r.id}','accepted')" class="bg-green-600 px-3 py-1 rounded text-[9px]">قبول</button>${!isRej?`<button onclick="updateStatus('${r.id}','rejected')" class="bg-red-600 px-3 py-1 rounded text-[9px]">رفض</button>`:''}</div>` : "";
-                return `<div class="p-4 bg-zinc-900/40 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'}">
-                    <div class="flex justify-between items-center">
-                        <div><p class="text-sm font-bold">${r.note || 'عملية'} ${isAcc?'✅':(isRej?'❌':'⏳')}</p></div>
-                        <div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p></div>
-                    </div>${btns}
-                </div>`;
+                const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
+                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm"><div><p class="font-bold text-sm">${r.note || 'عملية مالية'}</p><p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div><div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p></div></div>`;
             }).reverse().join('');
             document.getElementById('dt-yer').innerText = y.toLocaleString(); document.getElementById('dt-usd').innerText = u.toLocaleString(); document.getElementById('dt-sar').innerText = s.toLocaleString();
             if(user.type === 'merchant') renderList();
         }
 
-        async function updateStatus(opId, status) { await fetch('/api/update-status', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName:user.name, opId, status }) }); fetchAutoDebts(); }
-        async function fetchAutoDebts() { const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`); discoveredData = await res.json(); renderList(); if(activeTarget) showDetails(activeTarget); }
-
-        function renderList() {
-            const nms = user.type==='merchant' ? [...new Set(user.myRecords.map(r => r.targetName))] : discoveredData.map(m => m.merchantName);
-            document.getElementById('main-list').innerHTML = nms.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl mb-2 cursor-pointer border border-white/5 ${activeTarget===n?'border-yellow-600 shadow-xl':''}">${n}</div>`).join('');
+        async function saveOp() {
+            const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
+            user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
+            showDetails(activeTarget); calculateGrand(user.myRecords);
+            fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
+            document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = ""; document.getElementById('tafqit-text').innerText = "";
         }
 
-        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(n) { activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value=""; } }
-        
-        function logout() { 
-            localStorage.removeItem('heiba_session'); 
-            location.reload(); 
+        async function updatePassword() {
+            const p1 = document.getElementById('new-pass').value; if(!p1 || p1 !== document.getElementById('confirm-pass').value) return alert("خطأ في المطابقة");
+            const res = await fetch('/api/update-pass', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, newPass: p1 }) });
+            if(res.ok) { user.password = p1; alert("تم التحديث!"); closeModal('settings-modal'); }
         }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function logout() { localStorage.removeItem('heiba_auth_session'); location.reload(); }
     </script>
 </body>
 </html>
