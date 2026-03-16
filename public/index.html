@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الهيبة | نظام البصمة الملكي</title>
+    <title>منصة الهيبة | النظام المالي المتكامل</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -17,7 +17,9 @@
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
         .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
         .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
-        .auth-stamp { border: 1px solid #d4af37; color: #d4af37; font-size: 11px; padding: 4px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; background: rgba(212, 175, 55, 0.05); font-weight: bold; }
+        /* ستايل البصمة المضاف */
+        .verified-badge { background: #10b981; color: #000; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin-right: 5px; }
+        .stamp-status { font-size: 10px; color: #d4af37; border: 1px solid #d4af37; padding: 2px 5px; border-radius: 4px; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -61,16 +63,16 @@
             <div class="space-y-8">
                 <div>
                     <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية. تضمن المنصة لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية تمنع الأخطاء البشرية.</p>
+                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4>
-                        <p class="text-gray-500 leading-relaxed">قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة.</p>
+                        <p class="text-gray-500 leading-relaxed">أدر مواطنيك، سجل العمليات، واستقبل "بصماتهم" لتثبيت الحسابات.</p>
                     </div>
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4>
-                        <p class="text-gray-500 leading-relaxed">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
+                        <p class="text-gray-500 leading-relaxed">بصم على عملياتك لضمان عدم التلاعب برصيدك وتثبيت حقك.</p>
                     </div>
                 </div>
             </div>
@@ -87,7 +89,7 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="openModal('verify-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">🔍 بصمة</button>
+                <button id="verify-nav-btn" onclick="openModal('verify-modal')" class="hidden bg-green-600/20 text-green-500 px-4 py-2 rounded-xl text-[10px] font-bold border border-green-600/20">مطابقة البصمة ✅</button>
                 <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">⚙️</button>
                 <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج</button>
             </div>
@@ -96,19 +98,19 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6">
-                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
+                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">ملخص الرصيد (العام والموثق)</h3>
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
-                            <span class="text-xs text-gray-400">ريال يمني</span>
-                            <span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span>
+                        <div class="bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
+                            <div class="flex justify-between items-center"><span class="text-xs text-gray-400">ريال يمني</span><span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span></div>
+                            <div id="v-gt-yer" class="text-[9px] text-green-500 mt-1 font-bold">الموثق بالبصمة: 0</div>
                         </div>
-                        <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10">
-                            <span class="text-xs text-gray-400">دولار أمريكي</span>
-                            <span id="gt-usd" class="font-bold text-green-400 text-xl">0</span>
+                        <div class="bg-green-500/5 p-3 rounded-xl border border-green-500/10">
+                            <div class="flex justify-between items-center"><span class="text-xs text-gray-400">دولار أمريكي</span><span id="gt-usd" class="font-bold text-green-400 text-xl">0</span></div>
+                            <div id="v-gt-usd" class="text-[9px] text-green-500 mt-1 font-bold">الموثق بالبصمة: 0</div>
                         </div>
-                        <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10">
-                            <span class="text-xs text-gray-400">ريال سعودي</span>
-                            <span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span>
+                        <div class="bg-orange-500/5 p-3 rounded-xl border border-orange-500/10">
+                            <div class="flex justify-between items-center"><span class="text-xs text-gray-400">ريال سعودي</span><span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span></div>
+                            <div id="v-gt-sar" class="text-[9px] text-green-500 mt-1 font-bold">الموثق بالبصمة: 0</div>
                         </div>
                     </div>
                 </div>
@@ -126,11 +128,17 @@
             <div class="lg:col-span-8">
                 <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
                     <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
-                        <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
-                        <div class="flex gap-4 text-[11px] font-bold">
-                            <span id="dt-yer" class="text-blue-400"></span>
-                            <span id="dt-usd" class="text-green-400"></span>
-                            <span id="dt-sar" class="text-orange-400"></span>
+                        <div>
+                            <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
+                            <div id="sub-verified-info" class="text-[9px] text-green-500 font-bold mt-1 uppercase italic"></div>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                            <div class="flex gap-4 text-[11px] font-bold">
+                                <span id="dt-yer" class="text-blue-400"></span>
+                                <span id="dt-usd" class="text-green-400"></span>
+                                <span id="dt-sar" class="text-orange-400"></span>
+                            </div>
+                            <button id="stamp-all-btn" onclick="openStampModal('all')" class="hidden bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">بصمة على الكل ✋</button>
                         </div>
                     </div>
                     <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
@@ -152,30 +160,26 @@
         </div>
     </div>
 
-    <!-- مودال البصمة اليدوية للمواطن -->
     <div id="stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text">بصمة المواطن ✋</h3>
-            <p class="text-xs text-gray-400">أدخل كود البصمة الخاص بك (أرقام أو كلمات) لتأكيد صحة هذا المبلغ. بمجرد البصمة لن تستطيع التغيير.</p>
-            <div class="p-4 bg-zinc-900 rounded-xl border border-white/5">
-                <p id="stamp-info-text" class="text-sm font-bold gold-text"></p>
-            </div>
-            <input id="stamp-code-input" placeholder="اكتب كود البصمة هنا...">
+            <h3 class="text-xl font-bold gold-text">إصدار بصمة مالية ✋</h3>
+            <p id="stamp-desc" class="text-xs text-gray-400 italic">أدخل كود البصمة الذي تريد توليده لهذه العملية.</p>
+            <input id="stamp-code-input" placeholder="اكتب كود البصمة هنا">
             <div class="flex gap-4">
-                <button onclick="submitStamp()" class="gold-btn flex-grow py-4 rounded-xl">تأكيد البصمة الآن</button>
+                <button onclick="submitStamp()" class="gold-btn flex-grow py-4 rounded-xl">تأكيد البصمة</button>
                 <button onclick="closeModal('stamp-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إلغاء</button>
             </div>
         </div>
     </div>
 
-    <!-- مودال فحص البصمة للتاجر -->
     <div id="verify-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text">فحص بصمات الزبائن 🔍</h3>
-            <input id="verify-code-input" placeholder="أدخل كود البصمة للفحص">
-            <div id="verify-result" class="hidden p-4 rounded-xl text-xs font-bold"></div>
+            <h3 class="text-xl font-bold text-green-500">مطابقة بصمة الزبون ✅</h3>
+            <p class="text-xs text-gray-400 italic">أدخل الكود الذي أرسله المواطن لمطابقة المبالغ وتثبيتها.</p>
+            <input id="verify-code-input" placeholder="أدخل كود البصمة هنا">
+            <div id="verify-feedback" class="hidden p-4 rounded-xl text-[11px] font-bold"></div>
             <div class="flex gap-4">
-                <button onclick="verifyAuthCode()" class="gold-btn flex-grow py-4 rounded-xl">تحقق من البصمة</button>
+                <button onclick="processVerify()" class="gold-btn flex-grow py-4 rounded-xl text-black">مطابقة الآن</button>
                 <button onclick="closeModal('verify-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إغلاق</button>
             </div>
         </div>
@@ -203,12 +207,9 @@
 
     <script>
         let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
-        let currentStampOp = null;
+        let currentStampOpId = null;
 
-        function togglePass(id) {
-            const input = document.getElementById(id);
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
+        function togglePass(id) { const input = document.getElementById(id); input.type = input.type === 'password' ? 'text' : 'password'; }
 
         function formatAr(num) {
             if (num == 0) return "صفر";
@@ -251,13 +252,29 @@
             document.getElementById('auth-ui').classList.add('hidden'); document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerText = user.name;
             document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
-            if(user.type === 'merchant') { document.getElementById('merchant-tools').classList.remove('hidden'); document.getElementById('add-form').classList.remove('hidden'); renderList(); calculateGrand(user.myRecords); }
-            else { fetchAutoDebts(); setInterval(fetchAutoDebts, 4000); }
+            if(user.type === 'merchant') { 
+                document.getElementById('merchant-tools').classList.remove('hidden'); 
+                document.getElementById('add-form').classList.remove('hidden'); 
+                document.getElementById('verify-nav-btn').classList.remove('hidden');
+                renderList(); calculateGrand(user.myRecords); 
+            } else { 
+                document.getElementById('stamp-all-btn').classList.remove('hidden');
+                fetchAutoDebts(); setInterval(fetchAutoDebts, 4000); 
+            }
         }
 
         function calculateGrand(recs) {
-            let y=0, u=0, s=0; recs.forEach(r => { const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; });
+            let y=0, u=0, s=0, vy=0, vu=0, vs=0;
+            recs.forEach(r => {
+                const a = parseFloat(r.amount); const d = r.type === 'دين';
+                if(r.currency === 'YER') { y += d?a:-a; if(r.isVerified) vy += d?a:-a; }
+                else if(r.currency === 'USD') { u += d?a:-a; if(r.isVerified) vu += d?a:-a; }
+                else { s += d?a:-a; if(r.isVerified) vs += d?a:-a; }
+            });
             document.getElementById('gt-yer').innerText = y.toLocaleString(); document.getElementById('gt-usd').innerText = u.toLocaleString(); document.getElementById('gt-sar').innerText = s.toLocaleString();
+            document.getElementById('v-gt-yer').innerText = `الموثق بالبصمة: ${vy.toLocaleString()}`;
+            document.getElementById('v-gt-usd').innerText = `الموثق بالبصمة: ${vu.toLocaleString()}`;
+            document.getElementById('v-gt-sar').innerText = `الموثق بالبصمة: ${vs.toLocaleString()}`;
         }
 
         function addTarget() { const n = document.getElementById('target-search').value.trim(); if(!n) return; activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value = ""; }
@@ -279,89 +296,60 @@
             activeTarget = name; document.getElementById('empty-hint').classList.add('hidden'); document.getElementById('details-pane').classList.remove('hidden');
             document.getElementById('active-target-name').innerText = name;
             let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
-            let y=0, u=0, s=0;
+            let y=0, u=0, s=0, vy=0, vu=0, vs=0;
             document.getElementById('ops-list').innerHTML = records.map(r => {
-                const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
+                const a = parseFloat(r.amount); const d = r.type === 'دين'; 
+                if(r.currency === 'YER') { y += d?a:-a; if(r.isVerified) vy += d?a:-a; }
+                else if(r.currency === 'USD') { u += d?a:-a; if(r.isVerified) vu += d?a:-a; }
+                else { s += d?a:-a; if(r.isVerified) vs += d?a:-a; }
                 
-                let authHTML = '';
-                if(r.authCode) {
-                    authHTML = `<div class="auth-stamp"><span>✋ بصمة:</span> <span>${r.authCode}</span></div>`;
+                let actionBtn = "";
+                if(r.isVerified) {
+                    actionBtn = `<span class="verified-badge">مطابق ✅</span><span class="text-[9px] text-gray-500 font-bold italic">كود: ${r.authCode}</span>`;
                 } else if(user.type === 'debtor') {
-                    authHTML = `<button onclick="openStampModal('${r.id}', ${a}, '${r.currency}')" class="text-[10px] bg-blue-600/20 text-blue-400 px-3 py-1 rounded-lg mt-2 border border-blue-600/30 hover:bg-blue-600 hover:text-white transition">أبصم هنا ✋</button>`;
+                    actionBtn = `<button onclick="openStampModal('${r.id}')" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-lg text-[9px] font-bold">بصمة ✋</button>`;
+                } else {
+                    actionBtn = `<span class="text-[9px] text-gray-600 italic">غير موثق</span>`;
                 }
 
-                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm">
-                    <div>
-                        <p class="font-bold text-sm">${r.note || 'عملية مالية'}</p>
-                        <p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p>
-                        ${authHTML}
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p>
-                        <p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p>
-                    </div>
-                </div>`;
+                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm"><div><p class="font-bold text-sm">${r.note || 'عملية مالية'}</p><p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p><div class="mt-2">${actionBtn}</div></div><div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p></div></div>`;
             }).reverse().join('');
+            
             document.getElementById('dt-yer').innerText = y.toLocaleString(); document.getElementById('dt-usd').innerText = u.toLocaleString(); document.getElementById('dt-sar').innerText = s.toLocaleString();
+            document.getElementById('sub-verified-info').innerText = `المبالغ الموثقة بينكم: يمني (${vy}) | دولار (${vu}) | سعودي (${vs})`;
             if(user.type === 'merchant') renderList();
-        }
-
-        function openStampModal(id, amt, cur) {
-            currentStampOp = { id, amt, cur };
-            document.getElementById('stamp-info-text').innerText = `تبصم على مبلغ: ${amt.toLocaleString()} ${cur}`;
-            openModal('stamp-modal');
-        }
-
-        async function submitStamp() {
-            const code = document.getElementById('stamp-code-input').value.trim();
-            if(!code || !currentStampOp) return;
-            const res = await fetch('/api/verify-auth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    action: 'create',
-                    debtorName: user.name,
-                    merchantName: activeTarget,
-                    opId: currentStampOp.id,
-                    amount: currentStampOp.amt,
-                    currency: currentStampOp.cur,
-                    authCode: code 
-                })
-            });
-            if(res.ok) {
-                alert("تم وضع البصمة بنجاح! لا يمكن التلاعب بهذا المبلغ الآن.");
-                closeModal('stamp-modal');
-                document.getElementById('stamp-code-input').value = "";
-                fetchAutoDebts();
-            }
-        }
-
-        async function verifyAuthCode() {
-            const code = document.getElementById('verify-code-input').value.trim();
-            const resDiv = document.getElementById('verify-result');
-            if(!code) return;
-            const res = await fetch('/api/verify-auth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'check', authCode: code, merchantId: user.id })
-            });
-            const data = await res.json();
-            resDiv.classList.remove('hidden', 'bg-red-500/20', 'text-red-500', 'bg-green-500/20', 'text-green-500');
-            if(res.ok) {
-                resDiv.classList.add('bg-green-500/20', 'text-green-500');
-                resDiv.innerHTML = `✅ بصمة صحيحة!<br>المواطن: ${data.data.targetName}<br>المبلغ الموثق: ${data.data.amount} ${data.data.currency}<br>التاريخ: ${new Date(data.data.date).toLocaleDateString()}`;
-            } else {
-                resDiv.classList.add('bg-red-500/20', 'text-red-500');
-                resDiv.innerText = "❌ الكود خطأ أو لم يتم البصم به عندك.";
-            }
         }
 
         async function saveOp() {
             const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
-            user.myRecords.push({ id: Date.now().toString(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
+            user.myRecords.push({ id: Date.now().toString(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString(), isVerified: false });
             showDetails(activeTarget); calculateGrand(user.myRecords);
             fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
             document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = ""; document.getElementById('tafqit-text').innerText = "";
+        }
+
+        // دوال البصمة الجديدة
+        function openStampModal(id) { currentStampOpId = id; document.getElementById('stamp-modal').classList.remove('hidden'); }
+        async function submitStamp() {
+            const code = document.getElementById('stamp-code-input').value.trim();
+            if(!code) return;
+            await fetch('/api/verify-auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'create', debtorName: user.name, merchantName: activeTarget, opId: currentStampOpId, authCode: code }) });
+            alert("تم إرسال البصمة! أرسل الكود للتاجر الآن.");
+            closeModal('stamp-modal'); fetchAutoDebts();
+        }
+        async function processVerify() {
+            const code = document.getElementById('verify-code-input').value.trim();
+            const res = await fetch('/api/verify-auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'check', authCode: code, merchantId: user.id }) });
+            const data = await res.json();
+            const fb = document.getElementById('verify-feedback');
+            fb.classList.remove('hidden', 'bg-red-500/10', 'text-red-500', 'bg-green-500/10', 'text-green-500');
+            if(res.ok) {
+                fb.classList.add('bg-green-500/10', 'text-green-500'); fb.innerText = `✅ تم مطابقة ${data.count} عملية بنجاح!`;
+                user.myRecords = data.newRecords; calculateGrand(user.myRecords);
+                if(activeTarget) showDetails(activeTarget);
+            } else {
+                fb.classList.add('bg-red-500/10', 'text-red-500'); fb.innerText = "❌ الكود غير صحيح";
+            }
         }
 
         async function updatePassword() {
