@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -16,8 +16,8 @@
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
         .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
-        /* ستايل التفقيط */
         .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
+        .auth-badge { background: rgba(212, 175, 55, 0.1); border: 1px solid #d4af37; color: #d4af37; font-size: 10px; padding: 2px 8px; border-radius: 6px; display: inline-block; margin-top: 4px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -87,6 +87,7 @@
                 </div>
             </div>
             <div class="flex gap-3">
+                <button onclick="openModal('verify-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">🛡️</button>
                 <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">⚙️</button>
                 <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج</button>
             </div>
@@ -151,6 +152,20 @@
         </div>
     </div>
 
+    <!-- مودال التوثيق وفحص الأكواد -->
+    <div id="verify-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+        <div class="glass-card w-full max-w-md p-8 space-y-6">
+            <h3 class="text-xl font-bold gold-text">نظام فحص التوثيقات 🔐</h3>
+            <p class="text-[11px] text-gray-500">أدخل رمز التوثيق المقدم من المواطن للتأكد من تطابقه مع المبلغ المسجل.</p>
+            <input id="verify-code-input" placeholder="أدخل رمز التوثيق هنا">
+            <div id="verify-result" class="hidden p-4 rounded-xl text-xs font-bold"></div>
+            <div class="flex gap-4">
+                <button onclick="verifyAuthCode()" class="gold-btn flex-grow py-4 rounded-xl">فحص الرمز</button>
+                <button onclick="closeModal('verify-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
     <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-6">
             <h3 class="text-xl font-bold gold-text">إعدادات الحماية الملكية</h3>
@@ -174,13 +189,11 @@
     <script>
         let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
 
-        // دالة العين
         function togglePass(id) {
             const input = document.getElementById(id);
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        // دالة التفقيط الصافي (العملة فقط)
         function formatAr(num) {
             if (num == 0) return "صفر";
             const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
@@ -205,7 +218,6 @@
             document.getElementById('tafqit-text').innerText = val > 0 ? formatAr(parseInt(val)) + " " + cur : "";
         }
 
-        // باقي الدوال الأصلية كما هي تماماً
         function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); }
 
         window.onload = () => { const saved = localStorage.getItem('heiba_auth_session'); if (saved) { user = JSON.parse(saved); start(); } };
@@ -254,15 +266,75 @@
             let y=0, u=0, s=0;
             document.getElementById('ops-list').innerHTML = records.map(r => {
                 const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
-                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm"><div><p class="font-bold text-sm">${r.note || 'عملية مالية'}</p><p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div><div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p></div></div>`;
+                
+                let authHTML = '';
+                if(r.authCode) {
+                    authHTML = `<div class="auth-badge">موثق كود: ${r.authCode}</div>`;
+                } else if(user.type === 'debtor') {
+                    authHTML = `<button onclick="generateAuth('${r.id}', ${a}, '${r.currency}')" class="text-[10px] bg-yellow-600/20 text-yellow-500 px-3 py-1 rounded-lg mt-2 border border-yellow-600/30 hover:bg-yellow-600 hover:text-black transition">توثيق العملية 🔐</button>`;
+                }
+
+                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="font-bold text-sm">${r.note || 'عملية مالية'}</p>
+                        <p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p>
+                        ${authHTML}
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p>
+                        <p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p>
+                    </div>
+                </div>`;
             }).reverse().join('');
             document.getElementById('dt-yer').innerText = y.toLocaleString(); document.getElementById('dt-usd').innerText = u.toLocaleString(); document.getElementById('dt-sar').innerText = s.toLocaleString();
             if(user.type === 'merchant') renderList();
         }
 
+        async function generateAuth(opId, amount, currency) {
+            const code = "HB-" + Math.floor(10000 + Math.random() * 90000).toString();
+            const res = await fetch('/api/verify-auth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ 
+                    action: 'create',
+                    debtorName: user.name,
+                    merchantName: activeTarget,
+                    opId, amount, currency, authCode: code 
+                })
+            });
+            if(res.ok) {
+                alert("تم توثيق هذه العملية بنجاح بالرمز: " + code);
+                fetchAutoDebts();
+            } else {
+                const err = await res.json();
+                alert(err.error);
+            }
+        }
+
+        async function verifyAuthCode() {
+            const code = document.getElementById('verify-code-input').value.trim();
+            const resDiv = document.getElementById('verify-result');
+            if(!code) return;
+            
+            const res = await fetch('/api/verify-auth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'check', authCode: code, merchantId: user.id })
+            });
+            const data = await res.json();
+            resDiv.classList.remove('hidden', 'bg-red-500/20', 'text-red-500', 'bg-green-500/20', 'text-green-500');
+            if(res.ok) {
+                resDiv.classList.add('bg-green-500/20', 'text-green-500');
+                resDiv.innerHTML = `✅ الرمز صحيح!<br>الاسم: ${data.data.targetName}<br>المبلغ: ${data.data.amount} ${data.data.currency}<br>التاريخ: ${new Date(data.data.date).toLocaleDateString()}`;
+            } else {
+                resDiv.classList.add('bg-red-500/20', 'text-red-500');
+                resDiv.innerText = "❌ الرمز غير موجود أو لا ينتمي لهذا الحساب.";
+            }
+        }
+
         async function saveOp() {
             const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
-            user.myRecords.push({ id: Date.now(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
+            user.myRecords.push({ id: Date.now().toString(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
             showDetails(activeTarget); calculateGrand(user.myRecords);
             fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
             document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = ""; document.getElementById('tafqit-text').innerText = "";
