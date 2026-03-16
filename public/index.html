@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA ROYAL SYSTEM</title>
+    <title>منظومة الهيبة الملكية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body { background: #060608; color: #f0f0f0; font-family: 'Changa', sans-serif; }
         .gold-text { color: #d4af37; }
@@ -21,7 +21,7 @@
 </head>
 <body class="p-4 md:p-8">
 
-    <div id="auth-ui" class="max-w-md mx-auto mt-10 space-y-8 glass-card p-10">
+    <div id="auth-ui" class="max-w-md mx-auto mt-10 space-y-8 glass-card p-10 shadow-2xl">
         <h1 class="text-7xl font-black gold-text text-center italic">HEIBA</h1>
         <div class="grid grid-cols-2 gap-4">
             <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-xl text-center">👑 تاجر</div>
@@ -29,44 +29,44 @@
         </div>
         <input id="u-name" placeholder="الاسم الكامل">
         <input id="u-pass" type="password" placeholder="كلمة المرور">
-        <button onclick="doAuth('login')" class="gold-btn w-full py-4 rounded-xl">دخول</button>
-        <button onclick="doAuth('reg')" class="text-gray-600 w-full text-xs">تسجيل جديد</button>
+        <button onclick="doAuth('login')" class="gold-btn w-full py-4 rounded-xl shadow-lg">دخول المنظومة</button>
+        <button onclick="doAuth('reg')" class="text-gray-600 w-full text-xs">إنشاء حساب جديد</button>
     </div>
 
     <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
         <header class="flex justify-between items-center glass-card p-6">
             <div>
-                <h2 id="display-name" class="text-2xl font-black gold-text"></h2>
-                <div id="debtor-tools" class="hidden mt-2 flex items-center gap-2">
-                    <button onclick="generateCode()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 px-3 py-1 rounded-lg text-[10px]">توليد كود اعتماد 🔑</button>
-                    <span id="show-code" class="text-yellow-500 font-bold text-xs"></span>
+                <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-2"></h2>
+                <div id="debtor-code-zone" class="hidden flex gap-2 items-center">
+                    <input id="custom-code-input" class="!p-1 !h-8 !text-xs !w-32" placeholder="اكتب كود اعتمادك...">
+                    <button onclick="saveCustomCode()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-lg">حفظ الكود 🔑</button>
                 </div>
             </div>
-            <button onclick="logout()" class="text-red-500 font-bold">خروج</button>
+            <button onclick="logout()" class="text-red-500 font-bold border border-red-500/20 px-4 py-1 rounded-xl">خروج</button>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
-                <div class="glass-card p-6 space-y-3">
-                    <div class="flex justify-between text-blue-400"><span>يمني</span><span id="gt-yer" class="font-bold text-lg">0</span></div>
-                    <div class="flex justify-between text-green-400"><span>دولار</span><span id="gt-usd" class="font-bold text-lg">0</span></div>
-                    <div class="flex justify-between text-orange-400"><span>سعودي</span><span id="gt-sar" class="font-bold text-lg">0</span></div>
+                <div class="glass-card p-6 space-y-3 shadow-lg">
+                    <div class="flex justify-between text-blue-400 font-bold"><span>يمني</span><span id="gt-yer">0</span></div>
+                    <div class="flex justify-between text-green-400 font-bold"><span>دولار</span><span id="gt-usd">0</span></div>
+                    <div class="flex justify-between text-orange-400 font-bold"><span>سعودي</span><span id="gt-sar">0</span></div>
                 </div>
                 <div class="glass-card p-6 min-h-[400px]">
                     <div id="merchant-tools" class="hidden flex gap-2 mb-4">
-                        <input id="target-search" placeholder="اسم المواطن...">
+                        <input id="target-search" placeholder="بحث عن مواطن...">
                         <button onclick="addTarget()" class="gold-btn px-4 rounded-lg">+</button>
                     </div>
                     <div id="main-list" class="space-y-2"></div>
                 </div>
             </div>
 
-            <div class="lg:col-span-8 glass-card p-8 min-h-[600px] flex flex-col">
+            <div class="lg:col-span-8 glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
                 <div id="details-pane" class="hidden flex flex-col h-full">
                     <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
                         <div>
                             <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
-                            <button id="btn-accept-all" onclick="acceptAll()" class="hidden mt-2 text-[10px] bg-green-600/20 text-green-500 px-3 py-1 rounded-full border border-green-500/30 hover:bg-green-600 hover:text-white transition">قبول الكل ✅</button>
+                            <button id="btn-accept-all" onclick="acceptAll()" class="hidden mt-2 text-[10px] bg-green-600/20 text-green-500 px-3 py-1 rounded-full border border-green-500/30">قبول الكل ✅</button>
                         </div>
                         <div class="flex gap-4 text-xs font-bold">
                             <span id="dt-yer" class="text-blue-400"></span><span id="dt-usd" class="text-green-400"></span><span id="dt-sar" class="text-orange-400"></span>
@@ -82,18 +82,21 @@
                             <input id="op-note" placeholder="البيان">
                         </div>
                         <div class="flex gap-2">
-                            <input id="auth-code-input" class="border-yellow-600/30" placeholder="كود الاعتماد (اختياري)">
-                            <button onclick="saveOp()" class="gold-btn px-10 rounded-xl">تثبيت العملية</button>
+                            <input id="auth-code-check" class="border-blue-500/50" placeholder="ادخل كود المواطن للفحص...">
+                            <button id="btn-verify" onclick="verifyCodeOnly()" class="bg-blue-600 text-white px-4 rounded-xl text-xs">فحص ✅</button>
+                            <button onclick="saveOp()" class="gold-btn px-10 rounded-xl flex-grow">تثبيت</button>
                         </div>
+                        <p id="verify-status" class="text-[10px] text-center"></p>
                     </div>
                 </div>
-                <div id="empty-hint" class="flex-grow flex items-center justify-center text-gray-700 italic">اختر حساباً للمتابعة...</div>
+                <div id="empty-hint" class="flex-grow flex items-center justify-center text-gray-700 italic">اختر حساباً من القائمة...</div>
             </div>
         </div>
     </div>
 
     <script>
         let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
+        let isCodeValid = false;
 
         function formatAr(num) {
             if (num == 0) return "صفر";
@@ -137,53 +140,52 @@
                 document.getElementById('add-form').classList.remove('hidden');
                 setInterval(syncMerchant, 5000);
             } else {
-                document.getElementById('debtor-tools').classList.remove('hidden');
+                document.getElementById('debtor-code-zone').classList.remove('hidden');
                 document.getElementById('btn-accept-all').classList.remove('hidden');
                 setInterval(fetchAutoDebts, 4000);
             }
         }
 
-        async function generateCode() {
-            const res = await fetch('/api/generate-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName: user.name }) });
-            const data = await res.json();
-            document.getElementById('show-code').innerText = "كودك: " + data.code;
+        // للمواطن: حفظ الكود الذي كتبه يدوياً
+        async function saveCustomCode() {
+            const customCode = document.getElementById('custom-code-input').value.trim();
+            if(!customCode) return alert("اكتب كود أولاً");
+            await fetch('/api/set-custom-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName: user.name, customCode }) });
+            alert("تم تفعيل الكود بنجاح. أعطه للتاجر الآن.");
         }
 
-        async function syncMerchant() {
-            const res = await fetch(`/api/get-my-data?id=${user.id}`);
-            const data = await res.json();
-            user.myRecords = data.myRecords;
-            if(activeTarget) showDetails(activeTarget);
-            calculateGrand(user.myRecords);
-        }
-
-        function calculateGrand(recs) {
-            let y=0, u=0, s=0;
-            recs.forEach(r => {
-                if(r.status === 'rejected') return;
-                const a = parseFloat(r.amount); const d = r.type === 'دين';
-                if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
-            });
-            document.getElementById('gt-yer').innerText = y.toLocaleString();
-            document.getElementById('gt-usd').innerText = u.toLocaleString();
-            document.getElementById('gt-sar').innerText = s.toLocaleString();
+        // للتاجر: فحص الكود فقط
+        async function verifyCodeOnly() {
+            const code = document.getElementById('auth-code-check').value.trim();
+            if(!code || !activeTarget) return;
+            const res = await fetch('/api/verify-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ code, debtorName: activeTarget }) });
+            const statusLabel = document.getElementById('verify-status');
+            if(res.ok) {
+                isCodeValid = true;
+                statusLabel.innerText = "✅ الكود صحيح وسيتم القبول تلقائياً";
+                statusLabel.className = "text-[10px] text-center text-green-500";
+            } else {
+                isCodeValid = false;
+                statusLabel.innerText = "❌ الكود خاطئ أو غير موجود";
+                statusLabel.className = "text-[10px] text-center text-red-500";
+            }
         }
 
         async function saveOp() {
             const a = document.getElementById('op-amt').value;
-            const code = document.getElementById('auth-code-input').value.trim();
             if(!a || !activeTarget) return;
 
-            let finalStatus = 'pending';
-            if(code) {
-                const vRes = await fetch('/api/verify-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ code, debtorName: activeTarget }) });
-                if(vRes.ok) finalStatus = 'accepted';
-            }
+            // إذا الكود فُحص ونجح، الحالة Accepted، غير ذلك Pending
+            const finalStatus = isCodeValid ? 'accepted' : 'pending';
 
             const newOp = { id:Date.now(), targetName:activeTarget, amount:a, currency:document.getElementById('op-cur').value, type:document.getElementById('op-type').value, note:document.getElementById('op-note').value, date:new Date().toISOString(), status:finalStatus, chat:'' };
             user.myRecords.push(newOp);
             await fetch('/api/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, myRecords:user.myRecords }) });
-            document.getElementById('op-amt').value=""; document.getElementById('auth-code-input').value="";
+            
+            // تصفير
+            document.getElementById('op-amt').value=""; document.getElementById('auth-code-check').value="";
+            document.getElementById('verify-status').innerText = "";
+            isCodeValid = false;
             showDetails(activeTarget);
         }
 
@@ -197,6 +199,14 @@
             document.getElementById('op-amt').focus();
         }
 
+        async function syncMerchant() {
+            const res = await fetch(`/api/get-my-data?id=${user.id}`);
+            const data = await res.json();
+            user.myRecords = data.myRecords;
+            if(activeTarget) showDetails(activeTarget);
+            calculateGrand(user.myRecords);
+        }
+
         function showDetails(name) {
             activeTarget = name; document.getElementById('empty-hint').classList.add('hidden'); document.getElementById('details-pane').classList.remove('hidden');
             document.getElementById('active-target-name').innerText = name;
@@ -207,8 +217,6 @@
                 if(r.status !== 'rejected') { if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; }
                 const isAcc = r.status === 'accepted'; const isRej = r.status === 'rejected';
                 
-                const sLab = isAcc ? '<span class="status-badge bg-green-900/30 text-green-500">تم القبول ✅</span>' : (isRej ? '<span class="status-badge bg-red-900/30 text-red-500">مرفوضة ❌</span>' : '<span class="status-badge bg-yellow-900/30 text-yellow-500">انتظار ⏳</span>');
-
                 let btns = "";
                 if(user.type === 'debtor' && !isAcc) {
                     btns = `<div class="mt-2 flex gap-2"><button onclick="updateStatus('${r.id}','accepted')" class="bg-green-600 px-3 py-1 rounded text-[10px]">قبول</button>${!isRej?`<button onclick="updateStatus('${r.id}','rejected')" class="bg-red-600 px-3 py-1 rounded text-[10px]">رفض</button>`:''}</div>`;
@@ -224,8 +232,8 @@
 
                 return `<div class="p-4 bg-zinc-900/60 rounded-xl border-r-4 ${d?'border-red-500':'border-green-500'}">
                     <div class="flex justify-between">
-                        <div><p class="text-sm font-bold">${r.note || 'عملية'} ${sLab}</p><p class="text-[9px] text-gray-500">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
-                        <div class="text-right"><p class="text-xl font-bold ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase">${r.currency}</p></div>
+                        <div><p class="text-sm font-bold">${r.note || 'عملية'} ${isAcc?'✅':(isRej?'❌':'⏳')}</p><p class="text-[9px] text-gray-500">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
+                        <div class="text-right"><p class="text-xl font-bold ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p></div>
                     </div>${btns}${chat}
                 </div>`;
             }).reverse().join('');
@@ -257,6 +265,16 @@
         function renderList() {
             const names = user.type==='merchant' ? [...new Set(user.myRecords.map(r => r.targetName))] : discoveredData.map(m => m.merchantName);
             document.getElementById('main-list').innerHTML = names.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-xl mb-2 cursor-pointer border border-white/5 ${activeTarget===n?'border-yellow-600':''}">${n}</div>`).join('');
+        }
+
+        function calculateGrand(recs) {
+            let y=0, u=0, s=0;
+            recs.forEach(r => {
+                if(r.status === 'rejected') return;
+                const a = parseFloat(r.amount); const d = r.type === 'دين';
+                if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
+            });
+            document.getElementById('gt-yer').innerText = y.toLocaleString(); document.getElementById('gt-usd').innerText = u.toLocaleString(); document.getElementById('gt-sar').innerText = s.toLocaleString();
         }
 
         function addTarget() { const n = document.getElementById('target-search').value.trim(); if(n) { activeTarget = n; showDetails(n); renderList(); } }
