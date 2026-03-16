@@ -1,99 +1,284 @@
-const express = require('express');
-const fs = require('fs');
-const axios = require('axios');
-const app = express();
-const PORT = process.env.PORT || 3000;
-const DB_PATH = './heiba_royal_db.json';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة الهيبة الملكية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #060608; color: #f0f0f0; font-family: 'Changa', sans-serif; }
+        .gold-text { color: #d4af37; }
+        .gold-btn { background: linear-gradient(135deg, #d4af37, #b8860b); color: #000; font-weight: bold; }
+        .glass-card { background: rgba(15, 15, 20, 0.98); border: 1px solid #222; border-radius: 28px; }
+        input, select { background: #111 !important; border: 1px solid #333 !important; color: #fff; border-radius: 12px; padding: 12px; width: 100%; outline: none; }
+        .type-select { border: 2px solid #333; cursor: pointer; }
+        .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
+        .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; font-weight: bold; }
+        .status-badge { font-size: 10px; padding: 2px 8px; border-radius: 8px; display: inline-block; font-weight: bold; }
+        .chat-area { background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 12px; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
 
-const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
-const MY_CHAT_ID = '5042495708';
+    <div id="auth-ui" class="max-w-md mx-auto mt-10 space-y-8 glass-card p-10 shadow-2xl">
+        <h1 class="text-7xl font-black gold-text text-center italic">HEIBA</h1>
+        <div class="grid grid-cols-2 gap-4">
+            <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-xl text-center">👑 تاجر</div>
+            <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 rounded-xl text-center">👤 مواطن</div>
+        </div>
+        <input id="u-name" placeholder="الاسم الكامل">
+        <input id="u-pass" type="password" placeholder="كلمة المرور">
+        <button onclick="doAuth('login')" class="gold-btn w-full py-4 rounded-xl shadow-lg">دخول المنظومة</button>
+        <button onclick="doAuth('reg')" class="text-gray-600 w-full text-xs">إنشاء حساب جديد</button>
+    </div>
 
-app.use(express.json());
-app.use(express.static('public'));
+    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
+        <header class="flex justify-between items-center glass-card p-6">
+            <div>
+                <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-2"></h2>
+                <div id="debtor-code-zone" class="hidden flex gap-2 items-center">
+                    <input id="custom-code-input" class="!p-1 !h-8 !text-xs !w-32" placeholder="اكتب كود اعتمادك...">
+                    <button onclick="saveCustomCode()" class="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-lg">حفظ الكود 🔑</button>
+                </div>
+            </div>
+            <button onclick="logout()" class="text-red-500 font-bold border border-red-500/20 px-4 py-1 rounded-xl">خروج</button>
+        </header>
 
-let db = { users: [], authCodes: [] };
-if (fs.existsSync(DB_PATH)) { 
-    try { 
-        db = JSON.parse(fs.readFileSync(DB_PATH)); 
-        if(!db.authCodes) db.authCodes = [];
-    } catch (e) { db = { users: [], authCodes: [] }; } 
-}
-const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card p-6 space-y-3 shadow-lg">
+                    <div class="flex justify-between text-blue-400 font-bold"><span>يمني</span><span id="gt-yer">0</span></div>
+                    <div class="flex justify-between text-green-400 font-bold"><span>دولار</span><span id="gt-usd">0</span></div>
+                    <div class="flex justify-between text-orange-400 font-bold"><span>سعودي</span><span id="gt-sar">0</span></div>
+                </div>
+                <div class="glass-card p-6 min-h-[400px]">
+                    <div id="merchant-tools" class="hidden flex gap-2 mb-4">
+                        <input id="target-search" placeholder="بحث عن مواطن...">
+                        <button onclick="addTarget()" class="gold-btn px-4 rounded-lg">+</button>
+                    </div>
+                    <div id="main-list" class="space-y-2"></div>
+                </div>
+            </div>
 
-async function sendToTelegram(message) {
-    try { await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { chat_id: MY_CHAT_ID, text: message, parse_mode: 'Markdown' }); } catch (e) {}
-}
+            <div class="lg:col-span-8 glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
+                <div id="details-pane" class="hidden flex flex-col h-full">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
+                        <div>
+                            <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
+                            <button id="btn-accept-all" onclick="acceptAll()" class="hidden mt-2 text-[10px] bg-green-600/20 text-green-500 px-3 py-1 rounded-full border border-green-500/30">قبول الكل ✅</button>
+                        </div>
+                        <div class="flex gap-4 text-xs font-bold">
+                            <span id="dt-yer" class="text-blue-400"></span><span id="dt-usd" class="text-green-400"></span><span id="dt-sar" class="text-orange-400"></span>
+                        </div>
+                    </div>
+                    <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[400px] mb-4 pr-2"></div>
+                    
+                    <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            <div class="relative"><input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()"><div id="tafqit-text" class="tafqit-box"></div></div>
+                            <select id="op-cur" onchange="applyTafqit()"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
+                            <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
+                            <input id="op-note" placeholder="البيان">
+                        </div>
+                        <div class="flex gap-2">
+                            <input id="auth-code-check" class="border-blue-500/50" placeholder="ادخل كود المواطن للفحص...">
+                            <button id="btn-verify" onclick="verifyCodeOnly()" class="bg-blue-600 text-white px-4 rounded-xl text-xs">فحص ✅</button>
+                            <button onclick="saveOp()" class="gold-btn px-10 rounded-xl flex-grow">تثبيت</button>
+                        </div>
+                        <p id="verify-status" class="text-[10px] text-center"></p>
+                    </div>
+                </div>
+                <div id="empty-hint" class="flex-grow flex items-center justify-center text-gray-700 italic">اختر حساباً من القائمة...</div>
+            </div>
+        </div>
+    </div>
 
-// --- ميزة الكود (المواطن يولد كود) ---
-app.post('/api/generate-code', (req, res) => {
-    const { debtorName } = req.body;
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    db.authCodes.push({ code, owner: debtorName.toLowerCase(), used: false });
-    saveDB();
-    res.json({ code });
-});
+    <script>
+        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
+        let isCodeValid = false;
 
-// --- ميزة فحص الكود (عند الإضافة من التاجر) ---
-app.post('/api/verify-code', (req, res) => {
-    const { code, debtorName } = req.body;
-    const idx = db.authCodes.findIndex(c => c.code === code && c.owner === debtorName.toLowerCase() && !c.used);
-    if (idx !== -1) {
-        db.authCodes[idx].used = true;
-        saveDB();
-        res.json({ success: true });
-    } else {
-        res.status(400).json({ error: "كود غير صالح" });
-    }
-});
+        function formatAr(num) {
+            if (num == 0) return "صفر";
+            const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+            function conv(n) {
+                let r = ""; const h = Math.floor(n / 100); const t = n % 100;
+                if (h > 0) r += hundreds[h];
+                if (t > 0) { if (r !== "") r += " و "; if (t < 20) r += units[t]; else { const s = t % 10; const ten = Math.floor(t / 10); if (s > 0) r += units[s] + " و "; r += tens[ten]; } }
+                return r;
+            }
+            let res = ""; const m = Math.floor(num / 1000000); const th = Math.floor((num % 1000000) / 1000); const rem = num % 1000;
+            if (m > 0) res += (m === 1 ? "مليون" : (m === 2 ? "مليونان" : conv(m) + " ملايين"));
+            if (th > 0) { if (res !== "") res += " و "; res += (th === 1 ? "ألف" : (th === 2 ? "ألفين" : conv(th) + " آلاف")); }
+            if (rem > 0) { if (res !== "") res += " و "; res += conv(rem); }
+            return res;
+        }
 
-app.post('/api/auth', (req, res) => {
-    const { name, password, type, action } = req.body;
-    const normalized = name.trim().toLowerCase();
-    const user = db.users.find(u => u.name.toLowerCase() === normalized && u.type === type);
-    if (action === 'reg') {
-        if (user) return res.status(400).json({ error: "الاسم مسجل" });
-        const newUser = { id: "H"+Date.now(), name: name.trim(), password, type, myRecords: [] };
-        db.users.push(newUser); saveDB();
-        sendToTelegram(`✨ عضو جديد: ${name} (${type})`);
-        return res.json(newUser);
-    } else {
-        const u = db.users.find(u => u.name.toLowerCase() === normalized && u.password === password && u.type === type);
-        if (!u) return res.status(403).json({ error: "بيانات خاطئة" });
-        return res.json(u);
-    }
-});
+        function applyTafqit() {
+            const val = document.getElementById('op-amt').value;
+            const cur = document.getElementById('op-cur').options[document.getElementById('op-cur').selectedIndex].text;
+            document.getElementById('tafqit-text').innerText = val > 0 ? formatAr(parseInt(val)) + " " + cur : "";
+        }
 
-app.post('/api/update-status', (req, res) => {
-    const { debtorName, opId, status } = req.body;
-    db.users.forEach(u => {
-        if (u.type === 'merchant') {
-            const op = u.myRecords.find(r => r.id == opId && r.targetName.toLowerCase() === debtorName.toLowerCase());
-            if (op) {
-                op.status = status;
-                if(status === 'accepted') sendToTelegram(`✅ قبول: ${debtorName} وافق على مبلغ ${op.amount}`);
+        function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t==='merchant'); document.getElementById('sel-debtor').classList.toggle('active', t==='debtor'); }
+
+        async function doAuth(action) {
+            const name = document.getElementById('u-name').value.trim();
+            const password = document.getElementById('u-pass').value;
+            const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, type: userType, action }) });
+            const data = await res.json();
+            if(res.ok) { user = data; start(); } else alert(data.error);
+        }
+
+        function start() {
+            document.getElementById('auth-ui').classList.add('hidden'); document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('display-name').innerText = user.name;
+            if(user.type === 'merchant') {
+                document.getElementById('merchant-tools').classList.remove('hidden');
+                document.getElementById('add-form').classList.remove('hidden');
+                setInterval(syncMerchant, 5000);
+            } else {
+                document.getElementById('debtor-code-zone').classList.remove('hidden');
+                document.getElementById('btn-accept-all').classList.remove('hidden');
+                setInterval(fetchAutoDebts, 4000);
             }
         }
-    });
-    saveDB(); res.json({ success: true });
-});
 
-app.post('/api/sync', (req, res) => {
-    const { userId, myRecords } = req.body;
-    const u = db.users.find(u => u.id === userId);
-    if (u) { u.myRecords = myRecords; saveDB(); res.json({ success: true }); }
-    else res.status(404).send();
-});
+        // للمواطن: حفظ الكود الذي كتبه يدوياً
+        async function saveCustomCode() {
+            const customCode = document.getElementById('custom-code-input').value.trim();
+            if(!customCode) return alert("اكتب كود أولاً");
+            await fetch('/api/set-custom-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName: user.name, customCode }) });
+            alert("تم تفعيل الكود بنجاح. أعطه للتاجر الآن.");
+        }
 
-app.get('/api/get-my-data', (req, res) => {
-    const u = db.users.find(u => u.id === req.query.id);
-    if (u) res.json({ myRecords: u.myRecords }); else res.status(404).send();
-});
+        // للتاجر: فحص الكود فقط
+        async function verifyCodeOnly() {
+            const code = document.getElementById('auth-code-check').value.trim();
+            if(!code || !activeTarget) return;
+            const res = await fetch('/api/verify-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ code, debtorName: activeTarget }) });
+            const statusLabel = document.getElementById('verify-status');
+            if(res.ok) {
+                isCodeValid = true;
+                statusLabel.innerText = "✅ الكود صحيح وسيتم القبول تلقائياً";
+                statusLabel.className = "text-[10px] text-center text-green-500";
+            } else {
+                isCodeValid = false;
+                statusLabel.innerText = "❌ الكود خاطئ أو غير موجود";
+                statusLabel.className = "text-[10px] text-center text-red-500";
+            }
+        }
 
-app.get('/api/auto-discover', (req, res) => {
-    const { debtorName } = req.query;
-    const resArr = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
-    .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) }));
-    res.json(resArr);
-});
+        async function saveOp() {
+            const a = document.getElementById('op-amt').value;
+            if(!a || !activeTarget) return;
 
-app.listen(PORT, () => console.log(`HEIBA ROYAL SERVER RUNNING`));
+            // إذا الكود فُحص ونجح، الحالة Accepted، غير ذلك Pending
+            const finalStatus = isCodeValid ? 'accepted' : 'pending';
+
+            const newOp = { id:Date.now(), targetName:activeTarget, amount:a, currency:document.getElementById('op-cur').value, type:document.getElementById('op-type').value, note:document.getElementById('op-note').value, date:new Date().toISOString(), status:finalStatus, chat:'' };
+            user.myRecords.push(newOp);
+            await fetch('/api/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, myRecords:user.myRecords }) });
+            
+            // تصفير
+            document.getElementById('op-amt').value=""; document.getElementById('auth-code-check').value="";
+            document.getElementById('verify-status').innerText = "";
+            isCodeValid = false;
+            showDetails(activeTarget);
+        }
+
+        function editRejected(id) {
+            const op = user.myRecords.find(r => r.id == id);
+            document.getElementById('op-amt').value = op.amount;
+            document.getElementById('op-note').value = op.note;
+            document.getElementById('op-cur').value = op.currency;
+            user.myRecords = user.myRecords.filter(r => r.id != id);
+            applyTafqit();
+            document.getElementById('op-amt').focus();
+        }
+
+        async function syncMerchant() {
+            const res = await fetch(`/api/get-my-data?id=${user.id}`);
+            const data = await res.json();
+            user.myRecords = data.myRecords;
+            if(activeTarget) showDetails(activeTarget);
+            calculateGrand(user.myRecords);
+        }
+
+        function showDetails(name) {
+            activeTarget = name; document.getElementById('empty-hint').classList.add('hidden'); document.getElementById('details-pane').classList.remove('hidden');
+            document.getElementById('active-target-name').innerText = name;
+            let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
+            let y=0, u=0, s=0;
+            document.getElementById('ops-list').innerHTML = records.map(r => {
+                const a = parseFloat(r.amount); const d = r.type === 'دين';
+                if(r.status !== 'rejected') { if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; }
+                const isAcc = r.status === 'accepted'; const isRej = r.status === 'rejected';
+                
+                let btns = "";
+                if(user.type === 'debtor' && !isAcc) {
+                    btns = `<div class="mt-2 flex gap-2"><button onclick="updateStatus('${r.id}','accepted')" class="bg-green-600 px-3 py-1 rounded text-[10px]">قبول</button>${!isRej?`<button onclick="updateStatus('${r.id}','rejected')" class="bg-red-600 px-3 py-1 rounded text-[10px]">رفض</button>`:''}</div>`;
+                }
+                if(user.type === 'merchant' && isRej) {
+                    btns = `<button onclick="editRejected('${r.id}')" class="mt-2 bg-blue-600 px-3 py-1 rounded text-[10px]">تعديل وإعادة إرسال ✏️</button>`;
+                }
+
+                let chat = "";
+                if(isRej) {
+                    chat = `<div class="chat-area"><div class="text-[10px] text-gray-400 mb-2">${r.chat || 'ناقش التاجر...'}</div><div class="flex gap-2"><input id="ci-${r.id}" class="!p-1 !h-8 !text-[10px]" placeholder="رسالة..."><button onclick="doChat('${r.id}')" class="gold-btn px-3 text-[10px] rounded">إرسال</button></div></div>`;
+                }
+
+                return `<div class="p-4 bg-zinc-900/60 rounded-xl border-r-4 ${d?'border-red-500':'border-green-500'}">
+                    <div class="flex justify-between">
+                        <div><p class="text-sm font-bold">${r.note || 'عملية'} ${isAcc?'✅':(isRej?'❌':'⏳')}</p><p class="text-[9px] text-gray-500">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
+                        <div class="text-right"><p class="text-xl font-bold ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p></div>
+                    </div>${btns}${chat}
+                </div>`;
+            }).reverse().join('');
+            document.getElementById('dt-yer').innerText = y.toLocaleString(); document.getElementById('dt-usd').innerText = u.toLocaleString(); document.getElementById('dt-sar').innerText = s.toLocaleString();
+        }
+
+        async function updateStatus(opId, status) {
+            await fetch('/api/update-status', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName:user.name, opId, status }) });
+            fetchAutoDebts();
+        }
+
+        async function acceptAll() {
+            await fetch('/api/accept-all', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName:user.name, merchantName:activeTarget }) });
+            fetchAutoDebts();
+        }
+
+        async function doChat(opId) {
+            const m = document.getElementById(`ci-${opId}`).value; if(!m) return;
+            await fetch('/api/send-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ opId, msg:`[${user.name}]: ${m}` }) });
+            fetchAutoDebts();
+        }
+
+        async function fetchAutoDebts() {
+            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
+            discoveredData = await res.json();
+            renderList(); if(activeTarget) showDetails(activeTarget);
+        }
+
+        function renderList() {
+            const names = user.type==='merchant' ? [...new Set(user.myRecords.map(r => r.targetName))] : discoveredData.map(m => m.merchantName);
+            document.getElementById('main-list').innerHTML = names.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-xl mb-2 cursor-pointer border border-white/5 ${activeTarget===n?'border-yellow-600':''}">${n}</div>`).join('');
+        }
+
+        function calculateGrand(recs) {
+            let y=0, u=0, s=0;
+            recs.forEach(r => {
+                if(r.status === 'rejected') return;
+                const a = parseFloat(r.amount); const d = r.type === 'دين';
+                if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
+            });
+            document.getElementById('gt-yer').innerText = y.toLocaleString(); document.getElementById('gt-usd').innerText = u.toLocaleString(); document.getElementById('gt-sar').innerText = s.toLocaleString();
+        }
+
+        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(n) { activeTarget = n; showDetails(n); renderList(); } }
+        function logout() { location.reload(); }
+    </script>
+</body>
+</html>
