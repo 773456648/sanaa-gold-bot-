@@ -24,27 +24,26 @@ async function sendToTelegram(message) {
     try { await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { chat_id: MY_CHAT_ID, text: message, parse_mode: 'Markdown' }); } catch (e) {}
 }
 
-// --- ميزة الكود اليدوي (المواطن يكتب كوده بنفسه) ---
+// المواطن يحفظ كوده الخاص
 app.post('/api/set-custom-code', (req, res) => {
     const { debtorName, customCode } = req.body;
-    if(!customCode) return res.status(400).json({ error: "ادخل كود أولاً" });
-    // حذف أي كود قديم للمواطن وإضافة الجديد
+    if(!customCode) return res.status(400).json({ error: "ادخل كود" });
     db.authCodes = db.authCodes.filter(c => c.owner !== debtorName.toLowerCase());
-    db.authCodes.push({ code: customCode, owner: debtorName.toLowerCase(), used: false });
+    db.authCodes.push({ code: customCode, owner: debtorName.toLowerCase() });
     saveDB();
     res.json({ success: true });
 });
 
-// --- فحص الكود من قبل التاجر ---
+// التاجر يفحص الكود (وينحذف فوراً إذا صح)
 app.post('/api/verify-code', (req, res) => {
     const { code, debtorName } = req.body;
-    const idx = db.authCodes.findIndex(c => c.code === code && c.owner === debtorName.toLowerCase() && !c.used);
+    const idx = db.authCodes.findIndex(c => c.code === code && c.owner === debtorName.toLowerCase());
     if (idx !== -1) {
-        db.authCodes[idx].used = true; // استهلاك الكود فوراً
+        db.authCodes.splice(idx, 1); 
         saveDB();
         res.json({ success: true });
     } else {
-        res.status(400).json({ error: "كود غير صحيح أو مستخدم مسبقاً" });
+        res.status(400).json({ error: "كود خاطئ" });
     }
 });
 
@@ -65,6 +64,13 @@ app.post('/api/auth', (req, res) => {
     }
 });
 
+app.post('/api/sync', (req, res) => {
+    const { userId, myRecords } = req.body;
+    const u = db.users.find(u => u.id === userId);
+    if (u) { u.myRecords = myRecords; saveDB(); res.json({ success: true }); }
+    else res.status(404).send();
+});
+
 app.post('/api/update-status', (req, res) => {
     const { debtorName, opId, status } = req.body;
     db.users.forEach(u => {
@@ -76,15 +82,6 @@ app.post('/api/update-status', (req, res) => {
     saveDB(); res.json({ success: true });
 });
 
-app.post('/api/accept-all', (req, res) => {
-    const { debtorName, merchantName } = req.body;
-    const m = db.users.find(u => u.name.toLowerCase() === merchantName.toLowerCase() && u.type === 'merchant');
-    if (m) {
-        m.myRecords.forEach(r => { if (r.targetName.toLowerCase() === debtorName.toLowerCase() && r.status !== 'accepted') r.status = 'accepted'; });
-        saveDB(); res.json({ success: true });
-    } else res.status(404).send();
-});
-
 app.post('/api/send-chat', (req, res) => {
     const { opId, msg } = req.body;
     db.users.forEach(u => {
@@ -92,13 +89,6 @@ app.post('/api/send-chat', (req, res) => {
         if (op) op.chat = (op.chat || "") + "\n" + msg;
     });
     saveDB(); res.json({ success: true });
-});
-
-app.post('/api/sync', (req, res) => {
-    const { userId, myRecords } = req.body;
-    const u = db.users.find(u => u.id === userId);
-    if (u) { u.myRecords = myRecords; saveDB(); res.json({ success: true }); }
-    else res.status(404).send();
 });
 
 app.get('/api/get-my-data', (req, res) => {
@@ -113,4 +103,4 @@ app.get('/api/auto-discover', (req, res) => {
     res.json(resArr);
 });
 
-app.listen(PORT, () => console.log(`HEIBA ROYAL SYSTEM READY`));
+app.listen(PORT, () => console.log(`HEIBA ROYAL READY`));
