@@ -1,11 +1,11 @@
- const express = require('express');
+const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_PATH = './heiba_royal_db.json';
 
-// إعدادات التلجرام
+// إعدادات التلجرام (المعطاة)
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const MY_CHAT_ID = '5042495708';
 
@@ -29,7 +29,39 @@ async function sendToTelegram(message) {
     } catch (e) { console.error("Telegram Send Error"); }
 }
 
-// --- قسم الـ Webhook المطور للتحكم الكامل ---
+// ميزة التوثيق الرقمي - Endpoint
+app.post('/api/verify-auth', (req, res) => {
+    const { action, debtorName, merchantName, opId, amount, currency, authCode, merchantId } = req.body;
+
+    if (action === 'create') {
+        const merchant = db.users.find(u => u.name === merchantName && u.type === 'merchant');
+        if (merchant) {
+            const record = merchant.myRecords.find(r => r.id == opId);
+            if (record) {
+                if (record.authCode) return res.status(400).json({ error: "العملية موثقة مسبقاً" });
+                
+                // حفظ الكود في سجلات التاجر
+                record.authCode = authCode;
+                saveDB();
+                
+                // إرسال تقرير التوثيق لتلجرام
+                sendToTelegram(`🛡️ **توثيق ملكي جديد**\n\n👤 المواطن: ${debtorName}\n👑 التاجر: ${merchantName}\n💰 المبلغ: ${amount} ${currency}\n🔐 الرمز: \`${authCode}\``);
+                return res.json({ success: true });
+            }
+        }
+    } 
+    else if (action === 'check') {
+        const merchant = db.users.find(u => u.id === merchantId);
+        if (merchant) {
+            const found = merchant.myRecords.find(r => r.authCode === authCode);
+            if (found) return res.json({ success: true, data: found });
+        }
+        return res.status(404).json({ error: "كود غير صالح" });
+    }
+    res.status(400).send();
+});
+
+//Webhook التلجرام
 app.post('/api/tg-webhook', async (req, res) => {
     const update = req.body;
     if (!update.message || !update.message.text) return res.sendStatus(200);
@@ -37,17 +69,14 @@ app.post('/api/tg-webhook', async (req, res) => {
     const chatId = String(update.message.chat.id);
     const text = update.message.text.trim();
 
-    // التحقق من هوية المالك
     if (chatId !== MY_CHAT_ID) return res.sendStatus(200);
 
-    // 1. أمر معرفة عدد المشتركين
     if (text === "العدد") {
         const total = db.users.length;
         const merchants = db.users.filter(u => u.type === 'merchant').length;
         const debtors = db.users.filter(u => u.type === 'debtor').length;
         sendToTelegram(`📊 **إحصائيات المنصة:**\n\n👥 إجمالي المشتركين: ${total}\n👑 عدد التجار: ${merchants}\n👤 عدد المواطنين: ${debtors}`);
     } 
-    // 2. أمر عرض كل الأعضاء
     else if (text === "كل الأعضاء" || text === "كل العضا") {
         if (db.users.length === 0) {
             sendToTelegram("⚠️ لا يوجد أعضاء مسجلين حالياً.");
@@ -59,7 +88,6 @@ app.post('/api/tg-webhook', async (req, res) => {
             sendToTelegram(list);
         }
     }
-    // 3. أمر الحذف
     else if (text.endsWith("حذف")) {
         const targetName = text.replace("حذف", "").trim();
         const initialCount = db.users.length;
@@ -72,7 +100,6 @@ app.post('/api/tg-webhook', async (req, res) => {
             sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
         }
     } 
-    // 4. أمر البحث العام (بإرسال الاسم فقط)
     else {
         const foundUsers = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
         if (foundUsers.length > 0) {
@@ -95,7 +122,7 @@ app.post('/api/tg-webhook', async (req, res) => {
     res.sendStatus(200);
 });
 
-// --- بقية نظام الـ API الخاص بالمنصة ---
+// Auth API
 app.post('/api/auth', async (req, res) => {
     const { name, password, type, action } = req.body;
     const normalizedName = name.trim().toLowerCase();
