@@ -3,627 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة دفتر | التاجر والمواطن</title>
+    <title>منصة دفتر | النظام الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --panel-bg: #1e293b;
-            --gold-primary: #fbbf24;
-            --gold-hover: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --debt-color: #ef4444; /* أحمر للدين */
-            --pay-color: #10b981; /* أخضر للسداد */
+            --bg-dark: #0a0f18;
+            --panel-bg: #111827;
+            --gold-primary: #d4af37;
+            --gold-light: #f1d279;
         }
 
         body {
             font-family: 'Cairo', sans-serif;
             background-color: var(--bg-dark);
-            color: var(--text-main);
-            background-image: radial-gradient(circle at top right, #1e293b 0%, transparent 40%),
-                              radial-gradient(circle at bottom left, #1e293b 0%, transparent 40%);
-            background-attachment: fixed;
-            min-height: 100vh;
+            color: #e5e7eb;
             margin: 0;
-            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        /* كروت الزجاج الفخمة */
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        .gold-text { color: var(--gold-primary); }
+        
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
         }
 
-        .input-vip {
-            background: rgba(15, 23, 42, 0.6) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: #fff !important;
-            border-radius: 12px !important;
-            padding: 14px 16px !important;
-            transition: all 0.3s ease;
+        .input-dark {
+            background: #05080f !important;
+            border: 1px solid #1f2937 !important;
+            color: white !important;
+            border-radius: 10px !important;
+            padding: 12px !important;
+            padding-left: 45px !important; /* مساحة للأيقونة */
         }
 
-        .input-vip:focus {
+        .input-dark:focus {
             border-color: var(--gold-primary) !important;
-            box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1) !important;
             outline: none;
         }
 
-        .btn-gold {
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-hover));
-            color: #0f172a;
+        .btn-main {
+            background: linear-gradient(to bottom right, var(--gold-primary), #996515);
+            color: black;
             font-weight: 800;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-main:hover {
+            transform: scale(1.01);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-cols: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .role-opt {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            padding: 15px;
             border-radius: 12px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
-        }
-
-        .btn-gold:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
-        }
-
-        /* أزرار اختيار تاجر / مواطن */
-        .role-btn {
-            background: rgba(15, 23, 42, 0.5);
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s ease;
+            text-align: center;
             cursor: pointer;
+            transition: 0.2s;
         }
 
-        .role-btn.active {
-            background: rgba(251, 191, 36, 0.1);
+        .role-opt.active {
             border-color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.1);
         }
 
-        .role-btn.active .icon-box {
-            background: var(--gold-primary);
-            color: #0f172a;
-        }
-
-        .icon-box {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
-            transition: all 0.3s ease;
-        }
-
-        /* القوائم والتفاصيل */
-        .list-item {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.2s;
-        }
-        .list-item:hover { background: rgba(255, 255, 255, 0.02); padding-right: 10px; }
-        .list-item.active { 
-            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.05));
-            border-right: 3px solid var(--gold-primary);
-        }
-
-        /* عدادات الأرصدة */
-        .balance-badge {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .info-section {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
             border-radius: 12px;
-            padding: 10px 15px;
         }
 
-        /* التفقيط */
-        .tafqit-text {
-            font-size: 12px;
-            color: var(--gold-primary);
-            font-weight: 700;
-            margin-top: 6px;
-        }
+        .num-font { font-family: 'Segoe UI', Tahoma, sans-serif; }
 
-        /* تنسيق الأرقام */
-        .num-font { font-family: 'Tahoma', sans-serif; font-weight: bold; }
-        
-        /* علامة المواطن */
-        .pulse-live {
-            animation: pulseGlow 2s infinite;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
+        .animate-in { animation: fadeIn 0.5s ease forwards; }
 
-        /* إخفاء شريط التمرير */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(251, 191, 36, 0.5); border-radius: 10px; }
+        .eye-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #4b5563;
+        }
+        .eye-icon:hover { color: var(--gold-primary); }
     </style>
 </head>
-<body class="p-4 md:p-8 flex flex-col items-center">
+<body class="p-4 md:p-10">
 
-    <!-- شاشة الدخول (Auth UI) -->
-    <div id="auth-ui" class="w-full max-w-5xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center min-h-[85vh]">
+    <!-- واجهة الدخول -->
+    <div id="auth-ui" class="max-w-4xl mx-auto w-full flex flex-col items-center">
         
-        <!-- الجانب الأيمن: مميزات المنصة الحقيقية -->
-        <div class="hidden lg:flex flex-col space-y-8 pr-4">
-            <div>
-                <div class="inline-block px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-sm font-bold mb-4 border border-amber-500/30">دفتر الديون الذكي</div>
-                <h1 class="text-4xl md:text-5xl font-black text-white leading-tight mb-4">
-                    شفافية تامة بين <span class="text-amber-400">التاجر</span> و <span class="text-amber-400">المواطن</span>
-                </h1>
-                <p class="text-slate-400 text-lg">وداعاً للدفاتر الورقية والمراجعات المتعبة. كل حساباتك موثقة، دقيقة، ومتاحة في جيبك لحظة بلحظة.</p>
-            </div>
-
-            <div class="space-y-6 mt-8">
-                <!-- ميزة 1 -->
-                <div class="flex gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-amber-400 flex-shrink-0 text-xl shadow-lg border border-slate-700">🤝</div>
-                    <div>
-                        <h3 class="text-white font-bold text-lg">التاجر يسجل والمواطن يتابع</h3>
-                        <p class="text-slate-400 text-sm mt-1">يقوم التاجر بإضافة القيود (دين أو سداد)، وتظهر فوراً في شاشة المواطن دون الحاجة للسؤال "كم حسابي؟".</p>
-                    </div>
-                </div>
-                <!-- ميزة 2 -->
-                <div class="flex gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-amber-400 flex-shrink-0 text-xl shadow-lg border border-slate-700">💱</div>
-                    <div>
-                        <h3 class="text-white font-bold text-lg">دعم شامل للعملات</h3>
-                        <p class="text-slate-400 text-sm mt-1">فصل تلقائي لحسابات (الريال اليمني، الدولار، والسعودي) في نفس الصفحة لمنع اختلاط الصرف.</p>
-                    </div>
-                </div>
-                <!-- ميزة 3 -->
-                <div class="flex gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-amber-400 flex-shrink-0 text-xl shadow-lg border border-slate-700">🔒</div>
-                    <div>
-                        <h3 class="text-white font-bold text-lg">حفظ الحقوق والتوثيق</h3>
-                        <p class="text-slate-400 text-sm mt-1">كل عملية مسجلة بتاريخها ووقتها الدقيق، ولا مجال للخطأ، مما يضمن حق التاجر وراحة بال المواطن.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- الجانب الأيسر: لوحة تسجيل الدخول -->
-        <div class="glass-card p-8 md:p-10 w-full max-w-md mx-auto">
-            <div class="text-center mb-8 lg:hidden">
-                <h2 class="text-3xl font-black text-white mb-2">دفتر الديون الذكي</h2>
-                <p class="text-slate-400 text-sm">منصة الشفافية بين التاجر والمواطن</p>
-            </div>
-
-            <h3 class="text-xl font-bold text-white mb-6 text-center lg:text-right">اختر صفتك للدخول:</h3>
-            
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div id="sel-merchant" onclick="setType('merchant')" class="role-btn active p-4 rounded-xl text-center">
-                    <div class="icon-box w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-3 text-2xl">🏪</div>
-                    <span class="block font-bold text-white">تاجر (مُسجل)</span>
-                </div>
-                <div id="sel-debtor" onclick="setType('debtor')" class="role-btn p-4 rounded-xl text-center">
-                    <div class="icon-box w-12 h-12 mx-auto rounded-full flex items-center justify-center mb-3 text-2xl">👤</div>
-                    <span class="block font-bold text-white">مواطن (مُتابع)</span>
-                </div>
-            </div>
-
-            <div class="space-y-5">
-                <div>
-                    <label class="text-sm text-slate-400 font-bold mb-2 block">الاسم أو رقم الحساب</label>
-                    <input id="u-name" type="text" class="input-vip w-full" placeholder="مثال: بقالة الأمانة / أو اسمك">
-                </div>
-                <div class="relative">
-                    <label class="text-sm text-slate-400 font-bold mb-2 block">الرمز السري</label>
-                    <input id="u-pass" type="password" class="input-vip w-full" placeholder="••••••••">
-                    <button onclick="togglePass('u-pass')" class="absolute left-4 top-[38px] text-slate-500 hover:text-white">👁️</button>
-                </div>
-            </div>
-
-            <div class="flex items-center gap-3 mt-6 mb-8">
-                <input type="checkbox" id="remember-me" class="w-5 h-5 rounded border-slate-600 bg-slate-800 checked:bg-amber-500 accent-amber-500 cursor-pointer">
-                <label for="remember-me" class="text-sm text-slate-300 cursor-pointer">حفظ بيانات الدخول بجهازي</label>
-            </div>
-
-            <div class="flex flex-col gap-3">
-                <button onclick="doAuth('login')" class="btn-gold w-full py-4 text-lg">تسجيل الدخول</button>
-                <button onclick="doAuth('reg')" class="w-full py-4 rounded-xl font-bold text-slate-300 border border-slate-700 hover:bg-slate-800 transition">إنشاء حساب جديد</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- لوحة التحكم (الدفتر) -->
-    <div id="main-ui" class="hidden w-full max-w-7xl mx-auto space-y-6">
-        
-        <!-- الهيدر -->
-        <header class="glass-card px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div id="user-avatar" class="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-slate-900 text-2xl font-black shadow-lg border-2 border-white/10">
-                    <!-- الحرف الأول -->
-                </div>
-                <div>
-                    <h2 id="display-name" class="text-2xl font-black text-white"></h2>
-                    <span id="role-tag" class="text-sm text-amber-400 font-bold bg-amber-400/10 px-3 py-1 rounded-full mt-1 inline-block border border-amber-400/20"></span>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-3">
-                <button onclick="openModal('settings-modal')" class="p-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition border border-slate-700">⚙️ إعدادات</button>
-                <button onclick="logout()" class="p-3 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition border border-red-500/20 font-bold">تسجيل خروج</button>
-            </div>
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-black gold-text mb-2 tracking-tighter">مـنـصـة دفـتـر</h1>
+            <p class="text-gray-500 font-bold">الجيل الجديد لتنظيم الديون والمشتريات</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- كرت الدخول -->
+        <div class="glass-panel p-8 w-full max-w-md shadow-2xl mb-12 animate-in">
+            <h2 class="text-xl font-bold text-center mb-6">تسجيل الدخول</h2>
             
-            <!-- القائمة الجانبية (الأرصدة والعملاء) -->
-            <div class="lg:col-span-4 space-y-6">
-                
-                <!-- إجمالي الحسابات -->
-                <div class="glass-card p-6">
-                    <h3 class="text-slate-400 font-bold mb-4 flex items-center gap-2">
-                        <span>📊</span> إجمالي الحسابات المجمعة
-                    </h3>
-                    <div class="space-y-3">
-                        <div class="balance-badge flex justify-between items-center">
-                            <span class="text-slate-300 font-bold">يمني (YER)</span>
-                            <span id="gt-yer" class="text-xl text-white num-font">0</span>
-                        </div>
-                        <div class="balance-badge flex justify-between items-center">
-                            <span class="text-slate-300 font-bold">دولار (USD)</span>
-                            <span id="gt-usd" class="text-xl text-white num-font">0</span>
-                        </div>
-                        <div class="balance-badge flex justify-between items-center">
-                            <span class="text-slate-300 font-bold">سعودي (SAR)</span>
-                            <span id="gt-sar" class="text-xl text-white num-font">0</span>
-                        </div>
-                    </div>
+            <div class="role-selector">
+                <div id="role-m" onclick="toggleRole('merchant')" class="role-opt active">
+                    <span class="block text-2xl mb-1">🏪</span>
+                    <span class="text-sm font-bold">حساب تاجر</span>
                 </div>
-
-                <!-- قائمة الدفاتر -->
-                <div class="glass-card p-6 min-h-[400px] flex flex-col">
-                    <div id="merchant-tools" class="hidden mb-6">
-                        <label class="text-xs text-slate-400 font-bold mb-2 block">بحث أو فتح صفحة مواطن جديد:</label>
-                        <div class="flex gap-2">
-                            <input id="target-search" class="input-vip w-full text-sm" placeholder="اسم المواطن المربوط به..." onchange="addTarget()">
-                            <button onclick="addTarget()" class="btn-gold px-4 text-xl rounded-xl shadow-none">+</button>
-                        </div>
-                    </div>
-                    
-                    <h3 class="text-slate-400 font-bold mb-4 text-sm">دفاتر الحسابات المفتوحة</h3>
-                    <div id="main-list" class="space-y-1 overflow-y-auto pr-2">
-                        <!-- القائمة تظهر هنا -->
-                    </div>
+                <div id="role-d" onclick="toggleRole('debtor')" class="role-opt">
+                    <span class="block text-2xl mb-1">👤</span>
+                    <span class="text-sm font-bold">حساب مواطن</span>
                 </div>
             </div>
 
-            <!-- منطقة التفاصيل (القيود) -->
-            <div class="lg:col-span-8">
-                <div id="details-pane" class="hidden glass-card flex flex-col h-full min-h-[700px] relative overflow-hidden">
-                    
-                    <!-- ترويسة الحساب المحدد -->
-                    <div class="p-6 border-b border-white/5 bg-slate-800/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center text-white text-xl font-bold" id="target-initial"></div>
-                            <div>
-                                <h3 id="active-target-name" class="text-2xl font-bold text-white"></h3>
-                                <p class="text-xs text-amber-400 mt-1 flex items-center gap-1">
-                                    <span class="w-2 h-2 bg-amber-400 rounded-full inline-block"></span> حساب نشط
-                                </p>
-                            </div>
-                        </div>
-                        <!-- الأرصدة الصافية لهذا الحساب -->
-                        <div class="flex gap-2">
-                            <div class="bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-700 text-center min-w-[80px]">
-                                <span class="block text-[10px] text-slate-400 mb-1">صافي اليمني</span>
-                                <span id="dt-yer" class="text-sm font-bold text-white num-font"></span>
-                            </div>
-                            <div class="bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-700 text-center min-w-[80px]">
-                                <span class="block text-[10px] text-slate-400 mb-1">صافي الدولار</span>
-                                <span id="dt-usd" class="text-sm font-bold text-white num-font"></span>
-                            </div>
-                            <div class="bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-700 text-center min-w-[80px]">
-                                <span class="block text-[10px] text-slate-400 mb-1">صافي السعودي</span>
-                                <span id="dt-sar" class="text-sm font-bold text-white num-font"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- قائمة القيود -->
-                    <div class="flex-grow p-6">
-                        <div class="grid grid-cols-12 gap-4 mb-4 px-4 text-xs font-bold text-slate-500 uppercase border-b border-slate-700 pb-3">
-                            <div class="col-span-6 md:col-span-5">البيان / التفاصيل</div>
-                            <div class="col-span-6 md:col-span-3 text-right md:text-center">التاريخ والوقت</div>
-                            <div class="col-span-12 md:col-span-4 text-left">المبلغ والعملة</div>
-                        </div>
-                        <div id="ops-list" class="space-y-3 overflow-y-auto max-h-[400px] pr-2">
-                            <!-- العمليات تظهر هنا -->
-                        </div>
-                    </div>
-
-                    <!-- نموذج الإدخال (يظهر للتاجر فقط) -->
-                    <div id="add-form" class="hidden p-6 bg-slate-800/80 border-t border-white/5 rounded-b-24px">
-                        <h4 class="text-sm text-amber-400 font-bold mb-4">تسجيل حركة جديدة بالدفتر:</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-5">
-                            <div class="md:col-span-4">
-                                <label class="text-xs text-slate-400 font-bold mb-1 block">المبلغ</label>
-                                <input id="op-amt" type="number" class="input-vip w-full text-lg font-bold num-font" placeholder="0" oninput="applyTafqit()">
-                                <div id="tafqit-text" class="tafqit-text"></div>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="text-xs text-slate-400 font-bold mb-1 block">العملة</label>
-                                <select id="op-cur" class="input-vip w-full" onchange="applyTafqit()">
-                                    <option value="YER">يمني</option>
-                                    <option value="USD">دولار</option>
-                                    <option value="SAR">سعودي</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="text-xs text-slate-400 font-bold mb-1 block">نوع القيد</label>
-                                <select id="op-type" class="input-vip w-full font-bold">
-                                    <option value="دين" style="color:var(--debt-color)">دين عليه (+)</option>
-                                    <option value="سداد" style="color:var(--pay-color)">سداد منه (-)</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-4">
-                                <label class="text-xs text-slate-400 font-bold mb-1 block">البيان (تفاصيل المشتريات/الدفع)</label>
-                                <input id="op-note" class="input-vip w-full" placeholder="مثال: راشن البيت / أو دفعة سداد">
-                            </div>
-                        </div>
-                        <button onclick="saveOp()" class="btn-gold w-full py-4 text-lg flex items-center justify-center gap-2">
-                            <span>✍️</span> اعتماد القيد في الدفتر
-                        </button>
-                    </div>
+            <div class="space-y-4">
+                <div class="relative">
+                    <input id="u-name" type="text" class="input-dark w-full text-right" placeholder="الاسم المسجل..">
+                </div>
+                <div class="relative">
+                    <input id="u-pass" type="password" class="input-dark w-full text-right" placeholder="كلمة المرور..">
+                    <span class="eye-icon" onclick="togglePasswordVisibility()">👁️</span>
+                </div>
+                
+                <div class="flex items-center gap-2 py-2">
+                    <input type="checkbox" id="remember-me" class="w-4 h-4 accent-gold-primary">
+                    <label for="remember-me" class="text-xs text-gray-400 cursor-pointer">تذكر بياناتي في هذا الجهاز</label>
                 </div>
 
-                <!-- شاشة الانتظار -->
-                <div id="empty-hint" class="glass-card p-12 md:p-24 text-center flex flex-col items-center justify-center h-full min-h-[700px]">
-                    <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center text-5xl mb-6 shadow-inner border border-slate-700">📖</div>
-                    <h3 class="text-2xl font-bold text-white mb-2">دفتر الديون فارغ حالياً</h3>
-                    <p class="text-slate-400 max-w-sm mx-auto">قم بتحديد اسم مواطن من القائمة الجانبية لعرض حسابه وتفاصيله، أو ابدأ بفتح صفحة جديدة.</p>
+                <button onclick="login()" class="btn-main w-full py-4 text-lg mt-2">دخول النظام</button>
+            </div>
+        </div>
+
+        <!-- قسم المعلومات السفلي -->
+        <div class="w-full max-w-3xl glass-panel p-8 space-y-8 animate-in" style="animation-delay: 0.2s;">
+            <div class="text-center border-b border-gray-800 pb-6">
+                <h3 class="gold-text text-xl font-black mb-3 italic">ما هي فائدة المنصة؟</h3>
+                <p class="text-gray-400 text-lg leading-relaxed italic">
+                    "أكلوا وشربوا وعلى الحق اتحسبوا" حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية. تضمن المنصة لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية تمنع الأخطاء البشرية.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-[14px]">
+                <div class="info-section border-r-2 border-gold-primary/30">
+                    <h4 class="gold-text font-bold mb-2 underline text-lg">للتاجر:</h4>
+                    <p class="text-gray-500 leading-relaxed">
+                        قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة. لا حاجة لمطالبات ورقية بعد اليوم.
+                    </p>
+                </div>
+                <div class="info-section border-r-2 border-gold-primary/30">
+                    <h4 class="gold-text font-bold mb-2 underline text-lg">للمواطن:</h4>
+                    <p class="text-gray-500 leading-relaxed">
+                        تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية. شفافية كاملة لكل مشترياتك.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- نافذة تغيير الرمز السري -->
-    <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm" onclick="closeModal('settings-modal')"></div>
-        <div class="glass-card w-full max-w-sm p-8 relative z-10">
-            <h3 class="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-4">إعدادات الحساب</h3>
-            
-            <div class="space-y-4 mb-6">
-                <div>
-                    <label class="text-xs text-slate-400 font-bold mb-1 block">الرمز السري الجديد</label>
-                    <input id="new-pass" type="password" class="input-vip w-full" placeholder="••••••••">
+    <!-- لوحة التحكم الرئيسية -->
+    <div id="main-ui" class="hidden w-full max-w-6xl mx-auto space-y-6">
+        <div class="glass-panel p-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div id="u-avatar" class="w-10 h-10 bg-gold-primary rounded-full flex items-center justify-center text-black font-black"></div>
+                <h2 id="u-display" class="font-bold"></h2>
+            </div>
+            <button onclick="logout()" class="text-red-500 text-sm font-bold border border-red-500/20 px-3 py-1 rounded hover:bg-red-500/10 transition">تسجيل الخروج</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div class="md:col-span-4 space-y-6">
+                <div class="glass-panel p-5">
+                    <h3 class="text-xs font-bold text-gray-500 mb-4 uppercase tracking-widest">الميزانية الإجمالية</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between border-b border-gray-800 pb-2">
+                            <span class="text-sm">ريال يمني</span>
+                            <span id="sum-yer" class="num-font font-bold gold-text">0</span>
+                        </div>
+                        <div class="flex justify-between border-b border-gray-800 pb-2">
+                            <span class="text-sm">ريال سعودي</span>
+                            <span id="sum-sar" class="num-font font-bold gold-text">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm">دولار أمريكي</span>
+                            <span id="sum-usd" class="num-font font-bold gold-text">0</span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-xs text-slate-400 font-bold mb-1 block">تأكيد الرمز السري</label>
-                    <input id="confirm-pass" type="password" class="input-vip w-full" placeholder="••••••••">
+                <div id="merchant-only-list" class="glass-panel p-5 min-h-[300px]">
+                    <div class="flex gap-2 mb-4">
+                        <input id="new-target" class="input-dark w-full text-xs" placeholder="إضافة مواطن جديد..">
+                        <button onclick="addNew()" class="btn-main px-3 text-xs">+</button>
+                    </div>
+                    <div id="target-list" class="space-y-2"></div>
                 </div>
             </div>
-            
-            <div class="flex gap-3">
-                <button onclick="updatePassword()" class="btn-gold flex-1 py-3 rounded-xl font-bold">تغيير الرمز</button>
-                <button onclick="closeModal('settings-modal')" class="bg-slate-700 text-white flex-1 py-3 rounded-xl font-bold hover:bg-slate-600 transition">إلغاء</button>
+
+            <div class="md:col-span-8">
+                <div id="empty-state" class="glass-panel h-full flex flex-col items-center justify-center p-20 text-gray-600 italic">
+                    <p>اختر حساباً لمراجعة كشف الحساب</p>
+                </div>
+                <div id="details-view" class="hidden glass-panel flex flex-col h-full min-h-[500px]">
+                    <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-white/5">
+                        <h3 id="active-name" class="text-2xl font-black gold-text"></h3>
+                        <div class="flex gap-4">
+                            <div class="text-center"><span class="block text-[10px] text-gray-500">يمني</span><span id="d-yer" class="num-font text-sm">0</span></div>
+                            <div class="text-center"><span class="block text-[10px] text-gray-500">سعودي</span><span id="d-sar" class="num-font text-sm">0</span></div>
+                            <div class="text-center"><span class="block text-[10px] text-gray-500">دولار</span><span id="d-usd" class="num-font text-sm">0</span></div>
+                        </div>
+                    </div>
+                    <div id="records-list" class="p-6 flex-grow overflow-y-auto max-h-[400px] space-y-3"></div>
+                    <div id="merchant-form" class="hidden p-6 bg-black/40 border-t border-gray-800">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                            <input id="op-amount" type="number" class="input-dark w-full text-right" placeholder="المبلغ">
+                            <select id="op-currency" class="input-dark w-full">
+                                <option value="YER">ريال يمني</option>
+                                <option value="SAR">ريال سعودي</option>
+                                <option value="USD">دولار</option>
+                            </select>
+                            <input id="op-note" class="input-dark w-full text-right" placeholder="البيان (إيش أخذ؟)">
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="saveOp('دين')" class="bg-red-900/20 text-red-500 border border-red-900/50 flex-1 py-3 font-bold rounded-lg hover:bg-red-900/40">تسجيل ديـن (+)</button>
+                            <button onclick="saveOp('سداد')" class="bg-green-900/20 text-green-500 border border-green-900/50 flex-1 py-3 font-bold rounded-lg hover:bg-green-900/40">تسجيل سداد (-)</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // المتغيرات والمنطق البرمجي (نفسه الخاص بك بالضبط دون مساس بالروابط)
-        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
+        let currentUser = null;
+        let userType = 'merchant';
+        let activeAccount = null;
 
-        function togglePass(id) {
-            const input = document.getElementById(id);
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
-
-        // دالة التفقيط للعملات
-        function formatAr(num) {
-            if (num == 0) return "صفر";
-            const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
-            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
-            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
-            function conv(n) {
-                let r = ""; const h = Math.floor(n / 100); const t = n % 100;
-                if (h > 0) r += hundreds[h];
-                if (t > 0) { if (r !== "") r += " و "; if (t < 20) r += units[t]; else { const s = t % 10; const ten = Math.floor(t / 10); if (s > 0) r += units[s] + " و "; r += tens[ten]; } }
-                return r;
+        // عند تحميل الصفحة، نتحقق من وجود بيانات محفوظة
+        window.onload = () => {
+            const saved = localStorage.getItem('dafter_session');
+            if (saved) {
+                currentUser = JSON.parse(saved);
+                startSystem();
             }
-            let res = ""; const m = Math.floor(num / 1000000); const th = Math.floor((num % 1000000) / 1000); const rem = num % 1000;
-            if (m > 0) res += (m === 1 ? "مليون" : (m === 2 ? "مليونان" : conv(m) + " ملايين"));
-            if (th > 0) { if (res !== "") res += " و "; res += (th === 1 ? "ألف" : (th === 2 ? "ألفين" : conv(th) + " آلاف")); }
-            if (rem > 0) { if (res !== "") res += " و "; res += conv(rem); }
-            return res;
+        };
+
+        function toggleRole(role) {
+            userType = role;
+            document.getElementById('role-m').classList.toggle('active', role === 'merchant');
+            document.getElementById('role-d').classList.toggle('active', role === 'debtor');
         }
 
-        function applyTafqit() {
-            const val = document.getElementById('op-amt').value;
-            const curElement = document.getElementById('op-cur');
-            const curText = curElement.options[curElement.selectedIndex].text;
-            document.getElementById('tafqit-text').innerText = val > 0 ? "فقط " + formatAr(parseInt(val)) + " " + curText + " لا غير" : "";
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('u-pass');
+            const eyeIcon = document.querySelector('.eye-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.innerText = '👁️‍🗨️';
+            } else {
+                passInput.type = 'password';
+                eyeIcon.innerText = '👁️';
+            }
         }
 
-        function setType(t) { 
-            userType = t; 
-            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant');
-            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
-        }
-
-        window.onload = () => { const saved = localStorage.getItem('heiba_auth_session'); if (saved) { user = JSON.parse(saved); start(); } };
-
-        async function doAuth(action) {
+        async function login() {
             const name = document.getElementById('u-name').value.trim();
-            const password = document.getElementById('u-pass').value;
-            if(!name || !password) return alert("يرجى تعبئة الاسم والرمز السري");
+            const pass = document.getElementById('u-pass').value;
+            const remember = document.getElementById('remember-me').checked;
+
+            if(!name || !pass) return;
             
-            // الاتصال بقاعدة البيانات الخاصة بك
-            const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, type: userType, action }) });
+            const res = await fetch('/api/auth', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, password: pass, type: userType, action: 'login' })
+            });
             const data = await res.json();
             
             if(res.ok) { 
-                user = data; 
-                if(document.getElementById('remember-me').checked) localStorage.setItem('heiba_auth_session', JSON.stringify(user)); 
-                start(); 
-            } else {
-                alert(data.error);
-            }
-        }
-
-        function start() {
-            document.getElementById('auth-ui').classList.add('hidden'); 
-            document.getElementById('main-ui').classList.remove('hidden');
-            
-            document.getElementById('display-name').innerText = user.name;
-            document.getElementById('user-avatar').innerText = user.name.charAt(0);
-            
-            const roleTag = document.getElementById('role-tag');
-            
-            if(user.type === 'merchant') { 
-                roleTag.innerText = 'تاجر (مُسجل البيانات)';
-                document.getElementById('merchant-tools').classList.remove('hidden'); 
-                document.getElementById('add-form').classList.remove('hidden'); 
-                renderList(); 
-                calculateGrand(user.myRecords); 
+                currentUser = data; 
+                if (remember) {
+                    localStorage.setItem('dafter_session', JSON.stringify(currentUser));
+                }
+                startSystem(); 
             } else { 
-                roleTag.innerText = 'مواطن (مُتابع الحساب)';
-                fetchAutoDebts(); setInterval(fetchAutoDebts, 4000); 
+                alert(data.error); 
             }
         }
 
-        function calculateGrand(recs) {
-            let y=0, u=0, s=0; 
-            recs.forEach(r => { 
-                const a = parseFloat(r.amount); const d = r.type === 'دين'; 
-                if(r.currency === 'YER') y += d?a:-a; 
-                else if(r.currency === 'USD') u += d?a:-a; 
-                else s += d?a:-a; 
-            });
-            document.getElementById('gt-yer').innerText = y.toLocaleString(); 
-            document.getElementById('gt-usd').innerText = u.toLocaleString(); 
-            document.getElementById('gt-sar').innerText = s.toLocaleString();
+        function logout() {
+            localStorage.removeItem('dafter_session');
+            location.reload();
         }
 
-        function addTarget() { 
-            const n = document.getElementById('target-search').value.trim(); 
-            if(!n) return; 
-            activeTarget = n; 
-            showDetails(n); 
-            renderList(); 
-            document.getElementById('target-search').value = ""; 
+        function startSystem() {
+            document.getElementById('auth-ui').classList.add('hidden');
+            document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('u-display').innerText = currentUser.name;
+            document.getElementById('u-avatar').innerText = currentUser.name[0];
+
+            if(currentUser.type === 'merchant') {
+                renderMerchantList();
+                document.getElementById('merchant-form').classList.remove('hidden');
+            } else {
+                fetchDebtorData();
+            }
         }
 
-        function renderList() {
-            const t = [...new Set(user.myRecords.map(r => r.targetName))];
-            document.getElementById('main-list').innerHTML = t.map(n => `
-                <div onclick="showDetails('${n}')" class="list-item p-4 rounded-xl cursor-pointer flex items-center gap-3 mb-1 ${activeTarget === n ? 'active' : ''}">
-                    <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold border border-slate-600">${n.charAt(0)}</div>
-                    <span class="font-bold text-white text-lg">${n}</span>
-                </div>`).join('');
+        function renderMerchantList() {
+            const targets = [...new Set(currentUser.myRecords.map(r => r.targetName))];
+            document.getElementById('target-list').innerHTML = targets.map(t => `
+                <div onclick="selectAccount('${t}')" class="p-3 glass-panel cursor-pointer hover:bg-white/5 transition flex justify-between items-center ${activeAccount === t ? 'border-gold-primary bg-gold-primary/5' : ''}">
+                    <span class="text-sm font-bold">${t}</span>
+                    <span class="text-[10px] gold-text">كشف الحساب</span>
+                </div>
+            `).join('');
+            updateTotals(currentUser.myRecords);
         }
 
-        async function fetchAutoDebts() {
-            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
-            discoveredData = await res.json();
-            
-            let all = []; discoveredData.forEach(m => all = all.concat(m.records)); 
-            calculateGrand(all);
-            
-            document.getElementById('main-list').innerHTML = discoveredData.map(m => `
-                <div onclick="showDetails('${m.merchantName}')" class="list-item p-4 rounded-xl cursor-pointer flex justify-between items-center mb-1 ${activeTarget === m.merchantName ? 'active' : ''}">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold border border-amber-500/30">🏪</div>
-                        <span class="font-bold text-white text-lg">${m.merchantName}</span>
-                    </div>
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 pulse-live"></div>
-                </div>`).join('');
-                
-            if(activeTarget) showDetails(activeTarget);
+        async function fetchDebtorData() {
+            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(currentUser.name)}`);
+            const data = await res.json();
+            document.getElementById('target-list').innerHTML = data.map(m => `
+                <div onclick="selectDebtorMerchant('${m.merchantName}', ${JSON.stringify(m.records).replace(/"/g, '&quot;')})" class="p-3 glass-panel cursor-pointer hover:bg-white/5">
+                    <span class="text-sm font-bold">${m.merchantName}</span>
+                </div>
+            `).join('');
+            let all = []; data.forEach(m => all = all.concat(m.records));
+            updateTotals(all);
         }
 
-        function showDetails(name) {
-            activeTarget = name; 
-            document.getElementById('empty-hint').classList.add('hidden'); 
-            document.getElementById('details-pane').classList.remove('hidden');
-            
-            document.getElementById('active-target-name').innerText = name;
-            document.getElementById('target-initial').innerText = name.charAt(0);
-            
-            let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
-            let y=0, u=0, s=0;
-            
-            document.getElementById('ops-list').innerHTML = records.map(r => {
-                const a = parseFloat(r.amount); const d = r.type === 'دين'; 
-                if(r.currency === 'YER') y += d?a:-a; 
-                else if(r.currency === 'USD') u += d?a:-a; 
-                else s += d?a:-a;
-                
-                const typeText = d ? 'دين سُجل عليك' : 'دفعة سداد';
-                const typeColor = d ? 'text-red-400' : 'text-emerald-400';
-                const sign = d ? '+' : '-';
-                const bgHover = d ? 'hover:bg-red-500/5' : 'hover:bg-emerald-500/5';
-                const borderColor = d ? 'border-r-red-500' : 'border-r-emerald-500';
-                
+        function selectAccount(name) {
+            activeAccount = name;
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('details-view').classList.remove('hidden');
+            document.getElementById('active-name').innerText = name;
+            const records = currentUser.myRecords.filter(r => r.targetName === name);
+            renderRecords(records);
+            renderMerchantList();
+        }
+
+        function selectDebtorMerchant(name, records) {
+            activeAccount = name;
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('details-view').classList.remove('hidden');
+            document.getElementById('active-name').innerText = name;
+            renderRecords(records);
+        }
+
+        function renderRecords(recs) {
+            let y=0, s=0, u=0;
+            document.getElementById('records-list').innerHTML = recs.map(r => {
+                const isDebt = r.type === 'دين';
+                const amt = parseFloat(r.amount);
+                if(r.currency === 'YER') y += isDebt?amt:-amt;
+                else if(r.currency === 'SAR') s += isDebt?amt:-amt;
+                else u += isDebt?amt:-amt;
                 return `
-                <div class="p-4 bg-slate-800/60 rounded-xl border border-white/5 border-r-4 ${borderColor} ${bgHover} transition grid grid-cols-12 gap-4 items-center">
-                    <div class="col-span-12 md:col-span-5">
-                        <div class="font-bold text-white text-sm">${r.note || 'بدون بيان'}</div>
-                        <div class="${typeColor} text-[11px] font-bold mt-1">${typeText}</div>
+                    <div class="p-4 bg-white/5 rounded-lg border border-gray-800 flex justify-between items-center">
+                        <div>
+                            <div class="font-bold text-sm">${r.note || 'أكلوا وشربوا'}</div>
+                            <div class="text-[9px] text-gray-600">${new Date(r.date).toLocaleDateString('ar-YE')}</div>
+                        </div>
+                        <div class="text-left">
+                            <div class="${isDebt?'text-red-500':'text-green-500'} font-black num-font text-sm">${isDebt?'+':'-'} ${amt.toLocaleString()}</div>
+                            <div class="text-[9px] text-gray-500 font-bold">${r.currency}</div>
+                        </div>
                     </div>
-                    <div class="col-span-6 md:col-span-3 text-right md:text-center">
-                        <span class="text-xs text-slate-400 num-font">${new Date(r.date).toLocaleString('ar-YE', {year:'numeric', month:'numeric', day:'numeric', hour:'numeric', minute:'numeric'})}</span>
-                    </div>
-                    <div class="col-span-6 md:col-span-4 text-left">
-                        <span class="text-xl font-black ${typeColor} num-font">${sign} ${a.toLocaleString()}</span>
-                        <span class="text-xs text-slate-400 font-bold mr-1">${r.currency}</span>
-                    </div>
-                </div>`;
+                `;
             }).reverse().join('');
-            
-            document.getElementById('dt-yer').innerText = y.toLocaleString(); 
-            document.getElementById('dt-usd').innerText = u.toLocaleString(); 
-            document.getElementById('dt-sar').innerText = s.toLocaleString();
-            
-            if(user.type === 'merchant') renderList();
+            document.getElementById('d-yer').innerText = y.toLocaleString();
+            document.getElementById('d-sar').innerText = s.toLocaleString();
+            document.getElementById('d-usd').innerText = u.toLocaleString();
         }
 
-        async function saveOp() {
-            const a = document.getElementById('op-amt').value; 
-            if(!a || !activeTarget) {
-                alert("يرجى إدخال المبلغ واختيار المواطن أولاً");
-                return;
-            }
-            
-            user.myRecords.push({ 
-                id: Date.now(), 
-                targetName: activeTarget, 
-                amount: a, 
-                currency: document.getElementById('op-cur').value, 
-                type: document.getElementById('op-type').value, 
-                note: document.getElementById('op-note').value, 
-                date: new Date().toISOString() 
+        function updateTotals(recs) {
+            let y=0, s=0, u=0;
+            recs.forEach(r => {
+                const amt = parseFloat(r.amount);
+                const isDebt = r.type === 'دين';
+                if(r.currency === 'YER') y += isDebt?amt:-amt;
+                else if(r.currency === 'SAR') s += isDebt?amt:-amt;
+                else u += isDebt?amt:-amt;
             });
-            
-            showDetails(activeTarget); 
-            calculateGrand(user.myRecords);
-            
-            // رفع البيانات للخادم
-            fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
-            
-            document.getElementById('op-amt').value = ""; 
-            document.getElementById('op-note').value = ""; 
-            document.getElementById('tafqit-text').innerText = "";
+            document.getElementById('sum-yer').innerText = y.toLocaleString();
+            document.getElementById('sum-sar').innerText = s.toLocaleString();
+            document.getElementById('sum-usd').innerText = u.toLocaleString();
         }
 
-        async function updatePassword() {
-            const p1 = document.getElementById('new-pass').value; 
-            if(!p1 || p1 !== document.getElementById('confirm-pass').value) return alert("الرمزين غير متطابقين!");
-            
-            const res = await fetch('/api/update-pass', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, newPass: p1 }) });
-            if(res.ok) { 
-                user.password = p1; 
-                alert("تم تغيير الرمز بنجاح"); 
-                closeModal('settings-modal'); 
-            }
+        function addNew() {
+            const n = document.getElementById('new-target').value.trim();
+            if(n) { activeAccount = n; selectAccount(n); document.getElementById('new-target').value = ''; }
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function logout() { localStorage.removeItem('heiba_auth_session'); location.reload(); }
+        async function saveOp(type) {
+            const amt = document.getElementById('op-amount').value;
+            const note = document.getElementById('op-note').value;
+            if(!amt || !activeAccount) return;
+
+            const newRec = {
+                id: Date.now(),
+                targetName: activeAccount,
+                amount: amt,
+                currency: document.getElementById('op-currency').value,
+                type: type,
+                note: note,
+                date: new Date().toISOString()
+            };
+
+            currentUser.myRecords.push(newRec);
+            selectAccount(activeAccount);
+            
+            await fetch('/api/sync', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, myRecords: currentUser.myRecords })
+            });
+
+            document.getElementById('op-amount').value = '';
+            document.getElementById('op-note').value = '';
+        }
     </script>
 </body>
 </html>
