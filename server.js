@@ -5,133 +5,186 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_PATH = './heiba_royal_db.json';
 
+// إعدادات التلجرام
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const MY_CHAT_ID = '5042495708';
-const WEBHOOK_URL = 'https://sanaa-gold-bot-1.onrender.com/api/tg-webhook';
 
 app.use(express.json());
 app.use(express.static('public'));
 
-let db = { users: [], stamps: [] };
+let db = { users: [], stamps: [] }; // إضافة stamps لتخزين البصمات المؤقتة
 if (fs.existsSync(DB_PATH)) {
-    try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [], stamps: [] }; }
+    try { 
+        const data = JSON.parse(fs.readFileSync(DB_PATH));
+        db = { ...db, ...data };
+    } catch (e) { db = { users: [], stamps: [] }; }
 }
 
 const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 
-// إعداد الـ Webhook عند بدء التشغيل
-const setupWebhook = async () => {
+async function sendToTelegram(message) {
     try {
-        await axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook?url=${WEBHOOK_URL}`);
-        console.log("Webhook Set Successfully");
-    } catch (e) { console.error("Webhook Error"); }
-};
-setupWebhook();
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            chat_id: MY_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+        });
+    } catch (e) { console.error("Telegram Send Error"); }
+}
 
-// --- معالج أوامر البوت (Webhook) ---
+// --- ميزة البصمة المخصصة ---
+app.post('/api/stamps/create', (req, res) => {
+    const { debtorName, merchantName, amount, currency, code } = req.body;
+    db.stamps.push({ debtorName, merchantName, amount, currency, code, date: new Date().toISOString() });
+    saveDB();
+    sendToTelegram(`✋ **بصمة جديدة بالانتظار:**\n👤 المواطن: ${debtorName}\n👑 لتاجر: ${merchantName}\n💰 المبلغ: ${amount} ${currency}\n🔑 الكود: \`${code}\``);
+    res.json({ success: true });
+});
+
+app.post('/api/stamps/verify', (req, res) => {
+    const { merchantId, code } = req.body;
+    const merchant = db.users.find(u => u.id === merchantId);
+    if (!merchant) return res.status(404).json({ error: "التاجر غير موجود" });
+
+    const stampIndex = db.stamps.findIndex(s => s.code === code && s.merchantName.toLowerCase() === merchant.name.toLowerCase());
+    
+    if (stampIndex !== -1) {
+        const stamp = db.stamps[stampIndex];
+        // إضافة السداد آلياً في سجلات التاجر للمواطن المحدد
+        merchant.myRecords.push({
+            id: Date.now(),
+            targetName: stamp.debtorName,
+            amount: stamp.amount,
+            currency: stamp.currency,
+            type: 'سداد',
+            note: "بصمة سداد موثقة",
+            verified: true,
+            date: new Date().toISOString()
+        });
+        
+        // حذف البصمة بعد الاستخدام
+        db.stamps.splice(stampIndex, 1);
+        saveDB();
+        
+        sendToTelegram(`✅ **تم تأكيد البصمة:**\nالتاجر [${merchant.name}] خصم مبلغ [${stamp.amount}] من المواطن [${stamp.debtorName}] بموجب بصمة صحيحة.`);
+        res.json(merchant);
+    } else {
+        res.status(400).json({ error: "كود غير صحيح" });
+    }
+});
+
+// --- قسم الـ Webhook المطور للتحكم الكامل ---
 app.post('/api/tg-webhook', async (req, res) => {
-    const message = req.body.message;
-    if (!message || !message.text) return res.sendStatus(200);
+    const update = req.body;
+    if (!update.message || !update.message.text) return res.sendStatus(200);
 
-    const chatId = message.chat.id.toString();
-    const text = message.text.trim();
+    const chatId = String(update.message.chat.id);
+    const text = update.message.text.trim();
 
-    // تأكد أن المتحكم هو أنت فقط
     if (chatId !== MY_CHAT_ID) return res.sendStatus(200);
 
-    let reply = "";
-
-    if (text === 'العدد') {
-        reply = `📊 عدد المشتركين: ${db.users.length}`;
+    if (text === "العدد") {
+        const total = db.users.length;
+        const merchants = db.users.filter(u => u.type === 'merchant').length;
+        const debtors = db.users.filter(u => u.type === 'debtor').length;
+        sendToTelegram(`📊 **إحصائيات المنصة:**\n\n👥 إجمالي المشتركين: ${total}\n👑 عدد التجار: ${merchants}\n👤 عدد المواطنين: ${debtors}`);
     } 
-    else if (text === 'كل المشتركين') {
-        reply = "👥 قائمة المشتركين:\n" + db.users.map(u => `- ${u.name} (${u.type})`).join('\n');
+    else if (text === "كل الأعضاء" || text === "كل العضا") {
+        if (db.users.length === 0) {
+            sendToTelegram("⚠️ لا يوجد أعضاء مسجلين حالياً.");
+        } else {
+            let list = "📋 **قائمة جميع الأعضاء:**\n";
+            db.users.forEach((u, index) => {
+                list += `\n${index + 1}. ${u.name} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
+            });
+            sendToTelegram(list);
+        }
     }
-    else if (text.startsWith('بحث ')) {
-        const name = text.replace('بحث ', '').trim();
-        const u = db.users.find(x => x.name.toLowerCase() === name.toLowerCase());
-        reply = u ? `🔍 الاسم: ${u.name}\n🔑 السر: ${u.password}\n🎭 النوع: ${u.type}` : "❌ غير موجود";
-    }
-    else if (text.startsWith('حذف ')) {
-        const name = text.replace('حذف ', '').trim();
-        const initialLen = db.users.length;
-        db.users = db.users.filter(x => x.name.toLowerCase() !== name.toLowerCase());
-        if (db.users.length < initialLen) {
+    else if (text.endsWith("حذف")) {
+        const targetName = text.replace("حذف", "").trim();
+        const initialCount = db.users.length;
+        db.users = db.users.filter(u => u.name.toLowerCase() !== targetName.toLowerCase());
+        
+        if (db.users.length < initialCount) {
             saveDB();
-            reply = `🗑️ تم حذف [${name}] نهائياً من النظام.`;
-        } else reply = "❌ الاسم غير موجود.";
-    }
-
-    if (reply) {
-        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { chat_id: chatId, text: reply });
+            sendToTelegram(`🗑 **تم الحذف:**\nتم مسح حساب [${targetName}] نهائياً.`);
+        } else {
+            sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
+        }
+    } 
+    else {
+        const foundUsers = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
+        if (foundUsers.length > 0) {
+            let report = `📊 **بيانات الحساب [${text}]:**\n`;
+            foundUsers.forEach(u => {
+                let y=0, usd=0, s=0;
+                u.myRecords.forEach(r => {
+                    const a = parseFloat(r.amount); const d = r.type === 'دين';
+                    if(r.currency === 'YER') y+=d?a:-a; else if(r.currency === 'USD') usd+=d?a:-a; else s+=d?a:-a;
+                });
+                report += `\n👤 النوع: ${u.type === 'merchant' ? 'تاجر' : 'مواطن'}\n🔑 السر: \`${u.password}\`\n💰 يمني: ${y}\n💵 دولار: ${usd}\n🇸🇦 سعودي: ${s}\n---`;
+            });
+            sendToTelegram(report);
+        } else if (text !== "/start") {
+            sendToTelegram(`🔍 لم يتم العثور على [${text}]`);
+        } else {
+            sendToTelegram("👑 **لوحة تحكم الهيبة**\n\n• أرسل `العدد` للإحصائيات.\n• أرسل `كل الأعضاء` لعرض الأسماء.\n• أرسل `الاسم` للبحث.\n• أرسل `الاسم حذف` للمسح.");
+        }
     }
     res.sendStatus(200);
 });
 
-// --- نظام التوثيق والخصم الآلي الفوري ---
-app.post('/api/verify-auth', (req, res) => {
-    const { action, debtorName, merchantName, authCode, merchantId, amount, currency } = req.body;
+// --- بقية نظام الـ API الخاص بالمنصة ---
+app.post('/api/auth', async (req, res) => {
+    const { name, password, type, action } = req.body;
+    const normalizedName = name.trim().toLowerCase();
+    const existingUser = db.users.find(u => u.name.toLowerCase() === normalizedName && u.type === type);
 
-    if (action === 'create_smart') {
-        if(db.stamps.some(s => s.authCode === authCode)) return res.status(400).json({error: "الكود مستخدم مسبقاً"});
-        db.stamps.push({ debtorName, merchantName, authCode, amount: parseFloat(amount), currency, createdAt: Date.now() });
+    if (action === 'reg') {
+        if (existingUser) return res.status(400).json({ error: "الاسم مسجل مسبقاً." });
+        const newUser = {
+            id: "H" + Math.random().toString(36).substr(2, 7),
+            name: name.trim(), password, type, myRecords: [], createdAt: new Date().toISOString()
+        };
+        db.users.push(newUser);
         saveDB();
-        return res.json({ success: true });
-    }
-
-    if (action === 'check') {
-        const merch = db.users.find(u => u.id === merchantId);
-        const stamp = db.stamps.find(s => s.authCode === authCode && s.merchantName === merch.name);
-        
-        if(!stamp) return res.status(400).json({error: "كود خاطئ"});
-
-        // الخصم الفوري الطوالي من الرصيد
-        let amountToVerify = parseFloat(stamp.amount);
-        merch.myRecords.forEach(r => {
-            if(r.targetName === stamp.debtorName && r.currency === stamp.currency && !r.isVerified && r.type === 'دين' && amountToVerify > 0) {
-                let rAmt = parseFloat(r.amount);
-                if (rAmt <= amountToVerify) {
-                    r.isVerified = true;
-                    r.authCode = authCode;
-                    amountToVerify -= rAmt;
-                }
-            }
-        });
-
-        saveDB();
-        res.json({ newRecords: merch.myRecords });
+        sendToTelegram(`✨ **تسجيل جديد:**\nالاسم: ${newUser.name}\nالنوع: ${type}\nالسر: \`${password}\``);
+        return res.json(newUser);
+    } else {
+        const user = db.users.find(u => u.name.toLowerCase() === normalizedName && u.password === password && u.type === type);
+        if (!user) return res.status(403).json({ error: "بيانات خاطئة." });
+        return res.json(user);
     }
 });
 
-// --- الدخول والمزامنة الحية ---
-app.post('/api/auth', async (req, res) => {
-    const { name, password, type, action } = req.body;
-    let user = db.users.find(u => u.name.toLowerCase() === name.toLowerCase().trim() && u.type === type);
-
-    if (action === 'reg') {
-        if (user) return res.status(400).json({ error: "مسجل مسبقاً" });
-        user = { id: "H" + Math.random().toString(36).substr(2, 5), name: name.trim(), password, type, myRecords: [] };
-        db.users.push(user); saveDB();
-        return res.json(user);
-    } else {
-        if (!user || user.password !== password) return res.status(403).json({ error: "بيانات خاطئة" });
-        return res.json(user);
-    }
+app.post('/api/update-pass', (req, res) => {
+    const { userId, newPass } = req.body;
+    const user = db.users.find(u => u.id === userId);
+    if (user) {
+        const old = user.password;
+        user.password = newPass;
+        saveDB();
+        sendToTelegram(`🔐 **تغيير سر:**\nالاسم: ${user.name}\nمن: \`${old}\` -> إلى: \`${newPass}\``);
+        res.json({ success: true });
+    } else { res.status(404).json({ error: "غير موجود" }); }
 });
 
 app.post('/api/sync', (req, res) => {
-    const { userId, op } = req.body;
-    const u = db.users.find(x => x.id === userId);
-    if (!u) return res.status(404).send();
-    u.myRecords.push(op);
-    saveDB();
-    res.json({ newRecords: u.myRecords });
+    const { userId, myRecords } = req.body;
+    const idx = db.users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+        db.users[idx].myRecords = myRecords;
+        saveDB();
+        res.json({ success: true });
+    } else { res.status(404).send(); }
 });
 
 app.get('/api/auto-discover', (req, res) => {
-    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === req.query.debtorName.toLowerCase()))
-    .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName.toLowerCase() === req.query.debtorName.toLowerCase()) }));
+    const { debtorName } = req.query;
+    if(!debtorName) return res.json([]);
+    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
+    .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) }));
     res.json(results);
 });
 
-app.listen(PORT, () => console.log(`SYSTEM ACTIVE ON PORT ${PORT}`));
+app.listen(PORT, () => console.log(`SERVER RUNNING ON PORT ${PORT}`));
