@@ -16,11 +16,18 @@
         .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
         .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
+        /* ستايل مخصص لمربع الاختيار */
+        .custom-checkbox { width: 18px !important; height: 18px !important; margin: 0 !important; cursor: pointer; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12">
+    <!-- شاشة التحميل -->
+    <div id="splash-screen" class="fixed inset-0 bg-[#060608] z-50 flex items-center justify-center">
+        <h1 class="text-4xl font-black gold-text animate-pulse italic">HEIBA...</h1>
+    </div>
+
+    <div id="auth-ui" class="hidden max-w-6xl mx-auto mt-4 space-y-12">
         <div class="text-center">
             <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
             <p class="text-[12px] text-gray-500 tracking-[0.5em] uppercase mt-4">The Sovereign Financial Platform</p>
@@ -43,6 +50,11 @@
                         <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
                         <button onclick="togglePass('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
                     </div>
+                    <!-- خيار تذكرني الجديد -->
+                    <div class="flex items-center gap-2 px-2">
+                        <input type="checkbox" id="remember-me" class="custom-checkbox">
+                        <label for="remember-me" class="text-xs text-gray-400 cursor-pointer select-none">تذكرني على هذا الجهاز</label>
+                    </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold">تسجيل الدخول</button>
@@ -58,17 +70,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4>
-                        <p class="text-gray-500 leading-relaxed">قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة.</p>
+                        <p class="text-gray-500 leading-relaxed">إدارة الحسابات، تسجيل العمليات بالعملات الثلاث، ومزامنة فورية مع التلجرام.</p>
                     </div>
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4>
-                        <p class="text-gray-500 leading-relaxed">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
+                        <p class="text-gray-500 leading-relaxed">كشف حساب حي ومباشر مع القدرة على تأكيد أو رفض العمليات لحظياً.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- واجهة النظام الرئيسية -->
     <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
         <header class="flex justify-between items-center glass-card p-6">
             <div class="flex items-center gap-4">
@@ -77,10 +90,9 @@
                     <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-1"></h2>
                     <div id="debtor-code-zone" class="hidden flex flex-col gap-1">
                         <div class="flex gap-2">
-                            <input id="custom-code-input" class="!p-1 !h-7 !text-[10px] !w-24" placeholder="إضافة كود...">
+                            <input id="custom-code-input" class="!p-1 !h-7 !text-[10px] !w-24" placeholder="كود جديد..">
                             <button onclick="addCustomCode()" class="bg-blue-600 text-white text-[9px] px-2 rounded-lg font-bold">توليد 🔑</button>
                         </div>
-                        <p class="text-[8px] text-gray-500 italic">يمكنك توليد عدة أكواد، كل كود يستخدم مرة واحدة.</p>
                     </div>
                 </div>
             </div>
@@ -90,7 +102,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6 space-y-4">
-                    <h3 class="text-[11px] text-gray-500 font-bold mb-4 uppercase tracking-widest">الرصيد الصافي العام</h3>
+                    <h3 class="text-[11px] text-gray-500 font-bold mb-4 uppercase tracking-widest text-center">الإجمالي الصافي</h3>
                     <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
                         <span class="text-xs text-gray-400">ريال يمني</span><span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span>
                     </div>
@@ -103,7 +115,7 @@
                 </div>
                 <div class="glass-card p-6 min-h-[400px]">
                     <div id="merchant-tools" class="hidden flex gap-2">
-                        <input id="target-search" class="text-sm" placeholder="اسم المواطن...">
+                        <input id="target-search" class="text-sm" placeholder="اسم الحساب...">
                         <button onclick="addTarget()" class="gold-btn px-4 rounded-xl">+</button>
                     </div>
                     <div id="main-list" class="mt-4 space-y-2"></div>
@@ -128,20 +140,44 @@
                             <input id="op-note" placeholder="البيان">
                         </div>
                         <div class="flex gap-2">
-                            <input id="auth-code-check" class="border-blue-500/50" placeholder="فحص كود من قائمة أكواد المواطن...">
+                            <input id="auth-code-check" class="border-blue-500/50" placeholder="فحص كود المواطن..">
                             <button onclick="verifyCodeOnly()" class="bg-blue-600 text-white px-5 rounded-xl text-xs font-bold">فحص ✅</button>
                             <button onclick="saveOp()" class="gold-btn flex-grow py-4 rounded-xl">تثبيت العملية</button>
                         </div>
                         <p id="verify-status" class="text-[10px] text-center"></p>
                     </div>
                 </div>
-                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لمتابعة السجلات الحية...</div>
+                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لعرض السجلات..</div>
             </div>
         </div>
     </div>
 
     <script>
         let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = []; let isCodeValid = false;
+
+        // التحقق من الجلسة عند التشغيل
+        window.onload = async function() {
+            const saved = localStorage.getItem('heiba_session');
+            if (saved) {
+                const session = JSON.parse(saved);
+                const res = await fetch('/api/auth', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ name: session.name, password: session.password, type: session.type, action: 'login' }) 
+                });
+                if(res.ok) {
+                    user = await res.json();
+                    userType = user.type;
+                    start();
+                } else {
+                    localStorage.removeItem('heiba_session');
+                    document.getElementById('auth-ui').classList.remove('hidden');
+                }
+            } else {
+                document.getElementById('auth-ui').classList.remove('hidden');
+            }
+            document.getElementById('splash-screen').classList.add('hidden');
+        };
 
         function togglePass(id) { const i = document.getElementById(id); i.type = i.type === 'password' ? 'text' : 'password'; }
 
@@ -171,10 +207,22 @@
         function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t==='merchant'); document.getElementById('sel-debtor').classList.toggle('active', t==='debtor'); }
 
         async function doAuth(action) {
-            const name = document.getElementById('u-name').value.trim(); const password = document.getElementById('u-pass').value;
+            const name = document.getElementById('u-name').value.trim(); 
+            const password = document.getElementById('u-pass').value;
+            const remember = document.getElementById('remember-me').checked;
+            
+            if(!name || !password) return alert("يرجى ملء جميع الحقول");
+            
             const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, type: userType, action }) });
             const data = await res.json();
-            if(res.ok) { user = data; start(); } else alert(data.error);
+            
+            if(res.ok) { 
+                user = data; 
+                if (remember) {
+                    localStorage.setItem('heiba_session', JSON.stringify({ name, password, type: userType }));
+                }
+                start(); 
+            } else alert(data.error);
         }
 
         function start() {
@@ -183,9 +231,11 @@
             if(user.type === 'merchant') {
                 document.getElementById('merchant-tools').classList.remove('hidden'); document.getElementById('add-form').classList.remove('hidden');
                 setInterval(syncMerchant, 5000);
+                syncMerchant();
             } else {
                 document.getElementById('debtor-code-zone').classList.remove('hidden');
                 setInterval(fetchAutoDebts, 4000);
+                fetchAutoDebts();
             }
         }
 
@@ -193,7 +243,7 @@
             const c = document.getElementById('custom-code-input').value.trim();
             if(!c) return;
             await fetch('/api/add-custom-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName: user.name, customCode: c }) });
-            alert(`تمت إضافة الكود "${c}" لقائمة أكوادك بنجاح ✅`);
+            alert(`تمت إضافة الكود "${c}" بنجاح ✅`);
             document.getElementById('custom-code-input').value = "";
         }
 
@@ -202,42 +252,23 @@
             if(!code || !activeTarget) return;
             const res = await fetch('/api/verify-code', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ code, debtorName: activeTarget }) });
             const s = document.getElementById('verify-status');
-            if(res.ok) { 
-                isCodeValid = true; 
-                s.innerText = "✅ كود صحيح (تم استهلاكه وحذفه من قائمة المواطن)"; 
-                s.className="text-[10px] text-green-500 text-center"; 
-            } else { 
-                isCodeValid = false; 
-                s.innerText = "❌ الكود خاطئ أو غير موجود في قائمة أكواد المواطن"; 
-                s.className="text-[10px] text-red-500 text-center"; 
-            }
+            if(res.ok) { isCodeValid = true; s.innerText = "✅ كود صحيح"; s.className="text-[10px] text-green-500 text-center"; } 
+            else { isCodeValid = false; s.innerText = "❌ كود خاطئ"; s.className="text-[10px] text-red-500 text-center"; }
         }
 
         async function saveOp() {
             const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
             const finalStatus = isCodeValid ? 'accepted' : 'pending';
-            const newOp = { id:Date.now(), targetName:activeTarget, amount:a, currency:document.getElementById('op-cur').value, type:document.getElementById('op-type').value, note:document.getElementById('op-note').value, date:new Date().toISOString(), status:finalStatus, chat:'' };
+            const newOp = { id:Date.now(), targetName:activeTarget, amount:a, currency:document.getElementById('op-cur').value, type:document.getElementById('op-type').value, note:document.getElementById('op-note').value, date:new Date().toISOString(), status:finalStatus };
             user.myRecords.push(newOp);
-            syncWithServer();
+            await fetch('/api/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, myRecords:user.myRecords }) });
             document.getElementById('op-amt').value=""; document.getElementById('auth-code-check').value=""; document.getElementById('verify-status').innerText=""; isCodeValid=false;
             showDetails(activeTarget);
         }
 
-        async function syncWithServer() {
-            await fetch('/api/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, myRecords:user.myRecords }) });
-        }
-
-        function editRejected(id) {
-            const op = user.myRecords.find(r => r.id == id);
-            if(!op) return;
-            document.getElementById('op-amt').value = op.amount; document.getElementById('op-note').value = op.note; document.getElementById('op-cur').value = op.currency;
-            user.myRecords = user.myRecords.filter(r => r.id != id);
-            syncWithServer();
-            applyTafqit(); document.getElementById('op-amt').focus(); showDetails(activeTarget);
-        }
-
         async function syncMerchant() {
             const res = await fetch(`/api/get-my-data?id=${user.id}`);
+            if(!res.ok) return;
             const data = await res.json(); user.myRecords = data.myRecords;
             if(activeTarget) showDetails(activeTarget);
             calculateGrand(user.myRecords);
@@ -257,10 +288,9 @@
                 const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.status !== 'rejected') { if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; }
                 const isAcc = r.status === 'accepted'; const isRej = r.status === 'rejected';
                 let btns = (user.type === 'debtor' && !isAcc) ? `<div class="mt-2 flex gap-2"><button onclick="updateStatus('${r.id}','accepted')" class="bg-green-600 px-3 py-1 rounded text-[9px]">قبول</button>${!isRej?`<button onclick="updateStatus('${r.id}','rejected')" class="bg-red-600 px-3 py-1 rounded text-[9px]">رفض</button>`:''}</div>` : "";
-                if(user.type === 'merchant' && isRej) btns = `<button onclick="editRejected('${r.id}')" class="mt-2 bg-blue-600 px-3 py-1 rounded text-[9px]">تعديل (حذف وإعادة إرسال) ✏️</button>`;
                 return `<div class="p-4 bg-zinc-900/40 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'}">
                     <div class="flex justify-between items-center">
-                        <div><p class="text-sm font-bold">${r.note || 'عملية'} ${isAcc?'✅':(isRej?'❌':'⏳')}</p><p class="text-[9px] text-gray-500">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
+                        <div><p class="text-sm font-bold">${r.note || 'عملية'} ${isAcc?'✅':(isRej?'❌':'⏳')}</p></div>
                         <div class="text-right"><p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p></div>
                     </div>${btns}
                 </div>`;
@@ -274,11 +304,15 @@
 
         function renderList() {
             const nms = user.type==='merchant' ? [...new Set(user.myRecords.map(r => r.targetName))] : discoveredData.map(m => m.merchantName);
-            document.getElementById('main-list').innerHTML = nms.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl mb-2 cursor-pointer border border-white/5 ${activeTarget===n?'border-yellow-600 bg-zinc-900 shadow-xl':''}">${n}</div>`).join('');
+            document.getElementById('main-list').innerHTML = nms.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl mb-2 cursor-pointer border border-white/5 ${activeTarget===n?'border-yellow-600 shadow-xl':''}">${n}</div>`).join('');
         }
 
         function addTarget() { const n = document.getElementById('target-search').value.trim(); if(n) { activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value=""; } }
-        function logout() { location.reload(); }
+        
+        function logout() { 
+            localStorage.removeItem('heiba_session'); 
+            location.reload(); 
+        }
     </script>
 </body>
 </html>
