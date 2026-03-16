@@ -17,9 +17,8 @@
         .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
         .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
         .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
-        /* مضاف: ستايلات حالة العملية والمحادثة */
-        .status-badge { font-size: 9px; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; font-weight: bold; }
-        .chat-area { background: rgba(0,0,0,0.3); border: 1px solid #222; border-radius: 12px; padding: 10px; margin-top: 10px; }
+        .status-badge { font-size: 10px; padding: 2px 8px; border-radius: 8px; margin-top: 5px; display: inline-block; font-weight: bold; }
+        .chat-area { background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 12px; padding: 10px; margin-top: 10px; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -35,12 +34,10 @@
                 <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
                 <div class="grid grid-cols-2 gap-4 mb-2">
                     <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👑</span>
-                        <span class="text-sm font-bold">حساب تاجر</span>
+                        <span class="block text-2xl mb-1">👑</span><span class="text-sm font-bold">حساب تاجر</span>
                     </div>
                     <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👤</span>
-                        <span class="text-sm font-bold">حساب مواطن</span>
+                        <span class="block text-2xl mb-1">👤</span><span class="text-sm font-bold">حساب مواطن</span>
                     </div>
                 </div>
                 <div class="space-y-4">
@@ -63,16 +60,16 @@
             <div class="space-y-8">
                 <div>
                     <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية.</p>
+                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4>
-                        <p class="text-gray-500 leading-relaxed">قم بإدارة المواطنين وسجل العمليات بالعملات الثلاث.</p>
+                        <p class="text-gray-500 leading-relaxed">سجل العمليات وراقب قبول المواطنين لها لحظة بلحظة.</p>
                     </div>
                     <div class="info-section">
                         <h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4>
-                        <p class="text-gray-500 leading-relaxed">تابع موقفك المالي ووافق أو اعترض على العمليات.</p>
+                        <p class="text-gray-500 leading-relaxed">راجع ديونك ووافق عليها أو اعترض وابدأ نقاشاً حول السعر.</p>
                     </div>
                 </div>
             </div>
@@ -96,21 +93,12 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
-                <div class="glass-card p-6">
+                <div class="glass-card p-6 shadow-lg">
                     <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
-                            <span class="text-xs text-gray-400">ريال يمني</span>
-                            <span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10">
-                            <span class="text-xs text-gray-400">دولار أمريكي</span>
-                            <span id="gt-usd" class="font-bold text-green-400 text-xl">0</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10">
-                            <span class="text-xs text-gray-400">ريال سعودي</span>
-                            <span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span>
-                        </div>
+                        <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10"><span class="text-xs text-gray-400">يمني</span><span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span></div>
+                        <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10"><span class="text-xs text-gray-400">دولار</span><span id="gt-usd" class="font-bold text-green-400 text-xl">0</span></div>
+                        <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10"><span class="text-xs text-gray-400">سعودي</span><span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span></div>
                     </div>
                 </div>
                 <div class="glass-card p-6 min-h-[400px]">
@@ -128,22 +116,17 @@
                 <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
                     <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
                         <div>
-                            <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
-                            <button id="btn-accept-all" onclick="acceptAll()" class="hidden mt-2 text-[10px] bg-green-500/10 text-green-500 px-3 py-1 rounded-full border border-green-500/20 hover:bg-green-500 hover:text-white transition">قبول الكل ✅</button>
+                           <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
+                           <button id="btn-accept-all" onclick="acceptAll()" class="hidden mt-2 text-[10px] bg-green-600/20 text-green-500 px-3 py-1 rounded-full border border-green-500/30 hover:bg-green-600 hover:text-white transition">قبول جميع العمليات المعلقة ✅</button>
                         </div>
                         <div class="flex gap-4 text-[11px] font-bold">
-                            <span id="dt-yer" class="text-blue-400"></span>
-                            <span id="dt-usd" class="text-green-400"></span>
-                            <span id="dt-sar" class="text-orange-400"></span>
+                            <span id="dt-yer" class="text-blue-400"></span><span id="dt-usd" class="text-green-400"></span><span id="dt-sar" class="text-orange-400"></span>
                         </div>
                     </div>
                     <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
                     <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div class="relative">
-                                <input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()">
-                                <div id="tafqit-text" class="tafqit-box"></div>
-                            </div>
+                            <div class="relative"><input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()"><div id="tafqit-text" class="tafqit-box"></div></div>
                             <select id="op-cur" onchange="applyTafqit()"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
                             <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
                             <input id="op-note" placeholder="البيان (اختياري)">
@@ -159,14 +142,8 @@
     <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-6">
             <h3 class="text-xl font-bold gold-text">إعدادات الحماية الملكية</h3>
-            <div class="space-y-4 text-left">
-                <div class="relative"><input id="new-pass" type="password" placeholder="كلمة المرور الجديدة"><button onclick="togglePass('new-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button></div>
-                <div class="relative"><input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور"><button onclick="togglePass('confirm-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button></div>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث الآن</button>
-                <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إلغاء</button>
-            </div>
+            <div class="space-y-4"><input id="new-pass" type="password" placeholder="كلمة المرور الجديدة"><input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور"></div>
+            <div class="flex gap-4"><button onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث</button><button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إلغاء</button></div>
         </div>
     </div>
 
@@ -216,14 +193,22 @@
             document.getElementById('auth-ui').classList.add('hidden'); document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerText = user.name;
             document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
-            if(user.type === 'merchant') { document.getElementById('merchant-tools').classList.remove('hidden'); document.getElementById('add-form').classList.remove('hidden'); renderList(); calculateGrand(user.myRecords); }
+            if(user.type === 'merchant') { document.getElementById('merchant-tools').classList.remove('hidden'); document.getElementById('add-form').classList.remove('hidden'); renderList(); calculateGrand(user.myRecords); setInterval(syncMerchant, 5000); }
             else { document.getElementById('btn-accept-all').classList.remove('hidden'); fetchAutoDebts(); setInterval(fetchAutoDebts, 4000); }
+        }
+
+        async function syncMerchant() {
+            const res = await fetch(`/api/get-my-data?id=${user.id}`);
+            const data = await res.json();
+            user.myRecords = data.myRecords;
+            if(activeTarget) showDetails(activeTarget);
+            calculateGrand(user.myRecords);
         }
 
         function calculateGrand(recs) {
             let y=0, u=0, s=0; 
             recs.forEach(r => { 
-                if(r.status === 'rejected') return; 
+                if(r.status === 'rejected') return;
                 const a = parseFloat(r.amount); const d = r.type === 'دين'; 
                 if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; 
             });
@@ -241,7 +226,7 @@
             const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
             discoveredData = await res.json();
             let all = []; discoveredData.forEach(m => all = all.concat(m.records)); calculateGrand(all);
-            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}"><p class="font-bold text-sm">${m.merchantName}</p><p class="text-[9px] text-blue-500 font-bold mt-1 uppercase italic">مزامنة حية 📶</p></div>`).join('');
+            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}"><p class="font-bold text-sm">${m.merchantName}</p><p class="text-[9px] text-blue-500 font-bold mt-1 italic uppercase">مزامنة حية 📶</p></div>`).join('');
             if(activeTarget) showDetails(activeTarget);
         }
 
@@ -254,33 +239,34 @@
                 const a = parseFloat(r.amount); const d = r.type === 'دين'; 
                 if(r.status !== 'rejected') { if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; }
                 
-                const sLabel = r.status === 'accepted' ? '<span class="status-badge text-green-500">مقبولة ✅</span>' : (r.status === 'rejected' ? '<span class="status-badge text-red-500">مرفوضة ❌</span>' : '<span class="status-badge text-yellow-500">معلقة ⏳</span>');
+                const isAcc = r.status === 'accepted'; const isRej = r.status === 'rejected';
+                const sLab = isAcc ? '<span class="status-badge bg-green-900/30 text-green-500">مقبولة ✅</span>' : (isRej ? '<span class="status-badge bg-red-900/30 text-red-500">مرفوضة ❌</span>' : '<span class="status-badge bg-yellow-900/30 text-yellow-500">انتظار ⏳</span>');
                 
                 let btns = "";
-                if(user.type === 'debtor' && r.status !== 'accepted') {
+                if(user.type === 'debtor' && !isAcc) {
                     btns = `<div class="mt-2 flex gap-2">
-                        <button onclick="updateStatus('${r.id}','accepted','${name}')" class="bg-green-600 text-white text-[10px] px-3 py-1 rounded">قبول</button>
-                        ${r.status !== 'rejected' ? `<button onclick="updateStatus('${r.id}','rejected','${name}')" class="bg-red-600 text-white text-[10px] px-3 py-1 rounded">رفض</button>` : ''}
+                        <button onclick="updateStatus('${r.id}','accepted','${name}')" class="bg-green-600 text-white text-[10px] px-3 py-1 rounded-lg">قبول</button>
+                        ${!isRej ? `<button onclick="updateStatus('${r.id}','rejected','${name}')" class="bg-red-600 text-white text-[10px] px-3 py-1 rounded-lg">رفض</button>` : ''}
                     </div>`;
                 }
 
                 let chat = "";
-                if(r.status === 'rejected') {
-                    chat = `<div class="chat-area"><div class="text-[10px] text-gray-400 mb-2">${r.chat || 'لا يوجد نقاش..'}</div><div class="flex gap-2"><input id="ci-${r.id}" class="!p-1 !text-[10px] !h-8" placeholder="رد..."><button onclick="doChat('${r.id}','${name}')" class="gold-btn px-2 text-[10px] rounded">إرسال</button></div></div>`;
+                if(isRej) {
+                    chat = `<div class="chat-area"><div class="text-[10px] text-gray-400 mb-2">${r.chat || 'ناقش التاجر هنا...'}</div><div class="flex gap-2"><input id="ci-${r.id}" class="!p-1 !h-8 !text-[10px]" placeholder="رسالة..."><button onclick="doChat('${r.id}','${name}')" class="gold-btn px-3 text-[10px] rounded">إرسال</button></div></div>`;
                 }
 
-                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'}">
-                    <div class="flex justify-between">
-                        <div><p class="font-bold text-sm">${r.note || 'عملية'} ${sLabel}</p><p class="text-[9px] text-gray-500">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
-                        <div class="text-right"><p class="text-lg font-bold ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase">${r.currency}</p></div>
+                return `<div class="p-4 bg-zinc-900/60 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'}">
+                    <div class="flex justify-between items-center">
+                        <div><p class="font-bold text-sm">${r.note || 'عملية'} ${sLab}</p><p class="text-[9px] text-gray-600">${new Date(r.date).toLocaleDateString('ar-YE')}</p></div>
+                        <div class="text-right"><p class="text-xl font-bold ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p><p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p></div>
                     </div>${btns}${chat}
                 </div>`;
             }).reverse().join('');
             document.getElementById('dt-yer').innerText = y.toLocaleString(); document.getElementById('dt-usd').innerText = u.toLocaleString(); document.getElementById('dt-sar').innerText = s.toLocaleString();
         }
 
-        async function updateStatus(id, st, target) {
-            await fetch('/api/update-status', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName:user.name, opId:id, status:st }) });
+        async function updateStatus(opId, status, target) {
+            await fetch('/api/update-status', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ debtorName:user.name, opId, status }) });
             fetchAutoDebts();
         }
 
@@ -289,9 +275,9 @@
             fetchAutoDebts();
         }
 
-        async function doChat(id, target) {
-            const msg = document.getElementById(`ci-${id}`).value; if(!msg) return;
-            await fetch('/api/send-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ opId:id, msg:`[${user.name}]: ${msg}` }) });
+        async function doChat(opId, target) {
+            const m = document.getElementById(`ci-${opId}`).value; if(!m) return;
+            await fetch('/api/send-chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ opId, msg:`[${user.name}]: ${m}` }) });
             fetchAutoDebts();
         }
 
@@ -300,14 +286,15 @@
             user.myRecords.push({ id:Date.now(), targetName:activeTarget, amount:a, currency:document.getElementById('op-cur').value, type:document.getElementById('op-type').value, note:document.getElementById('op-note').value, date:new Date().toISOString(), status:'pending', chat:'' });
             showDetails(activeTarget); calculateGrand(user.myRecords);
             fetch('/api/sync', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, myRecords:user.myRecords }) });
-            document.getElementById('op-amt').value=""; document.getElementById('op-note').value="";
+            document.getElementById('op-amt').value=""; document.getElementById('op-note').value=""; document.getElementById('tafqit-text').innerText="";
         }
 
         async function updatePassword() {
-            const p1 = document.getElementById('new-pass').value; if(!p1 || p1 !== document.getElementById('confirm-pass').value) return alert("خطأ");
-            const res = await fetch('/api/update-pass', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, newPass:p1 }) });
-            if(res.ok) { user.password=p1; closeModal('settings-modal'); alert("تم!"); }
+            const p = document.getElementById('new-pass').value; if(p !== document.getElementById('confirm-pass').value) return alert("خطأ مطابقة");
+            await fetch('/api/update-pass', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ userId:user.id, newPass:p }) });
+            alert("تم التحديث"); closeModal('settings-modal');
         }
+
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
         function logout() { localStorage.removeItem('heiba_auth_session'); location.reload(); }
