@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الهيبة | النظام المالي المتكامل</title>
+    <title>منصة الهيبة | التوثيق المالي الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
@@ -18,11 +18,12 @@
         .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
         .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
         .stamp-status { border: 1px dashed #10b981; color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
+        .verify-badge { background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 10px; padding: 2px 8px; border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <!-- واجهة الدخول الأصلية -->
+    <!-- واجهة الدخول -->
     <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12">
         <div class="text-center">
             <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
@@ -55,20 +56,19 @@
                 </div>
             </div>
 
-            <!-- التعليمات الأصلية (لم يُحذف منها شيء) -->
             <div class="space-y-8">
                 <div>
-                    <h3 class="text-3xl font-black gold-text mb-4 italic">ما هي فائدة المنصة؟</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية. تضمن المنصة لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية تمنع الأخطاء البشرية.</p>
+                    <h3 class="text-3xl font-black gold-text mb-4 italic">نظام التوثيق بالبصمة</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed italic">نظام "الهيبة" يتيح لك الآن توثيق مبالغ محددة من مديونيتك بالبصمة الرقمية. يمكنك اختيار مبلغ معين لتبصيمه، وسيقوم النظام تلقائياً بتوزيعه على السجلات غير الموثقة لضمان دقة الحسابات بين الطرفين.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
                     <div class="info-section">
-                        <h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4>
-                        <p class="text-gray-500 leading-relaxed italic">قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة.</p>
+                        <h4 class="gold-text font-bold mb-2 underline">للمواطن الذكي:</h4>
+                        <p class="text-gray-500 leading-relaxed italic">يمكنك الآن تبصيم "مبلغ إجمالي" وسيقوم النظام بربطه بكافة العمليات السابقة غير الموثقة دفعة واحدة.</p>
                     </div>
                     <div class="info-section">
-                        <h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4>
-                        <p class="text-gray-500 leading-relaxed italic">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
+                        <h4 class="gold-text font-bold mb-2 underline">للتاجر المعتمد:</h4>
+                        <p class="text-gray-500 leading-relaxed italic">استقبل كود التوثيق وقم بمطابقته ليتحول الرصيد العادي إلى "رصيد موثق" لا يقبل التعديل أو الإنكار.</p>
                     </div>
                 </div>
             </div>
@@ -88,7 +88,6 @@
             <div class="flex gap-3">
                 <button onclick="openModal('search-stamp-modal')" class="bg-zinc-900 px-4 py-2 rounded-xl text-[10px] border border-white/5">🔍 بحث بصمة</button>
                 <button id="verify-nav-btn" onclick="openModal('verify-modal')" class="hidden bg-green-900/20 text-green-500 px-4 py-2 rounded-xl text-[10px] border border-green-500/20">مطابقة بصمة ✅</button>
-                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5">⚙️</button>
                 <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold">خروج</button>
             </div>
         </header>
@@ -97,9 +96,7 @@
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6">
                     <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
-                    <div id="grand-totals" class="space-y-4">
-                        <!-- تظهر هنا الأرصدة (يمني، دولار، سعودي) -->
-                    </div>
+                    <div id="grand-totals" class="space-y-4"></div>
                 </div>
                 <div class="glass-card p-6 min-h-[400px]">
                     <div id="merchant-tools" class="hidden space-y-4">
@@ -114,9 +111,14 @@
 
             <div class="lg:col-span-8">
                 <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
-                    <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
-                        <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
-                        <div id="target-totals" class="flex gap-4 text-[11px] font-bold"></div>
+                    <div class="flex flex-col md:flex-row justify-between md:items-center mb-8 border-b border-white/5 pb-6 gap-4">
+                        <div>
+                            <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
+                            <div id="target-totals" class="flex gap-4 text-[11px] font-bold mt-2"></div>
+                        </div>
+                        <div id="debtor-actions" class="hidden">
+                            <button onclick="openSmartStampModal()" class="gold-btn px-6 py-3 rounded-xl text-xs shadow-lg">بصمة مبلغ محدد ✋</button>
+                        </div>
                     </div>
                     <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
                     <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
@@ -137,14 +139,40 @@
         </div>
     </div>
 
-    <!-- النوافذ المنبثقة (بحث، مطابقة، إعدادات) -->
+    <!-- النوافذ المنبثقة -->
+    <!-- نافذة تبصيم مبلغ محدد (الميزة الجديدة) -->
+    <div id="smart-stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+        <div class="glass-card w-full max-w-md p-8 space-y-6">
+            <h3 class="gold-text font-bold text-center text-xl italic underline">توثيق مبلغ محدد بالبصمة</h3>
+            <p class="text-xs text-gray-400 text-center">سيتم توزيع التبصيم على العمليات السابقة (غير الموثقة فقط).</p>
+            
+            <div class="space-y-4">
+                <select id="smart-cur"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
+                <div>
+                    <label class="text-[10px] text-gray-500 mr-2">المبلغ المراد تبصيمه:</label>
+                    <input id="smart-amt" type="number" placeholder="0.00" class="mt-1">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 mr-2">كود البصمة الخاص بك:</label>
+                    <input id="smart-code" placeholder="أدخل كود البصمة">
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="submitSmartStamp()" class="gold-btn flex-grow py-4 rounded-xl">إرسال البصمة</button>
+                <button onclick="closeModal('smart-stamp-modal')" class="bg-zinc-800 px-6 rounded-xl">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- بقية النوافذ الأصلية -->
     <div id="search-stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
         <div class="glass-card w-full max-w-md p-8 space-y-4">
             <h3 class="gold-text font-bold text-center italic">محرك البحث عن البصمات</h3>
             <input id="search-stamp-input" placeholder="أدخل كود البصمة...">
             <button onclick="searchStamp()" class="gold-btn w-full py-3 rounded-xl">بحث</button>
             <div id="search-result" class="hidden p-4 bg-white/5 rounded-xl text-[12px] italic"></div>
-            <button onclick="closeModal('search-stamp-modal')" class="w-full text-gray-500 text-xs mt-2">إغلاق</button>
+            <button onclick="closeModal('search-stamp-modal')" class="w-full text-gray-500 text-xs mt-2 text-center">إغلاق</button>
         </div>
     </div>
 
@@ -153,23 +181,13 @@
             <h3 class="text-green-500 font-bold text-center italic">تفعيل كود البصمة ✅</h3>
             <input id="verify-code-input" placeholder="أدخل كود البصمة المستلم">
             <button onclick="processVerify()" class="gold-btn w-full py-4 rounded-xl">تأكيد ومطابقة</button>
-            <button onclick="closeModal('verify-modal')" class="w-full text-gray-500 text-xs">إلغاء</button>
-        </div>
-    </div>
-
-    <div id="stamp-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-4">
-            <h3 class="gold-text font-bold text-center italic">إرسال بصمة توثيق ✋</h3>
-            <input id="stamp-code-input" placeholder="اكتب كود البصمة الخاص بك">
-            <button onclick="submitStamp()" class="gold-btn w-full py-4 rounded-xl">إرسال</button>
-            <button onclick="closeModal('stamp-modal')" class="w-full text-gray-500 text-xs">إغلاق</button>
+            <button onclick="closeModal('verify-modal')" class="w-full text-gray-500 text-xs text-center">إلغاء</button>
         </div>
     </div>
 
     <script>
-        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = []; let currentStampOpId = null;
+        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = []; 
 
-        // دالة التبديل بين تاجر ومواطن
         function setType(t) { 
             userType = t; 
             document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); 
@@ -181,7 +199,6 @@
             input.type = input.type === 'password' ? 'text' : 'password';
         }
 
-        // التفقيط الأصلي
         function formatAr(num) {
             if (num == 0) return "صفر";
             const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
@@ -206,7 +223,6 @@
             document.getElementById('tafqit-text').innerText = val > 0 ? formatAr(parseInt(val)) + " " + cur : "";
         }
 
-        // الدخول والمزامنة
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
@@ -228,6 +244,7 @@
                 document.getElementById('verify-nav-btn').classList.remove('hidden');
                 renderList(); calculateGrand();
             } else {
+                document.getElementById('debtor-actions').classList.remove('hidden');
                 fetchAutoDebts(); setInterval(fetchAutoDebts, 4000);
             }
         }
@@ -244,25 +261,19 @@
             document.getElementById('grand-totals').innerHTML = `
                 <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
                     <span class="text-xs text-gray-400">يمني: ${y.toLocaleString()}</span>
-                    <span class="text-[10px] text-green-500 font-bold">موثق: ${vy.toLocaleString()}</span>
+                    <span class="verify-badge">موثق: ${vy.toLocaleString()}</span>
                 </div>
                 <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10">
                     <span class="text-xs text-gray-400">دولار: ${u.toLocaleString()}</span>
-                    <span class="text-[10px] text-green-500 font-bold">موثق: ${vu.toLocaleString()}</span>
+                    <span class="verify-badge">موثق: ${vu.toLocaleString()}</span>
                 </div>
                 <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10">
                     <span class="text-xs text-gray-400">سعودي: ${s.toLocaleString()}</span>
-                    <span class="text-[10px] text-green-500 font-bold">موثق: ${vs.toLocaleString()}</span>
+                    <span class="verify-badge">موثق: ${vs.toLocaleString()}</span>
                 </div>`;
         }
 
-        function renderList() {
-            const t = [...new Set(user.myRecords.map(r => r.targetName))];
-            document.getElementById('main-list').innerHTML = t.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900' : ''}">${n}</div>`).join('');
-        }
-
         async function fetchAutoDebts() {
-            // المواطن يرى فقط التجار الذين أضافوه فعلياً (حماية خصوصية)
             const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
             discoveredData = await res.json();
             document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}"><p class="font-bold text-sm">${m.merchantName}</p><p class="text-[9px] text-blue-500 font-bold mt-1 uppercase italic tracking-widest">مزامنة حية 📶</p></div>`).join('');
@@ -280,7 +291,7 @@
                 const a = parseFloat(r.amount); const d = r.type === 'دين'; 
                 if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
                 
-                let stampIcon = r.isVerified ? `<span class="stamp-status italic">موثق كود: ${r.authCode}</span>` : (user.type === 'debtor' && d ? `<button onclick="openStampModal('${r.id}')" class="text-blue-500 text-[10px] underline italic">إرسال بصمة ✋</button>` : '');
+                let stampIcon = r.isVerified ? `<span class="stamp-status italic">موثق كود: ${r.authCode}</span>` : `<span class="text-[9px] text-gray-600 italic">غير موثق</span>`;
                 
                 return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center">
                     <div><p class="font-bold text-sm italic">${r.note || 'عملية مالية'}</p><div class="mt-2">${stampIcon}</div></div>
@@ -292,30 +303,65 @@
             if(user.type === 'merchant') renderList();
         }
 
-        // دوال البصمة الجديدة
-        function openStampModal(id) { currentStampOpId = id; openModal('stamp-modal'); }
-        async function submitStamp() {
-            const code = document.getElementById('stamp-code-input').value.trim();
-            if(!code) return;
-            const res = await fetch('/api/verify-auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'create', debtorName: user.name, merchantName: activeTarget, opId: currentStampOpId, authCode: code }) });
-            if(res.ok) { alert("تم إرسال البصمة للتاجر بنجاح"); closeModal('stamp-modal'); } else alert((await res.json()).error);
+        function openSmartStampModal() { openModal('smart-stamp-modal'); }
+
+        async function submitSmartStamp() {
+            const cur = document.getElementById('smart-cur').value;
+            const amt = parseFloat(document.getElementById('smart-amt').value);
+            const code = document.getElementById('smart-code').value.trim();
+            
+            if(!amt || amt <= 0 || !code) return alert("يرجى إكمال البيانات");
+
+            // جلب السجلات غير الموثقة لهذا التاجر وبالعملة المختارة
+            let merchantData = discoveredData.find(m => m.merchantName === activeTarget);
+            if(!merchantData) return;
+
+            // تصفية السجلات: (دين فقط) + (غير موثقة) + (نفس العملة)
+            let unverifiedOps = merchantData.records.filter(r => !r.isVerified && r.currency === cur && r.type === 'دين');
+            let totalUnverified = unverifiedOps.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+
+            if(amt > totalUnverified) {
+                return alert(`المبلغ المدخل (${amt}) أكبر من إجمالي الديون غير الموثقة حالياً (${totalUnverified})`);
+            }
+
+            // إرسال طلب التوثيق الذكي
+            const res = await fetch('/api/verify-auth', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ 
+                    action: 'create_smart', 
+                    debtorName: user.name, 
+                    merchantName: activeTarget, 
+                    amount: amt, 
+                    currency: cur,
+                    authCode: code 
+                }) 
+            });
+
+            if(res.ok) { 
+                alert("تم إرسال بصمة التوثيق للمبلغ المحدد بنجاح"); 
+                closeModal('smart-stamp-modal'); 
+            } else {
+                alert((await res.json()).error);
+            }
         }
+
         async function processVerify() {
             const code = document.getElementById('verify-code-input').value.trim();
             const res = await fetch('/api/verify-auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'check', authCode: code, merchantId: user.id }) });
             const data = await res.json();
             if(res.ok) { user.myRecords = data.newRecords; showDetails(activeTarget); calculateGrand(); closeModal('verify-modal'); } else alert(data.error);
         }
+
         async function searchStamp() {
             const code = document.getElementById('search-stamp-input').value.trim();
             const res = await fetch(`/api/search-stamp?code=${code}`);
             const data = await res.json();
             const div = document.getElementById('search-result'); div.classList.remove('hidden');
-            if(res.ok) div.innerHTML = `👤 المواطن: ${data.debtorName}<br>💰 المبلغ: ${data.amount} ${data.currency}<br>👑 التاجر: ${data.merchantName}`;
-            else div.innerText = "هذا الكود غير موجود أو تم استيفاء مبلغه بالكامل.";
+            if(res.ok) div.innerHTML = `👤 المواطن: ${data.debtorName}<br>💰 المبلغ الموثق: ${data.amount} ${data.currency}<br>👑 التاجر: ${data.merchantName}`;
+            else div.innerText = "هذا الكود غير موجود أو تم استخدامه.";
         }
 
-        // الحفظ الأصلي
         async function saveOp() {
             const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
             const op = { id: Date.now().toString(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString(), isVerified: false };
@@ -325,10 +371,15 @@
             document.getElementById('op-amt').value = ""; document.getElementById('tafqit-text').innerText = "";
         }
 
+        function renderList() {
+            const t = [...new Set(user.myRecords.map(r => r.targetName))];
+            document.getElementById('main-list').innerHTML = t.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900' : ''}">${n}</div>`).join('');
+        }
+
+        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(!n) return; activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value = ""; }
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function logout() { localStorage.removeItem('heiba_auth_session'); location.reload(); }
-        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(!n) return; activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value = ""; }
+        function logout() { location.reload(); }
     </script>
 </body>
 </html>
