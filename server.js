@@ -19,41 +19,19 @@ async function sendToTelegram(message) {
     try { await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, { chat_id: MY_CHAT_ID, text: message, parse_mode: 'Markdown' }); } catch (e) {}
 }
 
-// --- Webhook ---
-app.post('/api/tg-webhook', async (req, res) => {
-    const update = req.body;
-    if (!update.message || !update.message.text) return res.sendStatus(200);
-    const chatId = String(update.message.chat.id);
-    const text = update.message.text.trim();
-    if (chatId !== MY_CHAT_ID) return res.sendStatus(200);
-
-    if (text === "العدد") {
-        const t = db.users.length;
-        sendToTelegram(`📊 المشتركين: ${t}`);
-    } else {
-        const found = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
-        if (found.length > 0) {
-            let r = `📊 بيانات [${text}]:\n`;
-            found.forEach(u => r += `\nالنوع: ${u.type}\nالسر: ${u.password}`);
-            sendToTelegram(r);
-        }
-    }
-    res.sendStatus(200);
-});
-
-// --- API ---
 app.post('/api/auth', (req, res) => {
     const { name, password, type, action } = req.body;
-    const user = db.users.find(u => u.name.toLowerCase() === name.trim().toLowerCase() && u.type === type);
+    const normalized = name.trim().toLowerCase();
+    const user = db.users.find(u => u.name.toLowerCase() === normalized && u.type === type);
     if (action === 'reg') {
-        if (user) return res.status(400).json({ error: "موجود مسبقاً" });
-        const n = { id: "H"+Date.now(), name: name.trim(), password, type, myRecords: [] };
-        db.users.push(n); saveDB();
-        sendToTelegram(`✨ مستخدم جديد: ${n.name}`);
-        return res.json(n);
+        if (user) return res.status(400).json({ error: "الاسم مسجل" });
+        const newUser = { id: "H"+Date.now(), name: name.trim(), password, type, myRecords: [] };
+        db.users.push(newUser); saveDB();
+        sendToTelegram(`✨ عضو جديد: ${name} (${type})`);
+        return res.json(newUser);
     } else {
-        const u = db.users.find(u => u.name.toLowerCase() === name.trim().toLowerCase() && u.password === password && u.type === type);
-        if (!u) return res.status(403).json({ error: "خطأ" });
+        const u = db.users.find(u => u.name.toLowerCase() === normalized && u.password === password && u.type === type);
+        if (!u) return res.status(403).json({ error: "بيانات خاطئة" });
         return res.json(u);
     }
 });
@@ -74,7 +52,7 @@ app.post('/api/accept-all', (req, res) => {
     const m = db.users.find(u => u.name.toLowerCase() === merchantName.toLowerCase() && u.type === 'merchant');
     if (m) {
         m.myRecords.forEach(r => { if (r.targetName.toLowerCase() === debtorName.toLowerCase() && r.status !== 'accepted') r.status = 'accepted'; });
-        saveDB(); sendToTelegram(`✅ قبول الكل من ${debtorName}`);
+        saveDB(); sendToTelegram(`✅ قبول الكل من: ${debtorName}`);
         res.json({ success: true });
     } else res.status(404).send();
 });
@@ -91,15 +69,19 @@ app.post('/api/send-chat', (req, res) => {
 app.post('/api/sync', (req, res) => {
     const { userId, myRecords } = req.body;
     const u = db.users.find(u => u.id === userId);
-    if (u) { u.myRecords = myRecords; saveDB(); res.json({ success: true }); }
-    else res.status(404).send();
+    if (u) { u.myRecords = myRecords; saveDB(); res.json({ success: true }); } else res.status(404).send();
+});
+
+app.get('/api/get-my-data', (req, res) => {
+    const u = db.users.find(u => u.id === req.query.id);
+    if (u) res.json({ myRecords: u.myRecords }); else res.status(404).send();
 });
 
 app.get('/api/auto-discover', (req, res) => {
     const { debtorName } = req.query;
-    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
+    const resArr = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
     .map(u => ({ merchantName: u.name, records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) }));
-    res.json(results);
+    res.json(resArr);
 });
 
-app.listen(PORT, () => console.log(`HEIBA RUNNING`));
+app.listen(PORT, () => console.log(`SERVER ON ${PORT}`));
