@@ -47,10 +47,7 @@ app.post('/api/tg-webhook', async (req, res) => {
         else {
             let list = "📋 **قائمة جميع الأعضاء:**\n";
             db.users.forEach((u, index) => {
-                const verifiedIcon = u.verified ? '<div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div>' : '';
+                const verifiedIcon = u.verified ? '☑️' : '';
                 list += `\n${index + 1}. ${u.name} ${verifiedIcon} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
             });
             sendToTelegram(list);
