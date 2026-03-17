@@ -628,13 +628,11 @@
                 // تحديث حالة المستخدم الحالي نفسه (للتوثيق)
                 if(data.requesterStatus && data.requesterStatus.verified !== user.verified) {
                     user.verified = data.requesterStatus.verified;
-                    const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"><span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
-    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+                    const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"> <span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif; vertical-align: middle;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <!-- كلمة موثق بخط صغير وأنيق -->
     <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
 </span></span>' : '';
                     document.getElementById('display-name').innerHTML = `${user.name} ${userVerifyBadge}`;
@@ -646,13 +644,11 @@
                     renderList();
                     if(activeTarget) {
                         const status = userStatuses[activeTarget] || {};
-                        const verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"><span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
-    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+                        const verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"> <span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif; vertical-align: middle;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <!-- كلمة موثق بخط صغير وأنيق -->
     <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
 </span></span>' : '';
                         document.getElementById('active-target-name').innerHTML = `${activeTarget} ${verifyBadge}`;
@@ -665,13 +661,11 @@
             document.getElementById('auth-ui').classList.add('hidden'); 
             document.getElementById('main-ui').classList.remove('hidden');
             
-            const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"><span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
-    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+            const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"> <span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif; vertical-align: middle;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <!-- كلمة موثق بخط صغير وأنيق -->
     <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
 </span></span>' : '';
             document.getElementById('display-name').innerHTML = `${user.name} ${userVerifyBadge}`;
@@ -743,13 +737,11 @@
             document.getElementById('main-list').innerHTML = t.map(n => {
                 const status = userStatuses[n] || { registered: false, verified: false };
                 const regBadge = status.registered ? '<span class="text-[9px] bg-green-900/40 text-green-400 px-1.5 py-0.5 rounded border border-green-500/30">مسجل</span>' : '<span class="text-[9px] bg-red-900/40 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">غير مسجل</span>';
-                const verifyBadge = status.verified ? '<span class="text-blue-400 text-xs mr-1"><span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
-    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+                const verifyBadge = status.verified ? '<span class="text-blue-400 text-xs mr-1"> <span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif; vertical-align: middle;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <!-- كلمة موثق بخط صغير وأنيق -->
     <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
 </span></span>' : '';
 
@@ -778,13 +770,11 @@
                 document.getElementById('main-list').innerHTML = `<p class="text-xs text-center text-gray-500 mt-4 italic">لا يوجد مطالبات.</p>`;
             } else {
                 document.getElementById('main-list').innerHTML = discoveredData.map(m => {
-                    const verifyBadge = m.merchantVerified ? '<span class="text-blue-400 text-sm mr-1"><span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
-    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+                    const verifyBadge = m.merchantVerified ? '<span class="text-blue-400 text-sm mr-1"> <span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif; vertical-align: middle;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <!-- كلمة موثق بخط صغير وأنيق -->
     <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
 </span></span>' : '';
                     return `
@@ -807,24 +797,20 @@
             let verifyBadge = '';
             if (user.type === 'merchant') {
                 const status = userStatuses[name] || {};
-                verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"><span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
-    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+                verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"> <span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif; vertical-align: middle;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <!-- كلمة موثق بخط صغير وأنيق -->
     <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
 </span></span>' : '';
             } else {
                 const m = discoveredData.find(m => m.merchantName === name);
-                verifyBadge = (m && m.merchantVerified) ? '<span class="text-blue-400 text-2xl ml-2"><span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
-    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+                verifyBadge = (m && m.merchantVerified) ? '<span class="text-blue-400 text-2xl ml-2"> <span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif; vertical-align: middle;">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
         <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
-    <!-- كلمة موثق بخط صغير وأنيق -->
     <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
 </span></span>' : '';
             }
