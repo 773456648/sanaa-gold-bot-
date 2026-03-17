@@ -1,4 +1,4 @@
-const express = require('express');
+=const express = require('express');
 const fs = require('fs');
 const axios = require('axios');
 const app = express();
@@ -47,7 +47,15 @@ app.post('/api/tg-webhook', async (req, res) => {
         else {
             let list = "📋 **قائمة جميع الأعضاء:**\n";
             db.users.forEach((u, index) => {
-                const verifiedIcon = u.verified ? '<span style="color: #22c55e; font-size: 24px;">✔</span>' : '';
+                const verifiedIcon = u.verified ? '<span style="display: inline-flex; align-items: center; gap: 4px; font-family: sans-serif;">
+    <!-- أيقونة التوثيق المشرشرة (نفس شكل تلجرام) -->
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#3390ec" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2l1.5 2.1 2.5-.2.5 2.5 2.5.5-.5 2.5 1.5 2.1-1.5 2.1.5 2.5-2.5.5-.5 2.5-2.5-.2L12 22l-1.5-2.1-2.5.2-.5-2.5-2.5-.5.5-2.5-1.5-2.1 1.5-2.1-.5-2.5 2.5-.5.5-2.5 2.5.2L12 2z"/>
+        <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <!-- كلمة موثق بخط صغير وأنيق -->
+    <span style="color: #3390ec; font-size: 11px; font-weight: bold;">موثق</span>
+</span>' : '';
                 list += `\n${index + 1}. ${u.name} ${verifiedIcon} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
             });
             sendToTelegram(list);
