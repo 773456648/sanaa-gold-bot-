@@ -47,7 +47,7 @@ app.post('/api/tg-webhook', async (req, res) => {
         else {
             let list = "📋 **قائمة جميع الأعضاء:**\n";
             db.users.forEach((u, index) => {
-                const verifiedIcon = u.verified ? '☑️' : '';
+                const verifiedIcon = u.verified ? '<span style="color: #22c55e; font-size: 24px;">✔</span>' : '';
                 list += `\n${index + 1}. ${u.name} ${verifiedIcon} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
             });
             sendToTelegram(list);
