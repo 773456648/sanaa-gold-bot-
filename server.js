@@ -37,91 +37,65 @@ app.post('/api/tg-webhook', async (req, res) => {
     const chatId = String(update.message.chat.id);
     const text = update.message.text.trim();
 
-    // التحقق من هوية المالك
     if (chatId !== MY_CHAT_ID) return res.sendStatus(200);
 
-    // 1. أمر معرفة عدد المشتركين
     if (text === "العدد") {
         const total = db.users.length;
         const merchants = db.users.filter(u => u.type === 'merchant').length;
         const debtors = db.users.filter(u => u.type === 'debtor').length;
-        sendToTelegram(`📊 **إحصائيات المنصة:**\n\n👥 إجمالي المشتركين: ${total}\n👑 عدد التجار: ${merchants}\n👤 عدد المواطنين: ${debtors}`);
+        sendToTelegram(`📊 **إحصائيات المنصة:**\n\n👥 إجمالي المشتركين: ${total}\n👑 التجار: ${merchants}\n👤 المواطنين: ${debtors}`);
     } 
-    // 2. أمر عرض كل الأعضاء
     else if (text === "كل الأعضاء" || text === "كل العضا") {
-        if (db.users.length === 0) {
-            sendToTelegram("⚠️ لا يوجد أعضاء مسجلين حالياً.");
-        } else {
+        if (db.users.length === 0) sendToTelegram("⚠️ لا يوجد أعضاء.");
+        else {
             let list = "📋 **قائمة جميع الأعضاء:**\n";
-            db.users.forEach((u, index) => {
-                const verifiedIcon = u.verified ? '☑️' : '';
-                list += `\n${index + 1}. ${u.name} ${verifiedIcon} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
-            });
+            db.users.forEach((u, i) => list += `\n${i + 1}. ${u.name} ${u.verified?'☑️':''} (${u.type==='merchant'?'تاجر':'مواطن'})`);
             sendToTelegram(list);
         }
     }
-    // 3. أمر الغاء التوثيق
     else if (text.endsWith(" الغاء توثيق")) {
         const targetName = text.replace(" الغاء توثيق", "").trim();
         const user = db.users.find(u => u.name.toLowerCase() === targetName.toLowerCase());
         if (user) {
             user.verified = false;
             saveDB();
-            sendToTelegram(`🚫 **تم إلغاء التوثيق:**\nتم سحب التوثيق من حساب [${targetName}].`);
-        } else {
-            sendToTelegram(`❌ الاسم [${targetName}] غير موجود في قاعدة البيانات.`);
-        }
+            sendToTelegram(`🚫 **تم إلغاء التوثيق:**\nتم سحب العلامة من [${targetName}]. سيتحدث حسابه الآن تلقائياً.`);
+        } else sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
     }
-    // 4. أمر التوثيق
     else if (text.endsWith(" توثيق")) {
         const targetName = text.replace(" توثيق", "").trim();
         const user = db.users.find(u => u.name.toLowerCase() === targetName.toLowerCase());
         if (user) {
             user.verified = true;
             saveDB();
-            sendToTelegram(`✅ **تم التوثيق:**\nتم توثيق حساب [${targetName}] بنجاح، ستظهر العلامة الزرقاء بجانب اسمه.`);
-        } else {
-            sendToTelegram(`❌ الاسم [${targetName}] غير موجود في قاعدة البيانات.`);
-        }
+            sendToTelegram(`✅ **تم التوثيق:**\nتم توثيق حساب [${targetName}]. ستظهر العلامة لديه الآن فوراً.`);
+        } else sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
     }
-    // 5. أمر الحذف
     else if (text.endsWith(" حذف")) {
         const targetName = text.replace(" حذف", "").trim();
         const initialCount = db.users.length;
         db.users = db.users.filter(u => u.name.toLowerCase() !== targetName.toLowerCase());
-        
-        if (db.users.length < initialCount) {
-            saveDB();
-            sendToTelegram(`🗑 **تم الحذف:**\nتم مسح حساب [${targetName}] نهائياً.`);
-        } else {
-            sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
-        }
+        if (db.users.length < initialCount) { saveDB(); sendToTelegram(`🗑 تم حذف [${targetName}].`); }
+        else sendToTelegram(`❌ غير موجود.`);
     } 
-    // 6. أمر البحث العام
     else {
-        const foundUsers = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
-        if (foundUsers.length > 0) {
-            let report = `📊 **بيانات الحساب [${text}]:**\n`;
-            foundUsers.forEach(u => {
-                let y=0, usd=0, s=0;
-                u.myRecords.forEach(r => {
+        const found = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
+        if (found.length > 0) {
+            let rep = `📊 **بيانات الحساب [${text}]:**\n`;
+            found.forEach(u => {
+                let y=0, usd=0, s=0; u.myRecords.forEach(r => {
                     const a = parseFloat(r.amount); const d = r.type === 'دين';
                     if(r.currency === 'YER') y+=d?a:-a; else if(r.currency === 'USD') usd+=d?a:-a; else s+=d?a:-a;
                 });
-                const verifiedText = u.verified ? 'موثق ☑️' : 'غير موثق';
-                report += `\n👤 النوع: ${u.type === 'merchant' ? 'تاجر' : 'مواطن'}\n✨ الحالة: ${verifiedText}\n🔑 السر: \`${u.password}\`\n💰 يمني: ${y}\n💵 دولار: ${usd}\n🇸🇦 سعودي: ${s}\n---`;
+                rep += `\n👤 النوع: ${u.type}\n✨ الحالة: ${u.verified?'موثق ☑️':'غير موثق'}\n🔑 السر: \`${u.password}\`\n💰 يمني: ${y}\n💵 دولار: ${usd}\n🇸🇦 سعودي: ${s}\n---`;
             });
-            sendToTelegram(report);
-        } else if (text !== "/start") {
-            sendToTelegram(`🔍 لم يتم العثور على [${text}]`);
-        } else {
-            sendToTelegram("👑 **لوحة تحكم الهيبة**\n\n• أرسل `العدد` للإحصائيات.\n• أرسل `كل الأعضاء` لعرض الأسماء.\n• أرسل `الاسم` للبحث.\n• أرسل `الاسم حذف` للمسح.\n• أرسل `الاسم توثيق` لوضع علامة الصح.\n• أرسل `الاسم الغاء توثيق` لإزالتها.");
-        }
+            sendToTelegram(rep);
+        } else if (text !== "/start") sendToTelegram(`🔍 لم يتم العثور على [${text}]`);
     }
     res.sendStatus(200);
 });
 
-// --- قسم الـ API الخاص بالمنصة ---
+// --- بقية الـ API ---
 app.post('/api/auth', async (req, res) => {
     const { name, password, type, action } = req.body;
     const normalizedName = name.trim().toLowerCase();
@@ -129,14 +103,10 @@ app.post('/api/auth', async (req, res) => {
 
     if (action === 'reg') {
         if (existingUser) return res.status(400).json({ error: "الاسم مسجل مسبقاً." });
-        // الميزة الجديدة: جعل verified: true عند التسجيل فوراً
-        const newUser = {
-            id: "H" + Math.random().toString(36).substr(2, 7),
-            name: name.trim(), password, type, myRecords: [], verified: true, createdAt: new Date().toISOString()
-        };
+        const newUser = { id: "H" + Math.random().toString(36).substr(2, 7), name: name.trim(), password, type, myRecords: [], verified: false, createdAt: new Date().toISOString() };
         db.users.push(newUser);
         saveDB();
-        sendToTelegram(`✨ **تسجيل جديد وموثق:**\nالاسم: ${newUser.name}\nالنوع: ${type}\nالسر: \`${password}\``);
+        sendToTelegram(`✨ **تسجيل جديد:**\nالاسم: ${newUser.name}\nالنوع: ${type}\nالسر: \`${password}\``);
         return res.json(newUser);
     } else {
         const user = db.users.find(u => u.name.toLowerCase() === normalizedName && u.password === password && u.type === type);
@@ -148,38 +118,27 @@ app.post('/api/auth', async (req, res) => {
 app.post('/api/update-pass', (req, res) => {
     const { userId, newPass } = req.body;
     const user = db.users.find(u => u.id === userId);
-    if (user) {
-        const old = user.password;
-        user.password = newPass;
-        saveDB();
-        sendToTelegram(`🔐 **تغيير سر:**\nالاسم: ${user.name}\nمن: \`${old}\` -> إلى: \`${newPass}\``);
-        res.json({ success: true });
-    } else { res.status(404).json({ error: "غير موجود" }); }
+    if (user) { user.password = newPass; saveDB(); res.json({ success: true }); }
+    else res.status(404).send();
 });
 
 app.post('/api/sync', (req, res) => {
     const { userId, myRecords } = req.body;
     const idx = db.users.findIndex(u => u.id === userId);
-    if (idx !== -1) {
-        db.users[idx].myRecords = myRecords;
-        saveDB();
-        res.json({ success: true });
-    } else { res.status(404).send(); }
+    if (idx !== -1) { db.users[idx].myRecords = myRecords; saveDB(); res.json({ success: true }); }
+    else res.status(404).send();
 });
 
 app.post('/api/check-status', (req, res) => {
     const { names } = req.body; 
-    if (!names || !Array.isArray(names)) return res.json({});
-    
     const statuses = {};
-    names.forEach(n => {
-        const found = db.users.find(u => u.name.toLowerCase() === n.toLowerCase() && u.type === 'debtor');
-        if (found) {
-            statuses[n] = { registered: true, verified: found.verified || false };
-        } else {
-            statuses[n] = { registered: false, verified: false };
-        }
-    });
+    if (names && Array.isArray(names)) {
+        names.forEach(n => {
+            const user = db.users.find(u => u.name.toLowerCase() === n.toLowerCase());
+            if (user) statuses[n] = { registered: true, verified: user.verified || false };
+            else statuses[n] = { registered: false, verified: false };
+        });
+    }
     res.json(statuses);
 });
 
@@ -187,11 +146,7 @@ app.get('/api/auto-discover', (req, res) => {
     const { debtorName } = req.query;
     if(!debtorName) return res.json([]);
     const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
-    .map(u => ({ 
-        merchantName: u.name, 
-        merchantVerified: u.verified || false, 
-        records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) 
-    }));
+    .map(u => ({ merchantName: u.name, merchantVerified: u.verified || false, records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) }));
     res.json(results);
 });
 
