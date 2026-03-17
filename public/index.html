@@ -1,520 +1,533 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA | النظام المالي السيادي</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;600;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-gold: #c5a02b;
-            --dark-gold: #8e6d1a;
-            --surface-black: #050507;
-            --panel-bg: #0c0c0e;
-        }
 
-        body {
-            background-color: var(--surface-black);
-            color: #d1d1d1;
-            font-family: 'Changa', sans-serif;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(197, 160, 43, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(197, 160, 43, 0.05) 0%, transparent 40%);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        /* Sovereign UI Components */
-        .sovereign-card {
-            background: linear-gradient(145deg, #0e0e11, #08080a);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            border-top: 1px solid rgba(197, 160, 43, 0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+<title>منصة الهيبة</title>
 
-        .gold-shimmer {
-            background: linear-gradient(90deg, #8e6d1a, #c5a02b, #8e6d1a);
-            background-size: 200% auto;
-            color: transparent;
-            -webkit-background-clip: text;
-            animation: shimmer 3s linear infinite;
-        }
+<script src="https://cdn.tailwindcss.com"></script>
 
-        @keyframes shimmer {
-            to { background-position: 200% center; }
-        }
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;700&display=swap" rel="stylesheet">
 
-        .action-button {
-            background: linear-gradient(135deg, var(--primary-gold), var(--dark-gold));
-            color: #000;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-transform: uppercase;
-        }
+<style>
 
-        .action-button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 30px rgba(197, 160, 43, 0.25);
-        }
+body{
+background:#060608;
+color:#f0f0f0;
+font-family:'Changa',sans-serif;
+overflow-x:hidden;
+}
 
-        .data-input {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: 0.3s;
-            color: white;
-        }
+.gold-text{color:#d4af37;}
 
-        .data-input:focus {
-            border-color: var(--primary-gold);
-            box-shadow: 0 0 15px rgba(197, 160, 43, 0.1);
-            outline: none;
-        }
+.gold-btn{
+background:linear-gradient(135deg,#d4af37,#b8860b);
+color:#000;
+font-weight:bold;
+}
 
-        /* Sidebar Navigation Items */
-        .nav-item {
-            border-right: 3px solid transparent;
-            transition: 0.3s;
-        }
+.glass-card{
+background:rgba(15,15,20,0.98);
+border:1px solid #222;
+border-radius:28px;
+}
 
-        .nav-item.active {
-            background: linear-gradient(to left, rgba(197, 160, 43, 0.08), transparent);
-            border-right-color: var(--primary-gold);
-            color: white;
-        }
+input,select{
+background:#111 !important;
+border:1px solid #333 !important;
+color:#fff;
+border-radius:16px;
+padding:16px;
+width:100%;
+outline:none;
+}
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #050507; }
-        ::-webkit-scrollbar-thumb { background: #1a1a1d; border-radius: 5px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary-gold); }
+.type-select{
+border:2px solid #333;
+transition:.3s;
+cursor:pointer;
+}
 
-        /* Animation Classes */
-        .reveal { animation: revealEffect 0.6s ease-out forwards; }
-        @keyframes revealEffect {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.type-select.active{
+border-color:#d4af37;
+background:rgba(212,175,55,0.05);
+}
 
-        /* Currency Badges */
-        .badge-yer { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
-        .badge-usd { background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
-        .badge-sar { background: rgba(249, 115, 22, 0.1); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.2); }
-    </style>
+.tafqit-box{
+font-size:11px;
+color:#d4af37;
+margin-top:5px;
+margin-right:10px;
+font-weight:bold;
+font-style:italic;
+}
+
+</style>
+
 </head>
-<body class="antialiased">
 
-    <!-- Auth Module -->
-    <div id="auth-module" class="min-h-screen flex items-center justify-center p-6">
-        <div class="w-full max-w-lg">
-            <div class="text-center mb-10">
-                <h1 class="text-7xl font-black gold-shimmer tracking-tighter italic">HEIBA</h1>
-                <p class="text-[10px] tracking-[0.7em] text-gray-500 mt-2 uppercase">Sovereign Asset Management</p>
-            </div>
 
-            <div class="sovereign-card rounded-[32px] p-10 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-600/30 to-transparent"></div>
-                
-                <div class="flex gap-4 mb-8">
-                    <button id="type-m" onclick="toggleRole('merchant')" class="flex-1 py-4 rounded-2xl border border-white/5 bg-white/5 text-sm font-bold transition-all">تاجــر</button>
-                    <button id="type-d" onclick="toggleRole('debtor')" class="flex-1 py-4 rounded-2xl border border-white/5 opacity-40 text-sm font-bold transition-all">مواطــن</button>
-                </div>
+<body class="p-4 md:p-8">
 
-                <div class="space-y-4">
-                    <div class="relative">
-                        <label class="text-[10px] text-gray-500 uppercase font-bold mr-2 mb-1 block">الهوية الشخصية</label>
-                        <input id="auth-name" type="text" placeholder="أدخل اسمك الكامل" class="data-input w-full p-4 rounded-xl text-sm font-medium">
-                    </div>
-                    <div class="relative">
-                        <label class="text-[10px] text-gray-500 uppercase font-bold mr-2 mb-1 block">مفتاح الوصول</label>
-                        <input id="auth-pass" type="password" placeholder="••••••••" class="data-input w-full p-4 rounded-xl text-sm tracking-widest">
-                        <button onclick="viewPass('auth-pass')" class="absolute left-4 top-[34px] opacity-20 hover:opacity-100 transition">👁️</button>
-                    </div>
-                    
-                    <div class="flex items-center gap-3 pt-2">
-                        <input type="checkbox" id="persist-session" class="w-4 h-4 rounded accent-yellow-600">
-                        <label for="persist-session" class="text-xs text-gray-500 select-none cursor-pointer">الحفاظ على جلسة العمل نشطة</label>
-                    </div>
 
-                    <div class="grid grid-cols-2 gap-4 mt-8">
-                        <button onclick="handleAuth('login')" class="py-4 rounded-xl bg-zinc-900 border border-white/5 font-bold hover:bg-zinc-800 transition">دخول</button>
-                        <button onclick="handleAuth('reg')" class="action-button py-4 rounded-xl shadow-lg">تأسيس</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- ================= AUTH UI ================= -->
 
-    <!-- Main Command Center -->
-    <div id="main-center" class="hidden min-h-screen flex flex-col">
-        <!-- Top Bar -->
-        <header class="h-20 sovereign-card flex items-center justify-between px-8 z-50">
-            <div class="flex items-center gap-6">
-                <div class="flex flex-col">
-                    <span id="u-display" class="text-xl font-black gold-shimmer leading-none"></span>
-                    <span id="u-role-tag" class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 bg-yellow-600 rounded-full animate-pulse"></span>
-                        Authenticating...
-                    </span>
-                </div>
-            </div>
+<div id="auth-ui" class="max-w-md mx-auto glass-card p-8 space-y-4">
 
-            <div class="flex items-center gap-4">
-                <button onclick="toggleModal('settings-ui')" class="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition">⚙️</button>
-                <div class="h-8 w-px bg-white/5 mx-2"></div>
-                <button onclick="terminateSession()" class="px-6 py-2.5 rounded-xl bg-red-900/10 text-red-500 border border-red-500/20 text-xs font-bold hover:bg-red-600 hover:text-white transition">إنهاء الجلسة</button>
-            </div>
-        </header>
+<h2 class="text-2xl text-center gold-text font-bold">منصة الهيبة</h2>
 
-        <div class="flex flex-1 overflow-hidden">
-            <!-- Navigation Sidebar -->
-            <aside class="w-72 sovereign-card flex flex-col p-4 border-t-0 border-l-0">
-                <div class="space-y-6">
-                    <div class="px-4">
-                        <p class="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em] mb-4">المحفظة العامة</p>
-                        <div class="space-y-2">
-                            <div class="p-4 rounded-2xl bg-zinc-900/50 border border-white/5">
-                                <span class="text-[10px] text-blue-500 font-bold">YER</span>
-                                <p id="g-yer" class="text-xl font-black">0</p>
-                            </div>
-                            <div class="p-4 rounded-2xl bg-zinc-900/50 border border-white/5">
-                                <span class="text-[10px] text-green-500 font-bold">USD</span>
-                                <p id="g-usd" class="text-xl font-black">0</p>
-                            </div>
-                            <div class="p-4 rounded-2xl bg-zinc-900/50 border border-white/5">
-                                <span class="text-[10px] text-orange-500 font-bold">SAR</span>
-                                <p id="g-sar" class="text-xl font-black">0</p>
-                            </div>
-                        </div>
-                    </div>
+<div class="grid grid-cols-2 gap-3">
 
-                    <div class="px-4 flex-1">
-                        <div class="flex justify-between items-center mb-4">
-                            <p class="text-[10px] text-gray-600 font-black uppercase tracking-[0.2em]">الحسابات</p>
-                            <button onclick="refreshData()" class="text-[10px] text-yellow-600 font-bold">تحديث</button>
-                        </div>
-                        <div id="m-tools" class="hidden mb-4">
-                            <div class="flex gap-2">
-                                <input id="search-acc" class="data-input w-full p-3 rounded-xl text-xs" placeholder="إضافة حساب...">
-                                <button onclick="addNewAccount()" class="action-button px-4 rounded-xl font-bold">+</button>
-                            </div>
-                        </div>
-                        <div id="account-list" class="space-y-1 overflow-y-auto max-h-[300px] custom-scrollbar">
-                            <!-- Accounts inject here -->
-                        </div>
-                    </div>
-                </div>
-            </aside>
+<div id="sel-merchant"
+onclick="setType('merchant')"
+class="type-select active p-3 text-center rounded-xl">
 
-            <!-- Workspace -->
-            <main class="flex-1 p-8 overflow-y-auto custom-scrollbar relative">
-                <div id="view-empty" class="h-full flex flex-col items-center justify-center opacity-20 italic">
-                    <p class="text-lg">برجاء اختيار حساب من القائمة لبدء إدارة العمليات السيادية</p>
-                </div>
+تاجر
 
-                <div id="view-details" class="hidden space-y-8 reveal">
-                    <div class="flex justify-between items-end border-b border-white/5 pb-8">
-                        <div>
-                            <span class="text-[10px] text-yellow-600 font-bold uppercase tracking-widest">إحصائيات الحساب النشط</span>
-                            <h2 id="active-name" class="text-5xl font-black text-white italic mt-2">---</h2>
-                        </div>
-                        <div class="flex gap-8">
-                            <div class="text-right">
-                                <p class="text-[9px] text-gray-600 font-bold uppercase">الصافي يمني</p>
-                                <p id="d-yer" class="text-xl font-bold text-blue-400">0</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[9px] text-gray-600 font-bold uppercase">الصافي دولار</p>
-                                <p id="d-usd" class="text-xl font-bold text-green-400">0</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[9px] text-gray-600 font-bold uppercase">الصافي سعودي</p>
-                                <p id="d-sar" class="text-xl font-bold text-orange-400">0</p>
-                            </div>
-                        </div>
-                    </div>
+</div>
 
-                    <div id="transaction-feed" class="space-y-4">
-                        <!-- Transactions inject here -->
-                    </div>
+<div id="sel-debtor"
+onclick="setType('debtor')"
+class="type-select p-3 text-center rounded-xl">
 
-                    <!-- Input Console -->
-                    <div id="input-console" class="hidden sovereign-card rounded-3xl p-8 sticky bottom-0 border-t border-yellow-600/20">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="relative">
-                                <input id="f-amount" type="number" placeholder="المبلغ الرقمي" class="data-input w-full p-4 rounded-xl font-black text-lg" oninput="runTafqit()">
-                                <div id="tafqit" class="text-[9px] text-yellow-600 font-bold mt-1 px-2 italic"></div>
-                            </div>
-                            <select id="f-currency" class="data-input p-4 rounded-xl font-bold" onchange="runTafqit()">
-                                <option value="YER">﷼ يمني</option>
-                                <option value="USD">$ دولار</option>
-                                <option value="SAR">﷼ سعودي</option>
-                            </select>
-                            <select id="f-type" class="data-input p-4 rounded-xl font-bold">
-                                <option value="دين" class="text-red-500 font-bold">🔻 تقييد دين (Debt)</option>
-                                <option value="سداد" class="text-green-500 font-bold">✅ تسجيل سداد (Credit)</option>
-                            </select>
-                            <input id="f-note" placeholder="ملاحظات العملية..." class="data-input p-4 rounded-xl text-sm">
-                        </div>
-                        <button onclick="executeTransaction()" class="action-button w-full mt-6 py-5 rounded-2xl text-lg shadow-2xl">اعتماد العملية وإرسال الإشعار</button>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
+مواطن
 
-    <!-- Settings Modal -->
-    <div id="settings-ui" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
-        <div class="sovereign-card w-full max-w-md p-10 rounded-[40px]">
-            <h3 class="text-2xl font-black gold-shimmer mb-6">تحديث بروتوكول الأمان</h3>
-            <div class="space-y-6">
-                <div>
-                    <label class="text-[10px] text-gray-600 font-bold uppercase block mb-2">كلمة المرور الجديدة</label>
-                    <input id="new-p" type="password" class="data-input w-full p-4 rounded-xl tracking-widest">
-                </div>
-                <div>
-                    <label class="text-[10px] text-gray-600 font-bold uppercase block mb-2">تأكيد الكلمة</label>
-                    <input id="conf-p" type="password" class="data-input w-full p-4 rounded-xl tracking-widest">
-                </div>
-            </div>
-            <div class="flex gap-4 mt-10">
-                <button onclick="commitSecurityUpdate()" class="action-button flex-1 py-4 rounded-2xl">تحديث الآن</button>
-                <button onclick="toggleModal('settings-ui')" class="px-8 bg-zinc-900 rounded-2xl text-sm font-bold">إلغاء</button>
-            </div>
-        </div>
-    </div>
+</div>
 
-    <script>
-        // -- Core Engine --
-        const State = {
-            user: null,
-            role: 'merchant',
-            activeAcc: null,
-            discovered: []
-        };
+</div>
 
-        // UI Helpers
-        const el = (id) => document.getElementById(id);
-        const viewPass = (id) => { const i = el(id); i.type = i.type === 'password' ? 'text' : 'password'; };
-        const toggleModal = (id) => el(id).classList.toggle('hidden');
 
-        function toggleRole(r) {
-            State.role = r;
-            el('type-m').style.opacity = r === 'merchant' ? '1' : '0.4';
-            el('type-d').style.opacity = r === 'debtor' ? '1' : '0.4';
-            el('type-m').classList.toggle('bg-white/10', r === 'merchant');
-            el('type-d').classList.toggle('bg-white/10', r === 'debtor');
-        }
+<input id="u-name" placeholder="الاسم">
 
-        // Auth Logic
-        async function handleAuth(action) {
-            const name = el('auth-name').value.trim();
-            const pass = el('auth-pass').value;
-            if(!name || !pass) return;
+<div class="relative">
 
-            const res = await fetch('/api/auth', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ name, password: pass, type: State.role, action }) 
-            });
-            const data = await res.json();
-            
-            if(res.ok) {
-                State.user = data;
-                if(el('persist-session').checked) localStorage.setItem('heiba_v2_session', JSON.stringify(data));
-                launchCommandCenter();
-            } else alert(data.error);
-        }
+<input id="u-pass" type="password" placeholder="كلمة المرور">
 
-        function launchCommandCenter() {
-            el('auth-module').classList.add('hidden');
-            el('main-center').classList.remove('hidden');
-            el('u-display').innerText = State.user.name;
-            el('u-role-tag').innerText = State.user.type === 'merchant' ? '👑 رتبة تاجر سيادي' : '👤 حساب مواطن معتمد';
-            
-            if(State.user.type === 'merchant') {
-                el('m-tools').classList.remove('hidden');
-                el('input-console').classList.remove('hidden');
-                refreshData();
-            } else {
-                startCitizenSync();
-            }
-        }
+<button
+onclick="togglePass('u-pass')"
+class="absolute left-4 top-1/2 -translate-y-1/2">
 
-        // Merchant Logic
-        function addNewAccount() {
-            const n = el('search-acc').value.trim();
-            if(!n) return;
-            State.activeAcc = n;
-            el('search-acc').value = "";
-            renderAccountList();
-            focusAccount(n);
-        }
+👁
 
-        function renderAccountList() {
-            const list = [...new Set(State.user.myRecords.map(r => r.targetName))];
-            if(State.activeAcc && !list.includes(State.activeAcc)) list.push(State.activeAcc);
-            
-            el('account-list').innerHTML = list.map(name => `
-                <div onclick="focusAccount('${name}')" class="nav-item p-4 mb-1 cursor-pointer flex justify-between items-center hover:bg-white/5 ${State.activeAcc === name ? 'active' : ''}">
-                    <span class="text-xs font-bold">${name}</span>
-                    <span class="text-[8px] opacity-20">View</span>
-                </div>
-            `).join('');
-        }
+</button>
 
-        function focusAccount(name) {
-            State.activeAcc = name;
-            el('view-empty').classList.add('hidden');
-            el('view-details').classList.remove('hidden');
-            el('active-name').innerText = name;
-            
-            const records = State.user.type === 'merchant' 
-                ? State.user.myRecords.filter(r => r.targetName === name)
-                : (State.discovered.find(m => m.merchantName === name)?.records || []);
-            
-            let balances = { YER: 0, USD: 0, SAR: 0 };
-            
-            el('transaction-feed').innerHTML = records.map(r => {
-                const amt = parseFloat(r.amount);
-                const isDebt = r.type === 'دين';
-                balances[r.currency] += isDebt ? amt : -amt;
-                
-                return `
-                <div class="sovereign-card p-6 rounded-2xl flex justify-between items-center border-r-4 ${isDebt?'border-red-900/50':'border-green-900/50'}">
-                    <div>
-                        <p class="text-sm font-bold text-gray-200">${r.note || 'عملية مالية رسمية'}</p>
-                        <p class="text-[9px] text-gray-600 font-bold mt-1 uppercase">${new Date(r.date).toLocaleDateString('ar-YE', {year:'numeric', month:'long', day:'numeric'})}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-black ${isDebt?'text-red-500':'text-green-500'}">${isDebt?'+':'-'}${amt.toLocaleString()}</p>
-                        <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border border-white/5">${r.currency}</span>
-                    </div>
-                </div>`;
-            }).reverse().join('');
+</div>
 
-            el('d-yer').innerText = balances.YER.toLocaleString();
-            el('d-usd').innerText = balances.USD.toLocaleString();
-            el('d-sar').innerText = balances.SAR.toLocaleString();
-            
-            if(State.user.type === 'merchant') {
-                updateGrandTotals(State.user.myRecords);
-                renderAccountList();
-            }
-        }
 
-        function updateGrandTotals(recs) {
-            let totals = { YER: 0, USD: 0, SAR: 0 };
-            recs.forEach(r => {
-                const a = parseFloat(r.amount);
-                totals[r.currency] += (r.type === 'دين' ? a : -a);
-            });
-            el('g-yer').innerText = totals.YER.toLocaleString();
-            el('g-usd').innerText = totals.USD.toLocaleString();
-            el('g-sar').innerText = totals.SAR.toLocaleString();
-        }
+<div class="grid grid-cols-2 gap-3">
 
-        // Citizen Logic
-        async function startCitizenSync() {
-            const sync = async () => {
-                const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(State.user.name)}`);
-                State.discovered = await res.json();
-                
-                let allRecs = [];
-                State.discovered.forEach(m => allRecs = allRecs.concat(m.records));
-                updateGrandTotals(allRecs);
-                
-                el('account-list').innerHTML = State.discovered.map(m => `
-                    <div onclick="focusAccount('${m.merchantName}')" class="nav-item p-4 mb-1 cursor-pointer flex justify-between items-center hover:bg-white/5 ${State.activeAcc === m.merchantName ? 'active' : ''}">
-                        <div>
-                            <p class="text-xs font-bold">${m.merchantName}</p>
-                            <p class="text-[7px] text-blue-500 font-black uppercase tracking-tighter">Live Sync Connected</p>
-                        </div>
-                    </div>
-                `).join('');
-                
-                if(State.activeAcc) focusAccount(State.activeAcc);
-            };
-            sync();
-            setInterval(sync, 5000);
-        }
+<button onclick="doAuth('login')" class="bg-zinc-800 py-3 rounded-xl">
+دخول
+</button>
 
-        // Data Entry
-        async function executeTransaction() {
-            const amt = el('f-amount').value;
-            if(!amt || !State.activeAcc) return;
+<button onclick="doAuth('reg')" class="gold-btn py-3 rounded-xl">
+تسجيل
+</button>
 
-            const newOp = {
-                id: Date.now(),
-                targetName: State.activeAcc,
-                amount: amt,
-                currency: el('f-currency').value,
-                type: el('f-type').value,
-                note: el('f-note').value,
-                date: new Date().toISOString()
-            };
+</div>
 
-            State.user.myRecords.push(newOp);
-            focusAccount(State.activeAcc);
-            
-            await fetch('/api/sync', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ userId: State.user.id, myRecords: State.user.myRecords }) 
-            });
+</div>
 
-            el('f-amount').value = "";
-            el('f-note').value = "";
-            el('tafqit').innerText = "";
-        }
 
-        // Tafqit Engine
-        function runTafqit() {
-            const num = el('f-amount').value;
-            const cur = el('f-currency').options[el('f-currency').selectedIndex].text;
-            if(!num) { el('tafqit').innerText = ""; return; }
-            el('tafqit').innerText = `المبلغ كتابةً: فقط ${formatCurrencyArabic(parseInt(num))} ${cur} لا غير`;
-        }
 
-        function formatCurrencyArabic(num) {
-            if (num == 0) return "صفر";
-            const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
-            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
-            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
-            function conv(n) {
-                let r = ""; const h = Math.floor(n / 100); const t = n % 100;
-                if (h > 0) r += hundreds[h];
-                if (t > 0) { if (r !== "") r += " و "; if (t < 20) r += units[t]; else { const s = t % 10; const ten = Math.floor(t / 10); if (s > 0) r += units[s] + " و "; r += tens[ten]; } }
-                return r;
-            }
-            let res = ""; const m = Math.floor(num / 1000000); const th = Math.floor((num % 1000000) / 1000); const rem = num % 1000;
-            if (m > 0) res += (m === 1 ? "مليون" : (m === 2 ? "مليونان" : conv(m) + " ملايين"));
-            if (th > 0) { if (res !== "") res += " و "; res += (th === 1 ? "ألف" : (th === 2 ? "ألفين" : conv(th) + " آلاف")); }
-            if (rem > 0) { if (res !== "") res += " و "; res += conv(rem); }
-            return res;
-        }
+<!-- ================= MAIN UI ================= -->
 
-        // Utils
-        async function commitSecurityUpdate() {
-            const p1 = el('new-p').value;
-            if(!p1 || p1 !== el('conf-p').value) return alert("فشل مطابقة الرمز");
-            const res = await fetch('/api/update-pass', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ userId: State.user.id, newPass: p1 }) 
-            });
-            if(res.ok) { alert("تم تحديث بروتوكول الأمان"); toggleModal('settings-ui'); }
-        }
+<div id="main-ui" class="hidden max-w-5xl mx-auto space-y-6">
 
-        function terminateSession() {
-            localStorage.removeItem('heiba_v2_session');
-            location.reload();
-        }
+<header class="glass-card p-6 flex justify-between">
 
-        window.onload = () => {
-            const saved = localStorage.getItem('heiba_v2_session');
-            if(saved) { State.user = JSON.parse(saved); launchCommandCenter(); }
-        };
-    </script>
+<h2 id="display-name" class="gold-text font-bold text-xl"></h2>
+
+<button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-xl">
+خروج
+</button>
+
+</header>
+
+
+<div class="glass-card p-6 space-y-4">
+
+<div class="grid grid-cols-3 gap-3 text-center">
+
+<div>
+<p class="text-xs">يمني</p>
+<p id="gt-yer">0</p>
+</div>
+
+<div>
+<p class="text-xs">دولار</p>
+<p id="gt-usd">0</p>
+</div>
+
+<div>
+<p class="text-xs">سعودي</p>
+<p id="gt-sar">0</p>
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="glass-card p-6">
+
+<div class="flex gap-3">
+
+<input id="target-search" placeholder="اسم الحساب">
+
+<button onclick="addTarget()" class="gold-btn px-4 rounded-xl">+</button>
+
+</div>
+
+<div id="main-list" class="mt-4 space-y-2"></div>
+
+</div>
+
+
+
+<div id="details-pane" class="hidden glass-card p-6 space-y-4">
+
+<h3 id="active-target-name" class="gold-text font-bold"></h3>
+
+<div id="ops-list" class="space-y-2"></div>
+
+
+<div class="grid grid-cols-4 gap-2">
+
+<input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()">
+
+<select id="op-cur">
+<option value="YER">يمني</option>
+<option value="USD">دولار</option>
+<option value="SAR">سعودي</option>
+</select>
+
+<select id="op-type">
+<option value="دين">دين</option>
+<option value="سداد">سداد</option>
+</select>
+
+<input id="op-note" placeholder="بيان">
+
+</div>
+
+<div id="tafqit-text" class="tafqit-box"></div>
+
+<button onclick="saveOp()" class="gold-btn w-full py-3 rounded-xl">
+
+حفظ العملية
+
+</button>
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+/* ================= VARIABLES ================= */
+
+let user=null
+let userType="merchant"
+let activeTarget=null
+let discoveredData=[]
+
+
+
+/* ================= UTIL ================= */
+
+function togglePass(id){
+
+const input=document.getElementById(id)
+
+input.type=input.type==="password"?"text":"password"
+
+}
+
+
+function logout(){
+
+localStorage.removeItem("heiba_auth_session")
+location.reload()
+
+}
+
+
+/* ================= AUTH ================= */
+
+function setType(t){
+
+userType=t
+
+document
+.getElementById('sel-merchant')
+.classList.toggle('active',t==="merchant")
+
+document
+.getElementById('sel-debtor')
+.classList.toggle('active',t==="debtor")
+
+}
+
+
+
+async function doAuth(action){
+
+const name=document.getElementById('u-name').value.trim()
+const password=document.getElementById('u-pass').value
+
+if(!name||!password) return
+
+
+const res=await fetch('/api/auth',{
+
+method:'POST',
+
+headers:{'Content-Type':'application/json'},
+
+body:JSON.stringify({
+
+name,
+password,
+type:userType,
+action
+
+})
+
+})
+
+const data=await res.json()
+
+if(res.ok){
+
+user=data
+
+localStorage.setItem(
+'heiba_auth_session',
+JSON.stringify(user)
+)
+
+start()
+
+}else{
+
+alert(data.error)
+
+}
+
+}
+
+
+
+/* ================= START ================= */
+
+window.onload=()=>{
+
+const saved=localStorage.getItem('heiba_auth_session')
+
+if(saved){
+
+user=JSON.parse(saved)
+
+start()
+
+}
+
+}
+
+
+function start(){
+
+document.getElementById('auth-ui').classList.add('hidden')
+document.getElementById('main-ui').classList.remove('hidden')
+
+document.getElementById('display-name').innerText=user.name
+
+calculateGrand(user.myRecords||[])
+
+renderList()
+
+}
+
+
+
+/* ================= RECORDS ================= */
+
+function addTarget(){
+
+const name=document
+.getElementById('target-search')
+.value.trim()
+
+if(!name) return
+
+activeTarget=name
+
+showDetails(name)
+
+document.getElementById('target-search').value=""
+
+}
+
+
+
+function renderList(){
+
+const targets=[...new Set(user.myRecords.map(r=>r.targetName))]
+
+document.getElementById('main-list').innerHTML=
+
+targets.map(n=>`
+
+<div onclick="showDetails('${n}')"
+class="p-3 bg-black rounded-xl cursor-pointer">
+
+${n}
+
+</div>
+
+`).join('')
+
+}
+
+
+
+function showDetails(name){
+
+activeTarget=name
+
+document.getElementById('details-pane').classList.remove('hidden')
+
+document.getElementById('active-target-name').innerText=name
+
+const records=user.myRecords.filter(r=>r.targetName===name)
+
+document.getElementById('ops-list').innerHTML=
+
+records.map(r=>`
+
+<div class="p-3 bg-zinc-900 rounded-xl flex justify-between">
+
+<span>${r.note||"عملية"}</span>
+
+<span>${r.amount} ${r.currency}</span>
+
+</div>
+
+`).join('')
+
+}
+
+
+
+/* ================= OPERATIONS ================= */
+
+function saveOp(){
+
+const amt=document.getElementById('op-amt').value
+
+if(!amt||!activeTarget) return
+
+
+user.myRecords.push({
+
+id:Date.now(),
+
+targetName:activeTarget,
+
+amount:amt,
+
+currency:document.getElementById('op-cur').value,
+
+type:document.getElementById('op-type').value,
+
+note:document.getElementById('op-note').value,
+
+date:new Date().toISOString()
+
+})
+
+
+calculateGrand(user.myRecords)
+
+showDetails(activeTarget)
+
+renderList()
+
+fetch('/api/sync',{
+
+method:'POST',
+
+headers:{'Content-Type':'application/json'},
+
+body:JSON.stringify({
+
+userId:user.id,
+myRecords:user.myRecords
+
+})
+
+})
+
+document.getElementById('op-amt').value=""
+document.getElementById('op-note').value=""
+
+}
+
+
+
+/* ================= CALCULATE ================= */
+
+function calculateGrand(recs){
+
+let y=0
+let u=0
+let s=0
+
+recs.forEach(r=>{
+
+const a=parseFloat(r.amount)
+const d=r.type==="دين"
+
+if(r.currency==="YER")
+y+=d?a:-a
+
+else if(r.currency==="USD")
+u+=d?a:-a
+
+else
+s+=d?a:-a
+
+})
+
+document.getElementById('gt-yer').innerText=y
+document.getElementById('gt-usd').innerText=u
+document.getElementById('gt-sar').innerText=s
+
+}
+
+
+
+/* ================= TAFQIT ================= */
+
+function applyTafqit(){
+
+const val=document.getElementById('op-amt').value
+
+document.getElementById('tafqit-text').innerText=
+val?val+" ريال":""
+
+}
+
+</script>
+
+
 </body>
 </html>
