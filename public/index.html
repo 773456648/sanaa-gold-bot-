@@ -198,7 +198,7 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 md:p-5 rounded-2xl text-center flex flex-col items-center justify-center gap-2">
-                        <span class="text-3xl">👑</span>
+                        <span class="text-3xl">🏪</span>
                         <span class="text-sm font-bold">حساب تاجر</span>
                     </div>
                     <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 md:p-5 rounded-2xl text-center flex flex-col items-center justify-center gap-2">
@@ -641,7 +641,7 @@
             document.getElementById('main-ui').classList.remove('hidden');
             
             document.getElementById('display-name').innerText = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
+            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '🏪 رتبة تاجر' : '👤 رتبة مواطن';
             
             if(user.type === 'merchant') { 
                 document.getElementById('merchant-tools').classList.remove('hidden'); 
