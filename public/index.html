@@ -628,10 +628,7 @@
                 // تحديث حالة المستخدم الحالي نفسه (للتوثيق)
                 if(data.requesterStatus && data.requesterStatus.verified !== user.verified) {
                     user.verified = data.requesterStatus.verified;
-                    const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"><div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div></span>' : '';
+                    const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"><span style="color: #22c55e; font-size: 24px;">✔</span></span>' : '';
                     document.getElementById('display-name').innerHTML = `${user.name} ${userVerifyBadge}`;
                 }
 
@@ -641,10 +638,7 @@
                     renderList();
                     if(activeTarget) {
                         const status = userStatuses[activeTarget] || {};
-                        const verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"><div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div></span>' : '';
+                        const verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"><span style="color: #22c55e; font-size: 24px;">✔</span></span>' : '';
                         document.getElementById('active-target-name').innerHTML = `${activeTarget} ${verifyBadge}`;
                     }
                 }
@@ -655,10 +649,7 @@
             document.getElementById('auth-ui').classList.add('hidden'); 
             document.getElementById('main-ui').classList.remove('hidden');
             
-            const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"><div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div></span>' : '';
+            const userVerifyBadge = user.verified ? '<span class="text-blue-400 text-lg ml-1"><span style="color: #22c55e; font-size: 24px;">✔</span></span>' : '';
             document.getElementById('display-name').innerHTML = `${user.name} ${userVerifyBadge}`;
             document.getElementById('role-tag').innerText = user.type === 'merchant' ? '🏪 رتبة تاجر' : '👤 رتبة مواطن';
             
@@ -728,10 +719,7 @@
             document.getElementById('main-list').innerHTML = t.map(n => {
                 const status = userStatuses[n] || { registered: false, verified: false };
                 const regBadge = status.registered ? '<span class="text-[9px] bg-green-900/40 text-green-400 px-1.5 py-0.5 rounded border border-green-500/30">مسجل</span>' : '<span class="text-[9px] bg-red-900/40 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">غير مسجل</span>';
-                const verifyBadge = status.verified ? '<span class="text-blue-400 text-xs mr-1"><div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div></span>' : '';
+                const verifyBadge = status.verified ? '<span class="text-blue-400 text-xs mr-1"><span style="color: #22c55e; font-size: 24px;">✔</span></span>' : '';
 
                 return `
                 <div onclick="showDetails('${n}')" class="p-4 bg-zinc-900/50 rounded-xl cursor-pointer border border-white/5 hover:border-[#d4af37]/50 hover:bg-zinc-800 transition flex items-center gap-3 ${activeTarget === n ? 'border-[#d4af37] bg-zinc-800 shadow-md' : ''}">
@@ -758,10 +746,7 @@
                 document.getElementById('main-list').innerHTML = `<p class="text-xs text-center text-gray-500 mt-4 italic">لا يوجد مطالبات.</p>`;
             } else {
                 document.getElementById('main-list').innerHTML = discoveredData.map(m => {
-                    const verifyBadge = m.merchantVerified ? '<span class="text-blue-400 text-sm mr-1"><div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div></span>' : '';
+                    const verifyBadge = m.merchantVerified ? '<span class="text-blue-400 text-sm mr-1"><span style="color: #22c55e; font-size: 24px;">✔</span></span>' : '';
                     return `
                     <div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-xl mb-2 hover:border-blue-500 transition cursor-pointer flex justify-between items-center ${activeTarget === m.merchantName ? 'border-blue-500 bg-zinc-800' : ''}">
                         <div class="flex items-center gap-3">
@@ -782,16 +767,10 @@
             let verifyBadge = '';
             if (user.type === 'merchant') {
                 const status = userStatuses[name] || {};
-                verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"><div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div></span>' : '';
+                verifyBadge = status.verified ? '<span class="text-blue-400 text-2xl ml-2"><span style="color: #22c55e; font-size: 24px;">✔</span></span>' : '';
             } else {
                 const m = discoveredData.find(m => m.merchantName === name);
-                verifyBadge = (m && m.merchantVerified) ? '<span class="text-blue-400 text-2xl ml-2"><div style="display: inline-flex; align-items: center; justify-content: center; background-color: #0088cc; color: white; padding: 3px 6px; border-radius: 4px; font-family: sans-serif; line-height: 1;">
-  <span style="font-size: 14px; margin-right: 4px;">✔</span>
-  <span style="font-size: 9px; font-weight: bold; text-transform: uppercase;">موثق</span>
-</div></span>' : '';
+                verifyBadge = (m && m.merchantVerified) ? '<span class="text-blue-400 text-2xl ml-2"><span style="color: #22c55e; font-size: 24px;">✔</span></span>' : '';
             }
             document.getElementById('active-target-name').innerHTML = `${name} ${verifyBadge}`;
             
