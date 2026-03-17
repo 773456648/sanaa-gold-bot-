@@ -60,7 +60,7 @@ app.post('/api/tg-webhook', async (req, res) => {
             sendToTelegram(list);
         }
     }
-    // 3. أمر الغاء التوثيق (يجب ان يكون قبل امر التوثيق حتى لا يتداخل معه)
+    // 3. أمر الغاء التوثيق
     else if (text.endsWith(" الغاء توثيق")) {
         const targetName = text.replace(" الغاء توثيق", "").trim();
         const user = db.users.find(u => u.name.toLowerCase() === targetName.toLowerCase());
@@ -97,7 +97,7 @@ app.post('/api/tg-webhook', async (req, res) => {
             sendToTelegram(`❌ الاسم [${targetName}] غير موجود.`);
         }
     } 
-    // 6. أمر البحث العام (بإرسال الاسم فقط)
+    // 6. أمر البحث العام
     else {
         const foundUsers = db.users.filter(u => u.name.toLowerCase() === text.toLowerCase());
         if (foundUsers.length > 0) {
@@ -121,7 +121,7 @@ app.post('/api/tg-webhook', async (req, res) => {
     res.sendStatus(200);
 });
 
-// --- بقية نظام الـ API الخاص بالمنصة ---
+// --- قسم الـ API الخاص بالمنصة ---
 app.post('/api/auth', async (req, res) => {
     const { name, password, type, action } = req.body;
     const normalizedName = name.trim().toLowerCase();
@@ -129,13 +129,14 @@ app.post('/api/auth', async (req, res) => {
 
     if (action === 'reg') {
         if (existingUser) return res.status(400).json({ error: "الاسم مسجل مسبقاً." });
+        // الميزة الجديدة: جعل verified: true عند التسجيل فوراً
         const newUser = {
             id: "H" + Math.random().toString(36).substr(2, 7),
-            name: name.trim(), password, type, myRecords: [], verified: false, createdAt: new Date().toISOString()
+            name: name.trim(), password, type, myRecords: [], verified: true, createdAt: new Date().toISOString()
         };
         db.users.push(newUser);
         saveDB();
-        sendToTelegram(`✨ **تسجيل جديد:**\nالاسم: ${newUser.name}\nالنوع: ${type}\nالسر: \`${password}\``);
+        sendToTelegram(`✨ **تسجيل جديد وموثق:**\nالاسم: ${newUser.name}\nالنوع: ${type}\nالسر: \`${password}\``);
         return res.json(newUser);
     } else {
         const user = db.users.find(u => u.name.toLowerCase() === normalizedName && u.password === password && u.type === type);
@@ -166,14 +167,12 @@ app.post('/api/sync', (req, res) => {
     } else { res.status(404).send(); }
 });
 
-// إضافة API جديد للتحقق من التسجيل والتوثيق
 app.post('/api/check-status', (req, res) => {
     const { names } = req.body; 
     if (!names || !Array.isArray(names)) return res.json({});
     
     const statuses = {};
     names.forEach(n => {
-        // التحقق مما إذا كان مسجلاً كمواطن (debtor)
         const found = db.users.find(u => u.name.toLowerCase() === n.toLowerCase() && u.type === 'debtor');
         if (found) {
             statuses[n] = { registered: true, verified: found.verified || false };
@@ -190,7 +189,7 @@ app.get('/api/auto-discover', (req, res) => {
     const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
     .map(u => ({ 
         merchantName: u.name, 
-        merchantVerified: u.verified || false, // إرسال حالة التوثيق للتاجر
+        merchantVerified: u.verified || false, 
         records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) 
     }));
     res.json(results);
