@@ -1,813 +1,546 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, signInAnonymously, onAuthStateChanged 
-} from 'firebase/auth';
-import { 
-  getFirestore, collection, onSnapshot, doc, setDoc, addDoc, updateDoc, deleteDoc, query, serverTimestamp 
-} from 'firebase/firestore';
-import { 
-  ShieldCheck, Shield, User, Store, LogOut, Settings, Plus, 
-  TrendingUp, TrendingDown, DollarSign, Wallet, Search, Bell, 
-  Activity, CheckCircle2, AlertCircle, X, ChevronRight, Users, 
-  Database, Trash2, FileText
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEIBA | منصة النظام المالي الملكي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-primary: #d4af37;
+            --gold-light: #f3e5ab;
+            --gold-dark: #aa7c11;
+            --bg-deep: #050505;
+            --card-bg: rgba(18, 18, 22, 0.8);
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+        }
 
-// --- Firebase Initialization ---
-const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'heiba-app';
+        body {
+            background-color: var(--bg-deep);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.05) 0%, transparent 40%);
+            color: #e5e7eb;
+            font-family: 'Changa', sans-serif;
+            min-height: 100vh;
+            selection-background-color: var(--gold-primary);
+        }
 
-// --- Utility Functions ---
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US').format(Math.abs(amount));
-};
+        /* تأثيرات النصوص المذهبة */
+        .gold-shimmer {
+            background: linear-gradient(90deg, #d4af37 0%, #f3e5ab 50%, #aa7c11 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 4s linear infinite;
+        }
 
-const formatAr = (num) => {
-  if (num === 0) return "صفر";
-  const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
-  const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
-  const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
-  
-  function conv(n) {
-      let r = ""; const h = Math.floor(n / 100); const t = n % 100;
-      if (h > 0) r += hundreds[h];
-      if (t > 0) { 
-          if (r !== "") r += " و "; 
-          if (t < 20) r += units[t]; 
-          else { 
-              const s = t % 10; 
-              const ten = Math.floor(t / 10); 
-              if (s > 0) r += units[s] + " و "; 
-              r += tens[ten]; 
-          } 
-      }
-      return r;
-  }
-  
-  let res = ""; 
-  const m = Math.floor(num / 1000000); 
-  const th = Math.floor((num % 1000000) / 1000); 
-  const rem = num % 1000;
-  
-  if (m > 0) res += (m === 1 ? "مليون" : (m === 2 ? "مليونان" : conv(m) + " ملايين"));
-  if (th > 0) { 
-      if (res !== "") res += " و "; 
-      res += (th === 1 ? "ألف" : (th === 2 ? "ألفين" : conv(th) + " آلاف")); 
-  }
-  if (rem > 0) { 
-      if (res !== "") res += " و "; 
-      res += conv(rem); 
-  }
-  return res;
-};
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
 
-// --- Toast Component ---
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(onClose, 3000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
+        /* البطاقة الزجاجية المطورة */
+        .premium-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-  return (
-    <div className={`fixed bottom-4 left-4 z-50 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl animate-in slide-in-from-bottom-5 fade-in duration-300 ${
-      type === 'error' ? 'bg-red-950/90 border border-red-500/50 text-red-200' :
-      type === 'success' ? 'bg-emerald-950/90 border border-emerald-500/50 text-emerald-200' :
-      'bg-slate-900/90 border border-amber-500/50 text-amber-200'
-    }`}>
-      {type === 'error' ? <AlertCircle size={20} className="text-red-500" /> : 
-       type === 'success' ? <CheckCircle2 size={20} className="text-emerald-500" /> : 
-       <Bell size={20} className="text-amber-500" />}
-      <span className="font-medium">{message}</span>
-    </div>
-  );
-};
+        .premium-card:hover {
+            border-color: rgba(212, 175, 55, 0.4);
+            transform: translateY(-5px);
+        }
 
-// --- Main Application ---
-export default function App() {
-  const [firebaseUser, setFirebaseUser] = useState(null);
-  const [dbUsers, setDbUsers] = useState([]);
-  const [transactions, setTransactions] = useState([]);
-  
-  const [currentUser, setCurrentUser] = useState(null);
-  const [toast, setToast] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+        /* زر الواتساب العائم */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            width: 65px;
+            height: 65px;
+            background: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+            z-index: 1000;
+            transition: all 0.3s;
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(37, 211, 102, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
 
-  const showToast = (msg, type = 'info') => setToast({ message: msg, type });
+        .whatsapp-float:hover {
+            transform: scale(1.1) rotate(10deg);
+            filter: brightness(1.1);
+        }
 
-  // Initialize Auth
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        await signInAnonymously(auth);
-      } catch (error) {
-        console.error("Auth init error:", error);
-      }
-    };
-    initAuth();
-    
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setFirebaseUser(u);
-      setIsLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+        /* إشارات التوثيق المتقدمة */
+        .verified-badge {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
 
-  // Sync Data
-  useEffect(() => {
-    if (!firebaseUser) return;
-
-    const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'heiba_users');
-    const transRef = collection(db, 'artifacts', appId, 'public', 'data', 'heiba_transactions');
-
-    const unsubUsers = onSnapshot(usersRef, (snap) => {
-      const usersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setDbUsers(usersData);
-      
-      // Update current user session if data changes
-      if (currentUser) {
-        const updatedMe = usersData.find(u => u.name === currentUser.name && u.password === currentUser.password);
-        if (updatedMe) setCurrentUser(updatedMe);
-      }
-    }, (err) => console.error("Users sync error:", err));
-
-    const unsubTrans = onSnapshot(transRef, (snap) => {
-      setTransactions(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    }, (err) => console.error("Trans sync error:", err));
-
-    return () => { unsubUsers(); unsubTrans(); };
-  }, [firebaseUser, currentUser]);
-
-  // Check Local Storage for session
-  useEffect(() => {
-    const savedUser = localStorage.getItem('heiba_session');
-    if (savedUser && dbUsers.length > 0 && !currentUser) {
-      const parsed = JSON.parse(savedUser);
-      const exists = dbUsers.find(u => u.name === parsed.name && u.password === parsed.password);
-      if (exists) setCurrentUser(exists);
-    }
-  }, [dbUsers]);
-
-
-  const handleLogin = async (name, password, type, action) => {
-    if (!name || !password) return showToast("الرجاء إدخال جميع البيانات", "error");
-    
-    // Admin Override
-    if (name === "المدير" && password === "1234") {
-      const adminUser = { name: "المدير", type: "admin", verified: true, role: "admin" };
-      setCurrentUser(adminUser);
-      return showToast("مرحباً بك في لوحة القيادة العليا", "success");
-    }
-
-    if (action === 'login') {
-      const user = dbUsers.find(u => u.name === name && u.password === password && u.type === type);
-      if (user) {
-        setCurrentUser(user);
-        localStorage.setItem('heiba_session', JSON.stringify(user));
-        showToast("تم الدخول بنجاح", "success");
-      } else {
-        showToast("بيانات الدخول غير صحيحة", "error");
-      }
-    } else {
-      const exists = dbUsers.find(u => u.name === name && u.type === type);
-      if (exists) return showToast("هذا الاسم مسجل مسبقاً بهذا النوع", "error");
-      
-      try {
-        const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'heiba_users');
-        const newUser = {
-          name, password, type, verified: false, createdAt: Date.now()
-        };
-        const docRef = await addDoc(usersRef, newUser);
-        const savedUser = { id: docRef.id, ...newUser };
-        setCurrentUser(savedUser);
-        localStorage.setItem('heiba_session', JSON.stringify(savedUser));
-        showToast("تم إنشاء الحساب بنجاح", "success");
-      } catch (err) {
-        showToast("حدث خطأ أثناء التسجيل", "error");
-      }
-    }
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('heiba_session');
-    showToast("تم تسجيل الخروج", "info");
-  };
-
-  if (isLoading) return <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center"><div className="w-16 h-16 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div></div>;
-
-  return (
-    <div dir="rtl" className="min-h-screen bg-[#0a0a0c] text-slate-200 font-sans selection:bg-[#d4af37]/30" style={{ fontFamily: "'Changa', sans-serif" }}>
-      <style dangerouslySetInnerHTML={{__html: `
-        @import url('https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap');
-        .glass-panel { background: rgba(20, 20, 25, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .gold-gradient { background: linear-gradient(135deg, #f3e5ab, #d4af37, #aa7c11); -webkit-background-clip: text; color: transparent; }
-        .gold-bg { background: linear-gradient(135deg, #d4af37, #aa7c11); }
-        .verified-glow { text-shadow: 0 0 10px rgba(34, 197, 94, 0.5); }
-        ::-webkit-scrollbar { width: 6px; }
+        /* شريط التمرير */
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.5); }
-      `}} />
+        ::-webkit-scrollbar-thumb { background: var(--gold-primary); border-radius: 10px; }
 
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+        /* مدخلات البيانات */
+        .input-group input, .input-group select {
+            background: rgba(0, 0, 0, 0.4) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            transition: all 0.3s;
+        }
+        .input-group input:focus {
+            border-color: var(--gold-primary) !important;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+        }
 
-      {!currentUser ? (
-        <AuthScreen onAuth={handleLogin} />
-      ) : currentUser.type === 'admin' ? (
-        <AdminDashboard users={dbUsers} db={db} appId={appId} showToast={showToast} onLogout={handleLogout} />
-      ) : (
-        <MainDashboard 
-          user={currentUser} 
-          users={dbUsers} 
-          allTransactions={transactions} 
-          onLogout={handleLogout} 
-          db={db} 
-          appId={appId}
-          showToast={showToast}
-        />
-      )}
-    </div>
-  );
-}
+        .tab-active {
+            border-bottom: 3px solid var(--gold-primary);
+            color: var(--gold-primary);
+        }
 
-// --- Auth Screen ---
-const AuthScreen = ({ onAuth }) => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [type, setType] = useState('merchant');
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
+        /* تأثير الظهور */
+        .fade-up {
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="p-2 md:p-6">
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute top-1/4 -right-64 w-96 h-96 bg-[#d4af37]/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none"></div>
-      <div className="absolute bottom-1/4 -left-64 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen pointer-events-none"></div>
+    <!-- زر الواتساب -->
+    <a href="https://wa.me/967779847980" target="_blank" class="whatsapp-float" title="تواصل مع المطور">
+        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </a>
 
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10">
-        
-        {/* Left Side - Brand */}
-        <div className="text-center lg:text-right space-y-6 animate-in slide-in-from-right-10 duration-700">
-          <div>
-            <h1 className="text-7xl md:text-9xl font-black gold-gradient tracking-tighter italic">HEIBA</h1>
-            <p className="text-sm md:text-base text-slate-400 tracking-[0.4em] uppercase font-light mt-2">المنصة المالية السيادية</p>
-          </div>
-          <div className="hidden lg:block space-y-4 pr-4 border-r-2 border-[#d4af37]/30 text-slate-400 text-sm leading-relaxed">
-            <p className="text-lg text-slate-300 font-medium">"أكلوا وشربوا وعلى الحق اتحاسبوا"</p>
-            <p>حلقة الوصل المالية الأكثر أماناً، دقة متناهية في تنظيم الديون، مزامنة فورية، وشفافية مطلقة بين التاجر والمواطن.</p>
-          </div>
-        </div>
+    <!-- واجهة تسجيل الدخول -->
+    <div id="auth-ui" class="max-w-5xl mx-auto mt-10 md:mt-20 space-y-12 fade-up">
+        <header class="text-center space-y-4">
+            <h1 class="text-8xl md:text-9xl font-black gold-shimmer italic tracking-tighter leading-none">HEIBA</h1>
+            <div class="h-1 w-32 bg-gold-primary mx-auto rounded-full"></div>
+            <p class="text-gray-400 tracking-[0.4em] uppercase text-xs md:text-sm font-light">The Sovereign Financial Legacy</p>
+        </header>
 
-        {/* Right Side - Form */}
-        <div className="glass-panel p-8 md:p-10 rounded-3xl shadow-2xl animate-in slide-in-from-left-10 duration-700">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white mb-2">{isLogin ? 'تسجيل الدخول' : 'إنشاء حساب سيادي'}</h2>
-            <p className="text-sm text-slate-400">حدد صفتك وادخل بياناتك للمتابعة</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <button 
-              onClick={() => setType('merchant')}
-              className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${type === 'merchant' ? 'border-[#d4af37] bg-[#d4af37]/10' : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'}`}
-            >
-              <Store className={type === 'merchant' ? 'text-[#d4af37]' : 'text-slate-500'} size={28} />
-              <span className={`text-sm font-bold ${type === 'merchant' ? 'text-white' : 'text-slate-400'}`}>حساب تاجر</span>
-            </button>
-            <button 
-              onClick={() => setType('debtor')}
-              className={`p-4 rounded-2xl border transition-all flex flex-col items-center gap-2 ${type === 'debtor' ? 'border-blue-500 bg-blue-500/10' : 'border-slate-800 bg-slate-900/50 hover:border-slate-700'}`}
-            >
-              <User className={type === 'debtor' ? 'text-blue-500' : 'text-slate-500'} size={28} />
-              <span className={`text-sm font-bold ${type === 'debtor' ? 'text-white' : 'text-slate-400'}`}>حساب مواطن</span>
-            </button>
-          </div>
-
-          <div className="space-y-4 mb-8">
-            <div className="relative">
-              <User className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-              <input 
-                type="text" 
-                placeholder="الاسم الكامل" 
-                value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full bg-slate-950/50 border border-slate-800 text-white rounded-xl py-4 pr-12 pl-4 focus:outline-none focus:border-[#d4af37] transition-colors"
-              />
-            </div>
-            <div className="relative">
-              <ShieldCheck className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-              <input 
-                type="password" 
-                placeholder="كلمة المرور" 
-                value={password} onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950/50 border border-slate-800 text-white rounded-xl py-4 pr-12 pl-4 focus:outline-none focus:border-[#d4af37] transition-colors"
-                onKeyDown={(e) => e.key === 'Enter' && onAuth(name, password, type, isLogin ? 'login' : 'reg')}
-              />
-            </div>
-          </div>
-
-          <button 
-            onClick={() => onAuth(name, password, type, isLogin ? 'login' : 'reg')}
-            className="w-full gold-bg text-black font-bold text-lg py-4 rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-[1.02] transition-transform"
-          >
-            {isLogin ? 'دخول للمنصة' : 'تأكيد التسجيل'}
-          </button>
-
-          <div className="mt-6 text-center">
-            <button onClick={() => setIsLogin(!isLogin)} className="text-sm text-slate-400 hover:text-white transition-colors">
-              {isLogin ? 'لا تملك حساباً؟ سجل الآن' : 'لديك حساب؟ سجل الدخول'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- Main Dashboard (Merchant & Citizen) ---
-const MainDashboard = ({ user, users, allTransactions, onLogout, db, appId, showToast }) => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [selectedTarget, setSelectedTarget] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Filter transactions relevant to this user
-  const myTransactions = useMemo(() => {
-    if (user.type === 'merchant') {
-      return allTransactions.filter(t => t.merchantId === user.id).sort((a, b) => b.timestamp - a.timestamp);
-    } else {
-      return allTransactions.filter(t => t.citizenName === user.name).sort((a, b) => b.timestamp - a.timestamp);
-    }
-  }, [allTransactions, user]);
-
-  // Derived Statistics
-  const stats = useMemo(() => {
-    const balances = { YER: 0, USD: 0, SAR: 0 };
-    myTransactions.forEach(t => {
-      const amt = parseFloat(t.amount);
-      const isDebt = t.type === 'دين';
-      // Merchant perspective: Debt means customer owes me (+). Payment means they paid (-).
-      // Citizen perspective: Debt means I owe (-). Payment means I paid (+).
-      const modifier = user.type === 'merchant' ? (isDebt ? 1 : -1) : (isDebt ? -1 : 1);
-      balances[t.currency] += amt * modifier;
-    });
-    return balances;
-  }, [myTransactions, user]);
-
-  // Unique customers for merchant, or merchants for citizen
-  const relations = useMemo(() => {
-    const map = new Map();
-    myTransactions.forEach(t => {
-      const name = user.type === 'merchant' ? t.citizenName : users.find(u => u.id === t.merchantId)?.name || 'تاجر غير معروف';
-      if (!map.has(name)) {
-        const uInfo = users.find(u => u.name === name) || { verified: false };
-        map.set(name, { name, verified: uInfo.verified, records: [] });
-      }
-      map.get(name).records.push(t);
-    });
-    return Array.from(map.values());
-  }, [myTransactions, user, users]);
-
-  // Filter relations based on search
-  const filteredRelations = relations.filter(r => r.name.includes(searchQuery));
-
-  const Header = () => (
-    <header className="glass-panel sticky top-0 z-40 px-6 py-4 flex justify-between items-center border-b border-white/5">
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl gold-bg flex items-center justify-center text-black font-black text-2xl shadow-lg">H</div>
-        <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            {user.name}
-            {user.verified && <ShieldCheck size={18} className="text-emerald-400 verified-glow" />}
-          </h2>
-          <span className="text-xs text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded font-medium tracking-wide">
-            {user.type === 'merchant' ? 'حساب تجاري' : 'حساب مواطن'}
-          </span>
-        </div>
-      </div>
-      <button onClick={onLogout} className="text-slate-400 hover:text-red-400 transition-colors p-2 rounded-lg hover:bg-red-500/10">
-        <LogOut size={20} />
-      </button>
-    </header>
-  );
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      
-      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Left Sidebar - Navigation & Relations */}
-        <div className="lg:col-span-4 space-y-6">
-          
-          {/* Global Balances */}
-          <div className="glass-panel p-6 rounded-3xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[50px]"></div>
-            <h3 className="text-sm text-slate-400 font-bold mb-6 flex items-center gap-2">
-              <Activity size={18} className="text-blue-400" />
-              المركز المالي العام
-            </h3>
-            
-            <div className="space-y-4">
-              <BalanceRow currency="YER" name="ريال يمني" amount={stats.YER} color="blue" />
-              <BalanceRow currency="USD" name="دولار أمريكي" amount={stats.USD} color="emerald" />
-              <BalanceRow currency="SAR" name="ريال سعودي" amount={stats.SAR} color="amber" />
-            </div>
-          </div>
-
-          {/* Accounts List */}
-          <div className="glass-panel rounded-3xl flex flex-col h-[500px]">
-            <div className="p-6 border-b border-white/5">
-              <h3 className="text-sm text-slate-400 font-bold mb-4 flex items-center gap-2">
-                <Users size={18} className="text-[#d4af37]" />
-                {user.type === 'merchant' ? 'قائمة العملاء' : 'الجهات الدائنة'}
-              </h3>
-              
-              {user.type === 'merchant' && (
-                <div className="relative">
-                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                  <input 
-                    type="text" 
-                    placeholder="ابحث أو أضف عميل جديد..." 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if(e.key === 'Enter' && searchQuery.trim()) {
-                        setSelectedTarget({ name: searchQuery.trim(), verified: false, records: [] });
-                        setSearchQuery('');
-                      }
-                    }}
-                    className="w-full bg-slate-900/50 border border-slate-800 rounded-xl py-3 pr-10 pl-4 text-sm focus:border-[#d4af37] transition-colors outline-none"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {filteredRelations.length === 0 ? (
-                <div className="text-center text-slate-500 text-sm mt-10">لا يوجد بيانات لعرضها</div>
-              ) : (
-                filteredRelations.map((rel, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => setSelectedTarget(rel)}
-                    className={`w-full text-right p-4 rounded-xl border transition-all flex items-center justify-between ${selectedTarget?.name === rel.name ? 'bg-slate-800 border-[#d4af37] shadow-lg' : 'bg-slate-900/30 border-white/5 hover:border-white/10 hover:bg-slate-900/50'}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-950 flex items-center justify-center border border-white/10 text-slate-400">
-                        {user.type === 'merchant' ? <User size={18} /> : <Store size={18} />}
-                      </div>
-                      <div>
-                        <div className="font-bold text-sm text-slate-200 flex items-center gap-1">
-                          {rel.name}
-                          {rel.verified && <ShieldCheck size={14} className="text-emerald-500 verified-glow" />}
-                        </div>
-                        <div className="text-[10px] text-slate-500 mt-1">{rel.records.length} عملية مسجلة</div>
-                      </div>
-                    </div>
-                    <ChevronRight size={16} className={`transition-transform ${selectedTarget?.name === rel.name ? 'text-[#d4af37]' : 'text-slate-600 opacity-0 group-hover:opacity-100'}`} />
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Content - Details & Entry */}
-        <div className="lg:col-span-8 flex flex-col gap-6">
-          {!selectedTarget ? (
-            <div className="glass-panel rounded-3xl flex-1 flex flex-col items-center justify-center text-center p-12 opacity-50">
-              <FileText size={64} className="text-slate-700 mb-6" />
-              <h3 className="text-xl font-medium text-slate-400">لم يتم تحديد حساب</h3>
-              <p className="text-sm text-slate-500 mt-2">اختر حساباً من القائمة الجانبية لعرض التفاصيل أو تسجيل عمليات</p>
-            </div>
-          ) : (
-            <AccountDetails 
-              target={selectedTarget} 
-              user={user} 
-              db={db} 
-              appId={appId} 
-              showToast={showToast} 
-              myTransactions={myTransactions.filter(t => (user.type==='merchant'? t.citizenName : t.merchantId) === (user.type==='merchant'? selectedTarget.name : selectedTarget.merchantId))} // Needs precise filtering, handled inside
-              rawTransactions={allTransactions}
-            />
-          )}
-        </div>
-
-      </main>
-    </div>
-  );
-};
-
-const BalanceRow = ({ currency, name, amount, color }) => {
-  const isPositive = amount > 0;
-  const isNegative = amount < 0;
-  
-  const colorMap = {
-    blue: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
-    emerald: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-    amber: { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
-    red: { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/20' },
-  };
-
-  const c = colorMap[color];
-  const vColor = isPositive ? colorMap.emerald.text : (isNegative ? colorMap.red.text : 'text-slate-500');
-
-  return (
-    <div className={`flex justify-between items-center p-4 rounded-xl border ${c.border} ${c.bg}`}>
-      <span className="text-xs font-bold text-slate-400">{name} <span className="opacity-50">({currency})</span></span>
-      <span className={`font-black text-lg tracking-wider ${vColor}`} dir="ltr">
-        {isPositive ? '+' : isNegative ? '-' : ''} {formatCurrency(amount)}
-      </span>
-    </div>
-  );
-};
-
-// --- Sub-component: Account Details & Operations ---
-const AccountDetails = ({ target, user, db, appId, showToast, rawTransactions }) => {
-  const [amt, setAmt] = useState('');
-  const [cur, setCur] = useState('YER');
-  const [opType, setOpType] = useState('دين');
-  const [note, setNote] = useState('');
-
-  // Extract relevant records
-  const records = useMemo(() => {
-    if (user.type === 'merchant') {
-      return rawTransactions.filter(t => t.merchantId === user.id && t.citizenName === target.name).sort((a, b) => b.timestamp - a.timestamp);
-    } else {
-      // Citizen viewing a merchant
-      const merchantUser = target.name; // In this UI flow, target.name is the merchant's name
-      // We need to find the merchant ID
-      const mId = rawTransactions.find(t => t.citizenName === user.name && (t.merchantName === merchantUser || t.merchantId === target.id))?.merchantId;
-      return rawTransactions.filter(t => t.citizenName === user.name && t.merchantId === mId).sort((a, b) => b.timestamp - a.timestamp);
-    }
-  }, [rawTransactions, user, target]);
-
-  const targetStats = useMemo(() => {
-    const b = { YER: 0, USD: 0, SAR: 0 };
-    records.forEach(t => {
-      const a = parseFloat(t.amount);
-      const isDebt = t.type === 'دين';
-      const modifier = user.type === 'merchant' ? (isDebt ? 1 : -1) : (isDebt ? -1 : 1);
-      b[t.currency] += a * modifier;
-    });
-    return b;
-  }, [records, user]);
-
-  const handleSaveOp = async () => {
-    if (!amt || isNaN(amt) || parseFloat(amt) <= 0) return showToast("أدخل مبلغ صحيح", "error");
-    
-    try {
-      const transRef = collection(db, 'artifacts', appId, 'public', 'data', 'heiba_transactions');
-      await addDoc(transRef, {
-        merchantId: user.id,
-        merchantName: user.name, // saved for citizen context
-        citizenName: target.name,
-        amount: parseFloat(amt),
-        currency: cur,
-        type: opType,
-        note: note || (opType === 'دين' ? 'تسجيل دين' : 'تسجيل سداد'),
-        timestamp: Date.now()
-      });
-      showToast("تم تثبيت العملية بنجاح", "success");
-      setAmt(''); setNote('');
-    } catch (e) {
-      showToast("فشل الحفظ", "error");
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if(window.confirm("هل أنت متأكد من حذف هذه العملية؟")) {
-      try {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'heiba_transactions', id));
-        showToast("تم الحذف", "success");
-      } catch(e) { showToast("فشل الحذف", "error"); }
-    }
-  };
-
-  return (
-    <div className="glass-panel rounded-3xl flex flex-col h-full overflow-hidden shadow-2xl relative">
-      <div className="absolute top-0 left-1/4 right-1/4 h-1 gold-bg opacity-30 blur-[2px]"></div>
-
-      {/* Header */}
-      <div className="p-6 md:p-8 border-b border-white/5 bg-slate-900/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-slate-800 border border-white/10 flex items-center justify-center">
-             {user.type === 'merchant' ? <User size={24} className="text-slate-400" /> : <Store size={24} className="text-[#d4af37]" />}
-          </div>
-          <div>
-            <h2 className="text-2xl font-black text-white flex items-center gap-2">
-              {target.name}
-              {target.verified && <ShieldCheck size={20} className="text-emerald-500 verified-glow" />}
-            </h2>
-            <p className="text-sm text-slate-500 mt-1">
-              كشف حساب {user.type === 'merchant' ? 'عميل' : 'تاجر'}
-            </p>
-          </div>
-        </div>
-
-        {/* Mini Balances */}
-        <div className="flex gap-4 bg-slate-950/50 p-3 rounded-2xl border border-white/5">
-          {Object.entries(targetStats).map(([c, val]) => (
-            <div key={c} className="text-center px-2">
-              <span className="block text-[10px] text-slate-500 mb-1">{c === 'YER' ? 'يمني' : c === 'USD' ? 'دولار' : 'سعودي'}</span>
-              <span className={`text-sm font-bold block min-w-[60px] ${val > 0 ? (user.type==='merchant'?'text-red-400':'text-emerald-400') : val < 0 ? (user.type==='merchant'?'text-emerald-400':'text-red-400') : 'text-slate-500'}`} dir="ltr">
-                {formatCurrency(val)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Records List */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-3">
-        {records.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-500 opacity-60">
-            <Database size={48} className="mb-4 text-slate-700" />
-            <p>لا توجد أي حركات مالية مسجلة</p>
-          </div>
-        ) : (
-          records.map(r => {
-            const isDebt = r.type === 'دين';
-            // Visual coloring based on perspective
-            // If merchant: Debt is Red (they owe me), Pay is Green (they paid me)
-            // If citizen: Debt is Red (I owe them), Pay is Green (I paid them)
-            const isRed = isDebt; 
-
-            return (
-              <div key={r.id} className={`p-4 rounded-2xl border-r-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${isRed ? 'bg-red-950/20 border-red-500/50 hover:bg-red-950/40' : 'bg-emerald-950/20 border-emerald-500/50 hover:bg-emerald-950/40'}`}>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${isRed ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                      {r.type}
-                    </span>
-                    <span className="text-slate-300 font-medium text-sm">{r.note}</span>
-                  </div>
-                  <span className="text-[10px] text-slate-500">{new Date(r.timestamp).toLocaleString('ar-YE')}</span>
-                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="premium-card p-8 md:p-12 relative overflow-hidden">
+                <div class="absolute -top-20 -right-20 w-64 h-64 bg-gold-primary/10 rounded-full blur-[100px]"></div>
                 
-                <div className="flex items-center justify-between sm:justify-end gap-6 sm:w-1/3">
-                  <div className="text-left" dir="ltr">
-                    <div className={`font-black text-lg ${isRed ? 'text-red-400' : 'text-emerald-400'}`}>
-                      {isRed ? '+' : '-'} {formatCurrency(r.amount)}
-                    </div>
-                    <div className="text-[10px] text-slate-500 uppercase font-bold text-right">{r.currency}</div>
-                  </div>
-                  
-                  {user.type === 'merchant' && (
-                    <button onClick={() => handleDelete(r.id)} className="text-slate-600 hover:text-red-500 transition-colors p-2 bg-slate-900/50 rounded-lg">
-                      <Trash2 size={16} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+                <h2 class="text-3xl font-bold mb-8 text-center">بوابة العبور الآمن</h2>
 
-      {/* Entry Form (Only for Merchant) */}
-      {user.type === 'merchant' && (
-        <div className="p-6 bg-slate-900/80 border-t border-white/5 relative z-10">
-          <div className="absolute inset-0 gold-bg opacity-[0.02] pointer-events-none"></div>
-          <h4 className="text-sm font-bold text-[#d4af37] mb-4 flex items-center gap-2">
-            <Plus size={16} /> تسجيل حركة جديدة
-          </h4>
-          
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            <div className="md:col-span-3">
-              <label className="block text-[10px] text-slate-500 mb-1">المبلغ</label>
-              <input type="number" value={amt} onChange={e=>setAmt(e.target.value)} placeholder="0.00" className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 font-bold focus:border-[#d4af37] outline-none transition-colors" />
+                <div class="flex p-1 bg-black/40 rounded-2xl mb-8 border border-white/5">
+                    <button id="tab-merchant" onclick="setType('merchant')" class="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 tab-active">
+                        <span>🏪</span> تاجر
+                    </button>
+                    <button id="tab-debtor" onclick="setType('debtor')" class="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-gray-500">
+                        <span>👤</span> مواطن
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="input-group">
+                        <input id="u-name" type="text" placeholder="اسم المستخدم أو المؤسسة" class="w-full p-4 rounded-xl outline-none text-white border">
+                    </div>
+                    <div class="input-group relative">
+                        <input id="u-pass" type="password" placeholder="كلمة المرور الملكية" class="w-full p-4 rounded-xl outline-none text-white border">
+                        <button onclick="togglePass('u-pass')" class="absolute left-4 top-4 text-gray-500 hover:text-white transition">👁️</button>
+                    </div>
+                    
+                    <button onclick="doAuth('login')" class="w-full py-5 bg-gradient-to-r from-gold-dark to-gold-primary text-black font-black rounded-xl text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-all">دخول النظام</button>
+                    <div class="text-center">
+                        <button onclick="doAuth('reg')" class="text-gold-primary text-sm font-bold hover:underline">لا تملك حساباً؟ اطلب الانضمام الآن</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-10">
+                <section class="border-r-4 border-gold-primary pr-6">
+                    <h3 class="text-4xl font-black mb-4">لماذا منصة هيبة؟</h3>
+                    <p class="text-gray-400 leading-relaxed text-lg">
+                        نحن لا ندير أرقاماً، نحن ندير **ثقة**. <br>
+                        منصة هيبة هي الحارس الشخصي لمعاملاتك المالية، مصممة لتجعل "الدفاتر الورقية" جزءاً من الماضي. شفافية كاملة، دقة متناهية، وسرية لا تُخترق.
+                    </p>
+                </section>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="premium-card p-6 border-gold-primary/10">
+                        <p class="text-3xl mb-2">⚡</p>
+                        <h4 class="font-bold text-gold-light mb-1">سرعة البرق</h4>
+                        <p class="text-xs text-gray-500">مزامنة فورية للعملات والديون في أجزاء من الثانية.</p>
+                    </div>
+                    <div class="premium-card p-6 border-gold-primary/10">
+                        <p class="text-3xl mb-2">💎</p>
+                        <h4 class="font-bold text-gold-light mb-1">توثيق ملكي</h4>
+                        <p class="text-xs text-gray-500">نظام العلامة الخضراء للتجار المعتمدين والموثوقين.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الواجهة الرئيسية بعد الدخول -->
+    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6 fade-up">
+        
+        <!-- الهيدر المطور -->
+        <header class="premium-card p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-5">
+                <div class="w-16 h-16 bg-gradient-to-tr from-gold-dark to-gold-light rounded-2xl flex items-center justify-center text-black text-4xl font-black shadow-lg">H</div>
+                <div>
+                    <h2 id="display-name" class="text-2xl md:text-3xl font-black flex items-center gap-2"></h2>
+                    <p id="role-display" class="text-gold-primary/70 text-xs font-bold tracking-widest uppercase"></p>
+                </div>
             </div>
             
-            <div className="md:col-span-2">
-              <label className="block text-[10px] text-slate-500 mb-1">العملة</label>
-              <select value={cur} onChange={e=>setCur(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 font-bold focus:border-[#d4af37] outline-none transition-colors appearance-none">
-                <option value="YER">يمني</option>
-                <option value="USD">دولار</option>
-                <option value="SAR">سعودي</option>
-              </select>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:block text-left ml-4" dir="ltr">
+                    <p id="clock" class="text-xl font-bold text-white">00:00:00</p>
+                    <p id="date-today" class="text-[10px] text-gray-500 uppercase">MARCH 2024</p>
+                </div>
+                <button onclick="openModal('settings-modal')" class="p-3 bg-white/5 rounded-xl hover:bg-gold-primary hover:text-black transition">⚙️</button>
+                <button onclick="logout()" class="px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-bold hover:bg-red-500 hover:text-white transition">خروج</button>
             </div>
+        </header>
 
-            <div className="md:col-span-4 flex gap-2 h-[50px]">
-              <button onClick={() => setOpType('دين')} className={`flex-1 rounded-xl font-bold text-sm border transition-colors ${opType === 'دين' ? 'bg-red-950/50 border-red-500 text-red-400' : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'}`}>
-                عليه (دين)
-              </button>
-              <button onClick={() => setOpType('سداد')} className={`flex-1 rounded-xl font-bold text-sm border transition-colors ${opType === 'سداد' ? 'bg-emerald-950/50 border-emerald-500 text-emerald-400' : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'}`}>
-                لــه (سداد)
-              </button>
-            </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- القائمة الجانبية (الإحصائيات والبحث) -->
+            <aside class="lg:col-span-4 space-y-8">
+                <!-- بطاقة الرصيد الصافي -->
+                <div class="premium-card p-8 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative">
+                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-gold-primary/5 rounded-full blur-3xl"></div>
+                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">إجمالي المركز المالي</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center group">
+                            <span class="text-sm font-medium text-gray-400">ريال يمني</span>
+                            <span id="gt-yer" class="text-2xl font-black tracking-tighter">0</span>
+                        </div>
+                        <div class="flex justify-between items-center group">
+                            <span class="text-sm font-medium text-gray-400">دولار أمريكي</span>
+                            <span id="gt-usd" class="text-2xl font-black tracking-tighter text-emerald-500">0</span>
+                        </div>
+                        <div class="flex justify-between items-center group">
+                            <span class="text-sm font-medium text-gray-400">ريال سعودي</span>
+                            <span id="gt-sar" class="text-2xl font-black tracking-tighter text-orange-500">0</span>
+                        </div>
+                    </div>
+                </div>
 
-            <div className="md:col-span-3">
-               <button onClick={handleSaveOp} className="w-full gold-bg text-black font-bold h-[50px] rounded-xl hover:scale-105 transition-transform shadow-lg flex items-center justify-center gap-2">
-                 تثبيت <CheckCircle2 size={18} />
-               </button>
-            </div>
+                <!-- قائمة العملاء/التجار -->
+                <div class="premium-card p-6 flex flex-col h-[500px]">
+                    <div id="merchant-tools" class="hidden mb-6">
+                        <div class="relative group">
+                            <input id="target-search" class="w-full p-4 pr-12 rounded-2xl bg-black/50 border border-white/5 outline-none focus:border-gold-primary transition" placeholder="ابحث أو أضف عميلاً جديداً..." onkeypress="if(event.key === 'Enter') addTarget()">
+                            <span class="absolute right-4 top-4 text-xl opacity-40">🔍</span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-sm font-bold text-gray-500 mb-4 px-2">السجلات النشطة</h3>
+                    <div id="main-list" class="flex-grow overflow-y-auto space-y-3 custom-scrollbar">
+                        <!-- تظهر هنا القائمة -->
+                    </div>
+                </div>
+            </aside>
 
-            <div className="md:col-span-12 mt-2">
-              <input type="text" value={note} onChange={e=>setNote(e.target.value)} placeholder="البيان (اختياري) - مثال: دفعة حساب، بضاعة..." className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-sm focus:border-[#d4af37] outline-none transition-colors" />
-              <div className="text-[11px] text-[#d4af37] font-medium mt-2 min-h-[16px]">
-                {amt && !isNaN(amt) && `فقط ${formatAr(parseInt(amt))} ${cur === 'YER' ? 'ريال يمني' : cur === 'USD' ? 'دولار أمريكي' : 'ريال سعودي'} لا غير.`}
-              </div>
-            </div>
-          </div>
+            <!-- محتوى السجل والعمليات -->
+            <main class="lg:col-span-8">
+                <div id="empty-state" class="premium-card h-full min-h-[600px] flex flex-col items-center justify-center text-center p-12 opacity-50">
+                    <div class="w-32 h-32 bg-gold-primary/10 rounded-full flex items-center justify-center mb-6">
+                        <span class="text-6xl">📜</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2">لا توجد بيانات محددة</h3>
+                    <p class="max-w-xs mx-auto">اختر أحد الحسابات من القائمة الجانبية لعرض كشف الحساب والعمليات المالية.</p>
+                </div>
+
+                <div id="details-pane" class="hidden premium-card h-full min-h-[600px] flex flex-col p-6 md:p-10">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/5 pb-8 mb-8 gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-3xl">👤</div>
+                            <div>
+                                <h3 id="active-target-name" class="text-3xl font-black mb-1"></h3>
+                                <div id="target-status-badge"></div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="window.print()" class="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition">🖨️ طباعة</button>
+                            <button onclick="shareAccount()" class="p-3 bg-gold-primary/10 text-gold-primary rounded-xl hover:bg-gold-primary hover:text-black transition">🔗 مشاركة</button>
+                        </div>
+                    </div>
+
+                    <!-- سجل العمليات -->
+                    <div id="ops-list" class="flex-grow overflow-y-auto space-y-4 mb-8 px-2">
+                        <!-- العمليات هنا -->
+                    </div>
+
+                    <!-- نموذج إضافة عملية (للتاجر فقط) -->
+                    <div id="add-form" class="hidden pt-6 border-t border-white/5">
+                        <div class="bg-black/40 p-6 rounded-3xl border border-gold-primary/20 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] uppercase font-bold text-gray-500 mr-2">المبلغ</label>
+                                    <input id="op-amt" type="number" step="0.01" class="w-full p-4 rounded-xl bg-black border border-white/5 outline-none focus:border-gold-primary text-xl font-black text-gold-light" placeholder="0.00" oninput="applyTafqit()">
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] uppercase font-bold text-gray-500 mr-2">العملة</label>
+                                    <select id="op-cur" class="w-full p-4 rounded-xl bg-black border border-white/5 outline-none focus:border-gold-primary font-bold">
+                                        <option value="YER">ريال يمني (YER)</option>
+                                        <option value="USD">دولار أمريكي (USD)</option>
+                                        <option value="SAR">ريال سعودي (SAR)</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] uppercase font-bold text-gray-500 mr-2">نوع المعاملة</label>
+                                    <div class="flex bg-black p-1 rounded-xl border border-white/5">
+                                        <button onclick="setOpType('دين', this)" class="flex-1 py-3 rounded-lg text-xs font-bold transition-all bg-red-500/20 text-red-500" id="btn-type-debt">دين (عليه)</button>
+                                        <button onclick="setOpType('سداد', this)" class="flex-1 py-3 rounded-lg text-xs font-bold transition-all text-gray-500" id="btn-type-pay">سداد (له)</button>
+                                        <input type="hidden" id="op-type" value="دين">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <input id="op-note" type="text" class="flex-grow p-4 rounded-xl bg-black border border-white/5 outline-none focus:border-gold-primary" placeholder="وصف المعاملة (مثلاً: فاتورة مواد بناء، دفعة مقدمة...)">
+                                <button onclick="saveOp()" class="px-10 py-4 bg-gold-primary text-black font-black rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all">تثبيت المعاملة</button>
+                            </div>
+                            <p id="tafqit-text" class="text-[10px] text-gold-primary/60 italic px-2"></p>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
-      )}
     </div>
-  );
-};
 
-// --- Admin Dashboard (Replaces Telegram Logic) ---
-const AdminDashboard = ({ users, db, appId, showToast, onLogout }) => {
-  const [search, setSearch] = useState('');
+    <!-- مودال الإعدادات -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[2000] hidden items-center justify-center p-4">
+        <div class="premium-card w-full max-w-md p-10 space-y-8 fade-up">
+            <div class="text-center">
+                <h3 class="text-2xl font-black gold-shimmer">إعدادات الأمان الملكية</h3>
+                <p class="text-gray-500 text-sm">تغيير كلمة المرور الخاصة بالنظام</p>
+            </div>
+            
+            <div class="space-y-4">
+                <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة" class="w-full p-4 rounded-xl bg-black border border-white/10 outline-none focus:border-gold-primary">
+                <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور" class="w-full p-4 rounded-xl bg-black border border-white/10 outline-none focus:border-gold-primary">
+            </div>
 
-  const toggleVerify = async (u) => {
-    try {
-      const ref = doc(db, 'artifacts', appId, 'public', 'data', 'heiba_users', u.id);
-      await updateDoc(ref, { verified: !u.verified });
-      showToast(`تم ${!u.verified ? 'توثيق' : 'إلغاء توثيق'} الحساب`, 'success');
-    } catch(e) { showToast("حدث خطأ", 'error'); }
-  };
-
-  const deleteUser = async (id) => {
-    if(window.confirm("حذف المستخدم نهائياً؟ (لا يحذف العمليات المرتبطة به لضمان السجلات)")) {
-      try {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'heiba_users', id));
-        showToast("تم الحذف", 'success');
-      } catch(e) { showToast("حدث خطأ", 'error'); }
-    }
-  };
-
-  const filtered = users.filter(u => u.name.includes(search) || u.type.includes(search));
-  const merchants = users.filter(u => u.type === 'merchant').length;
-  const citizens = users.filter(u => u.type === 'debtor').length;
-
-  return (
-    <div className="min-h-screen p-6 max-w-6xl mx-auto">
-      <header className="flex justify-between items-center mb-8 glass-panel p-6 rounded-3xl">
-        <div>
-          <h1 className="text-2xl font-black text-white flex items-center gap-3">
-            <Shield className="text-[#d4af37]" /> لوحة التحكم السيادية
-          </h1>
-          <p className="text-slate-400 text-sm mt-1">إدارة المستخدمين والتوثيق</p>
+            <div class="flex gap-4">
+                <button onclick="updatePassword()" class="flex-grow py-4 bg-gold-primary text-black font-black rounded-xl">حفظ التغييرات</button>
+                <button onclick="closeModal('settings-modal')" class="px-8 py-4 bg-white/5 rounded-xl">إلغاء</button>
+            </div>
         </div>
-        <button onClick={onLogout} className="bg-red-500/10 text-red-400 px-4 py-2 rounded-xl font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج</button>
-      </header>
-
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="glass-panel p-6 rounded-2xl border-t-4 border-blue-500">
-          <p className="text-slate-400 text-sm">إجمالي الحسابات</p>
-          <p className="text-4xl font-black text-white mt-2">{users.length}</p>
-        </div>
-        <div className="glass-panel p-6 rounded-2xl border-t-4 border-[#d4af37]">
-          <p className="text-slate-400 text-sm">التجار</p>
-          <p className="text-4xl font-black text-white mt-2">{merchants}</p>
-        </div>
-        <div className="glass-panel p-6 rounded-2xl border-t-4 border-emerald-500">
-          <p className="text-slate-400 text-sm">المواطنين</p>
-          <p className="text-4xl font-black text-white mt-2">{citizens}</p>
-        </div>
-      </div>
-
-      <div className="glass-panel rounded-3xl p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">إدارة الأعضاء</h2>
-          <input type="text" placeholder="بحث باسم المستخدم..." value={search} onChange={e=>setSearch(e.target.value)} className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 w-64 focus:border-[#d4af37] outline-none" />
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-right text-sm">
-            <thead className="bg-slate-900/50 text-slate-400">
-              <tr>
-                <th className="p-4 rounded-r-xl">الاسم</th>
-                <th className="p-4">النوع</th>
-                <th className="p-4">كلمة المرور</th>
-                <th className="p-4">تاريخ التسجيل</th>
-                <th className="p-4 rounded-l-xl text-center">الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {filtered.map(u => (
-                <tr key={u.id} className="hover:bg-slate-800/30 transition">
-                  <td className="p-4 font-bold flex items-center gap-2">
-                    {u.name} {u.verified && <ShieldCheck size={16} className="text-emerald-500 verified-glow" />}
-                  </td>
-                  <td className="p-4">{u.type === 'merchant' ? 'تاجر' : 'مواطن'}</td>
-                  <td className="p-4 font-mono text-slate-500">{u.password}</td>
-                  <td className="p-4 text-slate-500">{new Date(u.createdAt).toLocaleDateString('ar-YE')}</td>
-                  <td className="p-4 flex justify-center gap-2">
-                    <button onClick={() => toggleVerify(u)} className={`px-3 py-1 rounded-lg text-xs font-bold border ${u.verified ? 'border-amber-500/50 text-amber-500 hover:bg-amber-500/10' : 'border-emerald-500/50 text-emerald-500 hover:bg-emerald-500/10'}`}>
-                      {u.verified ? 'إلغاء التوثيق' : 'توثيق الحساب'}
-                    </button>
-                    <button onClick={() => deleteUser(u.id)} className="px-3 py-1 rounded-lg text-xs font-bold border border-red-500/50 text-red-500 hover:bg-red-500/10">
-                      حذف
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
-  );
-};
+
+    <script>
+        // المتغيرات والبيانات
+        let user = null;
+        let activeTarget = null;
+        let userType = 'merchant';
+        let opType = 'دين';
+        let discoveredData = [];
+
+        // تحديث الوقت
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('date-today').innerText = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // التبديل بين أنواع الحسابات
+        function setType(t) {
+            userType = t;
+            document.getElementById('tab-merchant').className = t === 'merchant' ? 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 tab-active' : 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-gray-500';
+            document.getElementById('tab-debtor').className = t === 'debtor' ? 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 tab-active' : 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-gray-500';
+        }
+
+        function setOpType(type, btn) {
+            opType = type;
+            document.getElementById('op-type').value = type;
+            document.getElementById('btn-type-debt').className = type === 'دين' ? 'flex-1 py-3 rounded-lg text-xs font-bold transition-all bg-red-500/20 text-red-500' : 'flex-1 py-3 rounded-lg text-xs font-bold transition-all text-gray-500';
+            document.getElementById('btn-type-pay').className = type === 'سداد' ? 'flex-1 py-3 rounded-lg text-xs font-bold transition-all bg-emerald-500/20 text-emerald-500' : 'flex-1 py-3 rounded-lg text-xs font-bold transition-all text-gray-500';
+        }
+
+        // المصادقة
+        async function doAuth(action) {
+            const name = document.getElementById('u-name').value;
+            const pass = document.getElementById('u-pass').value;
+            if(!name || !pass) return alert("الرجاء تعبئة كافة الحقول الملكية");
+
+            // محاكاة (يمكن ربطها بـ API حقيقي)
+            user = { id: Date.now(), name, type: userType, myRecords: [], verified: true };
+            localStorage.setItem('heiba_auth_v2', JSON.stringify(user));
+            startSystem();
+        }
+
+        function startSystem() {
+            document.getElementById('auth-ui').classList.add('hidden');
+            document.getElementById('main-ui').classList.remove('hidden');
+            
+            const verifyHtml = user.verified ? '<span class="verified-badge">✓ موثق</span>' : '';
+            document.getElementById('display-name').innerHTML = `${user.name} ${verifyHtml}`;
+            document.getElementById('role-display').innerText = user.type === 'merchant' ? 'رتبة التاجر السيادي' : 'حساب المواطن المعتمد';
+
+            if(user.type === 'merchant') {
+                document.getElementById('merchant-tools').classList.remove('hidden');
+                document.getElementById('add-form').classList.remove('hidden');
+                renderUserList();
+            } else {
+                fetchCitizenData();
+                setInterval(fetchCitizenData, 5000);
+            }
+        }
+
+        function renderUserList() {
+            const list = document.getElementById('main-list');
+            const targets = [...new Set(user.myRecords.map(r => r.targetName))];
+            
+            if(targets.length === 0) {
+                list.innerHTML = `<div class="p-10 text-center text-gray-600 italic">لا توجد حسابات مضافة..</div>`;
+                return;
+            }
+
+            list.innerHTML = targets.map(name => `
+                <div onclick="selectTarget('${name}')" class="p-4 bg-white/5 rounded-2xl cursor-pointer border border-transparent hover:border-gold-primary/30 hover:bg-white/10 transition-all flex items-center justify-between ${activeTarget === name ? 'border-gold-primary bg-gold-primary/5 shadow-lg' : ''}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center text-xs border border-white/10">👤</div>
+                        <span class="font-bold text-sm">${name}</span>
+                    </div>
+                    <span class="text-[10px] text-gray-500">نشط</span>
+                </div>
+            `).join('');
+        }
+
+        function selectTarget(name) {
+            activeTarget = name;
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('details-pane').classList.remove('hidden');
+            document.getElementById('active-target-name').innerText = name;
+            document.getElementById('target-status-badge').innerHTML = '<span class="text-[10px] text-emerald-500 font-bold tracking-widest uppercase">● Online Connected</span>';
+            renderOperations();
+            renderUserList();
+        }
+
+        function renderOperations() {
+            const container = document.getElementById('ops-list');
+            const records = user.myRecords.filter(r => r.targetName === activeTarget);
+
+            if(records.length === 0) {
+                container.innerHTML = `<div class="p-20 text-center opacity-30 italic">لا توجد معاملات مسجلة في هذا السجل بعد..</div>`;
+                return;
+            }
+
+            container.innerHTML = records.map(r => `
+                <div class="p-5 premium-card bg-black/40 border-white/5 flex justify-between items-center group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${r.type === 'دين' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'}">
+                            ${r.type === 'دين' ? '↙' : '↗'}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-200">${r.note || 'معاملة مالية'}</h4>
+                            <p class="text-[10px] text-gray-500">${new Date(r.date).toLocaleString('ar-YE')}</p>
+                        </div>
+                    </div>
+                    <div class="text-left" dir="ltr">
+                        <p class="text-xl font-black ${r.type === 'دين' ? 'text-red-500' : 'text-emerald-500'}">${r.type === 'دين' ? '+' : '-'} ${parseFloat(r.amount).toLocaleString()}</p>
+                        <p class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">${r.currency}</p>
+                    </div>
+                </div>
+            `).reverse().join('');
+
+            calculateBalances();
+        }
+
+        function calculateBalances() {
+            let yer=0, usd=0, sar=0;
+            user.myRecords.forEach(r => {
+                const amt = parseFloat(r.amount);
+                const isDebt = r.type === 'دين';
+                if(r.currency === 'YER') yer += isDebt ? amt : -amt;
+                if(r.currency === 'USD') usd += isDebt ? amt : -amt;
+                if(r.currency === 'SAR') sar += isDebt ? amt : -amt;
+            });
+
+            const format = (v) => v === 0 ? '0' : (v > 0 ? `<span class="text-red-500">${v.toLocaleString()}</span>` : `<span class="text-emerald-500">${Math.abs(v).toLocaleString()}</span>`);
+            
+            document.getElementById('gt-yer').innerHTML = format(yer);
+            document.getElementById('gt-usd').innerHTML = format(usd);
+            document.getElementById('gt-sar').innerHTML = format(sar);
+        }
+
+        function addTarget() {
+            const n = document.getElementById('target-search').value.trim();
+            if(n) {
+                selectTarget(n);
+                document.getElementById('target-search').value = '';
+            }
+        }
+
+        function saveOp() {
+            const amt = document.getElementById('op-amt').value;
+            if(!amt || !activeTarget) return;
+
+            const rec = {
+                id: Date.now(),
+                targetName: activeTarget,
+                amount: amt,
+                currency: document.getElementById('op-cur').value,
+                type: opType,
+                note: document.getElementById('op-note').value,
+                date: new Date().toISOString()
+            };
+
+            user.myRecords.push(rec);
+            localStorage.setItem('heiba_auth_v2', JSON.stringify(user));
+            renderOperations();
+            document.getElementById('op-amt').value = '';
+            document.getElementById('op-note').value = '';
+        }
+
+        // دوال المساعدة
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function togglePass(id) { const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; }
+        function logout() { localStorage.removeItem('heiba_auth_v2'); location.reload(); }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('heiba_auth_v2');
+            if(saved) {
+                user = JSON.parse(saved);
+                startSystem();
+            }
+        };
+
+        // ميزة التفقيط المبسطة
+        function applyTafqit() {
+            const v = document.getElementById('op-amt').value;
+            if(v > 0) document.getElementById('tafqit-text').innerText = "المبلغ المكتوب: " + parseFloat(v).toLocaleString() + " فقط لا غير.";
+            else document.getElementById('tafqit-text').innerText = "";
+        }
+    </script>
+</body>
+</html>
