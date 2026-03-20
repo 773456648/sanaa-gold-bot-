@@ -1,546 +1,989 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEIBA | منصة النظام المالي الملكي</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>منصة النظام المالي المتكامل</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --gold-primary: #d4af37;
             --gold-light: #f3e5ab;
             --gold-dark: #aa7c11;
-            --bg-deep: #050505;
-            --card-bg: rgba(18, 18, 22, 0.8);
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
+            --bg-dark: #0a0a0c;
+            --surface-dark: rgba(20, 20, 25, 0.72);
+            --surface-soft: rgba(255, 255, 255, 0.03);
+            --border-soft: rgba(255, 255, 255, 0.06);
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            background-color: var(--bg-deep);
-            background-image: 
-                radial-gradient(circle at 0% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 40%),
-                radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.05) 0%, transparent 40%);
-            color: #e5e7eb;
+            background:
+                radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.06) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(59, 130, 246, 0.05) 0%, transparent 30%),
+                var(--bg-dark);
+            color: #f0f0f0;
             font-family: 'Changa', sans-serif;
+            overflow-x: hidden;
             min-height: 100vh;
-            selection-background-color: var(--gold-primary);
         }
 
-        /* تأثيرات النصوص المذهبة */
-        .gold-shimmer {
-            background: linear-gradient(90deg, #d4af37 0%, #f3e5ab 50%, #aa7c11 100%);
-            background-size: 200% auto;
+        ::selection {
+            background: rgba(212, 175, 55, 0.35);
+            color: #fff;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.28); border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.55); }
+
+        .gold-text {
+            background: linear-gradient(to left, var(--gold-light), var(--gold-primary), var(--gold-dark));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            animation: shimmer 4s linear infinite;
+            text-shadow: 0px 2px 10px rgba(212, 175, 55, 0.08);
         }
 
-        @keyframes shimmer {
-            to { background-position: 200% center; }
+        .gold-btn {
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+            color: #000;
+            font-weight: 800;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+            box-shadow: 0 10px 24px rgba(212, 175, 55, 0.18);
+        }
+        .gold-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 34px rgba(212, 175, 55, 0.28);
+            filter: brightness(1.08);
         }
 
-        /* البطاقة الزجاجية المطورة */
-        .premium-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.15);
-            border-radius: 28px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        .glass-card {
+            background: var(--surface-dark);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-soft);
+            border-radius: 24px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.48);
+            transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(212, 175, 55, 0.16);
         }
 
-        .premium-card:hover {
-            border-color: rgba(212, 175, 55, 0.4);
-            transform: translateY(-5px);
+        .info-section {
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 18px;
+            padding: 20px;
+            transition: all 0.25s ease;
+        }
+        .info-section:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(212, 175, 55, 0.20);
+            transform: translateY(-1px);
         }
 
-        /* زر الواتساب العائم */
-        .whatsapp-float {
+        input, select {
+            background: rgba(0, 0, 0, 0.52) !important;
+            border: 1px solid rgba(255, 255, 255, 0.10) !important;
+            color: #fff !important;
+            border-radius: 16px !important;
+            padding: 14px 16px !important;
+            width: 100%;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+        input:focus, select:focus {
+            border-color: var(--gold-primary) !important;
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.16);
+        }
+        input::placeholder { color: rgba(255,255,255,0.36); }
+
+        .type-select {
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.28);
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+        .type-select:hover {
+            border-color: rgba(212, 175, 55, 0.40);
+            transform: translateY(-1px);
+        }
+        .type-select.active {
+            border-color: var(--gold-primary);
+            background: rgba(212, 175, 55, 0.08);
+            transform: scale(1.015);
+        }
+
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0.25s ease;
+        }
+        .modal-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+        .modal-content {
+            transform: scale(0.96);
+            transition: all 0.25s ease;
+        }
+        .modal-backdrop.show .modal-content {
+            transform: scale(1);
+        }
+
+        .tafqit-box {
+            font-size: 12px;
+            color: var(--gold-light);
+            margin-top: 8px;
+            margin-right: 12px;
+            font-weight: 600;
+            min-height: 20px;
+        }
+
+        #toast-container {
             position: fixed;
-            bottom: 30px;
-            left: 30px;
-            width: 65px;
-            height: 65px;
-            background: #25d366;
-            border-radius: 50%;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            min-width: 250px;
+            max-width: min(92vw, 420px);
+            padding: 14px 18px;
+            border-radius: 14px;
+            background: rgba(15, 15, 20, 0.96);
+            border-right: 4px solid var(--gold-primary);
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+            font-size: 14px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
-            z-index: 1000;
-            transition: all 0.3s;
-            animation: pulse-green 2s infinite;
+            gap: 10px;
+            transform: translateX(-120%);
+            transition: transform 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: auto;
         }
-        
-        @keyframes pulse-green {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(37, 211, 102, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        .toast.show { transform: translateX(0); }
+        .toast.error { border-right-color: #ef4444; }
+        .toast.success { border-right-color: #22c55e; }
+        .toast.info { border-right-color: #38bdf8; }
+
+        .fade-in { animation: fadeIn 0.6s ease forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .whatsapp-float:hover {
-            transform: scale(1.1) rotate(10deg);
-            filter: brightness(1.1);
+        @keyframes verified-shimmer {
+            to { background-position: 200% center; }
         }
-
-        /* إشارات التوثيق المتقدمة */
-        .verified-badge {
-            background: linear-gradient(135deg, #059669, #10b981);
-            color: white;
-            padding: 2px 10px;
-            border-radius: 50px;
-            font-size: 10px;
-            font-weight: 800;
+        .verified-name-glow {
+            background: linear-gradient(90deg, #ffffff, #22c55e, #ffffff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: verified-shimmer 3s linear infinite;
+            text-shadow: 0 0 15px rgba(34, 197, 94, 0.35);
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.15));
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* شريط التمرير */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--gold-primary); border-radius: 10px; }
+        .fadi-glass-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: 6px;
+            padding: 2px 9px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1;
+            color: #fff;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.92) 0%, rgba(255,255,255,0.36) 50%, rgba(34, 197, 94, 0.92) 100%);
+            background-size: 200% auto;
+            border: 1px solid rgba(255,255,255,0.22);
+            overflow: hidden;
+            animation: badge-glow 5s linear infinite;
+            backdrop-filter: blur(2px);
+        }
+        .fadi-glass-badge::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+            animation: badge-sheen 3.8s linear infinite;
+            opacity: 0.8;
+        }
+        @keyframes badge-glow {
+            0% { box-shadow: 0 0 8px rgba(34,197,94,.25); }
+            50% { box-shadow: 0 0 18px rgba(34,197,94,.55); }
+            100% { box-shadow: 0 0 8px rgba(34,197,94,.25); }
+        }
+        @keyframes badge-sheen {
+            0% { transform: translateX(-120%) skewX(-25deg); }
+            100% { transform: translateX(120%) skewX(-25deg); }
+        }
 
-        /* مدخلات البيانات */
-        .input-group input, .input-group select {
-            background: rgba(0, 0, 0, 0.4) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            transition: all 0.3s;
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(0,0,0,0.35);
+            transition: .2s ease;
+            white-space: nowrap;
         }
-        .input-group input:focus {
-            border-color: var(--gold-primary) !important;
-            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+        .chip:hover { transform: translateY(-1px); }
+
+        .chip.active {
+            border-color: rgba(212,175,55,0.55);
+            background: rgba(212,175,55,0.10);
+            color: #fff;
         }
 
-        .tab-active {
-            border-bottom: 3px solid var(--gold-primary);
-            color: var(--gold-primary);
+        .mini-stat {
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.03);
+            border-radius: 18px;
+            padding: 14px 16px;
         }
 
-        /* تأثير الظهور */
-        .fade-up {
-            animation: fadeUp 0.6s ease-out forwards;
+        .list-empty {
+            border: 1px dashed rgba(255,255,255,0.12);
+            border-radius: 16px;
+            padding: 22px;
+            text-align: center;
+            color: rgba(255,255,255,0.42);
+            font-size: 13px;
         }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .op-card {
+            border-radius: 18px;
+            border-right-width: 4px;
+            border-style: solid;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            transition: all .2s ease;
+        }
+        .op-card:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+        }
+        .op-debt {
+            background: rgba(127, 29, 29, 0.12);
+            border-right-color: rgba(239, 68, 68, 0.55);
+        }
+        .op-pay {
+            background: rgba(20, 83, 45, 0.12);
+            border-right-color: rgba(34, 197, 94, 0.55);
+        }
+
+        .small-muted {
+            color: rgba(255,255,255,0.45);
+            font-size: 11px;
         }
     </style>
 </head>
-<body class="p-2 md:p-6">
 
-    <!-- زر الواتساب -->
-    <a href="https://wa.me/967779847980" target="_blank" class="whatsapp-float" title="تواصل مع المطور">
-        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    </a>
+<body class="p-4 md:p-8">
 
-    <!-- واجهة تسجيل الدخول -->
-    <div id="auth-ui" class="max-w-5xl mx-auto mt-10 md:mt-20 space-y-12 fade-up">
-        <header class="text-center space-y-4">
-            <h1 class="text-8xl md:text-9xl font-black gold-shimmer italic tracking-tighter leading-none">HEIBA</h1>
-            <div class="h-1 w-32 bg-gold-primary mx-auto rounded-full"></div>
-            <p class="text-gray-400 tracking-[0.4em] uppercase text-xs md:text-sm font-light">The Sovereign Financial Legacy</p>
-        </header>
+    <div id="toast-container"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div class="premium-card p-8 md:p-12 relative overflow-hidden">
-                <div class="absolute -top-20 -right-20 w-64 h-64 bg-gold-primary/10 rounded-full blur-[100px]"></div>
-                
-                <h2 class="text-3xl font-bold mb-8 text-center">بوابة العبور الآمن</h2>
+    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12 fade-in">
+        <div class="text-center space-y-2">
+            <h1 class="text-6xl md:text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
+            <p class="text-[10px] md:text-sm text-gray-400 tracking-[0.3em] md:tracking-[0.5em] uppercase font-light">The Sovereign Financial Platform</p>
+        </div>
 
-                <div class="flex p-1 bg-black/40 rounded-2xl mb-8 border border-white/5">
-                    <button id="tab-merchant" onclick="setType('merchant')" class="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 tab-active">
-                        <span>🏪</span> تاجر
-                    </button>
-                    <button id="tab-debtor" onclick="setType('debtor')" class="flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-gray-500">
-                        <span>👤</span> مواطن
-                    </button>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div class="glass-card p-8 md:p-10 space-y-8 relative overflow-hidden">
+                <div class="absolute -top-24 -right-24 w-48 h-48 bg-yellow-600 rounded-full mix-blend-multiply filter blur-[80px] opacity-20"></div>
+
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold mb-1">تسجيل الدخول</h2>
+                    <p class="text-sm text-gray-500">اختر نوع الحساب وأدخل بياناتك للمتابعة</p>
                 </div>
 
-                <div class="space-y-6">
-                    <div class="input-group">
-                        <input id="u-name" type="text" placeholder="اسم المستخدم أو المؤسسة" class="w-full p-4 rounded-xl outline-none text-white border">
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 md:p-5 rounded-2xl text-center flex flex-col items-center justify-center gap-2">
+                        <span class="text-3xl">🏪</span>
+                        <span class="text-sm font-bold">حساب تاجر</span>
                     </div>
-                    <div class="input-group relative">
-                        <input id="u-pass" type="password" placeholder="كلمة المرور الملكية" class="w-full p-4 rounded-xl outline-none text-white border">
-                        <button onclick="togglePass('u-pass')" class="absolute left-4 top-4 text-gray-500 hover:text-white transition">👁️</button>
+                    <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 md:p-5 rounded-2xl text-center flex flex-col items-center justify-center gap-2">
+                        <span class="text-3xl">👤</span>
+                        <span class="text-sm font-bold">حساب مواطن</span>
                     </div>
-                    
-                    <button onclick="doAuth('login')" class="w-full py-5 bg-gradient-to-r from-gold-dark to-gold-primary text-black font-black rounded-xl text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-all">دخول النظام</button>
-                    <div class="text-center">
-                        <button onclick="doAuth('reg')" class="text-gold-primary text-sm font-bold hover:underline">لا تملك حساباً؟ اطلب الانضمام الآن</button>
+                </div>
+
+                <div class="space-y-5">
+                    <div class="relative">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">🧑‍💼</span>
+                        <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم" class="pr-12">
                     </div>
+                    <div class="relative">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">🔒</span>
+                        <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك" class="pr-12">
+                        <button onclick="togglePass('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100 transition text-xl outline-none">👁️</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 px-2">
+                    <input type="checkbox" id="remember-me" class="w-5 h-5 accent-[#d4af37] cursor-pointer rounded">
+                    <label for="remember-me" class="text-sm text-gray-400 cursor-pointer select-none hover:text-white transition">تذكرني (دخول تلقائي)</label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-xl font-bold hover:bg-zinc-700 transition border border-white/5 hover:border-white/10 shadow-lg">تسجيل الدخول</button>
+                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-xl">إنشاء حساب</button>
                 </div>
             </div>
 
-            <div class="space-y-10">
-                <section class="border-r-4 border-gold-primary pr-6">
-                    <h3 class="text-4xl font-black mb-4">لماذا منصة هيبة؟</h3>
-                    <p class="text-gray-400 leading-relaxed text-lg">
-                        نحن لا ندير أرقاماً، نحن ندير **ثقة**. <br>
-                        منصة هيبة هي الحارس الشخصي لمعاملاتك المالية، مصممة لتجعل "الدفاتر الورقية" جزءاً من الماضي. شفافية كاملة، دقة متناهية، وسرية لا تُخترق.
+            <div class="space-y-8 p-4">
+                <div>
+                    <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
+                    <p class="text-gray-400 text-sm md:text-base leading-relaxed border-r-4 border-[#d4af37] pr-4 bg-white/5 p-4 rounded-l-xl">
+                        "أكلوا وشربوا وعلى الحق اتحاسبوا"<br>
+                        حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية. تضمن المنصة لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية تمنع الأخطاء البشرية.
                     </p>
-                </section>
+                </div>
 
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="premium-card p-6 border-gold-primary/10">
-                        <p class="text-3xl mb-2">⚡</p>
-                        <h4 class="font-bold text-gold-light mb-1">سرعة البرق</h4>
-                        <p class="text-xs text-gray-500">مزامنة فورية للعملات والديون في أجزاء من الثانية.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div class="info-section">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-xl">🏪</span>
+                            <h4 class="gold-text font-bold">للتاجر</h4>
+                        </div>
+                        <p class="text-gray-400 leading-relaxed text-xs">قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة.</p>
                     </div>
-                    <div class="premium-card p-6 border-gold-primary/10">
-                        <p class="text-3xl mb-2">💎</p>
-                        <h4 class="font-bold text-gold-light mb-1">توثيق ملكي</h4>
-                        <p class="text-xs text-gray-500">نظام العلامة الخضراء للتجار المعتمدين والموثوقين.</p>
+                    <div class="info-section">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-xl">👥</span>
+                            <h4 class="gold-text font-bold">للمواطن</h4>
+                        </div>
+                        <p class="text-gray-400 leading-relaxed text-xs">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- الواجهة الرئيسية بعد الدخول -->
-    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6 fade-up">
-        
-        <!-- الهيدر المطور -->
-        <header class="premium-card p-4 md:p-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-5">
-                <div class="w-16 h-16 bg-gradient-to-tr from-gold-dark to-gold-light rounded-2xl flex items-center justify-center text-black text-4xl font-black shadow-lg">H</div>
+    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
+
+        <header class="flex flex-col md:flex-row justify-between items-center glass-card p-4 md:p-6 gap-4 shadow-lg">
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-3xl shadow-inner">H</div>
                 <div>
-                    <h2 id="display-name" class="text-2xl md:text-3xl font-black flex items-center gap-2"></h2>
-                    <p id="role-display" class="text-gold-primary/70 text-xs font-bold tracking-widest uppercase"></p>
+                    <h2 id="display-name" class="text-xl md:text-2xl font-black text-white leading-none mb-1 flex items-center"></h2>
+                    <span id="role-tag" class="text-[11px] text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-md font-bold tracking-wider"></span>
                 </div>
             </div>
-            
-            <div class="flex items-center gap-4">
-                <div class="hidden md:block text-left ml-4" dir="ltr">
-                    <p id="clock" class="text-xl font-bold text-white">00:00:00</p>
-                    <p id="date-today" class="text-[10px] text-gray-500 uppercase">MARCH 2024</p>
-                </div>
-                <button onclick="openModal('settings-modal')" class="p-3 bg-white/5 rounded-xl hover:bg-gold-primary hover:text-black transition">⚙️</button>
-                <button onclick="logout()" class="px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/20 rounded-xl font-bold hover:bg-red-500 hover:text-white transition">خروج</button>
+            <div class="flex gap-3 w-full md:w-auto justify-end">
+                <button onclick="openModal('settings-modal')" class="bg-zinc-900/80 p-3 rounded-xl border border-white/5 hover:border-[#d4af37]/50 hover:bg-zinc-800 transition shadow-sm" title="الإعدادات">⚙️</button>
+                <button onclick="logout()" class="bg-red-900/20 text-red-400 px-6 py-2 rounded-xl text-sm font-bold border border-red-500/20 hover:bg-red-600 hover:text-white hover:border-red-500 transition shadow-sm flex items-center gap-2">
+                    <span>خروج</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- القائمة الجانبية (الإحصائيات والبحث) -->
-            <aside class="lg:col-span-4 space-y-8">
-                <!-- بطاقة الرصيد الصافي -->
-                <div class="premium-card p-8 bg-gradient-to-br from-zinc-900 to-black overflow-hidden relative">
-                    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-gold-primary/5 rounded-full blur-3xl"></div>
-                    <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">إجمالي المركز المالي</h3>
-                    
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-center group">
-                            <span class="text-sm font-medium text-gray-400">ريال يمني</span>
-                            <span id="gt-yer" class="text-2xl font-black tracking-tighter">0</span>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card p-6 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="text-[#d4af37] text-xl">📊</span>
+                        <h3 class="text-sm text-gray-300 font-bold uppercase tracking-wider">الرصيد الصافي العام</h3>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center bg-gradient-to-r from-blue-900/20 to-transparent p-4 rounded-xl border border-blue-500/10 hover:border-blue-500/30 transition">
+                            <span class="text-xs text-gray-400 font-bold">ريال يمني (YER)</span>
+                            <span id="gt-yer" class="font-black text-blue-400 text-xl tracking-wider">0</span>
                         </div>
-                        <div class="flex justify-between items-center group">
-                            <span class="text-sm font-medium text-gray-400">دولار أمريكي</span>
-                            <span id="gt-usd" class="text-2xl font-black tracking-tighter text-emerald-500">0</span>
+                        <div class="flex justify-between items-center bg-gradient-to-r from-green-900/20 to-transparent p-4 rounded-xl border border-green-500/10 hover:border-green-500/30 transition">
+                            <span class="text-xs text-gray-400 font-bold">دولار أمريكي (USD)</span>
+                            <span id="gt-usd" class="font-black text-green-400 text-xl tracking-wider">0</span>
                         </div>
-                        <div class="flex justify-between items-center group">
-                            <span class="text-sm font-medium text-gray-400">ريال سعودي</span>
-                            <span id="gt-sar" class="text-2xl font-black tracking-tighter text-orange-500">0</span>
+                        <div class="flex justify-between items-center bg-gradient-to-r from-orange-900/20 to-transparent p-4 rounded-xl border border-orange-500/10 hover:border-orange-500/30 transition">
+                            <span class="text-xs text-gray-400 font-bold">ريال سعودي (SAR)</span>
+                            <span id="gt-sar" class="font-black text-orange-400 text-xl tracking-wider">0</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- قائمة العملاء/التجار -->
-                <div class="premium-card p-6 flex flex-col h-[500px]">
-                    <div id="merchant-tools" class="hidden mb-6">
-                        <div class="relative group">
-                            <input id="target-search" class="w-full p-4 pr-12 rounded-2xl bg-black/50 border border-white/5 outline-none focus:border-gold-primary transition" placeholder="ابحث أو أضف عميلاً جديداً..." onkeypress="if(event.key === 'Enter') addTarget()">
-                            <span class="absolute right-4 top-4 text-xl opacity-40">🔍</span>
+                <div class="glass-card p-6 min-h-[400px] flex flex-col">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-[#d4af37] text-xl">📋</span>
+                        <h3 class="text-sm text-gray-300 font-bold uppercase tracking-wider">قائمة الحسابات</h3>
+                    </div>
+
+                    <div id="merchant-tools" class="hidden mb-4 space-y-3">
+                        <div class="flex gap-2">
+                            <input id="target-search" class="text-sm bg-black/50" placeholder="ابحث أو أضف اسم المواطن..." onkeypress="if(event.key === 'Enter') addTarget()">
+                            <button onclick="addTarget()" class="gold-btn px-5 rounded-xl text-xl shadow-md hover:scale-105 transition" title="إضافة حساب جديد">+</button>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2">
+                            <button class="chip active" id="list-chip-all" onclick="setListFilter('all')">الكل</button>
+                            <button class="chip" id="list-chip-v" onclick="setListFilter('verified')">الموثقين</button>
+                            <button class="chip" id="list-chip-u" onclick="setListFilter('unverified')">غير الموثقين</button>
                         </div>
                     </div>
-                    
-                    <h3 class="text-sm font-bold text-gray-500 mb-4 px-2">السجلات النشطة</h3>
-                    <div id="main-list" class="flex-grow overflow-y-auto space-y-3 custom-scrollbar">
-                        <!-- تظهر هنا القائمة -->
-                    </div>
-                </div>
-            </aside>
 
-            <!-- محتوى السجل والعمليات -->
-            <main class="lg:col-span-8">
-                <div id="empty-state" class="premium-card h-full min-h-[600px] flex flex-col items-center justify-center text-center p-12 opacity-50">
-                    <div class="w-32 h-32 bg-gold-primary/10 rounded-full flex items-center justify-center mb-6">
-                        <span class="text-6xl">📜</span>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-2">لا توجد بيانات محددة</h3>
-                    <p class="max-w-xs mx-auto">اختر أحد الحسابات من القائمة الجانبية لعرض كشف الحساب والعمليات المالية.</p>
+                    <div id="main-list" class="flex-grow space-y-2 overflow-y-auto pr-1" style="max-height: 400px;"></div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div id="empty-hint" class="glass-card p-12 md:p-24 text-center text-gray-500 flex flex-col items-center justify-center min-h-[600px]">
+                    <span class="text-6xl mb-4 opacity-20">📜</span>
+                    <p class="text-xl font-light">الرجاء اختيار حساب من القائمة الجانبية</p>
+                    <p class="text-sm mt-2 opacity-50">لمتابعة السجلات الحية والعمليات المالية</p>
                 </div>
 
-                <div id="details-pane" class="hidden premium-card h-full min-h-[600px] flex flex-col p-6 md:p-10">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-white/5 pb-8 mb-8 gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-3xl">👤</div>
-                            <div>
-                                <h3 id="active-target-name" class="text-3xl font-black mb-1"></h3>
-                                <div id="target-status-badge"></div>
+                <div id="details-pane" class="hidden glass-card p-6 md:p-8 min-h-[600px] flex flex-col shadow-2xl relative">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-20"></div>
+
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-white/5 pb-6">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-12 h-12 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-xl">👤</div>
+                            <h3 id="active-target-name" class="text-2xl md:text-3xl font-black text-white flex items-center flex-wrap"></h3>
+                        </div>
+
+                        <div class="flex gap-3 md:gap-5 bg-black/40 p-3 rounded-xl border border-white/5">
+                            <div class="text-center">
+                                <span class="block text-[10px] text-gray-500 mb-1">يمني</span>
+                                <span id="dt-yer" class="text-blue-400 font-bold text-sm">0</span>
+                            </div>
+                            <div class="w-px bg-white/10"></div>
+                            <div class="text-center">
+                                <span class="block text-[10px] text-gray-500 mb-1">دولار</span>
+                                <span id="dt-usd" class="text-green-400 font-bold text-sm">0</span>
+                            </div>
+                            <div class="w-px bg-white/10"></div>
+                            <div class="text-center">
+                                <span class="block text-[10px] text-gray-500 mb-1">سعودي</span>
+                                <span id="dt-sar" class="text-orange-400 font-bold text-sm">0</span>
                             </div>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="window.print()" class="p-3 bg-white/5 rounded-xl hover:bg-white/10 transition">🖨️ طباعة</button>
-                            <button onclick="shareAccount()" class="p-3 bg-gold-primary/10 text-gold-primary rounded-xl hover:bg-gold-primary hover:text-black transition">🔗 مشاركة</button>
+                    </div>
+
+                    <div id="ops-toolbar" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                        <input id="ops-search" oninput="refreshCurrentView()" placeholder="بحث داخل العمليات..." class="text-sm">
+                        <select id="ops-filter" onchange="refreshCurrentView()" class="text-sm">
+                            <option value="all">كل العمليات</option>
+                            <option value="دين">الديون فقط</option>
+                            <option value="سداد">السداد فقط</option>
+                        </select>
+                        <select id="ops-sort" onchange="refreshCurrentView()" class="text-sm">
+                            <option value="new">الأحدث أولاً</option>
+                            <option value="old">الأقدم أولاً</option>
+                        </select>
+                    </div>
+
+                    <div id="summary-bar" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                        <div class="mini-stat">
+                            <div class="small-muted mb-1">عدد العمليات</div>
+                            <div id="sum-count" class="text-xl font-black">0</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="small-muted mb-1">إجمالي الديون</div>
+                            <div id="sum-debt" class="text-xl font-black text-red-400">0</div>
+                        </div>
+                        <div class="mini-stat">
+                            <div class="small-muted mb-1">إجمالي السداد</div>
+                            <div id="sum-pay" class="text-xl font-black text-green-400">0</div>
                         </div>
                     </div>
 
-                    <!-- سجل العمليات -->
-                    <div id="ops-list" class="flex-grow overflow-y-auto space-y-4 mb-8 px-2">
-                        <!-- العمليات هنا -->
-                    </div>
+                    <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[380px] mb-6 pr-2"></div>
 
-                    <!-- نموذج إضافة عملية (للتاجر فقط) -->
-                    <div id="add-form" class="hidden pt-6 border-t border-white/5">
-                        <div class="bg-black/40 p-6 rounded-3xl border border-gold-primary/20 space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="space-y-2">
-                                    <label class="text-[10px] uppercase font-bold text-gray-500 mr-2">المبلغ</label>
-                                    <input id="op-amt" type="number" step="0.01" class="w-full p-4 rounded-xl bg-black border border-white/5 outline-none focus:border-gold-primary text-xl font-black text-gold-light" placeholder="0.00" oninput="applyTafqit()">
+                    <div id="add-form" class="hidden mt-auto">
+                        <div class="bg-gradient-to-b from-zinc-900/80 to-black p-5 md:p-6 rounded-2xl border border-white/10 shadow-lg space-y-5 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-[#d4af37] mix-blend-overlay filter blur-[60px] opacity-10"></div>
+
+                            <div class="flex items-center justify-between gap-3 flex-wrap">
+                                <h4 class="text-sm font-bold text-[#d4af37] flex items-center gap-2">
+                                    <span>✍️</span> تسجيل عملية جديدة
+                                </h4>
+                                <div class="text-[11px] text-gray-400">الحفظ المحلي + المزامنة مع السيرفر</div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                <div class="md:col-span-4 relative">
+                                    <label class="block text-[10px] text-gray-400 mb-1 ml-1">المبلغ</label>
+                                    <input id="op-amt" type="number" placeholder="0.00" oninput="applyTafqit()" class="font-bold text-lg h-12">
                                 </div>
-                                <div class="space-y-2">
-                                    <label class="text-[10px] uppercase font-bold text-gray-500 mr-2">العملة</label>
-                                    <select id="op-cur" class="w-full p-4 rounded-xl bg-black border border-white/5 outline-none focus:border-gold-primary font-bold">
-                                        <option value="YER">ريال يمني (YER)</option>
-                                        <option value="USD">دولار أمريكي (USD)</option>
-                                        <option value="SAR">ريال سعودي (SAR)</option>
+                                <div class="md:col-span-3">
+                                    <label class="block text-[10px] text-gray-400 mb-1 ml-1">العملة</label>
+                                    <select id="op-cur" onchange="applyTafqit()" class="h-12 font-bold cursor-pointer">
+                                        <option value="YER">ريال يمني</option>
+                                        <option value="USD">دولار أمريكي</option>
+                                        <option value="SAR">ريال سعودي</option>
                                     </select>
                                 </div>
-                                <div class="space-y-2">
-                                    <label class="text-[10px] uppercase font-bold text-gray-500 mr-2">نوع المعاملة</label>
-                                    <div class="flex bg-black p-1 rounded-xl border border-white/5">
-                                        <button onclick="setOpType('دين', this)" class="flex-1 py-3 rounded-lg text-xs font-bold transition-all bg-red-500/20 text-red-500" id="btn-type-debt">دين (عليه)</button>
-                                        <button onclick="setOpType('سداد', this)" class="flex-1 py-3 rounded-lg text-xs font-bold transition-all text-gray-500" id="btn-type-pay">سداد (له)</button>
+                                <div class="md:col-span-5">
+                                    <label class="block text-[10px] text-gray-400 mb-1 ml-1">نوع العملية</label>
+                                    <div class="flex gap-2 h-12">
+                                        <label class="flex-1 relative cursor-pointer">
+                                            <input type="radio" name="op_type_radio" value="دين" class="peer sr-only" checked onchange="updateOpType('دين')">
+                                            <div class="w-full h-full flex items-center justify-center rounded-xl border border-white/10 bg-black/50 peer-checked:bg-red-900/30 peer-checked:border-red-500 peer-checked:text-red-400 font-bold transition">عليه (دين)</div>
+                                        </label>
+                                        <label class="flex-1 relative cursor-pointer">
+                                            <input type="radio" name="op_type_radio" value="سداد" class="peer sr-only" onchange="updateOpType('سداد')">
+                                            <div class="w-full h-full flex items-center justify-center rounded-xl border border-white/10 bg-black/50 peer-checked:bg-green-900/30 peer-checked:border-green-500 peer-checked:text-green-400 font-bold transition">له (سداد)</div>
+                                        </label>
                                         <input type="hidden" id="op-type" value="دين">
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="flex flex-col md:flex-row gap-4">
-                                <input id="op-note" type="text" class="flex-grow p-4 rounded-xl bg-black border border-white/5 outline-none focus:border-gold-primary" placeholder="وصف المعاملة (مثلاً: فاتورة مواد بناء، دفعة مقدمة...)">
-                                <button onclick="saveOp()" class="px-10 py-4 bg-gold-primary text-black font-black rounded-xl hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all">تثبيت المعاملة</button>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                                <div class="md:col-span-9">
+                                    <label class="block text-[10px] text-gray-400 mb-1 ml-1">البيان / الملاحظات (اختياري)</label>
+                                    <input id="op-note" type="text" placeholder="مثال: دفعة من الحساب، بضاعة..." class="h-12">
+                                </div>
+                                <div class="md:col-span-3">
+                                    <button onclick="saveOp()" class="gold-btn w-full h-12 rounded-xl shadow-lg flex items-center justify-center gap-2">
+                                        <span>تثبيت</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
-                            <p id="tafqit-text" class="text-[10px] text-gold-primary/60 italic px-2"></p>
+
+                            <div id="tafqit-text" class="tafqit-box"></div>
                         </div>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     </div>
 
-    <!-- مودال الإعدادات -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-xl z-[2000] hidden items-center justify-center p-4">
-        <div class="premium-card w-full max-w-md p-10 space-y-8 fade-up">
-            <div class="text-center">
-                <h3 class="text-2xl font-black gold-shimmer">إعدادات الأمان الملكية</h3>
-                <p class="text-gray-500 text-sm">تغيير كلمة المرور الخاصة بالنظام</p>
-            </div>
-            
-            <div class="space-y-4">
-                <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة" class="w-full p-4 rounded-xl bg-black border border-white/10 outline-none focus:border-gold-primary">
-                <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور" class="w-full p-4 rounded-xl bg-black border border-white/10 outline-none focus:border-gold-primary">
+    <div id="settings-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+        <div class="glass-card modal-content w-full max-w-md p-8 space-y-6 relative">
+            <button onclick="closeModal('settings-modal')" class="absolute top-4 left-4 text-gray-500 hover:text-white transition text-xl">✕</button>
+
+            <div class="text-center mb-6">
+                <span class="text-4xl mb-2 block">🛡️</span>
+                <h3 class="text-xl font-bold gold-text">إعدادات الحماية الملكية</h3>
+                <p class="text-xs text-gray-400 mt-1">قم بتحديث بيانات الدخول الخاصة بك</p>
             </div>
 
-            <div class="flex gap-4">
-                <button onclick="updatePassword()" class="flex-grow py-4 bg-gold-primary text-black font-black rounded-xl">حفظ التغييرات</button>
-                <button onclick="closeModal('settings-modal')" class="px-8 py-4 bg-white/5 rounded-xl">إلغاء</button>
+            <div class="space-y-5">
+                <div class="relative">
+                    <label class="block text-xs text-gray-400 mb-1 ml-1">كلمة المرور الجديدة</label>
+                    <input id="new-pass" type="password" placeholder="••••••••" class="pr-10">
+                    <button onclick="togglePass('new-pass')" class="absolute left-4 top-[38px] opacity-40 hover:opacity-100 transition outline-none">👁️</button>
+                </div>
+                <div class="relative">
+                    <label class="block text-xs text-gray-400 mb-1 ml-1">تأكيد كلمة المرور</label>
+                    <input id="confirm-pass" type="password" placeholder="••••••••" class="pr-10">
+                    <button onclick="togglePass('confirm-pass')" class="absolute left-4 top-[38px] opacity-40 hover:opacity-100 transition outline-none">👁️</button>
+                </div>
+            </div>
+
+            <div class="flex gap-4 pt-2">
+                <button id="btn-update-pass" onclick="updatePassword()" class="gold-btn flex-grow py-3 rounded-xl">تحديث الآن</button>
+                <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 py-3 rounded-xl text-white border border-white/5 hover:bg-zinc-700 transition">إلغاء</button>
             </div>
         </div>
     </div>
 
     <script>
-        // المتغيرات والبيانات
         let user = null;
         let activeTarget = null;
         let userType = 'merchant';
-        let opType = 'دين';
         let discoveredData = [];
+        let userStatuses = {};
+        let userListFilter = 'all';
 
-        // تحديث الوقت
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
-            document.getElementById('date-today').innerText = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        let statusPollInterval = null;
+        let autoPollInterval = null;
+
+        function escapeHtml(str = '') {
+            return String(str)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#39;');
         }
-        setInterval(updateClock, 1000);
-        updateClock();
 
-        // التبديل بين أنواع الحسابات
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? '✅' : (type === 'info' ? 'ℹ️' : '⚠️');
+            toast.innerHTML = `<span>${icon}</span><span>${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        function badgeHtml() {
+            return `
+                <span class="fadi-glass-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="relative z-10">
+                        <path d="M12 2L14.5 4.5L18 3.5L19 7L22.5 8.5L21.5 12L24 14.5L20.5 15.5L19.5 19L16 18L13.5 20.5L12 17L8.5 20.5L6 18L2.5 19L1.5 15.5L0 14.5L2.5 12L1.5 8.5L5 7L6 3.5L9.5 4.5L12 2Z" fill="white"/>
+                        <path d="M9 12L11 14L15 10" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="relative z-10">موثق</span>
+                </span>
+            `;
+        }
+
+        function verifiedName(name) {
+            return `<span class="verified-name-glow">${escapeHtml(name)}</span>`;
+        }
+
+        function togglePass(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function updateOpType(val) {
+            document.getElementById('op-type').value = val;
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+            if (id === 'settings-modal') {
+                document.getElementById('new-pass').value = '';
+                document.getElementById('confirm-pass').value = '';
+            }
+        }
+
         function setType(t) {
             userType = t;
-            document.getElementById('tab-merchant').className = t === 'merchant' ? 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 tab-active' : 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-gray-500';
-            document.getElementById('tab-debtor').className = t === 'debtor' ? 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 tab-active' : 'flex-1 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-gray-500';
+            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant');
+            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
         }
 
-        function setOpType(type, btn) {
-            opType = type;
-            document.getElementById('op-type').value = type;
-            document.getElementById('btn-type-debt').className = type === 'دين' ? 'flex-1 py-3 rounded-lg text-xs font-bold transition-all bg-red-500/20 text-red-500' : 'flex-1 py-3 rounded-lg text-xs font-bold transition-all text-gray-500';
-            document.getElementById('btn-type-pay').className = type === 'سداد' ? 'flex-1 py-3 rounded-lg text-xs font-bold transition-all bg-emerald-500/20 text-emerald-500' : 'flex-1 py-3 rounded-lg text-xs font-bold transition-all text-gray-500';
+        function setListFilter(filter) {
+            userListFilter = filter;
+            document.getElementById('list-chip-all').classList.toggle('active', filter === 'all');
+            document.getElementById('list-chip-v').classList.toggle('active', filter === 'verified');
+            document.getElementById('list-chip-u').classList.toggle('active', filter === 'unverified');
+            renderList();
         }
 
-        // المصادقة
+        function formatAr(num) {
+            num = Number(num || 0);
+            if (num === 0) return "صفر";
+
+            const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
+            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
+            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
+
+            function conv(n) {
+                let r = "";
+                const h = Math.floor(n / 100);
+                const t = n % 100;
+                if (h > 0) r += hundreds[h];
+                if (t > 0) {
+                    if (r !== "") r += " و ";
+                    if (t < 20) r += units[t];
+                    else {
+                        const s = t % 10;
+                        const ten = Math.floor(t / 10);
+                        if (s > 0) r += units[s] + " و ";
+                        r += tens[ten];
+                    }
+                }
+                return r;
+            }
+
+            let res = "";
+            const m = Math.floor(num / 1000000);
+            const th = Math.floor((num % 1000000) / 1000);
+            const rem = num % 1000;
+
+            if (m > 0) res += (m === 1 ? "مليون" : (m === 2 ? "مليونان" : conv(m) + " ملايين"));
+            if (th > 0) {
+                if (res !== "") res += " و ";
+                res += (th === 1 ? "ألف" : (th === 2 ? "ألفين" : conv(th) + " آلاف"));
+            }
+            if (rem > 0) {
+                if (res !== "") res += " و ";
+                res += conv(rem);
+            }
+            return res;
+        }
+
+        function applyTafqit() {
+            const val = Number(document.getElementById('op-amt').value || 0);
+            const cur = document.getElementById('op-cur').options[document.getElementById('op-cur').selectedIndex].text;
+            document.getElementById('tafqit-text').innerText = val > 0 ? `فقط ${formatAr(parseInt(val, 10))} ${cur} لا غير.` : "";
+        }
+
+        function persistSession() {
+            if (user) localStorage.setItem('heiba_auth_session', JSON.stringify(user));
+        }
+
+        function saveAutosave() {
+            if (user) localStorage.setItem('heiba_autosave', JSON.stringify(user));
+        }
+
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('heiba_auth_session') || localStorage.getItem('heiba_autosave');
+            if (saved) {
+                try {
+                    user = JSON.parse(saved);
+                    if (!user.myRecords) user.myRecords = [];
+                    if (!user.verified && typeof user.verified !== 'boolean') user.verified = false;
+                    start();
+                } catch (e) {}
+            }
+        });
+
         async function doAuth(action) {
-            const name = document.getElementById('u-name').value;
-            const pass = document.getElementById('u-pass').value;
-            if(!name || !pass) return alert("الرجاء تعبئة كافة الحقول الملكية");
+            const name = document.getElementById('u-name').value.trim();
+            const password = document.getElementById('u-pass').value;
 
-            // محاكاة (يمكن ربطها بـ API حقيقي)
-            user = { id: Date.now(), name, type: userType, myRecords: [], verified: true };
-            localStorage.setItem('heiba_auth_v2', JSON.stringify(user));
-            startSystem();
+            if (!name || !password) {
+                showToast("الرجاء إدخال الاسم وكلمة المرور", "error");
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password, type: userType, action })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    user = data;
+                    if (!user.myRecords) user.myRecords = [];
+                    if (document.getElementById('remember-me').checked) persistSession();
+                    showToast("تم الدخول بنجاح", "success");
+                    start();
+                } else {
+                    showToast(data.error || "حدث خطأ غير معروف", "error");
+                }
+            } catch (e) {
+                user = {
+                    id: Date.now(),
+                    name,
+                    type: userType,
+                    myRecords: [],
+                    verified: false
+                };
+                if (document.getElementById('remember-me').checked) persistSession();
+                showToast("تم الدخول (وضع المحاكاة)", "success");
+                start();
+            }
         }
 
-        function startSystem() {
+        async function fetchStatuses(names) {
+            if (!names || !names.length || !user) return;
+
+            try {
+                const res = await fetch('/api/check-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ names, requesterId: user.id })
+                });
+                const data = await res.json();
+
+                if (data.requesterStatus && data.requesterStatus.verified !== user.verified) {
+                    user.verified = !!data.requesterStatus.verified;
+                    updateDisplayName();
+                }
+
+                userStatuses = { ...userStatuses, ...(data.statuses || {}) };
+
+                if (user.type === 'merchant') {
+                    renderList();
+                    if (activeTarget) refreshCurrentView();
+                }
+            } catch (e) {}
+        }
+
+        function updateDisplayName() {
+            const nameHtml = user.verified ? verifiedName(user.name) : escapeHtml(user.name);
+            document.getElementById('display-name').innerHTML = `${nameHtml} ${user.verified ? badgeHtml() : ''}`;
+            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '🏪 رتبة تاجر' : '👤 رتبة مواطن';
+        }
+
+        function startPolling() {
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            if (autoPollInterval) clearInterval(autoPollInterval);
+
+            statusPollInterval = setInterval(() => {
+                if (!user) return;
+                if (user.type === 'merchant') {
+                    const targets = [...new Set(user.myRecords.map(r => r.targetName))];
+                    if (activeTarget && !targets.includes(activeTarget)) targets.push(activeTarget);
+                    fetchStatuses(targets);
+                } else {
+                    fetchStatuses([user.name]);
+                }
+            }, 4000);
+
+            if (user.type === 'debtor') {
+                autoPollInterval = setInterval(fetchAutoDebts, 4000);
+            }
+        }
+
+        function start() {
             document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('main-ui').classList.remove('hidden');
-            
-            const verifyHtml = user.verified ? '<span class="verified-badge">✓ موثق</span>' : '';
-            document.getElementById('display-name').innerHTML = `${user.name} ${verifyHtml}`;
-            document.getElementById('role-display').innerText = user.type === 'merchant' ? 'رتبة التاجر السيادي' : 'حساب المواطن المعتمد';
 
-            if(user.type === 'merchant') {
+            if (!user.myRecords) user.myRecords = [];
+            updateDisplayName();
+            startPolling();
+
+            if (user.type === 'merchant') {
                 document.getElementById('merchant-tools').classList.remove('hidden');
                 document.getElementById('add-form').classList.remove('hidden');
-                renderUserList();
+                renderList();
+                calculateGrand(user.myRecords);
+                document.getElementById('sum-count').innerText = user.myRecords.length.toLocaleString();
+                showMerchantEmptyStateIfNeeded();
             } else {
-                fetchCitizenData();
-                setInterval(fetchCitizenData, 5000);
+                fetchAutoDebts();
             }
         }
 
-        function renderUserList() {
-            const list = document.getElementById('main-list');
-            const targets = [...new Set(user.myRecords.map(r => r.targetName))];
-            
-            if(targets.length === 0) {
-                list.innerHTML = `<div class="p-10 text-center text-gray-600 italic">لا توجد حسابات مضافة..</div>`;
-                return;
-            }
-
-            list.innerHTML = targets.map(name => `
-                <div onclick="selectTarget('${name}')" class="p-4 bg-white/5 rounded-2xl cursor-pointer border border-transparent hover:border-gold-primary/30 hover:bg-white/10 transition-all flex items-center justify-between ${activeTarget === name ? 'border-gold-primary bg-gold-primary/5 shadow-lg' : ''}">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center text-xs border border-white/10">👤</div>
-                        <span class="font-bold text-sm">${name}</span>
-                    </div>
-                    <span class="text-[10px] text-gray-500">نشط</span>
-                </div>
-            `).join('');
-        }
-
-        function selectTarget(name) {
-            activeTarget = name;
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('details-pane').classList.remove('hidden');
-            document.getElementById('active-target-name').innerText = name;
-            document.getElementById('target-status-badge').innerHTML = '<span class="text-[10px] text-emerald-500 font-bold tracking-widest uppercase">● Online Connected</span>';
-            renderOperations();
-            renderUserList();
-        }
-
-        function renderOperations() {
-            const container = document.getElementById('ops-list');
-            const records = user.myRecords.filter(r => r.targetName === activeTarget);
-
-            if(records.length === 0) {
-                container.innerHTML = `<div class="p-20 text-center opacity-30 italic">لا توجد معاملات مسجلة في هذا السجل بعد..</div>`;
-                return;
-            }
-
-            container.innerHTML = records.map(r => `
-                <div class="p-5 premium-card bg-black/40 border-white/5 flex justify-between items-center group">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${r.type === 'دين' ? 'bg-red-500/10 text-red-500' : 'bg-emerald-500/10 text-emerald-500'}">
-                            ${r.type === 'دين' ? '↙' : '↗'}
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-200">${r.note || 'معاملة مالية'}</h4>
-                            <p class="text-[10px] text-gray-500">${new Date(r.date).toLocaleString('ar-YE')}</p>
-                        </div>
-                    </div>
-                    <div class="text-left" dir="ltr">
-                        <p class="text-xl font-black ${r.type === 'دين' ? 'text-red-500' : 'text-emerald-500'}">${r.type === 'دين' ? '+' : '-'} ${parseFloat(r.amount).toLocaleString()}</p>
-                        <p class="text-[10px] text-gray-600 font-bold uppercase tracking-widest">${r.currency}</p>
-                    </div>
-                </div>
-            `).reverse().join('');
-
-            calculateBalances();
-        }
-
-        function calculateBalances() {
-            let yer=0, usd=0, sar=0;
-            user.myRecords.forEach(r => {
-                const amt = parseFloat(r.amount);
-                const isDebt = r.type === 'دين';
-                if(r.currency === 'YER') yer += isDebt ? amt : -amt;
-                if(r.currency === 'USD') usd += isDebt ? amt : -amt;
-                if(r.currency === 'SAR') sar += isDebt ? amt : -amt;
+        function calculateGrand(recs) {
+            let y = 0, u = 0, s = 0;
+            (recs || []).forEach(r => {
+                const a = parseFloat(r.amount || 0);
+                const d = r.type === 'دين';
+                if (r.currency === 'YER') y += d ? a : -a;
+                else if (r.currency === 'USD') u += d ? a : -a;
+                else s += d ? a : -a;
             });
 
-            const format = (v) => v === 0 ? '0' : (v > 0 ? `<span class="text-red-500">${v.toLocaleString()}</span>` : `<span class="text-emerald-500">${Math.abs(v).toLocaleString()}</span>`);
-            
-            document.getElementById('gt-yer').innerHTML = format(yer);
-            document.getElementById('gt-usd').innerHTML = format(usd);
-            document.getElementById('gt-sar').innerHTML = format(sar);
+            const formatBal = (val) => {
+                const numStr = Math.abs(val).toLocaleString();
+                if (val > 0) return `<span class="text-red-400" dir="ltr">- ${numStr}</span>`;
+                if (val < 0) return `<span class="text-green-400" dir="ltr">+ ${numStr}</span>`;
+                return `<span class="text-gray-500">0</span>`;
+            };
+
+            document.getElementById('gt-yer').innerHTML = formatBal(y);
+            document.getElementById('gt-usd').innerHTML = formatBal(u);
+            document.getElementById('gt-sar').innerHTML = formatBal(s);
         }
 
         function addTarget() {
             const n = document.getElementById('target-search').value.trim();
-            if(n) {
-                selectTarget(n);
-                document.getElementById('target-search').value = '';
+            if (!n) return;
+            activeTarget = n;
+            if (!userStatuses[n]) userStatuses[n] = { registered: false, verified: false };
+            fetchStatuses([n]);
+            showDetails(n);
+            renderList();
+            document.getElementById('target-search').value = "";
+        }
+
+        function getMerchantTargets() {
+            let t = [...new Set((user.myRecords || []).map(r => r.targetName))];
+            if (activeTarget && !t.includes(activeTarget)) t.push(activeTarget);
+            return t;
+        }
+
+        function merchantVisibleTargets() {
+            const targets = getMerchantTargets();
+            return targets.filter(n => {
+                const status = userStatuses[n] || { registered: false, verified: false };
+                if (userListFilter === 'verified') return !!status.verified;
+                if (userListFilter === 'unverified') return !status.verified;
+                return true;
+            });
+        }
+
+        function renderList() {
+            const list = document.getElementById('main-list');
+
+            if (!user || user.type !== 'merchant') return;
+
+            const t = merchantVisibleTargets();
+
+            if (t.length === 0) {
+                list.innerHTML = `<div class="list-empty">لا يوجد حسابات مطابقة حالياً.</div>`;
+                return;
+            }
+
+            list.innerHTML = t.map(n => {
+                const status = userStatuses[n] || { registered: false, verified: false };
+                const nHtml = status.verified ? verifiedName(n) : escapeHtml(n);
+                const regBadge = status.registered
+                    ? '<span class="text-[9px] bg-green-900/40 text-green-400 px-1.5 py-0.5 rounded border border-green-500/30">مسجل</span>'
+                    : '<span class="text-[9px] bg-red-900/40 text-red-400 px-1.5 py-0.5 rounded border border-red-500/30">غير مسجل</span>';
+
+                return `
+                    <div onclick='showDetails(${JSON.stringify(n)})'
+                         class="p-4 bg-zinc-900/50 rounded-xl cursor-pointer border border-white/5 hover:border-[#d4af37]/50 hover:bg-zinc-800 transition flex items-center gap-3 ${activeTarget === n ? 'border-[#d4af37] bg-zinc-800 shadow-md' : ''}">
+                        <div class="w-10 h-10 rounded-full bg-black flex items-center justify-center text-sm border border-white/10">👤</div>
+                        <div class="font-bold text-sm flex-grow min-w-0">
+                            <div class="flex items-center flex-wrap gap-1">${nHtml} ${status.verified ? badgeHtml() : ''}</div>
+                            <div class="mt-1">${regBadge}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showMerchantEmptyStateIfNeeded() {
+            if (user.type !== 'merchant') return;
+            const hasTargets = getMerchantTargets().length > 0;
+            if (!hasTargets && !activeTarget) {
+                document.getElementById('main-list').innerHTML = `<div class="list-empty">لا يوجد حسابات مسجلة بعد.</div>`;
             }
         }
 
-        function saveOp() {
-            const amt = document.getElementById('op-amt').value;
-            if(!amt || !activeTarget) return;
-
-            const rec = {
-                id: Date.now(),
-                targetName: activeTarget,
-                amount: amt,
-                currency: document.getElementById('op-cur').value,
-                type: opType,
-                note: document.getElementById('op-note').value,
-                date: new Date().toISOString()
-            };
-
-            user.myRecords.push(rec);
-            localStorage.setItem('heiba_auth_v2', JSON.stringify(user));
-            renderOperations();
-            document.getElementById('op-amt').value = '';
-            document.getElementById('op-note').value = '';
-        }
-
-        // دوال المساعدة
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function togglePass(id) { const el = document.getElementById(id); el.type = el.type === 'password' ? 'text' : 'password'; }
-        function logout() { localStorage.removeItem('heiba_auth_v2'); location.reload(); }
-
-        window.onload = () => {
-            const saved = localStorage.getItem('heiba_auth_v2');
-            if(saved) {
-                user = JSON.parse(saved);
-                startSystem();
-            }
-        };
-
-        // ميزة التفقيط المبسطة
-        function applyTafqit() {
-            const v = document.getElementById('op-amt').value;
-            if(v > 0) document.getElementById('tafqit-text').innerText = "المبلغ المكتوب: " + parseFloat(v).toLocaleString() + " فقط لا غير.";
-            else document.getElementById('tafqit-text').innerText = "";
-        }
-    </script>
-</body>
-</html>
+        async function fetchAutoDebts() {
+            try {
+                const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
+                discoveredData = await res.json();
+            } catch (e) {
+                if (!discoveredData.length
