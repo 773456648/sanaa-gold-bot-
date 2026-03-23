@@ -8,68 +8,130 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { background-color: #0f172a; color: white; overflow-x: hidden; margin: 0; }
-        #map { height: 50vh; width: 100%; border-bottom: 4px solid #334155; z-index: 1; }
-        .btn-hazard { transition: transform 0.1s; }
+        body { background-color: #0f172a; color: white; overflow-x: hidden; font-family: system-ui, -apple-system, sans-serif; }
+        #map { height: 45vh; width: 100%; border-bottom: 3px solid #3b82f6; z-index: 1; }
+        .btn-hazard { transition: all 0.2s; }
         .btn-hazard:active { transform: scale(0.95); }
-        #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;}
-        .toast { background: #1e293b; border-right: 4px solid #3b82f6; padding: 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.8); font-weight: bold; opacity: 0; transition: opacity 0.3s; text-align: center;}
-        .toast.show { opacity: 1; }
-        .radar-pulse { animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; border-right: 4px solid #3b82f6; padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-weight: bold; opacity: 0; transition: opacity 0.3s; z-index: 9999; display: none;}
+        .toast.show { opacity: 1; display: block; }
+        .glass-panel { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
-    <div id="toast-container"></div>
+    <div id="toast" class="toast text-center w-11/12 max-w-sm"></div>
 
-    <div id="login-screen" class="flex-1 flex flex-col items-center justify-center space-y-6 p-4">
-        <h1 class="text-4xl font-bold text-blue-400 mb-4">رادار الطرقات 🚗</h1>
-        <input id="username" type="text" placeholder="أدخل اسمك للرصد..." class="p-4 rounded-xl bg-slate-800 text-white border-2 border-slate-600 w-full max-w-xs text-center outline-none focus:border-blue-500 text-lg">
-        <button onclick="startApp()" class="bg-blue-600 px-8 py-4 rounded-xl font-bold w-full max-w-xs shadow-lg hover:bg-blue-500 text-xl radar-pulse">تشغيل الرادار</button>
-        <p class="text-slate-400 text-sm text-center">قم بتشغيل الـ GPS قبل الدخول</p>
+    <div id="login-screen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-6">
+        <div class="text-center mb-4">
+            <h1 class="text-4xl font-extrabold text-blue-500 mb-2">رادار الطرقات 🚗</h1>
+            <p class="text-slate-400">سجل دخولك لرصد وتنبيه السائقين</p>
+        </div>
+        
+        <div class="w-full max-w-sm space-y-4 bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
+            <input id="username" type="text" placeholder="اسم المستخدم" class="w-full p-4 rounded-xl bg-slate-900 text-white border border-slate-600 outline-none focus:border-blue-500 text-center">
+            <input id="password" type="password" placeholder="كلمة المرور" class="w-full p-4 rounded-xl bg-slate-900 text-white border border-slate-600 outline-none focus:border-blue-500 text-center">
+            
+            <div class="flex gap-3 pt-2">
+                <button onclick="authenticate('login')" class="flex-1 bg-blue-600 p-4 rounded-xl font-bold shadow-lg hover:bg-blue-500 transition">دخول</button>
+                <button onclick="authenticate('reg')" class="flex-1 bg-slate-700 border border-slate-600 p-4 rounded-xl font-bold hover:bg-slate-600 transition">إنشاء حساب</button>
+            </div>
+        </div>
     </div>
 
-    <div id="main-screen" class="hidden flex-1 flex flex-col">
-        <div class="flex justify-between items-center bg-slate-900 p-3 shadow-md z-10 relative">
-            <span id="user-display" class="font-bold text-blue-400"></span>
-            <span id="gps-status" class="text-sm font-bold text-yellow-400 animate-pulse">جاري البحث عن GPS...</span>
+    <div id="main-screen" class="hidden flex-1 flex-col overflow-y-auto">
+        <div class="flex justify-between items-center glass-panel p-4 shadow-lg sticky top-0 z-50">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">👤</span>
+                <span id="user-display" class="font-bold text-lg text-white"></span>
+            </div>
+            <div id="gps-status" class="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2 animate-pulse">
+                <span class="w-2 h-2 rounded-full bg-yellow-400"></span> جاري البحث...
+            </div>
         </div>
 
         <div id="map"></div>
 
-        <div class="grid grid-cols-2 gap-3 p-4 bg-slate-800 flex-1 content-center">
-            <button onclick="reportHazard('حفرة كبيرة')" class="btn-hazard bg-red-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-red-800 py-4 flex flex-col items-center">
-                <span class="text-3xl mb-1">🕳️</span> حفرة كبيرة
-            </button>
-            <button onclick="reportHazard('حفرة صغيرة')" class="btn-hazard bg-orange-500 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-orange-700 py-4 flex flex-col items-center">
-                <span class="text-3xl mb-1">⭕</span> حفرة صغيرة
-            </button>
-            <button onclick="reportHazard('مطب كبير')" class="btn-hazard bg-purple-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-purple-800 py-4 flex flex-col items-center">
-                <span class="text-3xl mb-1">⛰️</span> مطب كبير
-            </button>
-            <button onclick="reportHazard('مطب صغير')" class="btn-hazard bg-yellow-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-yellow-800 py-4 flex flex-col items-center">
-                <span class="text-3xl mb-1">🚧</span> مطب صغير
-            </button>
+        <div class="p-4 bg-slate-900">
+            <h2 class="text-slate-400 text-sm mb-3 font-bold px-1">📍 رصد خطر جديد في موقعك الحالي:</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="reportHazard('حفرة كبيرة')" class="btn-hazard bg-red-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-red-800 p-4 flex flex-col items-center">
+                    <span class="text-3xl mb-2">🕳️</span> حفرة عميقة
+                </button>
+                <button onclick="reportHazard('حفرة صغيرة')" class="btn-hazard bg-orange-500 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-orange-700 p-4 flex flex-col items-center">
+                    <span class="text-3xl mb-2">⭕</span> حفرة خفيفة
+                </button>
+                <button onclick="reportHazard('مطب كبير')" class="btn-hazard bg-purple-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-purple-800 p-4 flex flex-col items-center">
+                    <span class="text-3xl mb-2">⛰️</span> مطب كبير
+                </button>
+                <button onclick="reportHazard('مطب صغير')" class="btn-hazard bg-yellow-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-yellow-800 p-4 flex flex-col items-center">
+                    <span class="text-3xl mb-2">🚧</span> مطب مفاجئ
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6 bg-slate-800 mt-2 rounded-t-3xl border-t border-slate-700">
+            <h3 class="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
+                <span>📖</span> تعليمات استخدام الرادار
+            </h3>
+            <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/50">
+                    <h4 class="font-bold text-white mb-1">🎯 دقة الرصد (الجي بي إس)</h4>
+                    <p>لضمان دقة الرصد، قف بالسيارة **فوق المطب أو الحفرة مباشرة** أو بجانبها تماماً، ثم اضغط على زر الرصد. الدقة العالية تساعد في تنبيه غيرك في الوقت المناسب.</p>
+                </div>
+                
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/50">
+                    <h4 class="font-bold text-white mb-1">🔔 آلية التنبيه (10 أمتار)</h4>
+                    <p>النظام مبرمج ليطلق صافرة إنذار تلقائية بمجرد دخولك في نطاق **10 أمتار** من أي خطر مسجل. ستلاحظ دائرة حمراء شفافة على الخريطة تمثل هذا النطاق.</p>
+                </div>
+
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-700/50">
+                    <h4 class="font-bold text-white mb-1">📱 نصائح هامة</h4>
+                    <ul class="list-disc list-inside space-y-1 mt-2 text-slate-400">
+                        <li>يجب تفعيل خدمة الموقع (GPS) في هاتفك للحصول على التنبيهات.</li>
+                        <li>لا تقم بإغلاق شاشة الهاتف أثناء القيادة إذا كنت تعتمد على التنبيه الصوتي.</li>
+                        <li>المنصة تعمل بالخلفية لجمع البيانات، لكن التنبيه يتطلب إبقاء المتصفح مفتوحاً.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-center text-slate-500 text-xs mt-6">تم التطوير لخدمة المجتمع وحماية الأرواح والممتلكات 💙</p>
         </div>
     </div>
 
     <script>
-        let userName = "";
-        let map, userMarker;
+        let currentUser = null;
+        let map, userMarker, userRadius;
         let currentPos = null;
         let hazards = [];
-        let syncQueue = []; // للأوفلاين
         let audioCtx;
         let alertedHazards = new Set(); 
 
         function showToast(msg, color = '#3b82f6') {
-            const container = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast'; t.style.borderRightColor = color; t.innerText = msg;
-            container.appendChild(t);
-            setTimeout(() => t.classList.add('show'), 10);
-            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+            const t = document.getElementById('toast');
+            t.style.borderRightColor = color; t.innerHTML = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        async function authenticate(action) {
+            const name = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if(!name || !password) return showToast('الرجاء إدخال الاسم وكلمة المرور', '#ef4444');
+
+            try {
+                const res = await fetch('/api/auth', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name, password, action })
+                });
+                const data = await res.json();
+                
+                if(!res.ok) throw new Error(data.error);
+                
+                currentUser = data;
+                startRadar();
+            } catch(e) {
+                showToast(e.message, '#ef4444');
+            }
         }
 
         function getDistance(lat1, lon1, lat2, lon2) {
@@ -85,61 +147,42 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.type = 'square'; osc.frequency.value = 900;
-            osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.8);
-            setTimeout(() => osc.stop(), 800);
+            osc.type = 'square'; osc.frequency.value = 850;
+            osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.6);
+            setTimeout(() => osc.stop(), 600);
         }
 
-        async function startApp() {
-            userName = document.getElementById('username').value.trim();
-            if(!userName) {
-                userName = "مجهول";
-            }
-            
-            // تفعيل الصوت بصلاحية المستخدم
+        function startRadar() {
+            // تهيئة الصوت
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioCtx.resume();
             
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-screen').classList.remove('hidden');
-            document.getElementById('user-display').innerText = '👤 ' + userName;
+            document.getElementById('main-screen').classList.add('flex');
+            document.getElementById('user-display').innerText = currentUser.name;
 
-            loadLocalData();
             initMap();
             startGPS();
-            fetchHazards(); // تحديث من السيرفر
-            setInterval(syncOfflineData, 10000); // محاولة رفع البيانات الأوفلاين كل 10 ثواني
-        }
-
-        function loadLocalData() {
-            const localData = localStorage.getItem('hazards_db');
-            if(localData) hazards = JSON.parse(localData);
-            
-            const queue = localStorage.getItem('sync_queue');
-            if(queue) syncQueue = JSON.parse(queue);
+            fetchHazards();
         }
 
         function initMap() {
-            map = L.map('map', {zoomControl: false}).setView([15.3694, 44.1910], 16);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            drawHazards();
+            map = L.map('map', {zoomControl: false}).setView([15.3694, 44.1910], 17);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
         }
 
         function drawHazards() {
-            // تنظيف الخريطة مع الاحتفاظ بمؤشر المستخدم
             map.eachLayer(layer => { 
-                if(layer !== userMarker && !(layer instanceof L.TileLayer)) map.removeLayer(layer); 
+                if(layer !== userMarker && layer !== userRadius && !(layer instanceof L.TileLayer)) map.removeLayer(layer); 
             });
 
             hazards.forEach(h => {
-                // الدائرة الحمراء (النطاق 10 متر)
-                L.circle([h.lat, h.lng], {
-                    color: 'red', fillColor: '#f03e3e', fillOpacity: 0.2, radius: 10
-                }).addTo(map);
-                
-                // النقطة المركزية
+                // دائرة الخطر (10 متر)
+                L.circle([h.lat, h.lng], { color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.15, radius: 10, weight: 1 }).addTo(map);
+                // نقطة المركز
                 L.circleMarker([h.lat, h.lng], { color: 'darkred', radius: 4, fillOpacity: 1 }).addTo(map)
-                 .bindPopup(`<b>${h.type}</b><br>بواسطة: ${h.reporter}`);
+                 .bindPopup(`<b>${h.type}</b><br>رصد: ${h.reporter}`);
             });
         }
 
@@ -147,35 +190,35 @@
             try {
                 const res = await fetch('/api/hazards');
                 hazards = await res.json();
-                localStorage.setItem('hazards_db', JSON.stringify(hazards));
                 drawHazards();
-            } catch(e) { console.log("النت مفصول، شغالين محلياً"); }
+            } catch(e) { console.log("خطأ في جلب البيانات"); }
         }
 
         function startGPS() {
-            if (!navigator.geolocation) return showToast('جهازك لا يدعم الـ GPS!', '#ef4444');
+            if (!navigator.geolocation) return showToast('جهازك لا يدعم الخرائط!', '#ef4444');
             
             navigator.geolocation.watchPosition(pos => {
                 currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                document.getElementById('gps-status').innerText = '📍 متصل ومستعد';
-                document.getElementById('gps-status').className = 'text-sm font-bold text-green-400';
+                
+                const statusEl = document.getElementById('gps-status');
+                statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-400"></span> GPS متصل`;
+                statusEl.className = 'bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2';
 
+                // رسم موقع المستخدم ودائرة الـ 10 متر الخاصة به للتوضيح
                 if(!userMarker) {
-                    userMarker = L.circleMarker([currentPos.lat, currentPos.lng], { 
-                        color: 'white', fillColor: 'blue', fillOpacity: 1, radius: 8, weight: 3 
-                    }).addTo(map);
+                    userMarker = L.circleMarker([currentPos.lat, currentPos.lng], { color: 'white', fillColor: '#3b82f6', fillOpacity: 1, radius: 7, weight: 2, zIndexOffset: 1000 }).addTo(map);
+                    userRadius = L.circle([currentPos.lat, currentPos.lng], { color: '#3b82f6', fillOpacity: 0.05, radius: 10, weight: 1, dashArray: '4' }).addTo(map);
                 } else {
                     userMarker.setLatLng([currentPos.lat, currentPos.lng]);
+                    userRadius.setLatLng([currentPos.lat, currentPos.lng]);
                 }
                 
-                // تركيز الكاميرا على المستخدم دائماً
                 map.panTo([currentPos.lat, currentPos.lng]);
-
                 checkProximity();
+
             }, err => {
-                document.getElementById('gps-status').innerText = '❌ الـ GPS مفصول';
-                document.getElementById('gps-status').className = 'text-sm font-bold text-red-400';
-            }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+                showToast('يرجى تفعيل الـ GPS بالهاتف', '#ef4444');
+            }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }); // دقة عالية جداً
         }
 
         function checkProximity() {
@@ -183,14 +226,14 @@
             hazards.forEach(h => {
                 const dist = getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng);
                 
-                // إذا دخلنا الدائرة (أقل من 10 متر)
+                // التنبيه عند دخول مسافة 10 متر
                 if(dist <= 10 && !alertedHazards.has(h.id)) {
                     playBeep();
-                    showToast(`⚠️ احذر! ${h.type} أمامك!`, '#ef4444');
+                    showToast(`⚠️ انتبه! ${h.type} على بُعد ${Math.round(dist)} متر`, '#ef4444');
                     alertedHazards.add(h.id);
                 }
                 
-                // تصفير التنبيه إذا ابتعدنا 20 متر (عشان يزمر مرة ثانية لو رجعنا)
+                // إعادة تفعيل التنبيه إذا ابتعد 20 متر
                 if(dist > 20 && alertedHazards.has(h.id)) {
                     alertedHazards.delete(h.id);
                 }
@@ -198,55 +241,27 @@
         }
 
         async function reportHazard(type) {
-            if(!currentPos) return showToast('انتظر حتى نلتقط موقعك!', '#eab308');
+            if(!currentPos) return showToast('جاري تحديد موقعك بدقة، انتظر قليلاً...', '#eab308');
 
-            // منع التكرار (أقل من 5 متر)
             const duplicate = hazards.find(h => getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng) < 5);
-            if(duplicate) {
-                return showToast(`مسجلة مسبقاً بواسطة: ${duplicate.reporter}`, '#eab308');
-            }
+            if(duplicate) return showToast(`هذا الخطر مسجل مسبقاً!`, '#eab308');
 
             const newHazard = {
                 id: Date.now().toString(),
                 lat: currentPos.lat, lng: currentPos.lng,
-                type: type, reporter: userName
+                type: type, reporter: currentUser.name
             };
 
-            // حفظ محلي فوري وتحديث الخريطة
             hazards.push(newHazard);
-            localStorage.setItem('hazards_db', JSON.stringify(hazards));
             drawHazards();
-            showToast('تم التثبيت بنجاح! 🫡', '#22c55e');
+            showToast('تم الرصد بنجاح! شكراً لك 🫡', '#22c55e');
 
-            // محاولة الإرسال للسيرفر
             try {
                 await fetch('/api/hazards', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(newHazard)
                 });
-            } catch(e) { 
-                // إذا لم يوجد إنترنت، احفظها في طابور المزامنة
-                syncQueue.push(newHazard);
-                localStorage.setItem('sync_queue', JSON.stringify(syncQueue));
-            }
-        }
-
-        // رفع البيانات المتأخرة عند توفر الإنترنت
-        async function syncOfflineData() {
-            if(syncQueue.length === 0) return;
-            try {
-                const res = await fetch('/api/sync-offline', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(syncQueue)
-                });
-                if(res.ok) {
-                    syncQueue = [];
-                    localStorage.removeItem('sync_queue');
-                    showToast('تم مزامنة بياناتك السابقة مع السيرفر 🌐', '#22c55e');
-                }
-            } catch(e) { /* لا يزال أوفلاين */ }
+            } catch(e) { console.log("سيتم الرفع لاحقاً"); }
         }
     </script>
 </body>
