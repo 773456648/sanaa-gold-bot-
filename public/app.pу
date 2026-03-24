@@ -3,352 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة الهيبة | النظام المالي المتكامل</title>
+    <title>رادار المطبات والحفر</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { background: #060608; color: #f0f0f0; font-family: 'Changa', sans-serif; overflow-x: hidden; }
-        .gold-text { color: #d4af37; }
-        .gold-btn { background: linear-gradient(135deg, #d4af37, #b8860b); color: #000; font-weight: bold; }
-        .glass-card { background: rgba(15, 15, 20, 0.98); border: 1px solid #222; border-radius: 28px; }
-        input, select { background: #111 !important; border: 1px solid #333 !important; color: #fff; border-radius: 16px; padding: 16px; width: 100%; outline: none; }
-        .type-select { border: 2px solid #333; transition: 0.3s; cursor: pointer; }
-        .type-select.active { border-color: #d4af37; background: rgba(212, 175, 55, 0.05); }
-        .info-section { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 20px; }
-        .modal-backdrop { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); }
-        .tafqit-box { font-size: 11px; color: #d4af37; margin-top: 5px; margin-right: 10px; font-weight: bold; font-style: italic; }
-        .auth-badge { background: rgba(212, 175, 55, 0.1); border: 1px solid #d4af37; color: #d4af37; font-size: 10px; padding: 2px 8px; border-radius: 6px; display: inline-block; margin-top: 4px; }
+        body { background-color: #0f172a; color: white; overflow-x: hidden; margin: 0; }
+        #map { height: 50vh; width: 100%; border-bottom: 4px solid #334155; z-index: 1; }
+        .btn-hazard { transition: transform 0.1s; }
+        .btn-hazard:active { transform: scale(0.95); }
+        #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;}
+        .toast { background: #1e293b; border-right: 4px solid #3b82f6; padding: 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.8); font-weight: bold; opacity: 0; transition: opacity 0.3s; text-align: center;}
+        .toast.show { opacity: 1; }
+        .radar-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="flex flex-col h-screen">
 
-    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12">
-        <div class="text-center">
-            <h1 class="text-8xl font-black gold-text italic tracking-tighter">HEIBA</h1>
-            <p class="text-[12px] text-gray-500 tracking-[0.5em] uppercase mt-4">The Sovereign Financial Platform</p>
-        </div>
+    <div id="toast-container"></div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            <div class="glass-card p-10 space-y-6 shadow-2xl border-yellow-900/10">
-                <h2 class="text-2xl font-bold text-center mb-4">الدخول إلى المنصة</h2>
-                <div class="grid grid-cols-2 gap-4 mb-2">
-                    <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👑</span>
-                        <span class="text-sm font-bold">حساب تاجر</span>
-                    </div>
-                    <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-5 rounded-2xl text-center">
-                        <span class="block text-2xl mb-1">👤</span>
-                        <span class="text-sm font-bold">حساب مواطن</span>
-                    </div>
-                </div>
-                <div class="space-y-4">
-                    <input id="u-name" type="text" placeholder="الاسم الكامل للمستخدم">
-                    <div class="relative">
-                        <input id="u-pass" type="password" placeholder="كلمة المرور الخاصة بك">
-                        <button onclick="togglePass('u-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100 transition">👁️</button>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 px-2">
-                    <input type="checkbox" id="remember-me" class="w-5 h-5 accent-[#d4af37] cursor-pointer">
-                    <label for="remember-me" class="text-sm text-gray-400 cursor-pointer select-none">تذكرني (دخول تلقائي دائماً)</label>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-2xl font-bold hover:bg-zinc-700 transition">تسجيل الدخول</button>
-                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-2xl hover:brightness-110 transition">إنشاء حساب</button>
-                </div>
-            </div>
-
-            <div class="space-y-8">
-                <div>
-                    <h3 class="text-3xl font-black gold-text mb-4">ما هي فائدة المنصة؟</h3>
-                    <p class="text-gray-400 text-sm leading-relaxed italic">أكلوا وشربوا وعلى الحق اتحسبوا حلقة الوصل المالية الأكثر أماناً بين التاجر والمواطن، حيث تهدف إلى تنظيم الديون والحسابات المالية بدقة متناهية. تضمن المنصة لكل ذي حق حقه من خلال نظام رقابة ذاتي ومزامنة فورية تمنع الأخطاء البشرية.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
-                    <div class="info-section">
-                        <h4 class="gold-text font-bold mb-2 underline">للتاجر:</h4>
-                        <p class="text-gray-500 leading-relaxed">قم بإدارة المواطنين، سجل العمليات بالعملات الثلاث (يمني، دولار، سعودي)، وسيصلهم الإشعار فورياً في حساباتهم الخاصة.</p>
-                    </div>
-                    <div class="info-section">
-                        <h4 class="gold-text font-bold mb-2 underline">للمواطن:</h4>
-                        <p class="text-gray-500 leading-relaxed">تابع موقفك المالي الصافي مع التجار المعتمدين واطلع على كشوفات حسابك لحظياً دون الحاجة لمراجعة الدفاتر الورقية.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div id="login-screen" class="flex-1 flex flex-col items-center justify-center space-y-6 p-4">
+        <h1 class="text-4xl font-bold text-blue-400 mb-4">رادار الطرقات 🚗</h1>
+        <input id="username" type="text" placeholder="أدخل اسمك للرصد..." class="p-4 rounded-xl bg-slate-800 text-white border-2 border-slate-600 w-full max-w-xs text-center outline-none focus:border-blue-500 text-lg">
+        <button onclick="startApp()" class="bg-blue-600 px-8 py-4 rounded-xl font-bold w-full max-w-xs shadow-lg hover:bg-blue-500 text-xl radar-pulse">تشغيل الرادار</button>
+        <p class="text-slate-400 text-sm text-center">قم بتشغيل الـ GPS قبل الدخول</p>
     </div>
 
-    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6">
-        <header class="flex justify-between items-center glass-card p-6">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-2xl">H</div>
-                <div>
-                    <h2 id="display-name" class="text-2xl font-black gold-text leading-none mb-1"></h2>
-                    <span id="role-tag" class="text-[10px] text-gray-600 uppercase tracking-widest"></span>
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="openModal('verify-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">🛡️</button>
-                <button onclick="openModal('settings-modal')" class="bg-zinc-900 p-3 rounded-xl border border-white/5 hover:border-yellow-600 transition">⚙️</button>
-                <button onclick="logout()" class="bg-red-900/10 text-red-500 px-6 py-2 rounded-xl text-xs font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition">خروج</button>
-            </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-4 space-y-6">
-                <div class="glass-card p-6">
-                    <h3 class="text-[11px] text-gray-500 font-bold mb-6 uppercase tracking-wider">الرصيد الصافي العام</h3>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center bg-blue-500/5 p-3 rounded-xl border border-blue-500/10">
-                            <span class="text-xs text-gray-400">ريال يمني</span>
-                            <span id="gt-yer" class="font-bold text-blue-400 text-xl">0</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-green-500/5 p-3 rounded-xl border border-green-500/10">
-                            <span class="text-xs text-gray-400">دولار أمريكي</span>
-                            <span id="gt-usd" class="font-bold text-green-400 text-xl">0</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-orange-500/5 p-3 rounded-xl border border-orange-500/10">
-                            <span class="text-xs text-gray-400">ريال سعودي</span>
-                            <span id="gt-sar" class="font-bold text-orange-400 text-xl">0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-card p-6 min-h-[400px]">
-                    <div id="merchant-tools" class="hidden space-y-4">
-                        <div class="flex gap-2">
-                            <input id="target-search" class="text-sm" placeholder="اسم المواطن..." onchange="addTarget()">
-                            <button onclick="addTarget()" class="gold-btn px-4 rounded-xl text-xl">+</button>
-                        </div>
-                    </div>
-                    <div id="main-list" class="mt-4 space-y-2"></div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8">
-                <div id="details-pane" class="hidden glass-card p-8 min-h-[600px] flex flex-col shadow-2xl">
-                    <div class="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
-                        <h3 id="active-target-name" class="text-3xl font-black gold-text italic"></h3>
-                        <div class="flex gap-4 text-[11px] font-bold">
-                            <span id="dt-yer" class="text-blue-400"></span>
-                            <span id="dt-usd" class="text-green-400"></span>
-                            <span id="dt-sar" class="text-orange-400"></span>
-                        </div>
-                    </div>
-                    <div id="ops-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] mb-6 pr-2"></div>
-                    <div id="add-form" class="hidden bg-black/40 p-5 rounded-2xl border border-white/5 space-y-4">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div class="relative">
-                                <input id="op-amt" type="number" placeholder="المبلغ" oninput="applyTafqit()">
-                                <div id="tafqit-text" class="tafqit-box"></div>
-                            </div>
-                            <select id="op-cur" onchange="applyTafqit()"><option value="YER">يمني</option><option value="USD">دولار</option><option value="SAR">سعودي</option></select>
-                            <select id="op-type"><option value="دين">دين</option><option value="سداد">سداد</option></select>
-                            <input id="op-note" placeholder="البيان (اختياري)">
-                        </div>
-                        <button onclick="saveOp()" class="gold-btn w-full py-4 rounded-xl shadow-lg">تثبيت العملية فوراً</button>
-                    </div>
-                </div>
-                <div id="empty-hint" class="glass-card p-24 text-center text-gray-700 italic flex items-center justify-center min-h-[600px]">اختر حساباً لمتابعة السجلات الحية...</div>
-            </div>
+    <div id="main-screen" class="hidden flex-1 flex flex-col">
+        <div class="flex justify-between items-center bg-slate-900 p-3 shadow-md z-10 relative">
+            <span id="user-display" class="font-bold text-blue-400"></span>
+            <span id="gps-status" class="text-sm font-bold text-yellow-400 animate-pulse">جاري البحث عن GPS...</span>
         </div>
-    </div>
 
-    <!-- مودال التوثيق وفحص الأكواد -->
-    <div id="verify-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text">نظام فحص التوثيقات 🔐</h3>
-            <p class="text-[11px] text-gray-500">أدخل رمز التوثيق المقدم من المواطن للتأكد من تطابقه مع المبلغ المسجل.</p>
-            <input id="verify-code-input" placeholder="أدخل رمز التوثيق هنا">
-            <div id="verify-result" class="hidden p-4 rounded-xl text-xs font-bold"></div>
-            <div class="flex gap-4">
-                <button onclick="verifyAuthCode()" class="gold-btn flex-grow py-4 rounded-xl">فحص الرمز</button>
-                <button onclick="closeModal('verify-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إغلاق</button>
-            </div>
-        </div>
-    </div>
+        <div id="map"></div>
 
-    <div id="settings-modal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
-        <div class="glass-card w-full max-w-md p-8 space-y-6">
-            <h3 class="text-xl font-bold gold-text">إعدادات الحماية الملكية</h3>
-            <div class="space-y-4">
-                <div class="relative">
-                    <input id="new-pass" type="password" placeholder="كلمة المرور الجديدة">
-                    <button onclick="togglePass('new-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
-                </div>
-                <div class="relative">
-                    <input id="confirm-pass" type="password" placeholder="تأكيد كلمة المرور">
-                    <button onclick="togglePass('confirm-pass')" class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40">👁️</button>
-                </div>
-            </div>
-            <div class="flex gap-4">
-                <button id="btn-update-pass" onclick="updatePassword()" class="gold-btn flex-grow py-4 rounded-xl">تحديث الآن</button>
-                <button onclick="closeModal('settings-modal')" class="bg-zinc-800 px-6 rounded-xl text-white">إلغاء</button>
-            </div>
+        <div class="grid grid-cols-2 gap-3 p-4 bg-slate-800 flex-1 content-center">
+            <button onclick="reportHazard('حفرة كبيرة')" class="btn-hazard bg-red-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-red-800 py-4 flex flex-col items-center">
+                <span class="text-3xl mb-1">🕳️</span> حفرة كبيرة
+            </button>
+            <button onclick="reportHazard('حفرة صغيرة')" class="btn-hazard bg-orange-500 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-orange-700 py-4 flex flex-col items-center">
+                <span class="text-3xl mb-1">⭕</span> حفرة صغيرة
+            </button>
+            <button onclick="reportHazard('مطب كبير')" class="btn-hazard bg-purple-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-purple-800 py-4 flex flex-col items-center">
+                <span class="text-3xl mb-1">⛰️</span> مطب كبير
+            </button>
+            <button onclick="reportHazard('مطب صغير')" class="btn-hazard bg-yellow-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-yellow-800 py-4 flex flex-col items-center">
+                <span class="text-3xl mb-1">🚧</span> مطب صغير
+            </button>
         </div>
     </div>
 
     <script>
-        let user = null; let activeTarget = null; let userType = 'merchant'; let discoveredData = [];
+        let userName = "";
+        let map, userMarker;
+        let currentPos = null;
+        let hazards = [];
+        let syncQueue = []; // للأوفلاين
+        let audioCtx;
+        let alertedHazards = new Set(); 
 
-        function togglePass(id) {
-            const input = document.getElementById(id);
-            input.type = input.type === 'password' ? 'text' : 'password';
+        function showToast(msg, color = '#3b82f6') {
+            const container = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = 'toast'; t.style.borderRightColor = color; t.innerText = msg;
+            container.appendChild(t);
+            setTimeout(() => t.classList.add('show'), 10);
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
         }
 
-        function formatAr(num) {
-            if (num == 0) return "صفر";
-            const units = ["", "واحد", "اثنان", "ثلاثة", "أربعة", "خمسة", "ستة", "سبعة", "ثمانية", "تسعة", "عشرة", "أحد عشر", "اثنا عشر", "ثلاثة عشر", "أربعة عشر", "خمسة عشر", "ستة عشر", "سبعة عشر", "ثمانية عشر", "تسعة عشر"];
-            const tens = ["", "", "عشرون", "ثلاثون", "أربعون", "خمسون", "ستون", "سبعون", "ثمانون", "تسعون"];
-            const hundreds = ["", "مائة", "مائتان", "ثلاثمائة", "أربعمائة", "خمسمائة", "ستمائة", "سبعمائة", "ثمانمائة", "تسعمائة"];
-            function conv(n) {
-                let r = ""; const h = Math.floor(n / 100); const t = n % 100;
-                if (h > 0) r += hundreds[h];
-                if (t > 0) { if (r !== "") r += " و "; if (t < 20) r += units[t]; else { const s = t % 10; const ten = Math.floor(t / 10); if (s > 0) r += units[s] + " و "; r += tens[ten]; } }
-                return r;
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
+            const dp = (lat2-lat1) * Math.PI/180, dl = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function playBeep() {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'square'; osc.frequency.value = 900;
+            osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.8);
+            setTimeout(() => osc.stop(), 800);
+        }
+
+        async function startApp() {
+            userName = document.getElementById('username').value.trim();
+            if(!userName) {
+                userName = "مجهول";
             }
-            let res = ""; const m = Math.floor(num / 1000000); const th = Math.floor((num % 1000000) / 1000); const rem = num % 1000;
-            if (m > 0) res += (m === 1 ? "مليون" : (m === 2 ? "مليونان" : conv(m) + " ملايين"));
-            if (th > 0) { if (res !== "") res += " و "; res += (th === 1 ? "ألف" : (th === 2 ? "ألفين" : conv(th) + " آلاف")); }
-            if (rem > 0) { if (res !== "") res += " و "; res += conv(rem); }
-            return res;
-        }
-
-        function applyTafqit() {
-            const val = document.getElementById('op-amt').value;
-            const cur = document.getElementById('op-cur').options[document.getElementById('op-cur').selectedIndex].text;
-            document.getElementById('tafqit-text').innerText = val > 0 ? formatAr(parseInt(val)) + " " + cur : "";
-        }
-
-        function setType(t) { userType = t; document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); }
-
-        window.onload = () => { const saved = localStorage.getItem('heiba_auth_session'); if (saved) { user = JSON.parse(saved); start(); } };
-
-        async function doAuth(action) {
-            const name = document.getElementById('u-name').value.trim();
-            const password = document.getElementById('u-pass').value;
-            if(!name || !password) return;
-            const res = await fetch('/api/auth', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, password, type: userType, action }) });
-            const data = await res.json();
-            if(res.ok) { user = data; if(document.getElementById('remember-me').checked) localStorage.setItem('heiba_auth_session', JSON.stringify(user)); start(); } else alert(data.error);
-        }
-
-        function start() {
-            document.getElementById('auth-ui').classList.add('hidden'); document.getElementById('main-ui').classList.remove('hidden');
-            document.getElementById('display-name').innerText = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '👑 رتبة تاجر' : '👤 رتبة مواطن';
-            if(user.type === 'merchant') { document.getElementById('merchant-tools').classList.remove('hidden'); document.getElementById('add-form').classList.remove('hidden'); renderList(); calculateGrand(user.myRecords); }
-            else { fetchAutoDebts(); setInterval(fetchAutoDebts, 4000); }
-        }
-
-        function calculateGrand(recs) {
-            let y=0, u=0, s=0; recs.forEach(r => { const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a; });
-            document.getElementById('gt-yer').innerText = y.toLocaleString(); document.getElementById('gt-usd').innerText = u.toLocaleString(); document.getElementById('gt-sar').innerText = s.toLocaleString();
-        }
-
-        function addTarget() { const n = document.getElementById('target-search').value.trim(); if(!n) return; activeTarget = n; showDetails(n); renderList(); document.getElementById('target-search').value = ""; }
-
-        function renderList() {
-            const t = [...new Set(user.myRecords.map(r => r.targetName))];
-            document.getElementById('main-list').innerHTML = t.map(n => `<div onclick="showDetails('${n}')" class="p-4 bg-black rounded-2xl cursor-pointer border border-white/5 hover:border-yellow-600 transition ${activeTarget === n ? 'border-yellow-600 bg-zinc-900 shadow-xl' : ''}">${n}</div>`).join('');
-        }
-
-        async function fetchAutoDebts() {
-            const res = await fetch(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`);
-            discoveredData = await res.json();
-            let all = []; discoveredData.forEach(m => all = all.concat(m.records)); calculateGrand(all);
-            document.getElementById('main-list').innerHTML = discoveredData.map(m => `<div onclick="showDetails('${m.merchantName}')" class="p-4 bg-zinc-900 border border-blue-900/30 rounded-2xl mb-2 hover:border-blue-500 transition ${activeTarget === m.merchantName ? 'border-blue-500' : ''}"><p class="font-bold text-sm">${m.merchantName}</p><p class="text-[9px] text-blue-500 font-bold mt-1 uppercase italic">مزامنة حية 📶</p></div>`).join('');
-            if(activeTarget) showDetails(activeTarget);
-        }
-
-        function showDetails(name) {
-            activeTarget = name; document.getElementById('empty-hint').classList.add('hidden'); document.getElementById('details-pane').classList.remove('hidden');
-            document.getElementById('active-target-name').innerText = name;
-            let records = (user.type === 'merchant') ? user.myRecords.filter(r => r.targetName === name) : (discoveredData.find(m => m.merchantName === name)?.records || []);
-            let y=0, u=0, s=0;
-            document.getElementById('ops-list').innerHTML = records.map(r => {
-                const a = parseFloat(r.amount); const d = r.type === 'دين'; if(r.currency === 'YER') y += d?a:-a; else if(r.currency === 'USD') u += d?a:-a; else s += d?a:-a;
-                
-                let authHTML = '';
-                if(r.authCode) {
-                    authHTML = `<div class="auth-badge">موثق كود: ${r.authCode}</div>`;
-                } else if(user.type === 'debtor') {
-                    authHTML = `<button onclick="generateAuth('${r.id}', ${a}, '${r.currency}')" class="text-[10px] bg-yellow-600/20 text-yellow-500 px-3 py-1 rounded-lg mt-2 border border-yellow-600/30 hover:bg-yellow-600 hover:text-black transition">توثيق العملية 🔐</button>`;
-                }
-
-                return `<div class="p-4 bg-zinc-900/50 rounded-2xl border-r-4 ${d?'border-red-500':'border-green-500'} flex justify-between items-center shadow-sm">
-                    <div>
-                        <p class="font-bold text-sm">${r.note || 'عملية مالية'}</p>
-                        <p class="text-[10px] text-gray-600 mt-1">${new Date(r.date).toLocaleDateString('ar-YE')}</p>
-                        ${authHTML}
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xl font-black ${d?'text-red-500':'text-green-500'}">${d?'+':'-'}${a.toLocaleString()}</p>
-                        <p class="text-[9px] opacity-40 uppercase font-bold tracking-widest">${r.currency}</p>
-                    </div>
-                </div>`;
-            }).reverse().join('');
-            document.getElementById('dt-yer').innerText = y.toLocaleString(); document.getElementById('dt-usd').innerText = u.toLocaleString(); document.getElementById('dt-sar').innerText = s.toLocaleString();
-            if(user.type === 'merchant') renderList();
-        }
-
-        async function generateAuth(opId, amount, currency) {
-            const code = "HB-" + Math.floor(10000 + Math.random() * 90000).toString();
-            const res = await fetch('/api/verify-auth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ 
-                    action: 'create',
-                    debtorName: user.name,
-                    merchantName: activeTarget,
-                    opId, amount, currency, authCode: code 
-                })
-            });
-            if(res.ok) {
-                alert("تم توثيق هذه العملية بنجاح بالرمز: " + code);
-                fetchAutoDebts();
-            } else {
-                const err = await res.json();
-                alert(err.error);
-            }
-        }
-
-        async function verifyAuthCode() {
-            const code = document.getElementById('verify-code-input').value.trim();
-            const resDiv = document.getElementById('verify-result');
-            if(!code) return;
             
-            const res = await fetch('/api/verify-auth', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ action: 'check', authCode: code, merchantId: user.id })
+            // تفعيل الصوت بصلاحية المستخدم
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioCtx.resume();
+            
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+            document.getElementById('user-display').innerText = '👤 ' + userName;
+
+            loadLocalData();
+            initMap();
+            startGPS();
+            fetchHazards(); // تحديث من السيرفر
+            setInterval(syncOfflineData, 10000); // محاولة رفع البيانات الأوفلاين كل 10 ثواني
+        }
+
+        function loadLocalData() {
+            const localData = localStorage.getItem('hazards_db');
+            if(localData) hazards = JSON.parse(localData);
+            
+            const queue = localStorage.getItem('sync_queue');
+            if(queue) syncQueue = JSON.parse(queue);
+        }
+
+        function initMap() {
+            map = L.map('map', {zoomControl: false}).setView([15.3694, 44.1910], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            drawHazards();
+        }
+
+        function drawHazards() {
+            // تنظيف الخريطة مع الاحتفاظ بمؤشر المستخدم
+            map.eachLayer(layer => { 
+                if(layer !== userMarker && !(layer instanceof L.TileLayer)) map.removeLayer(layer); 
             });
-            const data = await res.json();
-            resDiv.classList.remove('hidden', 'bg-red-500/20', 'text-red-500', 'bg-green-500/20', 'text-green-500');
-            if(res.ok) {
-                resDiv.classList.add('bg-green-500/20', 'text-green-500');
-                resDiv.innerHTML = `✅ الرمز صحيح!<br>الاسم: ${data.data.targetName}<br>المبلغ: ${data.data.amount} ${data.data.currency}<br>التاريخ: ${new Date(data.data.date).toLocaleDateString()}`;
-            } else {
-                resDiv.classList.add('bg-red-500/20', 'text-red-500');
-                resDiv.innerText = "❌ الرمز غير موجود أو لا ينتمي لهذا الحساب.";
+
+            hazards.forEach(h => {
+                // الدائرة الحمراء (النطاق 10 متر)
+                L.circle([h.lat, h.lng], {
+                    color: 'red', fillColor: '#f03e3e', fillOpacity: 0.2, radius: 10
+                }).addTo(map);
+                
+                // النقطة المركزية
+                L.circleMarker([h.lat, h.lng], { color: 'darkred', radius: 4, fillOpacity: 1 }).addTo(map)
+                 .bindPopup(`<b>${h.type}</b><br>بواسطة: ${h.reporter}`);
+            });
+        }
+
+        async function fetchHazards() {
+            try {
+                const res = await fetch('/api/hazards');
+                hazards = await res.json();
+                localStorage.setItem('hazards_db', JSON.stringify(hazards));
+                drawHazards();
+            } catch(e) { console.log("النت مفصول، شغالين محلياً"); }
+        }
+
+        function startGPS() {
+            if (!navigator.geolocation) return showToast('جهازك لا يدعم الـ GPS!', '#ef4444');
+            
+            navigator.geolocation.watchPosition(pos => {
+                currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                document.getElementById('gps-status').innerText = '📍 متصل ومستعد';
+                document.getElementById('gps-status').className = 'text-sm font-bold text-green-400';
+
+                if(!userMarker) {
+                    userMarker = L.circleMarker([currentPos.lat, currentPos.lng], { 
+                        color: 'white', fillColor: 'blue', fillOpacity: 1, radius: 8, weight: 3 
+                    }).addTo(map);
+                } else {
+                    userMarker.setLatLng([currentPos.lat, currentPos.lng]);
+                }
+                
+                // تركيز الكاميرا على المستخدم دائماً
+                map.panTo([currentPos.lat, currentPos.lng]);
+
+                checkProximity();
+            }, err => {
+                document.getElementById('gps-status').innerText = '❌ الـ GPS مفصول';
+                document.getElementById('gps-status').className = 'text-sm font-bold text-red-400';
+            }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
+        }
+
+        function checkProximity() {
+            if(!currentPos) return;
+            hazards.forEach(h => {
+                const dist = getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng);
+                
+                // إذا دخلنا الدائرة (أقل من 10 متر)
+                if(dist <= 10 && !alertedHazards.has(h.id)) {
+                    playBeep();
+                    showToast(`⚠️ احذر! ${h.type} أمامك!`, '#ef4444');
+                    alertedHazards.add(h.id);
+                }
+                
+                // تصفير التنبيه إذا ابتعدنا 20 متر (عشان يزمر مرة ثانية لو رجعنا)
+                if(dist > 20 && alertedHazards.has(h.id)) {
+                    alertedHazards.delete(h.id);
+                }
+            });
+        }
+
+        async function reportHazard(type) {
+            if(!currentPos) return showToast('انتظر حتى نلتقط موقعك!', '#eab308');
+
+            // منع التكرار (أقل من 5 متر)
+            const duplicate = hazards.find(h => getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng) < 5);
+            if(duplicate) {
+                return showToast(`مسجلة مسبقاً بواسطة: ${duplicate.reporter}`, '#eab308');
+            }
+
+            const newHazard = {
+                id: Date.now().toString(),
+                lat: currentPos.lat, lng: currentPos.lng,
+                type: type, reporter: userName
+            };
+
+            // حفظ محلي فوري وتحديث الخريطة
+            hazards.push(newHazard);
+            localStorage.setItem('hazards_db', JSON.stringify(hazards));
+            drawHazards();
+            showToast('تم التثبيت بنجاح! 🫡', '#22c55e');
+
+            // محاولة الإرسال للسيرفر
+            try {
+                await fetch('/api/hazards', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(newHazard)
+                });
+            } catch(e) { 
+                // إذا لم يوجد إنترنت، احفظها في طابور المزامنة
+                syncQueue.push(newHazard);
+                localStorage.setItem('sync_queue', JSON.stringify(syncQueue));
             }
         }
 
-        async function saveOp() {
-            const a = document.getElementById('op-amt').value; if(!a || !activeTarget) return;
-            user.myRecords.push({ id: Date.now().toString(), targetName: activeTarget, amount: a, currency: document.getElementById('op-cur').value, type: document.getElementById('op-type').value, note: document.getElementById('op-note').value, date: new Date().toISOString() });
-            showDetails(activeTarget); calculateGrand(user.myRecords);
-            fetch('/api/sync', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, myRecords: user.myRecords }) });
-            document.getElementById('op-amt').value = ""; document.getElementById('op-note').value = ""; document.getElementById('tafqit-text').innerText = "";
+        // رفع البيانات المتأخرة عند توفر الإنترنت
+        async function syncOfflineData() {
+            if(syncQueue.length === 0) return;
+            try {
+                const res = await fetch('/api/sync-offline', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(syncQueue)
+                });
+                if(res.ok) {
+                    syncQueue = [];
+                    localStorage.removeItem('sync_queue');
+                    showToast('تم مزامنة بياناتك السابقة مع السيرفر 🌐', '#22c55e');
+                }
+            } catch(e) { /* لا يزال أوفلاين */ }
         }
-
-        async function updatePassword() {
-            const p1 = document.getElementById('new-pass').value; if(!p1 || p1 !== document.getElementById('confirm-pass').value) return alert("خطأ في المطابقة");
-            const res = await fetch('/api/update-pass', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userId: user.id, newPass: p1 }) });
-            if(res.ok) { user.password = p1; alert("تم التحديث!"); closeModal('settings-modal'); }
-        }
-
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function logout() { localStorage.removeItem('heiba_auth_session'); location.reload(); }
     </script>
 </body>
 </html>
