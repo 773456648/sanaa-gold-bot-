@@ -4,18 +4,19 @@ const axios = require('axios');
 const FormData = require('form-data');
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+// Render يطلب تشغيل السيرفر على 0.0.0.0 لاستقبال الاتصالات
+const PORT = process.env.PORT || 10000;
+const HOST = '0.0.0.0'; 
 const DB_PATH = './radar_db.json';
 
-// إعدادات التلجرام (لا تعدلها، نفس اللي أرسلتها لي)
+// إعدادات التلجرام
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const MY_CHAT_ID = '5042495708';
-const ADMIN_PASSWORD = '771'; 
 
 app.use(express.json());
 app.use(express.static('public'));
 
-// هيكلة قاعدة البيانات (مستخدمين + مطبات)
+// التأكد من وجود ملف قاعدة البيانات
 let db = { users: [], hazards: [] };
 if (fs.existsSync(DB_PATH)) {
     try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [], hazards: [] }; }
@@ -56,7 +57,7 @@ async function sendFileToTelegram(caption = "📦 نسخة احتياطية لر
     } catch (e) { console.error("Backup Error"); }
 }
 
-// --- واجهات المستخدمين (تسجيل الدخول وإنشاء حساب) ---
+// --- واجهات المستخدمين ---
 app.post('/api/auth', (req, res) => {
     const { name, password, action } = req.body;
     if(!name || !password) return res.status(400).json({error: "البيانات ناقصة"});
@@ -78,7 +79,7 @@ app.post('/api/auth', (req, res) => {
     }
 });
 
-// --- واجهات المطبات (الرصد والمزامنة) ---
+// --- واجهات المطبات ---
 app.get('/api/hazards', (req, res) => res.json(db.hazards));
 
 app.post('/api/hazards', (req, res) => {
@@ -89,13 +90,11 @@ app.post('/api/hazards', (req, res) => {
     res.json({ success: true });
 });
 
-// واجهة لاستقبال البيانات اللي ترصدت أوفلاين
 app.post('/api/sync-offline', (req, res) => {
     const queue = req.body;
     if (Array.isArray(queue) && queue.length > 0) {
         let added = 0;
         queue.forEach(newHazard => {
-            // التأكد من عدم تكرار المطب
             if (!db.hazards.find(h => h.id === newHazard.id)) {
                 db.hazards.push(newHazard);
                 added++;
@@ -109,4 +108,7 @@ app.post('/api/sync-offline', (req, res) => {
     res.json({ success: true });
 });
 
-app.listen(PORT, () => console.log(`SYSTEM RUNNING ON PORT ${PORT}`));
+// التعديل هنا: إضافة الـ HOST
+app.listen(PORT, HOST, () => {
+    console.log(`SYSTEM RUNNING ON http://${HOST}:${PORT}`);
+});
