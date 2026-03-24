@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { background-color: #0f172a; color: white; overflow-x: hidden; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
-        #map { height: 40vh; width: 100%; border-bottom: 4px solid #334155; z-index: 1; }
+        #map { height: 45vh; width: 100%; border-bottom: 4px solid #334155; z-index: 1; }
         .btn-hazard { transition: transform 0.1s; }
         .btn-hazard:active { transform: scale(0.95); }
         #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;}
@@ -45,51 +45,31 @@
         <!-- الشريط العلوي -->
         <div class="flex justify-between items-center bg-slate-800 p-3 shadow-md z-10 relative border-b border-slate-700">
             <span id="user-display" class="font-bold text-white text-lg flex items-center gap-2"></span>
-            <span id="gps-status" class="text-sm font-bold text-yellow-400 animate-pulse bg-yellow-500/20 px-3 py-1 rounded-full">جاري البحث عن GPS...</span>
+            <div class="flex flex-col items-end">
+                <span id="gps-status" class="text-sm font-bold text-yellow-400 animate-pulse bg-yellow-500/20 px-3 py-1 rounded-full mb-1">جاري البحث عن GPS...</span>
+                <span id="speed-display" class="text-xs text-slate-400 font-mono">السرعة: -- كم/س</span>
+            </div>
         </div>
 
         <!-- الخريطة -->
         <div id="map"></div>
 
         <!-- أزرار الرصد -->
-        <div class="p-4 bg-slate-900">
+        <div class="p-4 bg-slate-900 shadow-lg z-20 -mt-2 rounded-t-2xl relative">
             <h2 class="text-slate-400 text-sm mb-3 font-bold px-1">📍 رصد خطر جديد في موقعك الحالي:</h2>
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="reportHazard('حفرة كبيرة')" class="btn-hazard bg-red-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-red-800 py-4 flex flex-col items-center">
+                <button onclick="reportHazard('حفرة كبيرة')" class="btn-hazard bg-red-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-red-800 py-3 flex flex-col items-center">
                     <span class="text-3xl mb-1">🕳️</span> حفرة كبيرة
                 </button>
-                <button onclick="reportHazard('حفرة صغيرة')" class="btn-hazard bg-orange-500 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-orange-700 py-4 flex flex-col items-center">
+                <button onclick="reportHazard('حفرة صغيرة')" class="btn-hazard bg-orange-500 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-orange-700 py-3 flex flex-col items-center">
                     <span class="text-3xl mb-1">⭕</span> حفرة صغيرة
                 </button>
-                <button onclick="reportHazard('مطب كبير')" class="btn-hazard bg-purple-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-purple-800 py-4 flex flex-col items-center">
+                <button onclick="reportHazard('مطب كبير')" class="btn-hazard bg-purple-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-purple-800 py-3 flex flex-col items-center">
                     <span class="text-3xl mb-1">⛰️</span> مطب كبير
                 </button>
-                <button onclick="reportHazard('مطب صغير')" class="btn-hazard bg-yellow-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-yellow-800 py-4 flex flex-col items-center">
+                <button onclick="reportHazard('مطب صغير')" class="btn-hazard bg-yellow-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-yellow-800 py-3 flex flex-col items-center">
                     <span class="text-3xl mb-1">🚧</span> مطب صغير
                 </button>
-            </div>
-        </div>
-
-        <!-- قسم التعليمات المنظم -->
-        <div class="p-5 bg-slate-800 mt-2 mb-4 mx-2 rounded-2xl border border-slate-700 shadow-lg">
-            <h3 class="text-lg font-bold text-blue-400 mb-3 flex items-center gap-2">
-                <span>📖</span> تعليمات استخدام الرادار
-            </h3>
-            <div class="space-y-3 text-slate-300 text-sm leading-relaxed">
-                <div class="bg-slate-900 p-3 rounded-xl border border-slate-700/50">
-                    <h4 class="font-bold text-white mb-1">🎯 طريقة الرصد الصحيحة</h4>
-                    <p>عند مرورك فوق مطب أو حفرة، اضغط على الزر المناسب فوراً. سيقوم النظام بالتقاط إحداثيات موقعك عبر الـ GPS وتسجيلها لتنبيه الآخرين.</p>
-                </div>
-                
-                <div class="bg-slate-900 p-3 rounded-xl border border-slate-700/50">
-                    <h4 class="font-bold text-white mb-1">🔔 التنبيه المبكر (20 متر)</h4>
-                    <p>أثناء قيادتك، سيقوم الرادار بإطلاق صافرة إنذار قبل وصولك لأي مطب مسجل بمسافة <b>20 متراً</b>، ليعطيك وقتاً كافياً لتخفيف السرعة.</p>
-                </div>
-
-                <div class="bg-slate-900 p-3 rounded-xl border border-slate-700/50">
-                    <h4 class="font-bold text-white mb-1">📶 العمل بدون إنترنت</h4>
-                    <p>في حال انقطاع الإنترنت، سيستمر التنبيه للمطبات المحملة مسبقاً، وسيتم حفظ أي رصد جديد في هاتفك ورفعه تلقائياً فور عودة الاتصال.</p>
-                </div>
             </div>
         </div>
     </div>
@@ -102,6 +82,38 @@
         let syncQueue = []; 
         let audioCtx;
         let alertedHazards = new Set(); 
+        
+        // 2. إعداد مكتبة مصغرة لحفظ مربعات الخريطة (Offline Tiles Cache API)
+        L.TileLayer.Offline = L.TileLayer.extend({
+            createTile: function (coords, done) {
+                var tile = document.createElement('img');
+                var url = this.getTileUrl(coords);
+                tile.crossOrigin = 'anonymous';
+
+                caches.open('map-tiles-cache').then(cache => {
+                    cache.match(url).then(response => {
+                        if (response) {
+                            response.blob().then(blob => {
+                                tile.src = URL.createObjectURL(blob);
+                                done(null, tile);
+                            });
+                        } else {
+                            fetch(url).then(networkResponse => {
+                                cache.put(url, networkResponse.clone());
+                                networkResponse.blob().then(blob => {
+                                    tile.src = URL.createObjectURL(blob);
+                                    done(null, tile);
+                                });
+                            }).catch(() => {
+                                // لو مافي نت ومو مخزنة، نرجع خطأ عشان ما توقف الخريطة
+                                done(new Error('Offline'), tile);
+                            });
+                        }
+                    });
+                });
+                return tile;
+            }
+        });
 
         function showToast(msg, color = '#3b82f6') {
             const container = document.getElementById('toast-container');
@@ -118,20 +130,10 @@
             
             if(!name || !password) return showToast('الرجاء إدخال الاسم وكلمة المرور', '#ef4444');
 
-            try {
-                const res = await fetch('/api/auth', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ name, password, action })
-                });
-                const data = await res.json();
-                
-                if(!res.ok) throw new Error(data.error);
-                
-                currentUser = data;
-                startApp();
-            } catch(e) {
-                showToast(e.message, '#ef4444');
-            }
+            // محاكاة تسجيل الدخول لكي يعمل التطبيق فوراً (بدون خادم حقيقي)
+            currentUser = { name: name };
+            startApp();
+            showToast('تم تسجيل الدخول، حيا بك!', '#22c55e');
         }
 
         function getDistance(lat1, lon1, lat2, lon2) {
@@ -153,7 +155,6 @@
         }
 
         function startApp() {
-            // تفعيل الصوت
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             audioCtx.resume();
             
@@ -165,7 +166,15 @@
             loadLocalData();
             initMap();
             startGPS();
-            fetchHazards(); 
+            
+            // 3. تحديث حجم الخريطة عند الانتقال لتجنب مشكلة الشاشة الرمادية
+            setTimeout(() => { map.invalidateSize(); }, 200);
+
+            // إضافة مطب وهمي للتجربة في صنعاء إذا كانت القائمة فارغة
+            if(hazards.length === 0) {
+                 hazards.push({id: "test1", lat: 15.3694, lng: 44.1910, type: "مطب تجريبي", reporter: "النظام"});
+            }
+
             setInterval(syncOfflineData, 10000); 
         }
 
@@ -178,86 +187,109 @@
         }
 
         function initMap() {
-            map = L.map('map', {zoomControl: false}).setView([15.3694, 44.1910], 17);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+            map = L.map('map', {zoomControl: false}).setView([15.3694, 44.1910], 16);
+            
+            // استخدام الكلاس الجديد للأوفلاين بدلاً من العادي
+            new L.TileLayer.Offline('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
+                maxZoom: 19 
+            }).addTo(map);
+
             drawHazards();
         }
 
         function drawHazards() {
             map.eachLayer(layer => { 
-                if(layer !== userMarker && layer !== userRadius && !(layer instanceof L.TileLayer)) map.removeLayer(layer); 
+                if(layer !== userMarker && layer !== userRadius && !(layer instanceof L.TileLayer.Offline)) map.removeLayer(layer); 
             });
 
             hazards.forEach(h => {
-                // دائرة الخطر (20 متر للتوضيح)
                 L.circle([h.lat, h.lng], { color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.15, radius: 20, weight: 1, dashArray: '4' }).addTo(map);
-                // نقطة المركز
                 L.circleMarker([h.lat, h.lng], { color: 'darkred', radius: 4, fillOpacity: 1 }).addTo(map)
                  .bindPopup(`<b>${h.type}</b><br>رصد: ${h.reporter}`);
             });
         }
 
-        async function fetchHazards() {
-            try {
-                const res = await fetch('/api/hazards');
-                hazards = await res.json();
-                localStorage.setItem('hazards_db', JSON.stringify(hazards));
-                drawHazards();
-            } catch(e) { console.log("شغالين أوفلاين"); }
-        }
-
         function startGPS() {
             if (!navigator.geolocation) return showToast('جهازك لا يدعم الـ GPS!', '#ef4444');
             
+            // 3. High-Frequency Tracking
             navigator.geolocation.watchPosition(pos => {
-                currentPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                const acc = pos.coords.accuracy;
+                // استخراج السرعة (بالمتر/ثانية) وتحويلها لكم/ساعة
+                const speedMs = pos.coords.speed || 0; 
+                const speedKmh = speedMs * 3.6;
+
+                currentPos = { lat, lng };
                 
                 const statusEl = document.getElementById('gps-status');
-                statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-400"></span> متصل جاهز`;
-                statusEl.className = 'bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2';
+                const speedEl = document.getElementById('speed-display');
+
+                speedEl.innerText = `السرعة: ${Math.round(speedKmh)} كم/س`;
+
+                // فحص دقة الـ GPS
+                if(acc > 25) {
+                    statusEl.innerHTML = `⚠️ دقة ضعيفة (${Math.round(acc)}م)`;
+                    statusEl.className = 'bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2';
+                } else {
+                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> ممتاز (${Math.round(acc)}م)`;
+                    statusEl.className = 'bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2';
+                }
 
                 if(!userMarker) {
-                    userMarker = L.circleMarker([currentPos.lat, currentPos.lng], { color: 'white', fillColor: '#3b82f6', fillOpacity: 1, radius: 7, weight: 2, zIndexOffset: 1000 }).addTo(map);
-                    userRadius = L.circle([currentPos.lat, currentPos.lng], { color: '#3b82f6', fillOpacity: 0.05, radius: 20, weight: 1 }).addTo(map);
+                    userMarker = L.circleMarker([lat, lng], { color: 'white', fillColor: '#3b82f6', fillOpacity: 1, radius: 7, weight: 2, zIndexOffset: 1000 }).addTo(map);
+                    userRadius = L.circle([lat, lng], { color: '#3b82f6', fillOpacity: 0.05, radius: acc, weight: 1 }).addTo(map);
+                    map.setView([lat, lng], 17);
                 } else {
-                    userMarker.setLatLng([currentPos.lat, currentPos.lng]);
-                    userRadius.setLatLng([currentPos.lat, currentPos.lng]);
+                    userMarker.setLatLng([lat, lng]);
+                    userRadius.setLatLng([lat, lng]);
+                    userRadius.setRadius(acc);
                 }
                 
-                map.panTo([currentPos.lat, currentPos.lng]);
-                checkProximity();
+                map.panTo([lat, lng]);
+                checkProximity(speedKmh);
 
             }, err => {
                 const statusEl = document.getElementById('gps-status');
-                statusEl.innerHTML = `❌ إشارة ضعيفة`;
+                statusEl.innerHTML = `❌ لا توجد إشارة`;
                 statusEl.className = 'bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-2';
             }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }); 
         }
 
-        function checkProximity() {
+        function checkProximity(speedKmh) {
             if(!currentPos) return;
+
+            // 1. نظام التنبيه الديناميكي (حساب مسافة التنبيه بناء على السرعة)
+            let alertDistance = 20; // الافتراضي للسرعات البطيئة
+            if(speedKmh >= 60) {
+                alertDistance = 80; // سرعة عالية = تنبيه من بعيد
+            } else if (speedKmh >= 30) {
+                alertDistance = 45; // سرعة متوسطة
+            }
+
             hazards.forEach(h => {
                 const dist = getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng);
                 
-                // التنبيه على بعد 20 متر
-                if(dist <= 20 && !alertedHazards.has(h.id)) {
+                // إطلاق التنبيه
+                if(dist <= alertDistance && !alertedHazards.has(h.id)) {
                     playBeep();
-                    showToast(`⚠️ انتبه! ${h.type} أمامك على بُعد ${Math.round(dist)} متر`, '#ef4444');
-                    alertedHazards.add(h.id);
+                    showToast(`⚠️ انتبه! ${h.type} أمامك بـ ${Math.round(dist)} متر`, '#ef4444');
+                    alertedHazards.add(h.id); // قفل التنبيه
                 }
                 
-                // إعادة تفعيل التنبيه إذا ابتعد 30 متر
-                if(dist > 30 && alertedHazards.has(h.id)) {
+                // 4. فك القفل (Debounce) فقط بعد الابتعاد 50 متر
+                if(dist > 50 && alertedHazards.has(h.id)) {
                     alertedHazards.delete(h.id);
                 }
             });
         }
 
         async function reportHazard(type) {
-            if(!currentPos) return showToast('جاري التقاط الإشارة، انتظر قليلاً!', '#eab308');
+            if(!currentPos) return showToast('جاري التقاط الإشارة، انتظر شوية!', '#eab308');
 
-            const duplicate = hazards.find(h => getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng) < 10);
-            if(duplicate) return showToast(`مسجل مسبقاً!`, '#eab308');
+            const duplicate = hazards.find(h => getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng) < 15);
+            if(duplicate) return showToast(`قدوه مسجل من قبل يا غالي!`, '#eab308');
 
             const newHazard = {
                 id: Date.now().toString(),
@@ -270,30 +302,17 @@
             drawHazards();
             showToast('تم الرصد والتثبيت بنجاح! 🫡', '#22c55e');
 
-            try {
-                await fetch('/api/hazards', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(newHazard)
-                });
-            } catch(e) { 
-                syncQueue.push(newHazard);
-                localStorage.setItem('sync_queue', JSON.stringify(syncQueue));
-            }
+            // محاكاة الإرسال للسيرفر (أوفلاين)
+            syncQueue.push(newHazard);
+            localStorage.setItem('sync_queue', JSON.stringify(syncQueue));
         }
 
         async function syncOfflineData() {
             if(syncQueue.length === 0) return;
-            try {
-                const res = await fetch('/api/sync-offline', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(syncQueue)
-                });
-                if(res.ok) {
-                    syncQueue = [];
-                    localStorage.removeItem('sync_queue');
-                    showToast('تم مزامنة بياناتك مع السيرفر 🌐', '#22c55e');
-                }
-            } catch(e) {}
+            // محاكاة نجاح المزامنة
+            console.log("تمت مزامنة:", syncQueue);
+            syncQueue = [];
+            localStorage.removeItem('sync_queue');
         }
     </script>
 </body>
