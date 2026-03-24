@@ -2,507 +2,390 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>رادار المطبات السحابي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة رادار الطرقات الموحد</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0f172a; color: white; overflow: hidden; margin: 0; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
-        #radar-container { height: 45vh; width: 100%; position: relative; border-bottom: 4px solid #334155; background: #020617; overflow: hidden; }
-        canvas { display: block; width: 100%; height: 100%; }
-        
-        /* تأثير مسح الرادار */
-        .radar-sweep {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 200%; height: 200%;
-            margin-top: -100%; margin-left: -100%;
-            background: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.4) 100%);
-            border-radius: 50%;
-            animation: spin 4s linear infinite;
-            pointer-events: none;
+        /* نفس التصميم الزجاجي والذهبي الفخم الذي طلبته */
+        :root {
+            --gold-primary: #d4af37;
+            --gold-light: #f3e5ab;
+            --gold-dark: #aa7c11;
+            --bg-dark: #0a0a0c;
+            --surface-dark: rgba(20, 20, 25, 0.7);
         }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .btn-hazard { transition: transform 0.1s, filter 0.2s; }
-        .btn-hazard:active { transform: scale(0.95); filter: brightness(0.8); }
+        body { 
+            background-color: var(--bg-dark); 
+            background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+            color: #f0f0f0; 
+            font-family: 'Changa', sans-serif; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+
+        .verified-name-glow {
+            background: linear-gradient(90deg, #ffffff, #22c55e, #ffffff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: verified-shimmer 3s linear infinite;
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        @keyframes verified-shimmer { to { background-position: 200% center; } }
+
+        .gold-text { 
+            background: linear-gradient(to left, var(--gold-light), var(--gold-primary), var(--gold-dark));
+            -webkit-background-clip: text;
+            color: transparent;
+        }
         
-        #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;}
-        .toast { background: #1e293b; border-right: 4px solid #3b82f6; padding: 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.8); font-weight: bold; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(-20px); text-align: center;}
-        .toast.show { opacity: 1; transform: translateY(0); }
+        .gold-btn { 
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); 
+            color: #000; 
+            font-weight: 700; 
+            transition: all 0.3s ease;
+        }
+        .gold-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+        .glass-card { 
+            background: var(--surface-dark); 
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        input { 
+            background: rgba(0, 0, 0, 0.5) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.1) !important; 
+            color: #fff; 
+            border-radius: 16px; 
+            padding: 16px; 
+            width: 100%; 
+            outline: none; 
+        }
+
+        .type-select { 
+            border: 2px solid rgba(255, 255, 255, 0.05); 
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer; 
+        }
+        .type-select.active { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.08); }
+
+        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            min-width: 250px; padding: 16px 20px; border-radius: 12px;
+            background: rgba(15, 15, 20, 0.95); border-right: 4px solid var(--gold-primary);
+            color: #fff; transform: translateX(-120%); transition: transform 0.4s; display: flex; gap: 12px;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.error { border-right-color: #ef4444; }
+        .toast.success { border-right-color: #22c55e; }
+        .toast.alert { border-right-color: #f59e0b; background: rgba(245, 158, 11, 0.2); animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* تأثير النبض للرادار */
+        .radar-ping {
+            position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            background: rgba(212, 175, 55, 0.4); animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; z-index: -1;
+        }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
     </style>
 </head>
-<body class="flex flex-col h-screen bg-slate-900">
+<body class="p-4 md:p-8">
 
     <div id="toast-container"></div>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="login-screen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-6 z-50 absolute inset-0 bg-slate-900">
-        <div class="text-center mb-4">
-            <h1 class="text-4xl font-extrabold text-blue-500 mb-2">رادار الطرقات السحابي 📡</h1>
-            <p class="text-slate-400">نظام الرصد المشترك اللحظي</p>
-        </div>
-        
-        <div class="w-full max-w-sm space-y-4 bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
-            <input id="username" type="text" placeholder="أدخل اسمك أو لقبك" class="w-full p-4 rounded-xl bg-slate-900 text-white border border-slate-600 outline-none focus:border-blue-500 text-center text-lg font-bold">
-            
-            <button onclick="window.startAppFlow()" class="w-full bg-blue-600 p-4 rounded-xl font-bold shadow-lg hover:bg-blue-500 transition text-lg flex justify-center items-center gap-2">
-                <span>تفعيل الرادار</span>
-                <span class="text-xl">🚀</span>
-            </button>
-            <p class="text-slate-500 text-xs text-center mt-2">سيتم استخدام GPS وتخزين البيانات سحابياً</p>
-        </div>
-    </div>
-
-    <!-- الشاشة الرئيسية -->
-    <div id="main-screen" class="hidden flex-1 flex-col h-full w-full">
-        <!-- الشريط العلوي -->
-        <div class="flex justify-between items-center bg-slate-800 p-3 shadow-md z-10 relative border-b border-slate-700">
-            <span id="user-display" class="font-bold text-white text-lg flex items-center gap-2"></span>
-            <div class="flex flex-col items-end">
-                <span id="gps-status" class="text-sm font-bold text-yellow-400 animate-pulse bg-yellow-500/20 px-3 py-1 rounded-full mb-1">جاري الاتصال بالأقمار...</span>
-                <span id="cloud-status" class="text-xs text-slate-400 font-mono">السحابة: جاري الاتصال...</span>
-            </div>
+    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12 fade-in">
+        <div class="text-center space-y-2">
+            <h1 class="text-7xl md:text-8xl font-black gold-text italic tracking-tighter">RADAR</h1>
+            <p class="text-xs md:text-sm text-gray-400 tracking-[0.3em] uppercase font-light">منصة رصد المطبات التفاعلية</p>
         </div>
 
-        <!-- شاشة الرادار (Canvas) -->
-        <div id="radar-container">
-            <div class="radar-sweep"></div>
-            <canvas id="radarCanvas"></canvas>
-            
-            <!-- معلومات الرادار المترية -->
-            <div class="absolute bottom-2 left-2 text-xs text-slate-400 bg-black/50 p-1 rounded font-mono">
-                النطاق: 500 متر
-            </div>
-            <div class="absolute top-2 right-2 text-xs font-bold bg-slate-800/80 px-2 py-1 rounded text-blue-300 border border-blue-900">
-                الشمال ↑
-            </div>
-        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div class="glass-card p-8 md:p-10 space-y-8 relative overflow-hidden">
+                <div class="text-center">
+                    <h2 class="text-2xl font-bold mb-1">تسجيل الدخول</h2>
+                    <p class="text-sm text-gray-500">اختر نوع حسابك للمشاركة في الرصد</p>
+                </div>
 
-        <!-- أزرار الرصد -->
-        <div class="flex-1 p-4 bg-slate-900 shadow-[0_-10px_15px_rgba(0,0,0,0.3)] z-20 rounded-t-3xl relative flex flex-col justify-center">
-            <h2 class="text-slate-300 text-sm mb-3 font-bold px-1 text-center">📍 رصد خطر في موقعك الحالي (يظهر للجميع فوراً):</h2>
-            <div class="grid grid-cols-2 gap-3 h-full max-h-[250px]">
-                <button onclick="window.reportHazard('حفرة كبيرة', 'red')" class="btn-hazard bg-red-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-red-800 flex flex-col items-center justify-center h-full">
-                    <span class="text-3xl mb-1 drop-shadow-md">🕳️</span> حفرة كبيرة
-                </button>
-                <button onclick="window.reportHazard('حفرة صغيرة', 'orange')" class="btn-hazard bg-orange-500 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-orange-700 flex flex-col items-center justify-center h-full">
-                    <span class="text-3xl mb-1 drop-shadow-md">⭕</span> حفرة صغيرة
-                </button>
-                <button onclick="window.reportHazard('مطب كبير', 'purple')" class="btn-hazard bg-purple-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-purple-800 flex flex-col items-center justify-center h-full">
-                    <span class="text-3xl mb-1 drop-shadow-md">⛰️</span> مطب كبير
-                </button>
-                <button onclick="window.reportHazard('مطب صغير', 'yellow')" class="btn-hazard bg-yellow-600 rounded-2xl font-bold text-lg text-slate-900 shadow-lg border-b-4 border-yellow-700 flex flex-col items-center justify-center h-full">
-                    <span class="text-3xl mb-1 drop-shadow-md">🚧</span> مطب صغير
-                </button>
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-2xl text-center flex flex-col items-center gap-2">
+                        <span class="text-3xl">📡</span><span class="text-sm font-bold">راصد (يسجل مطبات)</span>
+                    </div>
+                    <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 rounded-2xl text-center flex flex-col items-center gap-2">
+                        <span class="text-3xl">🚗</span><span class="text-sm font-bold">سائق (يستقبل تنبيهات)</span>
+                    </div>
+                </div>
+
+                <div class="space-y-5">
+                    <input id="u-name" type="text" placeholder="الاسم الكامل">
+                    <input id="u-pass" type="password" placeholder="كلمة المرور">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-xl font-bold border border-white/5 shadow-lg">دخول</button>
+                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-xl">إنشاء حساب</button>
+                </div>
+            </div>
+
+            <div class="space-y-8 p-4">
+                <div>
+                    <h3 class="text-3xl font-black gold-text mb-4">عينك على الطريق</h3>
+                    <p class="text-gray-400 text-sm md:text-base leading-relaxed border-r-4 border-[#d4af37] pr-4 bg-white/5 p-4 rounded-l-xl">
+                        منصة تعاونية لحفظ بيانات الطرق. قم بتسجيل المطبات في موقعك، وستظهر فوراً لجميع المستخدمين الآخرين للحفاظ على سلامة مركباتهم. السجلات تحفظ للأبد ولا يمكن حذفها.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- منطق التطبيق و Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
+        <header class="flex flex-col md:flex-row justify-between items-center glass-card p-4 md:p-6 gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-3xl">R</div>
+                <div>
+                    <h2 id="display-name" class="text-xl md:text-2xl font-black text-white leading-none mb-1"></h2>
+                    <span id="role-tag" class="text-[11px] text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-md font-bold"></span>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button id="radar-status" class="bg-green-900/20 text-green-400 px-4 py-2 rounded-xl text-sm font-bold border border-green-500/20 flex items-center gap-2">
+                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> GPS متصل
+                </button>
+                <button onclick="logout()" class="bg-red-900/20 text-red-400 px-4 py-2 rounded-xl text-sm font-bold border border-red-500/20">خروج</button>
+            </div>
+        </header>
 
-        // إعدادات بيئة العمل الأساسية
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { /* Fallback for local testing if needed */ };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'radar-app-123';
-        
-        // المتغيرات العامة
-        let app, auth, db, user;
-        let currentUserInfo = { name: "مجهول" };
-        let currentPos = null;
-        let hazards = []; // البيانات القادمة من السحابة
-        let alertedHazards = new Set();
-        let audioCtx;
-        
-        // إعدادات الرادار
-        const canvas = document.getElementById('radarCanvas');
-        const ctx = canvas.getContext('2d');
-        const MAX_RADAR_DISTANCE = 500; // الحد الأقصى للرادار بالأمتار
-        const ALERT_DISTANCE = 50; // مسافة التنبيه بالأمتار
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass-card p-6">
+                    <h3 class="text-sm text-gray-300 font-bold mb-4">📊 إحصائيات الرادار</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center bg-zinc-900/50 p-4 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400">إجمالي المطبات في النظام</span>
+                            <span id="stat-total" class="font-black text-blue-400 text-xl">0</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-zinc-900/50 p-4 rounded-xl border border-white/5">
+                            <span class="text-xs text-gray-400">مطبات سجلتها أنت</span>
+                            <span id="stat-mine" class="font-black text-green-400 text-xl">0</span>
+                        </div>
+                    </div>
+                </div>
 
-        // تهيئة واجهة المستخدم
-        function showToast(msg, color = '#3b82f6') {
+                <div id="record-panel" class="hidden glass-card p-6 text-center relative overflow-hidden">
+                    <div class="radar-ping"></div>
+                    <button onclick="recordCurrentLocation()" class="gold-btn w-full h-24 rounded-2xl text-xl shadow-lg shadow-yellow-900/20 flex flex-col items-center justify-center gap-2 relative z-10">
+                        <span class="text-3xl">📍</span>
+                        <span>رصد مطب في موقعي الآن</span>
+                    </button>
+                    <p class="text-[10px] text-gray-400 mt-4">سيتم مشاركة إحداثياتك الحالية فوراً مع جميع المستخدمين</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                <div class="glass-card p-6 min-h-[600px] flex flex-col relative">
+                    <h3 class="text-xl font-black text-white mb-6 border-b border-white/5 pb-4 flex items-center justify-between">
+                        <span>📡 سجل الإحداثيات المباشر</span>
+                        <span class="text-xs font-normal text-gray-400 bg-black/40 px-3 py-1 rounded-full">يتم التحديث لحظياً</span>
+                    </h3>
+                    
+                    <div id="bumps-list" class="flex-grow space-y-3 overflow-y-auto max-h-[500px] pr-2">
+                        <div class="text-center text-gray-500 py-10">جاري جلب البيانات...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let user = null; 
+        let userType = 'merchant'; 
+        let systemBumps = [];
+        let myCurrentLocation = null;
+        let alertCooldown = false; // لمنع تكرار جرس الإنذار لنفس المطب
+
+        // --- دوال الواجهة ---
+        function showToast(msg, type = 'error') {
             const container = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast'; 
-            t.style.borderRightColor = color; 
-            t.innerHTML = msg;
-            container.appendChild(t);
-            // Animation flow
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => t.classList.add('show'));
-            });
-            setTimeout(() => { 
-                t.classList.remove('show'); 
-                setTimeout(() => t.remove(), 300); 
-            }, 3500);
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? '✅' : (type === 'alert' ? '🚨' : '⚠️');
+            toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
         }
 
-        // --- 1. إعدادات الصوت للتنبيهات ---
-        function initAudio() {
-            if(!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function setType(t) { 
+            userType = t; 
+            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); 
+            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); 
+        }
+
+        // --- المصادقة ---
+        window.onload = () => { 
+            const saved = localStorage.getItem('radar_session'); 
+            if (saved) { user = JSON.parse(saved); startApp(); } 
+        };
+
+        async function doAuth(action) {
+            const name = document.getElementById('u-name').value.trim();
+            const password = document.getElementById('u-pass').value;
+            if(!name || !password) return showToast("أدخل الاسم وكلمة المرور");
+            
+            try {
+                const res = await fetch('/api/auth', { 
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ name, password, type: userType, action }) 
+                });
+                const data = await res.json();
+                if(res.ok) { 
+                    user = data; 
+                    localStorage.setItem('radar_session', JSON.stringify(user)); 
+                    showToast("تم الدخول بنجاح", "success"); 
+                    startApp(); 
+                } else showToast(data.error);
+            } catch (e) { showToast("خطأ في الاتصال بالخادم"); }
+        }
+
+        function startApp() {
+            document.getElementById('auth-ui').classList.add('hidden'); 
+            document.getElementById('main-ui').classList.remove('hidden');
+            document.getElementById('display-name').innerHTML = user.name;
+            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '📡 راصد' : '🚗 مستمع/سائق';
+            
+            if(user.type === 'merchant') document.getElementById('record-panel').classList.remove('hidden');
+
+            fetchBumps(); // جلب مبدئي
+            setInterval(fetchBumps, 3000); // تحديث لحظي كل 3 ثواني
+            startGPSWatcher(); // بدء تتبع السائق لإنذاره
+        }
+
+        // --- جلب بيانات المطبات ---
+        async function fetchBumps() {
+            try {
+                const res = await fetch('/api/bumps');
+                systemBumps = await res.json();
+                
+                // حفظ نسخة أوفلاين
+                localStorage.setItem('radar_offline_bumps', JSON.stringify(systemBumps));
+                renderBumps();
+            } catch(e) {
+                // إذا طفى النت، نشتغل على النسخة المحفوظة!
+                const offline = localStorage.getItem('radar_offline_bumps');
+                if(offline) {
+                    systemBumps = JSON.parse(offline);
+                    renderBumps();
+                }
             }
-            if(audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        function playBeep(urgent = false) {
-            if(!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain); 
-            gain.connect(audioCtx.destination);
-            
-            if(urgent) {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.3);
-            } else {
-                osc.type = 'square'; 
-                osc.frequency.value = 900;
-            }
-            
-            osc.start(); 
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // خفض الصوت قليلاً
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + (urgent ? 0.4 : 0.8));
-            setTimeout(() => osc.stop(), 800);
-        }
+        function renderBumps() {
+            document.getElementById('stat-total').innerText = systemBumps.length;
+            document.getElementById('stat-mine').innerText = systemBumps.filter(b => b.recorderName === user.name).length;
 
-        // --- 2. المعادلات الرياضية (Haversine & Bearing) ---
-        // حساب المسافة بالمتر بين نقطتين
-        function getDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // نصف قطر الأرض بالمتر
-            const p1 = lat1 * Math.PI/180;
-            const p2 = lat2 * Math.PI/180;
-            const dp = (lat2-lat1) * Math.PI/180;
-            const dl = (lon2-lon1) * Math.PI/180;
-            const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
-            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        }
-
-        // حساب الزاوية (الاتجاه) بين نقطتين بالنسبة للشمال
-        function getBearing(lat1, lon1, lat2, lon2) {
-            const lat1Rad = lat1 * Math.PI / 180;
-            const lat2Rad = lat2 * Math.PI / 180;
-            const deltaLon = (lon2 - lon1) * Math.PI / 180;
-
-            const y = Math.sin(deltaLon) * Math.cos(lat2Rad);
-            const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLon);
-            let bearing = Math.atan2(y, x) * 180 / Math.PI;
-            return (bearing + 360) % 360;
-        }
-
-        // --- 3. الرسم الهندسي للرادار (Canvas) ---
-        function resizeCanvas() {
-            const container = document.getElementById('radar-container');
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-            drawRadar();
-        }
-        window.addEventListener('resize', resizeCanvas);
-
-        function drawRadar() {
-            if (!ctx) return;
-            const w = canvas.width;
-            const h = canvas.height;
-            const centerX = w / 2;
-            const centerY = h / 2;
-
-            // تنظيف الشاشة
-            ctx.clearRect(0, 0, w, h);
-
-            // رسم دوائر الرادار (خلفية)
-            ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)'; // أزرق خفيف
-            ctx.lineWidth = 1;
-            const maxRadius = Math.min(w, h) / 2 * 0.9; // حجم الرادار في الشاشة
-            
-            for (let i = 1; i <= 4; i++) {
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, (maxRadius / 4) * i, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-
-            // رسم خطي التقاطع
-            ctx.beginPath();
-            ctx.moveTo(centerX, centerY - maxRadius); ctx.lineTo(centerX, centerY + maxRadius);
-            ctx.moveTo(centerX - maxRadius, centerY); ctx.lineTo(centerX + maxRadius, centerY);
-            ctx.stroke();
-
-            // رسم المستخدم (في المركز)
-            ctx.fillStyle = '#3b82f6';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // إضافة هالة للمستخدم
-            ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, 12, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (!currentPos) {
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.textAlign = 'center';
-                ctx.fillText('في انتظار إحداثيات GPS...', centerX, centerY + 30);
+            if(systemBumps.length === 0) {
+                document.getElementById('bumps-list').innerHTML = `<p class="text-center text-gray-500 py-10">لا توجد مطبات مسجلة حتى الآن.</p>`;
                 return;
             }
 
-            // رسم المطبات القادمة من Firestore
-            hazards.forEach(h => {
-                const dist = getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng);
-                
-                // لا ترسم الأشياء البعيدة جداً عن الرادار
-                if (dist > MAX_RADAR_DISTANCE) return;
-
-                const bearing = getBearing(currentPos.lat, currentPos.lng, h.lat, h.lng);
-                
-                // تحويل المسافة والزاوية إلى إحداثيات X, Y على الشاشة
-                // نطرح 90 درجة لأن 0 في الرياضيات هي الشرق، بينما في الخرائط 0 هي الشمال
-                const angleRad = (bearing - 90) * (Math.PI / 180);
-                
-                // نسبة المسافة لحجم الرادار
-                const distanceRatio = dist / MAX_RADAR_DISTANCE;
-                const plotRadius = distanceRatio * maxRadius;
-
-                const x = centerX + Math.cos(angleRad) * plotRadius;
-                const y = centerY + Math.sin(angleRad) * plotRadius;
-
-                // اختيار اللون بناء على النوع
-                let color = '#ef4444'; // احمر افتراضي
-                if(h.color) color = h.color;
-                else if(h.type.includes('صغير')) color = '#eab308'; // اصفر للمطبات الصغيرة
-
-                // رسم النقطة (المطب)
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                ctx.arc(x, y, 6, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // رسم هالة حول النقطة إذا كانت قريبة
-                if (dist < ALERT_DISTANCE * 2) {
-                    ctx.fillStyle = color.replace(')', ', 0.3)').replace('rgb', 'rgba'); // تأثير شفاف بسيط
-                    if(color.startsWith('#')) ctx.fillStyle = color + '66'; // هالة
-                    ctx.beginPath();
-                    ctx.arc(x, y, 15, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                // رسم النص (المسافة)
-                ctx.fillStyle = '#fff';
-                ctx.font = '10px monospace';
-                ctx.textAlign = 'center';
-                ctx.fillText(`${Math.round(dist)}m`, x, y - 10);
-            });
+            document.getElementById('bumps-list').innerHTML = systemBumps.slice().reverse().map(b => `
+                <div class="p-4 bg-zinc-900/80 rounded-xl border border-white/5 flex justify-between items-center hover:border-[#d4af37]/30 transition">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-yellow-900/30 text-yellow-500 flex items-center justify-center text-xl border border-yellow-500/20">⚠️</div>
+                        <div>
+                            <p class="font-bold text-sm text-gray-200">الإحداثية: <span dir="ltr" class="text-xs bg-black/50 px-2 py-1 rounded">${b.lat.toFixed(5)}, ${b.lng.toFixed(5)}</span></p>
+                            <p class="text-[10px] text-gray-500 mt-1">الراصد: <span class="text-[#d4af37] font-bold">${b.recorderName}</span> | الإجمالي الخاص به: ${b.recorderTotal}</p>
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 text-left">
+                        ${new Date(b.timestamp).toLocaleTimeString('ar-YE')}
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // --- 4. نظام الرصد وتتبع الموقع (Geolocation) ---
-        function startGPS() {
-            if (!navigator.geolocation) return showToast('جهازك لا يدعم الـ GPS!', '#ef4444');
+        // --- تسجيل مطب جديد (GPS) ---
+        function recordCurrentLocation() {
+            if (!navigator.geolocation) return showToast("متصفحك لا يدعم تحديد الموقع");
             
-            const statusEl = document.getElementById('gps-status');
-
-            navigator.geolocation.watchPosition(pos => {
-                currentPos = {
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                    acc: pos.coords.accuracy
-                };
-
-                // تحديث حالة دقة الـ GPS
-                if(currentPos.acc > 30) {
-                    statusEl.innerHTML = `⚠️ دقة ضعيفة (${Math.round(currentPos.acc)}م)`;
-                    statusEl.className = 'bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-bold';
-                } else {
-                    statusEl.innerHTML = `📍 متصل (${Math.round(currentPos.acc)}م)`;
-                    statusEl.className = 'bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold';
-                }
-
-                checkProximity();
-                drawRadar(); // تحديث رسم الرادار مع كل حركة
-
-            }, err => {
-                statusEl.innerHTML = `❌ فقدان الإشارة`;
-                statusEl.className = 'bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-bold';
-            }, { 
-                enableHighAccuracy: true, // ضروري جداً لدقة المطبات
-                maximumAge: 0, 
-                timeout: 5000 
-            }); 
-        }
-
-        // فحص المسافة بينك وبين المطبات المحملة من السحابة
-        function checkProximity() {
-            if(!currentPos || hazards.length === 0) return;
-
-            hazards.forEach(h => {
-                const dist = getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng);
+            showToast("جاري التقاط الإحداثيات...", "success");
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
                 
-                // إطلاق التنبيه إذا دخل النطاق الخطر (مثلا 50 متر) ولم يتم التنبيه مسبقاً
-                if(dist <= ALERT_DISTANCE && !alertedHazards.has(h.id)) {
-                    playBeep(true); // تنبيه عاجل
-                    showToast(`⚠️ انتبه! ${h.type} أمامك بـ ${Math.round(dist)} متر`, '#ef4444');
-                    alertedHazards.add(h.id); // تسجيل أنه تم التنبيه
-                    
-                    // وميض الشاشة
-                    document.getElementById('radar-container').style.boxShadow = 'inset 0 0 50px rgba(239, 68, 68, 0.5)';
-                    setTimeout(() => {
-                        document.getElementById('radar-container').style.boxShadow = 'none';
-                    }, 500);
-                }
-                
-                // فك القفل (Debounce) فقط بعد الابتعاد أكثر من 70 متر عشان ما يزعج المستخدم
-                if(dist > ALERT_DISTANCE + 20 && alertedHazards.has(h.id)) {
-                    alertedHazards.delete(h.id);
-                }
-            });
-        }
-
-        // --- 5. ربط قواعد البيانات Firebase Firestore ---
-        async function initFirebaseAndData() {
-            try {
-                if(Object.keys(firebaseConfig).length === 0) {
-                    throw new Error("لم يتم العثور على إعدادات Firebase");
-                }
-                
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // القاعدة رقم 3: تسجيل الدخول قبل قراءة أي بيانات
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                // الاستماع لحالة المستخدم
-                onAuthStateChanged(auth, (u) => {
-                    user = u;
-                    if(user) {
-                        document.getElementById('cloud-status').innerText = "السحابة: متصل 🟢";
-                        document.getElementById('cloud-status').classList.replace('text-slate-400', 'text-green-400');
-                        startListeningToHazards();
-                    }
-                });
-
-            } catch (error) {
-                console.error("Firebase Error:", error);
-                document.getElementById('cloud-status').innerText = "السحابة: غير متصل 🔴";
-                showToast("حدث خطأ في الاتصال بالسحابة، التطبيق سيعمل محلياً فقط", "#ef4444");
-            }
-        }
-
-        // جلب البيانات لحظة بلحظة (الكل يشوف الكل)
-        function startListeningToHazards() {
-            if(!user || !db) return;
-
-            // القاعدة رقم 1: المسار الدقيق للبيانات العامة
-            const hazardsRef = collection(db, 'artifacts', appId, 'public', 'data', 'hazards');
-            
-            // القاعدة رقم 2: استعلام بسيط (جلب الكل والتصفية محلياً إن لزم الأمر)
-            onSnapshot(hazardsRef, (snapshot) => {
-                hazards = [];
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    hazards.push({
-                        id: doc.id,
-                        lat: data.lat,
-                        lng: data.lng,
-                        type: data.type,
-                        color: data.color || '#ef4444',
-                        reporter: data.reporter
+                try {
+                    const res = await fetch('/api/add-bump', {
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ lat, lng, userId: user.id, userName: user.name })
                     });
-                });
-                
-                drawRadar(); // إعادة رسم الرادار بالبيانات الجديدة
-            }, (error) => {
-                console.error("Snapshot Error:", error);
-                document.getElementById('cloud-status').innerText = "السحابة: خطأ في المزامنة ⚠️";
-            });
+                    if(res.ok) {
+                        showToast("تم تثبيت المطب في السحابة بنجاح!", "success");
+                        fetchBumps();
+                    }
+                } catch(e) { showToast("فشل الاتصال، تحقق من الإنترنت"); }
+            }, (err) => {
+                showToast("يرجى السماح بصلاحيات الموقع (GPS)", "error");
+            }, { enableHighAccuracy: true });
         }
 
-        // إرسال مطب جديد للسحابة
-        window.reportHazard = async function(type, colorCode) {
-            initAudio(); // للتأكد من السماح بالصوت
+        // --- نظام التنبيه الجغرافي (رادار القرب) ---
+        function startGPSWatcher() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.watchPosition((pos) => {
+                myCurrentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                checkProximity();
+            }, (err) => {
+                document.getElementById('radar-status').innerHTML = '⚠️ GPS معطل';
+                document.getElementById('radar-status').className = 'bg-red-900/20 text-red-400 px-4 py-2 rounded-xl text-sm font-bold border border-red-500/20';
+            }, { enableHighAccuracy: true, maximumAge: 0 });
+        }
+
+        function checkProximity() {
+            if(!myCurrentLocation || systemBumps.length === 0 || alertCooldown) return;
             
-            if(!currentPos) {
-                return showToast('الرجاء الانتظار حتى يتم التقاط موقعك الحالي بدقة!', '#eab308');
-            }
-
-            // التأكد من عدم تكرار المطب محلياً قبل الإرسال لتخفيف الضغط
-            const duplicate = hazards.find(h => getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng) < 15);
-            if(duplicate) {
-                return showToast(`موجود مسبقاً! رصده (${duplicate.reporter})`, '#eab308');
-            }
-
-            // ألوان للرادار بناء على نوع المطب
-            const colorMap = {
-                'red': '#ef4444',
-                'orange': '#f97316',
-                'purple': '#a855f7',
-                'yellow': '#eab308'
-            };
-
-            const hazardData = {
-                type: type,
-                lat: currentPos.lat,
-                lng: currentPos.lng,
-                color: colorMap[colorCode] || '#ef4444',
-                reporter: currentUserInfo.name,
-                timestamp: serverTimestamp()
-            };
-
-            try {
-                if(user && db) {
-                    const hazardsRef = collection(db, 'artifacts', appId, 'public', 'data', 'hazards');
-                    await addDoc(hazardsRef, hazardData);
-                    playBeep(false);
-                    showToast('تم الإرسال للسحابة! ☁️ الجميع يراه الآن', '#22c55e');
-                } else {
-                    // Fallback لو مافي نت (محاكاة محلية)
-                    hazardData.id = Date.now().toString();
-                    hazards.push(hazardData);
-                    drawRadar();
-                    playBeep(false);
-                    showToast('تم الحفظ محلياً (غير متصل بالسحابة)', '#eab308');
+            for(let bump of systemBumps) {
+                const dist = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
+                // إذا المسافة أقل من 50 متر (0.05 كيلومتر)
+                if(dist < 0.05) {
+                    triggerAlert();
+                    break; 
                 }
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                showToast('فشل في الإرسال للسحابة', '#ef4444');
             }
-        };
+        }
 
-        // --- 6. دورة حياة التطبيق (التشغيل) ---
-        window.startAppFlow = function() {
-            const nameInput = document.getElementById('username').value.trim();
-            if(!nameInput) return showToast('الرجاء إدخال اسمك للبدء', '#ef4444');
+        function triggerAlert() {
+            showToast("انتبه! مطب أمامك 🚨", "alert");
+            // صوت تنبيه بسيط
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                osc.type = 'square'; osc.frequency.setValueAtTime(400, ctx.currentTime);
+                osc.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.5);
+            } catch(e) {}
             
-            currentUserInfo.name = nameInput;
-            
-            initAudio(); // تفعيل الصوت بناء على نقرة المستخدم (متطلبات المتصفح)
+            alertCooldown = true;
+            setTimeout(() => { alertCooldown = false; }, 15000); // إيقاف التنبيه لمدة 15 ثانية عشان ما يزعج السائق
+        }
 
-            // إخفاء تسجيل الدخول وإظهار الرئيسي
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-            document.getElementById('main-screen').classList.add('flex');
-            document.getElementById('user-display').innerHTML = `👤 <span>${currentUserInfo.name}</span>`;
+        // حساب المسافة بالهافرساين (كم)
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; 
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
 
-            // تشغيل الأنظمة
-            resizeCanvas();
-            startGPS();
-            initFirebaseAndData(); // يبدأ الاتصال بالسحابة ومزامنة المطبات
-            
-            // تحديث الرادار بشكل مستمر للأنيميشن
-            setInterval(() => {
-                if(currentPos) drawRadar();
-            }, 1000);
-        };
-
-        // تهيئة حجم الرادار عند بداية التحميل
-        resizeCanvas();
-
+        function logout() { localStorage.removeItem('radar_session'); location.reload(); }
     </script>
 </body>
 </html>
