@@ -2,242 +2,507 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رادار الطرقات الاحترافي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>رادار المطبات السحابي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #020617; color: white; overflow: hidden; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #0f172a; color: white; overflow: hidden; margin: 0; font-family: system-ui, -apple-system, sans-serif; touch-action: manipulation; }
+        #radar-container { height: 45vh; width: 100%; position: relative; border-bottom: 4px solid #334155; background: #020617; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
         
-        /* محاكي الطريق بدلاً من الخريطة */
-        #road-emulator { 
-            height: 45vh; width: 100%; position: relative; 
-            background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
-            overflow: hidden; border-bottom: 3px solid #334155;
+        /* تأثير مسح الرادار */
+        .radar-sweep {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 200%; height: 200%;
+            margin-top: -100%; margin-left: -100%;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.4) 100%);
+            border-radius: 50%;
+            animation: spin 4s linear infinite;
+            pointer-events: none;
         }
-        .asphalt {
-            position: absolute; width: 140px; height: 1000%; left: 50%; transform: translateX(-50%);
-            background: #111827; box-shadow: inset 0 0 20px #000;
-        }
-        .lane-line {
-            position: absolute; width: 6px; height: 100%; left: 50%; transform: translateX(-50%);
-            border-left: 6px dashed #4b5563;
-        }
-        .moving-road { animation: drive 2s linear infinite; animation-play-state: paused; }
-        @keyframes drive { from { top: -100px; } to { top: 0; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .car-model { 
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); 
-            font-size: 50px; z-index: 50; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5));
-        }
-
-        .hazard-marker {
-            position: absolute; left: 50%; transform: translateX(-50%);
-            width: 100px; height: 40px; border-radius: 50%;
-            display: flex; items-center; justify-content: center;
-            font-weight: bold; font-size: 14px; z-index: 40;
-            transition: opacity 0.3s;
-        }
-
+        .btn-hazard { transition: transform 0.1s, filter 0.2s; }
+        .btn-hazard:active { transform: scale(0.95); filter: brightness(0.8); }
+        
         #toast-container { position: fixed; top: 10px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; width: 90%; max-width: 400px;}
-        .toast { background: #1e293b; border-right: 4px solid #3b82f6; padding: 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.8); font-weight: bold; opacity: 0; transition: opacity 0.3s; text-align: center;}
-        .toast.show { opacity: 1; }
-
-        .btn-hazard { transition: transform 0.1s; border-bottom-width: 4px; }
-        .btn-hazard:active { transform: scale(0.95); border-bottom-width: 1px; }
+        .toast { background: #1e293b; border-right: 4px solid #3b82f6; padding: 12px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.8); font-weight: bold; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(-20px); text-align: center;}
+        .toast.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="flex flex-col h-screen bg-slate-900">
 
     <div id="toast-container"></div>
 
-    <!-- 1. شاشة تسجيل الدخول (مثلما طلبت) -->
-    <div id="login-screen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-6 bg-slate-900">
-        <div class="text-center">
-            <h1 class="text-4xl font-extrabold text-blue-500 mb-2">رادار فادي 🚗</h1>
-            <p class="text-slate-400">نظام الرصد والمحاكاة الجغرافي</p>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="login-screen" class="flex-1 flex flex-col items-center justify-center p-6 space-y-6 z-50 absolute inset-0 bg-slate-900">
+        <div class="text-center mb-4">
+            <h1 class="text-4xl font-extrabold text-blue-500 mb-2">رادار الطرقات السحابي 📡</h1>
+            <p class="text-slate-400">نظام الرصد المشترك اللحظي</p>
         </div>
         
-        <div class="w-full max-w-sm space-y-4 bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-700">
-            <input id="username" type="text" placeholder="اسم المستخدم" class="w-full p-4 rounded-xl bg-slate-950 text-white border border-slate-700 outline-none focus:border-blue-500 text-center text-lg">
-            <input id="password" type="password" placeholder="كلمة المرور" class="w-full p-4 rounded-xl bg-slate-950 text-white border border-slate-700 outline-none focus:border-blue-500 text-center text-lg">
+        <div class="w-full max-w-sm space-y-4 bg-slate-800 p-6 rounded-2xl shadow-xl border border-slate-700">
+            <input id="username" type="text" placeholder="أدخل اسمك أو لقبك" class="w-full p-4 rounded-xl bg-slate-900 text-white border border-slate-600 outline-none focus:border-blue-500 text-center text-lg font-bold">
             
-            <button onclick="authenticate()" class="w-full bg-blue-600 p-4 rounded-xl font-bold shadow-lg hover:bg-blue-500 transition text-xl">دخول النظام</button>
-            <p class="text-slate-500 text-xs text-center">الإحداثيات تعمل عبر الـ GPS بدون خرائط</p>
+            <button onclick="window.startAppFlow()" class="w-full bg-blue-600 p-4 rounded-xl font-bold shadow-lg hover:bg-blue-500 transition text-lg flex justify-center items-center gap-2">
+                <span>تفعيل الرادار</span>
+                <span class="text-xl">🚀</span>
+            </button>
+            <p class="text-slate-500 text-xs text-center mt-2">سيتم استخدام GPS وتخزين البيانات سحابياً</p>
         </div>
     </div>
 
-    <!-- 2. الشاشة الرئيسية -->
-    <div id="main-screen" class="hidden flex-1 flex-col overflow-hidden">
+    <!-- الشاشة الرئيسية -->
+    <div id="main-screen" class="hidden flex-1 flex-col h-full w-full">
         <!-- الشريط العلوي -->
-        <div class="flex justify-between items-center bg-slate-900 p-4 border-b border-slate-800 z-50">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">👤</span>
-                <span id="user-display" class="font-bold text-lg"></span>
-            </div>
-            <div class="text-left">
-                <div id="speed-display" class="text-xl font-black text-blue-400 font-mono">0 <small>كم/س</small></div>
-                <div id="gps-accuracy" class="text-[10px] text-slate-500">جاري فحص الدقة...</div>
+        <div class="flex justify-between items-center bg-slate-800 p-3 shadow-md z-10 relative border-b border-slate-700">
+            <span id="user-display" class="font-bold text-white text-lg flex items-center gap-2"></span>
+            <div class="flex flex-col items-end">
+                <span id="gps-status" class="text-sm font-bold text-yellow-400 animate-pulse bg-yellow-500/20 px-3 py-1 rounded-full mb-1">جاري الاتصال بالأقمار...</span>
+                <span id="cloud-status" class="text-xs text-slate-400 font-mono">السحابة: جاري الاتصال...</span>
             </div>
         </div>
 
-        <!-- 3. محاكي الطريق (بديل الخريطة) -->
-        <div id="road-emulator">
-            <div id="asphalt-layer" class="asphalt">
-                <div id="moving-line" class="lane-line moving-road"></div>
-                <div id="objects-layer" class="relative w-full h-full"></div>
-            </div>
-            <div class="car-model" id="car">🚗</div>
+        <!-- شاشة الرادار (Canvas) -->
+        <div id="radar-container">
+            <div class="radar-sweep"></div>
+            <canvas id="radarCanvas"></canvas>
             
-            <!-- تنبيه الحالة -->
-            <div id="road-status" class="absolute top-4 right-4 px-4 py-2 rounded-full font-bold text-xs bg-green-600/20 text-green-400 border border-green-600/50">
-                طريق آمن
+            <!-- معلومات الرادار المترية -->
+            <div class="absolute bottom-2 left-2 text-xs text-slate-400 bg-black/50 p-1 rounded font-mono">
+                النطاق: 500 متر
+            </div>
+            <div class="absolute top-2 right-2 text-xs font-bold bg-slate-800/80 px-2 py-1 rounded text-blue-300 border border-blue-900">
+                الشمال ↑
             </div>
         </div>
 
-        <!-- 4. أزرار الرصد -->
-        <div class="flex-1 bg-slate-900 p-6 rounded-t-[40px] shadow-2xl z-50 border-t border-slate-800">
-            <h2 class="text-slate-400 text-sm mb-4 font-bold text-center italic">📍 اضغط فوراً عند مرورك فوق العائق:</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="report('مطب كبير', '#a855f7')" class="btn-hazard bg-purple-600 border-purple-900 h-24 rounded-3xl flex flex-col items-center justify-center shadow-lg">
-                    <span class="text-3xl">⛰️</span> <span class="font-bold">مطب كبير</span>
+        <!-- أزرار الرصد -->
+        <div class="flex-1 p-4 bg-slate-900 shadow-[0_-10px_15px_rgba(0,0,0,0.3)] z-20 rounded-t-3xl relative flex flex-col justify-center">
+            <h2 class="text-slate-300 text-sm mb-3 font-bold px-1 text-center">📍 رصد خطر في موقعك الحالي (يظهر للجميع فوراً):</h2>
+            <div class="grid grid-cols-2 gap-3 h-full max-h-[250px]">
+                <button onclick="window.reportHazard('حفرة كبيرة', 'red')" class="btn-hazard bg-red-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-red-800 flex flex-col items-center justify-center h-full">
+                    <span class="text-3xl mb-1 drop-shadow-md">🕳️</span> حفرة كبيرة
                 </button>
-                <button onclick="report('مطب صغير', '#eab308')" class="btn-hazard bg-yellow-600 border-yellow-900 h-24 rounded-3xl flex flex-col items-center justify-center shadow-lg">
-                    <span class="text-3xl">🚧</span> <span class="font-bold">مطب صغير</span>
+                <button onclick="window.reportHazard('حفرة صغيرة', 'orange')" class="btn-hazard bg-orange-500 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-orange-700 flex flex-col items-center justify-center h-full">
+                    <span class="text-3xl mb-1 drop-shadow-md">⭕</span> حفرة صغيرة
                 </button>
-                <button onclick="report('حفرة كبيرة', '#ef4444')" class="btn-hazard bg-red-600 border-red-900 h-24 rounded-3xl flex flex-col items-center justify-center shadow-lg">
-                    <span class="text-3xl">🕳️</span> <span class="font-bold">حفرة كبيرة</span>
+                <button onclick="window.reportHazard('مطب كبير', 'purple')" class="btn-hazard bg-purple-600 rounded-2xl font-bold text-lg shadow-lg border-b-4 border-purple-800 flex flex-col items-center justify-center h-full">
+                    <span class="text-3xl mb-1 drop-shadow-md">⛰️</span> مطب كبير
                 </button>
-                <button onclick="report('حفرة صغيرة', '#f97316')" class="btn-hazard bg-orange-600 border-orange-900 h-24 rounded-3xl flex flex-col items-center justify-center shadow-lg">
-                    <span class="text-3xl">⭕</span> <span class="font-bold">حفرة صغيرة</span>
+                <button onclick="window.reportHazard('مطب صغير', 'yellow')" class="btn-hazard bg-yellow-600 rounded-2xl font-bold text-lg text-slate-900 shadow-lg border-b-4 border-yellow-700 flex flex-col items-center justify-center h-full">
+                    <span class="text-3xl mb-1 drop-shadow-md">🚧</span> مطب صغير
                 </button>
             </div>
         </div>
     </div>
 
-    <script>
-        let user = null;
-        let myPos = null;
-        let hazards = JSON.parse(localStorage.getItem('hazards_db_v3') || '[]');
-        let alertedIds = new Set();
-        let audioCtx;
+    <!-- منطق التطبيق و Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // إعدادات بيئة العمل الأساسية
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { /* Fallback for local testing if needed */ };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'radar-app-123';
+        
+        // المتغيرات العامة
+        let app, auth, db, user;
+        let currentUserInfo = { name: "مجهول" };
+        let currentPos = null;
+        let hazards = []; // البيانات القادمة من السحابة
+        let alertedHazards = new Set();
+        let audioCtx;
+        
+        // إعدادات الرادار
+        const canvas = document.getElementById('radarCanvas');
+        const ctx = canvas.getContext('2d');
+        const MAX_RADAR_DISTANCE = 500; // الحد الأقصى للرادار بالأمتار
+        const ALERT_DISTANCE = 50; // مسافة التنبيه بالأمتار
+
+        // تهيئة واجهة المستخدم
         function showToast(msg, color = '#3b82f6') {
             const container = document.getElementById('toast-container');
             const t = document.createElement('div');
-            t.className = 'toast'; t.style.borderRightColor = color; t.innerHTML = msg;
+            t.className = 'toast'; 
+            t.style.borderRightColor = color; 
+            t.innerHTML = msg;
             container.appendChild(t);
-            setTimeout(() => t.classList.add('show'), 10);
-            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+            // Animation flow
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => t.classList.add('show'));
+            });
+            setTimeout(() => { 
+                t.classList.remove('show'); 
+                setTimeout(() => t.remove(), 300); 
+            }, 3500);
         }
 
-        function authenticate() {
-            const name = document.getElementById('username').value.trim();
-            const pass = document.getElementById('password').value.trim();
-            if(!name || !pass) return showToast('يا فادي سجل بياناتك كاملة!', '#ef4444');
-            
-            user = { name };
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-            document.getElementById('user-display').innerText = name;
-            
-            initSystem();
+        // --- 1. إعدادات الصوت للتنبيهات ---
+        function initAudio() {
+            if(!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if(audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        function initSystem() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playBeep(urgent = false) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); 
+            gain.connect(audioCtx.destination);
             
-            navigator.geolocation.watchPosition(pos => {
-                const { latitude, longitude, speed, accuracy } = pos.coords;
-                myPos = { lat: latitude, lng: longitude };
-                
-                const speedKmh = Math.round((speed || 0) * 3.6);
-                document.getElementById('speed-display').innerHTML = `${speedKmh} <small class="text-xs text-slate-500">كم/س</small>`;
-                document.getElementById('gps-accuracy').innerText = `دقة الإشارة: ${Math.round(accuracy)} متر`;
-
-                // التحكم في سرعة حركة خطوط الزفلت
-                const line = document.getElementById('moving-line');
-                if(speedKmh > 5) {
-                    line.style.animationPlayState = 'running';
-                    line.style.animationDuration = (2 / (speedKmh/20)) + 's';
-                } else {
-                    line.style.animationPlayState = 'paused';
-                }
-
-                updateEmulator();
-            }, null, { enableHighAccuracy: true });
+            if(urgent) {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.3);
+            } else {
+                osc.type = 'square'; 
+                osc.frequency.value = 900;
+            }
+            
+            osc.start(); 
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // خفض الصوت قليلاً
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + (urgent ? 0.4 : 0.8));
+            setTimeout(() => osc.stop(), 800);
         }
 
-        function getDistance(la1, lo1, la2, lo2) {
-            const R = 6371e3;
-            const dLat = (la2-la1) * Math.PI/180;
-            const dLon = (lo2-lo1) * Math.PI/180;
-            const a = Math.sin(dLat/2)**2 + Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLon/2)**2;
+        // --- 2. المعادلات الرياضية (Haversine & Bearing) ---
+        // حساب المسافة بالمتر بين نقطتين
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // نصف قطر الأرض بالمتر
+            const p1 = lat1 * Math.PI/180;
+            const p2 = lat2 * Math.PI/180;
+            const dp = (lat2-lat1) * Math.PI/180;
+            const dl = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        function updateEmulator() {
-            if(!myPos) return;
-            const container = document.getElementById('objects-layer');
-            const statusBox = document.getElementById('road-status');
-            container.innerHTML = "";
-            let dangerous = false;
+        // حساب الزاوية (الاتجاه) بين نقطتين بالنسبة للشمال
+        function getBearing(lat1, lon1, lat2, lon2) {
+            const lat1Rad = lat1 * Math.PI / 180;
+            const lat2Rad = lat2 * Math.PI / 180;
+            const deltaLon = (lon2 - lon1) * Math.PI / 180;
+
+            const y = Math.sin(deltaLon) * Math.cos(lat2Rad);
+            const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(deltaLon);
+            let bearing = Math.atan2(y, x) * 180 / Math.PI;
+            return (bearing + 360) % 360;
+        }
+
+        // --- 3. الرسم الهندسي للرادار (Canvas) ---
+        function resizeCanvas() {
+            const container = document.getElementById('radar-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawRadar();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawRadar() {
+            if (!ctx) return;
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+
+            // تنظيف الشاشة
+            ctx.clearRect(0, 0, w, h);
+
+            // رسم دوائر الرادار (خلفية)
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.2)'; // أزرق خفيف
+            ctx.lineWidth = 1;
+            const maxRadius = Math.min(w, h) / 2 * 0.9; // حجم الرادار في الشاشة
+            
+            for (let i = 1; i <= 4; i++) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, (maxRadius / 4) * i, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // رسم خطي التقاطع
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY - maxRadius); ctx.lineTo(centerX, centerY + maxRadius);
+            ctx.moveTo(centerX - maxRadius, centerY); ctx.lineTo(centerX + maxRadius, centerY);
+            ctx.stroke();
+
+            // رسم المستخدم (في المركز)
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // إضافة هالة للمستخدم
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (!currentPos) {
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.textAlign = 'center';
+                ctx.fillText('في انتظار إحداثيات GPS...', centerX, centerY + 30);
+                return;
+            }
+
+            // رسم المطبات القادمة من Firestore
+            hazards.forEach(h => {
+                const dist = getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng);
+                
+                // لا ترسم الأشياء البعيدة جداً عن الرادار
+                if (dist > MAX_RADAR_DISTANCE) return;
+
+                const bearing = getBearing(currentPos.lat, currentPos.lng, h.lat, h.lng);
+                
+                // تحويل المسافة والزاوية إلى إحداثيات X, Y على الشاشة
+                // نطرح 90 درجة لأن 0 في الرياضيات هي الشرق، بينما في الخرائط 0 هي الشمال
+                const angleRad = (bearing - 90) * (Math.PI / 180);
+                
+                // نسبة المسافة لحجم الرادار
+                const distanceRatio = dist / MAX_RADAR_DISTANCE;
+                const plotRadius = distanceRatio * maxRadius;
+
+                const x = centerX + Math.cos(angleRad) * plotRadius;
+                const y = centerY + Math.sin(angleRad) * plotRadius;
+
+                // اختيار اللون بناء على النوع
+                let color = '#ef4444'; // احمر افتراضي
+                if(h.color) color = h.color;
+                else if(h.type.includes('صغير')) color = '#eab308'; // اصفر للمطبات الصغيرة
+
+                // رسم النقطة (المطب)
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // رسم هالة حول النقطة إذا كانت قريبة
+                if (dist < ALERT_DISTANCE * 2) {
+                    ctx.fillStyle = color.replace(')', ', 0.3)').replace('rgb', 'rgba'); // تأثير شفاف بسيط
+                    if(color.startsWith('#')) ctx.fillStyle = color + '66'; // هالة
+                    ctx.beginPath();
+                    ctx.arc(x, y, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // رسم النص (المسافة)
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${Math.round(dist)}m`, x, y - 10);
+            });
+        }
+
+        // --- 4. نظام الرصد وتتبع الموقع (Geolocation) ---
+        function startGPS() {
+            if (!navigator.geolocation) return showToast('جهازك لا يدعم الـ GPS!', '#ef4444');
+            
+            const statusEl = document.getElementById('gps-status');
+
+            navigator.geolocation.watchPosition(pos => {
+                currentPos = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    acc: pos.coords.accuracy
+                };
+
+                // تحديث حالة دقة الـ GPS
+                if(currentPos.acc > 30) {
+                    statusEl.innerHTML = `⚠️ دقة ضعيفة (${Math.round(currentPos.acc)}م)`;
+                    statusEl.className = 'bg-orange-500/20 text-orange-400 px-3 py-1 rounded-full text-sm font-bold';
+                } else {
+                    statusEl.innerHTML = `📍 متصل (${Math.round(currentPos.acc)}م)`;
+                    statusEl.className = 'bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold';
+                }
+
+                checkProximity();
+                drawRadar(); // تحديث رسم الرادار مع كل حركة
+
+            }, err => {
+                statusEl.innerHTML = `❌ فقدان الإشارة`;
+                statusEl.className = 'bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm font-bold';
+            }, { 
+                enableHighAccuracy: true, // ضروري جداً لدقة المطبات
+                maximumAge: 0, 
+                timeout: 5000 
+            }); 
+        }
+
+        // فحص المسافة بينك وبين المطبات المحملة من السحابة
+        function checkProximity() {
+            if(!currentPos || hazards.length === 0) return;
 
             hazards.forEach(h => {
-                const dist = getDistance(myPos.lat, myPos.lng, h.lat, h.lng);
+                const dist = getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng);
                 
-                // عرض العوائق القريبة في المحاكي (ضمن مسافة 100 متر)
-                if(dist < 100) {
-                    const el = document.createElement('div');
-                    el.className = "hazard-marker";
-                    el.style.backgroundColor = h.color + '33';
-                    el.style.border = `2px solid ${h.color}`;
-                    el.style.color = h.color;
-                    // تمثيل المسافة عمودياً على الزفلت
-                    el.style.bottom = (150 + (dist * 3)) + "px"; 
-                    el.innerHTML = dist < 10 ? "⚠️ فوق العائق!" : `${h.type} (${Math.round(dist)}م)`;
-                    container.appendChild(el);
+                // إطلاق التنبيه إذا دخل النطاق الخطر (مثلا 50 متر) ولم يتم التنبيه مسبقاً
+                if(dist <= ALERT_DISTANCE && !alertedHazards.has(h.id)) {
+                    playBeep(true); // تنبيه عاجل
+                    showToast(`⚠️ انتبه! ${h.type} أمامك بـ ${Math.round(dist)} متر`, '#ef4444');
+                    alertedHazards.add(h.id); // تسجيل أنه تم التنبيه
+                    
+                    // وميض الشاشة
+                    document.getElementById('radar-container').style.boxShadow = 'inset 0 0 50px rgba(239, 68, 68, 0.5)';
+                    setTimeout(() => {
+                        document.getElementById('radar-container').style.boxShadow = 'none';
+                    }, 500);
                 }
-
-                // منطق التنبيه (أقل من 30 متر)
-                if(dist < 30) {
-                    dangerous = true;
-                    if(!alertedIds.has(h.id)) {
-                        beep();
-                        showToast(`⚠️ انتبه: ${h.type} أمامك!`, h.color);
-                        alertedIds.add(h.id);
-                    }
+                
+                // فك القفل (Debounce) فقط بعد الابتعاد أكثر من 70 متر عشان ما يزعج المستخدم
+                if(dist > ALERT_DISTANCE + 20 && alertedHazards.has(h.id)) {
+                    alertedHazards.delete(h.id);
                 }
-                if(dist > 50) alertedIds.delete(h.id);
             });
+        }
 
-            // تحديث حالة الطريق
-            if(dangerous) {
-                statusBox.innerText = "🚨 خطر - هدي السرعة";
-                statusBox.className = "absolute top-4 right-4 px-4 py-2 rounded-full font-bold text-xs bg-red-600/20 text-red-400 border border-red-600/50 animate-pulse";
-            } else {
-                statusBox.innerText = "✅ طريق آمن";
-                statusBox.className = "absolute top-4 right-4 px-4 py-2 rounded-full font-bold text-xs bg-green-600/20 text-green-400 border border-green-600/50";
+        // --- 5. ربط قواعد البيانات Firebase Firestore ---
+        async function initFirebaseAndData() {
+            try {
+                if(Object.keys(firebaseConfig).length === 0) {
+                    throw new Error("لم يتم العثور على إعدادات Firebase");
+                }
+                
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // القاعدة رقم 3: تسجيل الدخول قبل قراءة أي بيانات
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // الاستماع لحالة المستخدم
+                onAuthStateChanged(auth, (u) => {
+                    user = u;
+                    if(user) {
+                        document.getElementById('cloud-status').innerText = "السحابة: متصل 🟢";
+                        document.getElementById('cloud-status').classList.replace('text-slate-400', 'text-green-400');
+                        startListeningToHazards();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                document.getElementById('cloud-status').innerText = "السحابة: غير متصل 🔴";
+                showToast("حدث خطأ في الاتصال بالسحابة، التطبيق سيعمل محلياً فقط", "#ef4444");
             }
         }
 
-        function report(type, color) {
-            if(!myPos) return showToast('انتظر تثبيت الموقع...', '#eab308');
-            const newH = { id: Date.now(), lat: myPos.lat, lng: myPos.lng, type, color };
-            hazards.push(newH);
-            localStorage.setItem('hazards_db_v3', JSON.stringify(hazards));
-            showToast('تم الرصد وتثبيت الموقع 📍', '#22c55e');
-            beep(400);
+        // جلب البيانات لحظة بلحظة (الكل يشوف الكل)
+        function startListeningToHazards() {
+            if(!user || !db) return;
+
+            // القاعدة رقم 1: المسار الدقيق للبيانات العامة
+            const hazardsRef = collection(db, 'artifacts', appId, 'public', 'data', 'hazards');
+            
+            // القاعدة رقم 2: استعلام بسيط (جلب الكل والتصفية محلياً إن لزم الأمر)
+            onSnapshot(hazardsRef, (snapshot) => {
+                hazards = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    hazards.push({
+                        id: doc.id,
+                        lat: data.lat,
+                        lng: data.lng,
+                        type: data.type,
+                        color: data.color || '#ef4444',
+                        reporter: data.reporter
+                    });
+                });
+                
+                drawRadar(); // إعادة رسم الرادار بالبيانات الجديدة
+            }, (error) => {
+                console.error("Snapshot Error:", error);
+                document.getElementById('cloud-status').innerText = "السحابة: خطأ في المزامنة ⚠️";
+            });
         }
 
-        function beep(f = 800) {
-            if(!audioCtx) return;
-            const o = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            o.connect(g); g.connect(audioCtx.destination);
-            o.frequency.value = f; o.start();
-            g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
-            setTimeout(() => o.stop(), 1000);
-        }
+        // إرسال مطب جديد للسحابة
+        window.reportHazard = async function(type, colorCode) {
+            initAudio(); // للتأكد من السماح بالصوت
+            
+            if(!currentPos) {
+                return showToast('الرجاء الانتظار حتى يتم التقاط موقعك الحالي بدقة!', '#eab308');
+            }
+
+            // التأكد من عدم تكرار المطب محلياً قبل الإرسال لتخفيف الضغط
+            const duplicate = hazards.find(h => getDistance(currentPos.lat, currentPos.lng, h.lat, h.lng) < 15);
+            if(duplicate) {
+                return showToast(`موجود مسبقاً! رصده (${duplicate.reporter})`, '#eab308');
+            }
+
+            // ألوان للرادار بناء على نوع المطب
+            const colorMap = {
+                'red': '#ef4444',
+                'orange': '#f97316',
+                'purple': '#a855f7',
+                'yellow': '#eab308'
+            };
+
+            const hazardData = {
+                type: type,
+                lat: currentPos.lat,
+                lng: currentPos.lng,
+                color: colorMap[colorCode] || '#ef4444',
+                reporter: currentUserInfo.name,
+                timestamp: serverTimestamp()
+            };
+
+            try {
+                if(user && db) {
+                    const hazardsRef = collection(db, 'artifacts', appId, 'public', 'data', 'hazards');
+                    await addDoc(hazardsRef, hazardData);
+                    playBeep(false);
+                    showToast('تم الإرسال للسحابة! ☁️ الجميع يراه الآن', '#22c55e');
+                } else {
+                    // Fallback لو مافي نت (محاكاة محلية)
+                    hazardData.id = Date.now().toString();
+                    hazards.push(hazardData);
+                    drawRadar();
+                    playBeep(false);
+                    showToast('تم الحفظ محلياً (غير متصل بالسحابة)', '#eab308');
+                }
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                showToast('فشل في الإرسال للسحابة', '#ef4444');
+            }
+        };
+
+        // --- 6. دورة حياة التطبيق (التشغيل) ---
+        window.startAppFlow = function() {
+            const nameInput = document.getElementById('username').value.trim();
+            if(!nameInput) return showToast('الرجاء إدخال اسمك للبدء', '#ef4444');
+            
+            currentUserInfo.name = nameInput;
+            
+            initAudio(); // تفعيل الصوت بناء على نقرة المستخدم (متطلبات المتصفح)
+
+            // إخفاء تسجيل الدخول وإظهار الرئيسي
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+            document.getElementById('main-screen').classList.add('flex');
+            document.getElementById('user-display').innerHTML = `👤 <span>${currentUserInfo.name}</span>`;
+
+            // تشغيل الأنظمة
+            resizeCanvas();
+            startGPS();
+            initFirebaseAndData(); // يبدأ الاتصال بالسحابة ومزامنة المطبات
+            
+            // تحديث الرادار بشكل مستمر للأنيميشن
+            setInterval(() => {
+                if(currentPos) drawRadar();
+            }, 1000);
+        };
+
+        // تهيئة حجم الرادار عند بداية التحميل
+        resizeCanvas();
+
     </script>
 </body>
 </html>
