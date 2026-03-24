@@ -7,7 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_PATH = './radar_db.json';
 
-// إعدادات التلجرام
+// إعدادات التلجرام (لا تعدلها، نفس اللي أرسلتها لي)
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const MY_CHAT_ID = '5042495708';
 const ADMIN_PASSWORD = '771'; 
@@ -15,7 +15,7 @@ const ADMIN_PASSWORD = '771';
 app.use(express.json());
 app.use(express.static('public'));
 
-// هيكلة قاعدة البيانات الجديدة (مستخدمين + مطبات)
+// هيكلة قاعدة البيانات (مستخدمين + مطبات)
 let db = { users: [], hazards: [] };
 if (fs.existsSync(DB_PATH)) {
     try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [], hazards: [] }; }
@@ -78,7 +78,7 @@ app.post('/api/auth', (req, res) => {
     }
 });
 
-// --- واجهات المطبات (الرصد والجلب) ---
+// --- واجهات المطبات (الرصد والمزامنة) ---
 app.get('/api/hazards', (req, res) => res.json(db.hazards));
 
 app.post('/api/hazards', (req, res) => {
@@ -86,6 +86,26 @@ app.post('/api/hazards', (req, res) => {
     db.hazards.push(newHazard);
     saveDB();
     sendFileToTelegram(`⚠️ *نقطة خطر جديدة!*\nالنوع: ${newHazard.type}\nالراصد: ${newHazard.reporter}`);
+    res.json({ success: true });
+});
+
+// واجهة لاستقبال البيانات اللي ترصدت أوفلاين
+app.post('/api/sync-offline', (req, res) => {
+    const queue = req.body;
+    if (Array.isArray(queue) && queue.length > 0) {
+        let added = 0;
+        queue.forEach(newHazard => {
+            // التأكد من عدم تكرار المطب
+            if (!db.hazards.find(h => h.id === newHazard.id)) {
+                db.hazards.push(newHazard);
+                added++;
+            }
+        });
+        if (added > 0) {
+            saveDB();
+            sendFileToTelegram(`🔄 *تمت مزامنة ${added} مطبات أوفلاين*`);
+        }
+    }
     res.json({ success: true });
 });
 
