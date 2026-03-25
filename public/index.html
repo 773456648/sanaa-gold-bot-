@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>رادار الطرقات الذكي</title>
+    <title>رادار الطرقات الذكي | نظام الرصد المتقدم</title>
     <!-- Tailwind & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    <!-- Leaflet CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --gold-primary: #d4af37;
@@ -114,15 +111,19 @@
             transition: all 0.3s;
         }
         .user-node:hover { background: rgba(212, 175, 55, 0.05); border-color: var(--gold-primary); }
-        #map {
+        /* رادار canvas */
+        #radar-canvas {
+            width: 100%;
             height: 350px;
+            background: radial-gradient(circle at 50% 70%, #0a0f1e 0%, #030712 100%);
             border-radius: 24px;
-            margin-top: 1rem;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            display: block;
+            margin-top: 1rem;
         }
-        .leaflet-popup-content {
-            font-family: 'Changa', sans-serif;
-            text-align: center;
+        .speedometer {
+            font-family: monospace;
+            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -170,7 +171,7 @@
                     <ul class="text-gray-400 space-y-4 text-sm md:text-base leading-relaxed">
                         <li class="flex gap-3"><span class="text-gold-primary">●</span> تنبيه فوري عند الاقتراب من مطب لمسافة 20 متر.</li>
                         <li class="flex gap-3"><span class="text-gold-primary">●</span> كشف مواقع المستخدمين الآخرين المتصلين بالنظام حالياً.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> خريطة تفاعلية تعرض موقعك والمطبات والمستخدمين.</li>
+                        <li class="flex gap-3"><span class="text-gold-primary">●</span> رادار متحرك يعرض المطبات أمامك حسب المسافة الحقيقية.</li>
                     </ul>
                 </div>
             </div>
@@ -188,16 +189,29 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button id="radar-status" class="bg-green-900/20 text-green-400 px-4 py-2 rounded-xl text-sm font-bold border border-green-500/20 flex items-center gap-2">
-                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> GPS نشط
-                </button>
+                <div class="bg-green-900/20 text-green-400 px-4 py-2 rounded-xl text-sm font-bold border border-green-500/20 flex items-center gap-2">
+                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> 
+                    <span id="gps-status">GPS نشط</span>
+                </div>
                 <button onclick="logout()" class="bg-red-900/20 text-red-400 px-4 py-2 rounded-xl text-sm font-bold border border-red-500/20">خروج</button>
             </div>
         </header>
 
-        <!-- الخريطة -->
-        <div class="glass-card p-4">
-            <div id="map"></div>
+        <!-- الرادار الجديد (Canvas) -->
+        <div class="glass-card p-4 relative">
+            <div class="absolute top-4 right-4 z-10 text-left">
+                <div class="text-4xl font-black text-blue-400 speedometer">
+                    <span id="speed-value">0</span> <span class="text-xs">كم/س</span>
+                </div>
+                <div id="accuracy-text" class="text-[10px] text-slate-400 font-mono">دقة GPS: --</div>
+                <div id="heading-text" class="text-[10px] text-slate-400 font-mono">اتجاه: --</div>
+            </div>
+            <div class="absolute top-4 left-4 z-10">
+                <div id="alert-status" class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold border border-green-500/50">
+                    النظام جاهز
+                </div>
+            </div>
+            <canvas id="radar-canvas"></canvas>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
@@ -242,12 +256,14 @@
         let systemBumps = [];
         let connectedUsers = [];
         let myCurrentLocation = null;
+        let currentSpeed = 0;
+        let currentHeading = null;
         let alertCooldown = false;
-        let map = null;
-        let userMarker = null;
-        let bumpsMarkers = [];
-        let usersMarkers = [];
-        let audioCtx = null; // سيتم تهيئته عند أول تفاعل
+        let activeAlertForBump = null;   // id of bump currently alerting
+        let canvas = null;
+        let ctx = null;
+        let animationId = null;
+        let audioCtx = null;
 
         // ==================== دوال مساعدة ====================
         function showToast(msg, type = 'error') {
@@ -270,11 +286,9 @@
             document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
         }
 
-        // تهيئة الصوت عند أول تفاعل (نقرة)
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                // إطلاق الصوت الأول بتردد صامت لتجاوز قيود المتصفح
                 const silent = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 gain.gain.value = 0;
@@ -282,11 +296,10 @@
                 gain.connect(audioCtx.destination);
                 silent.start();
                 silent.stop(audioCtx.currentTime + 0.1);
-                console.log("Audio context initialized");
+                console.log("Audio ready");
             }
         }
 
-        // تشغيل صوت التنبيه
         function playAlertSound() {
             if (!audioCtx) return;
             const oscillator = audioCtx.createOscillator();
@@ -305,7 +318,6 @@
             const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
             if (!name || !password) return showToast("أدخل الاسم وكلمة المرور");
-
             try {
                 const res = await fetch('/api/auth', {
                     method: 'POST',
@@ -318,7 +330,6 @@
                     localStorage.setItem('radar_session', JSON.stringify(user));
                     showToast("تم الدخول بنجاح", "success");
                     startApp();
-                    // تهيئة الصوت بعد أول تفاعل (نقرة)
                     initAudio();
                 } else {
                     showToast(data.error || "خطأ في المصادقة");
@@ -333,15 +344,16 @@
             document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').textContent = user.name;
             document.getElementById('role-tag').textContent = user.type === 'merchant' ? '📡 راصد نشط' : '🚗 سائق';
-
             if (user.type === 'merchant') {
                 document.getElementById('record-panel').classList.remove('hidden');
             }
+            // تهيئة canvas
+            canvas = document.getElementById('radar-canvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            startAnimation();
 
-            // تهيئة الخريطة
-            initMap();
-
-            // جلب البيانات
             fetchBumps();
             fetchConnectedUsers();
             setInterval(fetchBumps, 3000);
@@ -349,15 +361,17 @@
             startGPSWatcher();
         }
 
+        function resizeCanvas() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+        }
+
         async function fetchBumps() {
             try {
                 const res = await fetch('/api/bumps');
                 systemBumps = await res.json();
                 renderBumps();
-                updateMapMarkers();
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function renderBumps() {
@@ -397,10 +411,7 @@
                 });
                 connectedUsers = await res.json();
                 renderUsersNearby();
-                updateMapMarkers();
-            } catch (e) {
-                console.error(e);
-            }
+            } catch (e) { console.error(e); }
         }
 
         function renderUsersNearby() {
@@ -461,22 +472,47 @@
         function startGPSWatcher() {
             if (!navigator.geolocation) return;
             navigator.geolocation.watchPosition((pos) => {
-                const newLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                myCurrentLocation = newLoc;
-                updateUserMarker();
+                myCurrentLocation = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+                currentSpeed = (pos.coords.speed || 0) * 3.6;
+                currentHeading = pos.coords.heading || null;
+                document.getElementById('speed-value').innerText = Math.round(currentSpeed);
+                document.getElementById('accuracy-text').innerText = `دقة GPS: ±${Math.round(pos.coords.accuracy)}m`;
+                if (currentHeading !== null) {
+                    document.getElementById('heading-text').innerHTML = `اتجاه: ${Math.round(currentHeading)}°`;
+                } else {
+                    document.getElementById('heading-text').innerHTML = `اتجاه: --`;
+                }
                 checkProximity();
-                fetchConnectedUsers(); // تحديث فوري للمستخدمين بعد تغيير الموقع
+                fetchConnectedUsers();
             }, null, { enableHighAccuracy: true });
         }
 
         function checkProximity() {
-            if (!myCurrentLocation || systemBumps.length === 0 || alertCooldown) return;
+            if (!myCurrentLocation || systemBumps.length === 0) return;
+            let closestDist = Infinity;
+            let closestBump = null;
             for (let bump of systemBumps) {
                 const dist = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
-                if (dist <= 0.02) { // 20 متر
-                    triggerAlert();
-                    break;
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestBump = bump;
                 }
+            }
+            // التنبيه عند 20 متر
+            if (closestDist <= 0.02 && !alertCooldown) {
+                if (activeAlertForBump !== closestBump.id) {
+                    activeAlertForBump = closestBump.id;
+                    triggerAlert();
+                }
+            } else if (closestDist > 0.05 && activeAlertForBump !== null) {
+                // خروج آمن: توقف التنبيه
+                activeAlertForBump = null;
+                const statusDiv = document.getElementById('alert-status');
+                statusDiv.innerText = 'الطريق آمن';
+                statusDiv.className = 'px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold border border-green-500/50';
             }
         }
 
@@ -484,6 +520,9 @@
             showToast("🚨 انتبه! مطب أمامك (20 متر فقط)", "alert");
             if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
             playAlertSound();
+            const statusDiv = document.getElementById('alert-status');
+            statusDiv.innerText = '⚠️ خطر مطب!';
+            statusDiv.className = 'px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold danger-pulse';
             alertCooldown = true;
             setTimeout(() => { alertCooldown = false; }, 10000);
         }
@@ -499,54 +538,81 @@
             return R * c;
         }
 
-        // ==================== الخريطة ====================
-        function initMap() {
-            if (map) return;
-            map = L.map('map').setView([15.3694, 44.1910], 13); // وسط اليمن تقريباً
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB',
-                subdomains: 'abcd',
-                maxZoom: 19
-            }).addTo(map);
-        }
+        // ==================== رسم الرادار ====================
+        function startAnimation() {
+            if (animationId) cancelAnimationFrame(animationId);
+            function draw() {
+                if (!ctx || !canvas) return;
+                const w = canvas.width;
+                const h = canvas.height;
+                if (w === 0 || h === 0) {
+                    animationId = requestAnimationFrame(draw);
+                    return;
+                }
+                ctx.clearRect(0, 0, w, h);
+                // خلفية داكنة مع شبكة
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+                // رسم شبكة دائرية (رادار)
+                const centerX = w/2;
+                const centerY = h - 70;
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1;
+                for (let r = 40; r <= Math.min(w, h)/2; r += 40) {
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                // خطوط الطريق (محاكاة)
+                ctx.beginPath();
+                ctx.moveTo(centerX - 50, h - 20);
+                ctx.lineTo(centerX - 15, 20);
+                ctx.moveTo(centerX + 50, h - 20);
+                ctx.lineTo(centerX + 15, 20);
+                ctx.strokeStyle = '#334155';
+                ctx.stroke();
 
-        function updateUserMarker() {
-            if (!myCurrentLocation) return;
-            if (userMarker) {
-                userMarker.setLatLng([myCurrentLocation.lat, myCurrentLocation.lng]);
-            } else {
-                userMarker = L.marker([myCurrentLocation.lat, myCurrentLocation.lng], {
-                    icon: L.divIcon({ className: 'custom-marker', html: '🚗', iconSize: [30, 30] })
-                }).addTo(map);
-                userMarker.bindPopup('📍 موقعك الحالي').openPopup();
+                // رسم المطبات حسب المسافة
+                if (myCurrentLocation && systemBumps.length) {
+                    for (let bump of systemBumps) {
+                        const distKm = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
+                        const distMeters = distKm * 1000;
+                        if (distMeters < 150) { // نعرض المطبات ضمن 150 متر فقط
+                            // المسافة تؤثر على موقع العلامة (كلما اقترب كلما نزل للأسفل)
+                            const maxDist = 150;
+                            const yOffset = Math.min(1, distMeters / maxDist) * (centerY - 60);
+                            const y = centerY - yOffset;
+                            const x = centerX + (Math.random() - 0.5) * 40; // نعطي انحراف بسيط
+                            ctx.fillStyle = '#ef4444';
+                            ctx.beginPath();
+                            ctx.arc(x, y, 10, 0, Math.PI*2);
+                            ctx.fill();
+                            ctx.fillStyle = '#facc15';
+                            ctx.font = "bold 12px 'Changa'";
+                            ctx.shadowBlur = 0;
+                            ctx.fillText("⚠️", x-5, y-5);
+                            ctx.fillStyle = '#9ca3af';
+                            ctx.font = "10px monospace";
+                            ctx.fillText(`${Math.round(distMeters)}م`, x+12, y);
+                        }
+                    }
+                }
+
+                // رسم السيارة (مثلث)
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX - 18, centerY + 32);
+                ctx.lineTo(centerX + 18, centerY + 32);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = "bold 14px 'Changa'";
+                ctx.fillText("🚗", centerX-10, centerY-5);
+
+                animationId = requestAnimationFrame(draw);
             }
-        }
-
-        function updateMapMarkers() {
-            // إزالة العلامات القديمة
-            bumpsMarkers.forEach(m => map.removeLayer(m));
-            usersMarkers.forEach(m => map.removeLayer(m));
-            bumpsMarkers = [];
-            usersMarkers = [];
-
-            // إضافة المطبات
-            systemBumps.forEach(b => {
-                const marker = L.marker([b.lat, b.lng], {
-                    icon: L.divIcon({ className: 'bump-marker', html: '⚠️', iconSize: [25, 25] })
-                }).addTo(map);
-                marker.bindPopup(`<b>مطب</b><br>رصده: ${escapeHtml(b.recorderName)}`);
-                bumpsMarkers.push(marker);
-            });
-
-            // إضافة المستخدمين الآخرين
-            const others = connectedUsers.filter(u => u.userId !== user.id && u.loc);
-            others.forEach(u => {
-                const marker = L.marker([u.loc.lat, u.loc.lng], {
-                    icon: L.divIcon({ className: 'user-marker', html: u.type === 'merchant' ? '📡' : '🚗', iconSize: [25, 25] })
-                }).addTo(map);
-                marker.bindPopup(`${escapeHtml(u.name)} (${u.type === 'merchant' ? 'راصد' : 'سائق'})`);
-                usersMarkers.push(marker);
-            });
+            draw();
         }
 
         // ==================== أدوات الحماية ====================
@@ -565,7 +631,6 @@
             location.reload();
         }
 
-        // استعادة الجلسة
         window.onload = () => {
             const saved = localStorage.getItem('radar_session');
             if (saved) {
