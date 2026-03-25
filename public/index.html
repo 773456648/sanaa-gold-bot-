@@ -2,10 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة رادار الطرقات الموحد</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>رادار الطرقات الذكي</title>
+    <!-- Tailwind & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
             --gold-primary: #d4af37;
@@ -14,101 +18,130 @@
             --bg-dark: #0a0a0c;
             --surface-dark: rgba(20, 20, 25, 0.7);
         }
-
-        body { 
-            background-color: var(--bg-dark); 
+        body {
+            background-color: var(--bg-dark);
             background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
-            color: #f0f0f0; 
-            font-family: 'Changa', sans-serif; 
-            overflow-x: hidden; 
-            min-height: 100vh;
+            color: #f0f0f0;
+            font-family: 'Changa', sans-serif;
+            overflow-x: hidden;
         }
-
-        .gold-text { 
+        .gold-text {
             background: linear-gradient(to left, var(--gold-light), var(--gold-primary), var(--gold-dark));
             -webkit-background-clip: text;
             color: transparent;
         }
-        
-        .gold-btn { 
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); 
-            color: #000; 
-            font-weight: 700; 
+        .gold-btn {
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+            color: #000;
+            font-weight: 700;
             transition: all 0.3s ease;
         }
         .gold-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .glass-card { 
-            background: var(--surface-dark); 
+        .glass-card {
+            background: var(--surface-dark);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            border-radius: 24px; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-
-        input { 
-            background: rgba(0, 0, 0, 0.5) !important; 
-            border: 1px solid rgba(255, 255, 255, 0.1) !important; 
-            color: #fff; 
-            border-radius: 16px; 
-            padding: 16px; 
-            width: 100%; 
-            outline: none; 
+        input, select {
+            background: rgba(0, 0, 0, 0.5) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #fff;
+            border-radius: 16px;
+            padding: 12px 16px;
+            width: 100%;
+            outline: none;
         }
-
-        .type-select { 
-            border: 2px solid rgba(255, 255, 255, 0.05); 
+        .type-select {
+            border: 2px solid rgba(255, 255, 255, 0.05);
             background: rgba(0, 0, 0, 0.3);
-            cursor: pointer; 
+            cursor: pointer;
+            transition: all 0.2s;
         }
         .type-select.active { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.08); }
-
-        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         .toast {
-            min-width: 250px; padding: 16px 20px; border-radius: 12px;
-            background: rgba(15, 15, 20, 0.95); border-right: 4px solid var(--gold-primary);
-            color: #fff; transform: translateX(-120%); transition: transform 0.4s; display: flex; gap: 12px;
+            min-width: 250px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            background: rgba(15, 15, 20, 0.95);
+            border-right: 4px solid var(--gold-primary);
+            color: #fff;
+            transform: translateX(-120%);
+            transition: transform 0.4s;
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
         .toast.show { transform: translateX(0); }
         .toast.error { border-right-color: #ef4444; }
         .toast.success { border-right-color: #22c55e; }
-        .toast.alert { border-right-color: #f59e0b; background: rgba(245, 158, 11, 0.2); animation: pulse 0.5s infinite; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .fade-in { animation: fadeIn 0.8s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .radar-ping {
-            position: absolute; width: 100%; height: 100%; border-radius: 50%;
-            background: rgba(212, 175, 55, 0.4); animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; z-index: -1;
+        .toast.alert { border-right-color: #f59e0b; animation: pulse 0.5s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
-        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-
-        /* ستايل قائمة المستخدمين المكتشفين */
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .radar-ping {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(212, 175, 55, 0.4);
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+            z-index: -1;
+        }
+        @keyframes ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
         .user-node {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.3s;
         }
         .user-node:hover { background: rgba(212, 175, 55, 0.05); border-color: var(--gold-primary); }
+        #map {
+            height: 350px;
+            border-radius: 24px;
+            margin-top: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .leaflet-popup-content {
+            font-family: 'Changa', sans-serif;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div id="toast-container"></div>
 
-    <!-- واجهة الدخول -->
+    <!-- شاشة تسجيل الدخول -->
     <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12 fade-in">
         <div class="text-center space-y-2">
             <h1 class="text-7xl md:text-8xl font-black gold-text italic tracking-tighter">RADAR</h1>
-            <p class="text-xs md:text-sm text-gray-400 tracking-[0.3em] uppercase font-light">نظام كشف المواقع والمطبات الذكي</p>
+            <p class="text-xs md:text-sm text-gray-400 tracking-[0.3em] uppercase font-light">نظام كشف المطبات والمواقع الذكي</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div class="glass-card p-8 md:p-10 space-y-8 relative overflow-hidden">
                 <div class="text-center">
                     <h2 class="text-2xl font-bold mb-1">تسجيل الدخول</h2>
-                    <p class="text-sm text-gray-500">ادخل للنظام لتتمكن من رؤية الآخرين وتنبيههم</p>
+                    <p class="text-sm text-gray-500">ادخل لتتمكن من رؤية الآخرين وتنبيههم</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -137,7 +170,7 @@
                     <ul class="text-gray-400 space-y-4 text-sm md:text-base leading-relaxed">
                         <li class="flex gap-3"><span class="text-gold-primary">●</span> تنبيه فوري عند الاقتراب من مطب لمسافة 20 متر.</li>
                         <li class="flex gap-3"><span class="text-gold-primary">●</span> كشف مواقع المستخدمين الآخرين المتصلين بالنظام حالياً.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تحديثات لحظية وإحصائيات دقيقة لسلامة طريقك.</li>
+                        <li class="flex gap-3"><span class="text-gold-primary">●</span> خريطة تفاعلية تعرض موقعك والمطبات والمستخدمين.</li>
                     </ul>
                 </div>
             </div>
@@ -162,8 +195,13 @@
             </div>
         </header>
 
+        <!-- الخريطة -->
+        <div class="glass-card p-4">
+            <div id="map"></div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            <!-- الجانب الأيمن: الإحصائيات والرصد -->
+            <!-- الجانب الأيمن: المستخدمين القريبين وتسجيل المطبات -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6">
                     <h3 class="text-sm text-gray-300 font-bold mb-4">👤 رادار المواقع (المستخدمين القريبين)</h3>
@@ -189,7 +227,6 @@
                         <span>📡 إحداثيات المطبات المكتشفة</span>
                         <span class="text-xs font-normal text-gray-400 bg-black/40 px-3 py-1 rounded-full">تحديث لحظي</span>
                     </h3>
-                    
                     <div id="bumps-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] pr-2">
                         <div class="text-center text-gray-500 py-10">جاري جلب البيانات...</div>
                     </div>
@@ -199,14 +236,20 @@
     </div>
 
     <script>
-        let user = null; 
-        let userType = 'merchant'; 
+        // ==================== متغيرات عامة ====================
+        let user = null;
+        let userType = 'merchant';
         let systemBumps = [];
-        let connectedUsers = []; // ميزة كشف المواقع الجديدة
+        let connectedUsers = [];
         let myCurrentLocation = null;
         let alertCooldown = false;
+        let map = null;
+        let userMarker = null;
+        let bumpsMarkers = [];
+        let usersMarkers = [];
+        let audioCtx = null; // سيتم تهيئته عند أول تفاعل
 
-        // --- دوال الواجهة ---
+        // ==================== دوال مساعدة ====================
         function showToast(msg, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -215,84 +258,162 @@
             toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
         }
 
-        function setType(t) { 
-            userType = t; 
-            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); 
-            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); 
+        function setType(t) {
+            userType = t;
+            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant');
+            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
         }
 
-        window.onload = () => { 
-            const saved = localStorage.getItem('radar_session'); 
-            if (saved) { user = JSON.parse(saved); startApp(); } 
-        };
+        // تهيئة الصوت عند أول تفاعل (نقرة)
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                // إطلاق الصوت الأول بتردد صامت لتجاوز قيود المتصفح
+                const silent = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                gain.gain.value = 0;
+                silent.connect(gain);
+                gain.connect(audioCtx.destination);
+                silent.start();
+                silent.stop(audioCtx.currentTime + 0.1);
+                console.log("Audio context initialized");
+            }
+        }
 
+        // تشغيل صوت التنبيه
+        function playAlertSound() {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.value = 800;
+            gain.gain.value = 0.2;
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.8);
+        }
+
+        // ==================== دوال الشبكة ====================
         async function doAuth(action) {
             const name = document.getElementById('u-name').value.trim();
             const password = document.getElementById('u-pass').value;
-            if(!name || !password) return showToast("أدخل الاسم وكلمة المرور");
-            
+            if (!name || !password) return showToast("أدخل الاسم وكلمة المرور");
+
             try {
-                const res = await fetch('/api/auth', { 
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ name, password, type: userType, action }) 
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password, type: userType, action })
                 });
                 const data = await res.json();
-                if(res.ok) { 
-                    user = data; 
-                    localStorage.setItem('radar_session', JSON.stringify(user)); 
-                    showToast("تم الدخول بنجاح", "success"); 
-                    startApp(); 
-                } else showToast(data.error);
-            } catch (e) { showToast("خطأ في الاتصال بالسيرفر"); }
+                if (res.ok) {
+                    user = data;
+                    localStorage.setItem('radar_session', JSON.stringify(user));
+                    showToast("تم الدخول بنجاح", "success");
+                    startApp();
+                    // تهيئة الصوت بعد أول تفاعل (نقرة)
+                    initAudio();
+                } else {
+                    showToast(data.error || "خطأ في المصادقة");
+                }
+            } catch (e) {
+                showToast("خطأ في الاتصال بالسيرفر");
+            }
         }
 
         function startApp() {
-            document.getElementById('auth-ui').classList.add('hidden'); 
+            document.getElementById('auth-ui').classList.add('hidden');
             document.getElementById('main-ui').classList.remove('hidden');
-            document.getElementById('display-name').innerHTML = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '📡 راصد نشط' : '🚗 سائق';
-            
-            if(user.type === 'merchant') document.getElementById('record-panel').classList.remove('hidden');
+            document.getElementById('display-name').textContent = user.name;
+            document.getElementById('role-tag').textContent = user.type === 'merchant' ? '📡 راصد نشط' : '🚗 سائق';
 
+            if (user.type === 'merchant') {
+                document.getElementById('record-panel').classList.remove('hidden');
+            }
+
+            // تهيئة الخريطة
+            initMap();
+
+            // جلب البيانات
             fetchBumps();
-            fetchConnectedUsers(); // جلب المستخدمين الآخرين
+            fetchConnectedUsers();
             setInterval(fetchBumps, 3000);
-            setInterval(fetchConnectedUsers, 5000); // تحديث مواقع المستخدمين كل 5 ثواني
+            setInterval(fetchConnectedUsers, 5000);
             startGPSWatcher();
         }
 
-        // --- ميزة كشف المستخدمين المتصلين ---
-        async function fetchConnectedUsers() {
+        async function fetchBumps() {
             try {
-                // نرسل موقعنا الحالي للسيرفر ليعرف الآخرون مكاننا
+                const res = await fetch('/api/bumps');
+                systemBumps = await res.json();
+                renderBumps();
+                updateMapMarkers();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderBumps() {
+            const container = document.getElementById('bumps-list');
+            if (systemBumps.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-10">لا توجد مطبات مسجلة.</p>';
+                return;
+            }
+            container.innerHTML = systemBumps.slice().reverse().map(b => `
+                <div class="p-4 bg-zinc-900/80 rounded-xl border border-white/5 flex justify-between items-center">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-yellow-900/30 text-yellow-500 flex items-center justify-center text-xl border border-yellow-500/20">⚠️</div>
+                        <div>
+                            <p class="font-bold text-sm text-gray-200">موقع مطب مثبت</p>
+                            <p class="text-[10px] text-gray-500">الراصد: ${escapeHtml(b.recorderName)}</p>
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 bg-black/40 px-3 py-1 rounded-full">
+                        ${new Date(b.timestamp).toLocaleTimeString('ar-YE')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function fetchConnectedUsers() {
+            if (!user || !myCurrentLocation) return;
+            try {
                 const res = await fetch('/api/users-online', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ userId: user.id, name: user.name, type: user.type, loc: myCurrentLocation })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        name: user.name,
+                        type: user.type,
+                        loc: myCurrentLocation
+                    })
                 });
                 connectedUsers = await res.json();
                 renderUsersNearby();
-            } catch(e) {}
+                updateMapMarkers();
+            } catch (e) {
+                console.error(e);
+            }
         }
 
         function renderUsersNearby() {
             const list = document.getElementById('users-nearby-list');
-            if(!myCurrentLocation) {
-                list.innerHTML = `<p class="text-[10px] text-gray-500 text-center py-4">جاري تحديد موقعك لرؤية الآخرين...</p>`;
+            if (!myCurrentLocation) {
+                list.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-4">جاري تحديد موقعك...</p>';
                 return;
             }
-
-            // تصفية المستخدمين (باستثناء نفسي)
             const others = connectedUsers.filter(u => u.userId !== user.id && u.loc);
-            
-            if(others.length === 0) {
-                list.innerHTML = `<p class="text-[10px] text-gray-500 text-center py-4">لا يوجد مستخدمون آخرون قريباً</p>`;
+            if (others.length === 0) {
+                list.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-4">لا يوجد مستخدمون آخرون قريباً</p>';
                 return;
             }
-
             list.innerHTML = others.map(u => {
                 const d = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, u.loc.lat, u.loc.lng);
                 const distStr = d < 1 ? `${(d*1000).toFixed(0)} متر` : `${d.toFixed(2)} كم`;
@@ -301,7 +422,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-lg">${u.type === 'merchant' ? '📡' : '🚗'}</span>
                             <div>
-                                <p class="text-xs font-bold text-white">${u.name}</p>
+                                <p class="text-xs font-bold text-white">${escapeHtml(u.name)}</p>
                                 <p class="text-[9px] text-gray-500">${u.type === 'merchant' ? 'راصد' : 'سائق'}</p>
                             </div>
                         </div>
@@ -313,107 +434,145 @@
             }).join('');
         }
 
-        // --- نظام المطبات والتنبيه (20 متر) ---
-        async function fetchBumps() {
-            try {
-                const res = await fetch('/api/bumps');
-                systemBumps = await res.json();
-                renderBumps();
-            } catch(e) {}
-        }
-
-        function renderBumps() {
-            if(systemBumps.length === 0) {
-                document.getElementById('bumps-list').innerHTML = `<p class="text-center text-gray-500 py-10">لا توجد مطبات مسجلة.</p>`;
-                return;
-            }
-            document.getElementById('bumps-list').innerHTML = systemBumps.slice().reverse().map(b => `
-                <div class="p-4 bg-zinc-900/80 rounded-xl border border-white/5 flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-yellow-900/30 text-yellow-500 flex items-center justify-center text-xl border border-yellow-500/20">⚠️</div>
-                        <div>
-                            <p class="font-bold text-sm text-gray-200">موقع مطب مثبت</p>
-                            <p class="text-[10px] text-gray-500">الراصد: ${b.recorderName}</p>
-                        </div>
-                    </div>
-                    <div class="text-[10px] text-gray-500 bg-black/40 px-3 py-1 rounded-full">
-                        ${new Date(b.timestamp).toLocaleTimeString('ar-YE')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
         function recordCurrentLocation() {
             if (!navigator.geolocation) return showToast("المتصفح لا يدعم الموقع");
             showToast("جاري التقاط الإحداثية...", "success");
             navigator.geolocation.getCurrentPosition(async (pos) => {
                 try {
                     await fetch('/api/add-bump', {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ lat: pos.coords.latitude, lng: pos.coords.longitude, userId: user.id, userName: user.name })
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            lat: pos.coords.latitude,
+                            lng: pos.coords.longitude,
+                            userId: user.id,
+                            userName: user.name
+                        })
                     });
                     showToast("تم تثبيت المطب بنجاح", "success");
                     fetchBumps();
-                } catch(e) { showToast("خطأ في الاتصال"); }
+                } catch (e) {
+                    showToast("خطأ في الاتصال");
+                }
             }, null, { enableHighAccuracy: true });
         }
 
+        // ==================== الموقع والتنبيه ====================
         function startGPSWatcher() {
             if (!navigator.geolocation) return;
             navigator.geolocation.watchPosition((pos) => {
-                myCurrentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                const newLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                myCurrentLocation = newLoc;
+                updateUserMarker();
                 checkProximity();
+                fetchConnectedUsers(); // تحديث فوري للمستخدمين بعد تغيير الموقع
             }, null, { enableHighAccuracy: true });
         }
 
         function checkProximity() {
-            if(!myCurrentLocation || systemBumps.length === 0 || alertCooldown) return;
-            
-            for(let bump of systemBumps) {
+            if (!myCurrentLocation || systemBumps.length === 0 || alertCooldown) return;
+            for (let bump of systemBumps) {
                 const dist = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
-                
-                // التعديل المطلوب: 20 متر = 0.02 كم
-                if(dist <= 0.02) {
+                if (dist <= 0.02) { // 20 متر
                     triggerAlert();
-                    break; 
+                    break;
                 }
             }
         }
 
         function triggerAlert() {
             showToast("🚨 انتبه! مطب أمامك (20 متر فقط)", "alert");
-            
-            // الاهتزاز (يعمل على أندرويد)
             if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
-
-            // صوت التنبيه
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 1);
-            } catch(e) {}
-            
+            playAlertSound();
             alertCooldown = true;
-            setTimeout(() => { alertCooldown = false; }, 10000); 
+            setTimeout(() => { alertCooldown = false; }, 10000);
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c; // بالكم
+            return R * c;
         }
 
-        function logout() { localStorage.removeItem('radar_session'); location.reload(); }
+        // ==================== الخريطة ====================
+        function initMap() {
+            if (map) return;
+            map = L.map('map').setView([15.3694, 44.1910], 13); // وسط اليمن تقريباً
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+        }
+
+        function updateUserMarker() {
+            if (!myCurrentLocation) return;
+            if (userMarker) {
+                userMarker.setLatLng([myCurrentLocation.lat, myCurrentLocation.lng]);
+            } else {
+                userMarker = L.marker([myCurrentLocation.lat, myCurrentLocation.lng], {
+                    icon: L.divIcon({ className: 'custom-marker', html: '🚗', iconSize: [30, 30] })
+                }).addTo(map);
+                userMarker.bindPopup('📍 موقعك الحالي').openPopup();
+            }
+        }
+
+        function updateMapMarkers() {
+            // إزالة العلامات القديمة
+            bumpsMarkers.forEach(m => map.removeLayer(m));
+            usersMarkers.forEach(m => map.removeLayer(m));
+            bumpsMarkers = [];
+            usersMarkers = [];
+
+            // إضافة المطبات
+            systemBumps.forEach(b => {
+                const marker = L.marker([b.lat, b.lng], {
+                    icon: L.divIcon({ className: 'bump-marker', html: '⚠️', iconSize: [25, 25] })
+                }).addTo(map);
+                marker.bindPopup(`<b>مطب</b><br>رصده: ${escapeHtml(b.recorderName)}`);
+                bumpsMarkers.push(marker);
+            });
+
+            // إضافة المستخدمين الآخرين
+            const others = connectedUsers.filter(u => u.userId !== user.id && u.loc);
+            others.forEach(u => {
+                const marker = L.marker([u.loc.lat, u.loc.lng], {
+                    icon: L.divIcon({ className: 'user-marker', html: u.type === 'merchant' ? '📡' : '🚗', iconSize: [25, 25] })
+                }).addTo(map);
+                marker.bindPopup(`${escapeHtml(u.name)} (${u.type === 'merchant' ? 'راصد' : 'سائق'})`);
+                usersMarkers.push(marker);
+            });
+        }
+
+        // ==================== أدوات الحماية ====================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('radar_session');
+            location.reload();
+        }
+
+        // استعادة الجلسة
+        window.onload = () => {
+            const saved = localStorage.getItem('radar_session');
+            if (saved) {
+                user = JSON.parse(saved);
+                startApp();
+            }
+        };
     </script>
 </body>
 </html>
