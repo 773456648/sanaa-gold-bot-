@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة رادار الطرقات الموحد</title>
+    <title>منصة رادار الأغراض المفقودة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
@@ -78,68 +78,86 @@
         .fade-in { animation: fadeIn 0.8s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .radar-ping {
-            position: absolute; width: 100%; height: 100%; border-radius: 50%;
-            background: rgba(212, 175, 55, 0.4); animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; z-index: -1;
-        }
-        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-
-        /* ستايل قائمة المستخدمين المكتشفين */
         .user-node {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.3s;
         }
         .user-node:hover { background: rgba(212, 175, 55, 0.05); border-color: var(--gold-primary); }
+
+        /* ستايل الرادار البصري الجديد */
+        .radar-screen {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(21, 32, 21, 0.8) 0%, rgba(5, 10, 5, 0.9) 100%);
+            border: 2px solid var(--gold-primary);
+            margin: 0 auto;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2) inset;
+        }
+        .radar-grid {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.2) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: center center;
+        }
+        .radar-circle {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 50%;
+        }
+        .radar-sweep {
+            position: absolute; top: 50%; left: 50%; width: 50%; height: 50%;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(212, 175, 55, 0.5) 100%);
+            transform-origin: 0% 0%;
+            animation: sweep 4s linear infinite;
+        }
+        @keyframes sweep { 100% { transform: rotate(360deg); } }
+        
+        /* نقطة المستخدم (المركز) */
+        .radar-center {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 10px; height: 10px; background: #3b82f6; border-radius: 50%;
+            box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; z-index: 10;
+        }
+        /* نقاط الأغراض */
+        .radar-blip {
+            position: absolute; width: 8px; height: 8px; background: #ef4444; border-radius: 50%;
+            transform: translate(-50%, -50%); box-shadow: 0 0 10px #ef4444; z-index: 5;
+            animation: blipFade 4s infinite;
+        }
+        @keyframes blipFade { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
     <div id="toast-container"></div>
 
-    <!-- شاشة الرادار التحذيرية المنبثقة (الجديدة) -->
-    <div id="radar-alert-overlay" class="hidden fixed inset-0 bg-red-950/95 z-[99999] flex-col items-center justify-center backdrop-blur-xl transition-all duration-300">
-        <h2 class="text-5xl md:text-7xl font-black text-white mb-12 animate-pulse text-center leading-tight">🚨 انتبه!<br>مطب أمامك 🚨</h2>
-        <div class="relative w-72 h-72 md:w-96 md:h-96 border-4 border-red-500 rounded-full flex items-center justify-center overflow-hidden shadow-[0_0_80px_rgba(239,68,68,0.6)]">
-            <!-- خطوط الرادار -->
-            <div class="absolute w-full h-full rounded-full border border-red-500/30"></div>
-            <div class="absolute w-3/4 h-3/4 rounded-full border border-red-500/30"></div>
-            <div class="absolute w-1/2 h-1/2 rounded-full border border-red-500/30"></div>
-            <div class="absolute w-1/4 h-1/4 rounded-full border border-red-500/30"></div>
-            
-            <!-- موقع المستخدم (في المنتصف) -->
-            <div class="absolute w-4 h-4 bg-white rounded-full shadow-[0_0_15px_white] z-10"></div>
-            
-            <!-- موقع المطب القريب (للعرض البصري) -->
-            <div class="absolute w-8 h-8 bg-yellow-400 rounded-full shadow-[0_0_20px_yellow] animate-ping" style="top: 35%; left: 45%;"></div>
-            
-            <!-- تأثير المسح الراداري -->
-            <div class="absolute inset-0 bg-gradient-to-tr from-transparent to-red-500/60 origin-center animate-[spin_1.5s_linear_infinite] rounded-full" style="clip-path: polygon(50% 50%, 100% 0, 100% 100%);"></div>
-        </div>
-        <p class="mt-12 text-2xl md:text-3xl font-bold text-red-200">أنت داخل نطاق المطب (أقل من 10 متر)</p>
-        <p class="mt-4 text-lg text-red-400 animate-pulse">خفف السرعة... جاري الرصد اللحظي</p>
-    </div>
-
     <!-- واجهة الدخول -->
     <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12 fade-in">
         <div class="text-center space-y-2">
             <h1 class="text-7xl md:text-8xl font-black gold-text italic tracking-tighter">RADAR</h1>
-            <p class="text-xs md:text-sm text-gray-400 tracking-[0.3em] uppercase font-light">نظام كشف المواقع والمطبات الذكي</p>
+            <p class="text-xs md:text-sm text-gray-400 tracking-[0.3em] uppercase font-light">نظام كشف وتتبع الأغراض والمواقع</p>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div class="glass-card p-8 md:p-10 space-y-8 relative overflow-hidden">
                 <div class="text-center">
                     <h2 class="text-2xl font-bold mb-1">تسجيل الدخول</h2>
-                    <p class="text-sm text-gray-500">ادخل للنظام لتتمكن من رؤية الآخرين وتنبيههم</p>
+                    <p class="text-sm text-gray-500">ادخل لتبدأ بتسجيل أماكن أغراضك وتتبعها</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-2xl text-center flex flex-col items-center gap-2">
-                        <span class="text-3xl">📡</span><span class="text-sm font-bold">راصد (نشط)</span>
+                        <span class="text-3xl">📡</span><span class="text-sm font-bold">مُسجل (يضيف الأغراض)</span>
                     </div>
                     <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 rounded-2xl text-center flex flex-col items-center gap-2">
-                        <span class="text-3xl">🚗</span><span class="text-sm font-bold">سائق (مستمع)</span>
+                        <span class="text-3xl">🔍</span><span class="text-sm font-bold">باحث (يتتبع فقط)</span>
                     </div>
                 </div>
 
@@ -156,11 +174,11 @@
 
             <div class="space-y-8 p-4">
                 <div>
-                    <h3 class="text-3xl font-black gold-text mb-4">رادار حي وشامل</h3>
+                    <h3 class="text-3xl font-black gold-text mb-4">وين حطيت أغراضي؟</h3>
                     <ul class="text-gray-400 space-y-4 text-sm md:text-base leading-relaxed">
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تنبيه فوري ومستمر عند الاقتراب من مطب بمسافة 10 متر.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> كشف مواقع المستخدمين الآخرين المتصلين بالنظام حالياً.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تحديثات لحظية وإحصائيات دقيقة لسلامة طريقك.</li>
+                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تحديد دقيق لمكان الغرض الذي تركته.</li>
+                        <li class="flex gap-3"><span class="text-gold-primary">●</span> رادار بصري حي يظهر موقعك وموقع الأغراض حولك.</li>
+                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تنبيه فوري عند الاقتراب من الغرض المفقود.</li>
                     </ul>
                 </div>
             </div>
@@ -186,37 +204,55 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            <!-- الجانب الأيمن: الإحصائيات والرصد -->
-            <div class="lg:col-span-4 space-y-6">
-                <div class="glass-card p-6">
-                    <h3 class="text-sm text-gray-300 font-bold mb-4">👤 رادار المواقع (المستخدمين القريبين)</h3>
-                    <div id="users-nearby-list" class="space-y-2 max-h-[250px] overflow-y-auto">
-                        <p class="text-xs text-gray-500 text-center py-4">جاري البحث عن مستخدمين...</p>
+            
+            <!-- الجانب الأيمن: الرادار البصري وتسجيل الغرض -->
+            <div class="lg:col-span-5 space-y-6">
+                <!-- شاشة الرادار البصري -->
+                <div class="glass-card p-6 flex flex-col items-center">
+                    <h3 class="text-sm text-gold-primary font-bold mb-4 w-full text-center">🎯 الرادار الحي (نطاق 100 متر)</h3>
+                    <div class="radar-screen" id="radar-screen">
+                        <div class="radar-grid"></div>
+                        <div class="radar-circle" style="width: 50%; height: 50%;"></div>
+                        <div class="radar-circle" style="width: 100%; height: 100%;"></div>
+                        <div class="radar-sweep"></div>
+                        <div class="radar-center" title="موقعك الحالي"></div>
+                        <!-- سيتم رسم نقاط الأغراض هنا عبر الجافاسكربت -->
+                        <div id="radar-blips-container"></div>
                     </div>
+                    <p class="text-[10px] text-gray-500 mt-4 text-center">النقطة الزرقاء هي أنت، والنقاط الحمراء هي أغراضك المسجلة</p>
                 </div>
 
+                <!-- زر التسجيل -->
                 <div id="record-panel" class="hidden glass-card p-6 text-center relative overflow-hidden">
-                    <div class="radar-ping"></div>
                     <button onclick="recordCurrentLocation()" class="gold-btn w-full h-24 rounded-2xl text-xl shadow-lg shadow-yellow-900/20 flex flex-col items-center justify-center gap-2 relative z-10">
                         <span class="text-3xl">📍</span>
-                        <span>رصد مطب في موقعي الآن</span>
+                        <span>سجل غرض في موقعي الآن</span>
                     </button>
-                    <p class="text-[10px] text-gray-400 mt-4">تنبيه 10 متر مفعل لجميع السائقين</p>
                 </div>
             </div>
 
-            <!-- الجانب الأيسر: سجل المطبات -->
-            <div class="lg:col-span-8">
-                <div class="glass-card p-6 min-h-[500px] flex flex-col relative">
+            <!-- الجانب الأيسر: قائمة الأغراض والمستخدمين -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <div class="glass-card p-6 min-h-[300px] flex flex-col relative">
                     <h3 class="text-xl font-black text-white mb-6 border-b border-white/5 pb-4 flex items-center justify-between">
-                        <span>📡 إحداثيات المطبات المكتشفة</span>
+                        <span>📦 إحداثيات الأغراض المسجلة</span>
                         <span class="text-xs font-normal text-gray-400 bg-black/40 px-3 py-1 rounded-full">تحديث لحظي</span>
                     </h3>
                     
-                    <div id="bumps-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] pr-2">
+                    <div id="items-list" class="flex-grow space-y-3 overflow-y-auto max-h-[300px] pr-2">
                         <div class="text-center text-gray-500 py-10">جاري جلب البيانات...</div>
                     </div>
                 </div>
+
+                <!-- المستخدمين القريبين -->
+                <div class="glass-card p-6">
+                    <h3 class="text-sm text-gray-300 font-bold mb-4">👥 المستخدمين القريبين منك</h3>
+                    <div id="users-nearby-list" class="space-y-2 max-h-[150px] overflow-y-auto">
+                        <p class="text-xs text-gray-500 text-center py-4">جاري البحث...</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -224,20 +260,20 @@
     <script>
         let user = null; 
         let userType = 'merchant'; 
-        let systemBumps = [];
+        let systemItems = []; // كانت المطبات
         let connectedUsers = []; 
         let myCurrentLocation = null;
-        
-        // متغيرات التنبيه المستمر الجديدة
-        let isAlarming = false;
-        let alarmInterval = null;
+        let alertCooldown = false;
+
+        // لتشغيل الكود محلياً إذا لم يكن السيرفر شغال (اختياري بس عشان تشوفه شغال فادي)
+        let localItemsFallback = JSON.parse(localStorage.getItem('local_items') || '[]');
 
         // --- دوال الواجهة ---
         function showToast(msg, type = 'error') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            const icon = type === 'success' ? '✅' : (type === 'alert' ? '🚨' : '⚠️');
+            const icon = type === 'success' ? '✅' : (type === 'alert' ? '🎯' : '⚠️');
             toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.add('show'), 10);
@@ -261,7 +297,7 @@
             if(!name || !password) return showToast("أدخل الاسم وكلمة المرور");
             
             try {
-                // ملاحظة: هذا مجرد اتصال وهمي/سيرفر في الواجهة (يجب ربطه بالباك إند الخاص بك)
+                // بقيت الروابط مثل ما هي عشان ما يخترب السيرفر حقك
                 const res = await fetch('/api/auth', { 
                     method: 'POST', headers: {'Content-Type': 'application/json'}, 
                     body: JSON.stringify({ name, password, type: userType, action }) 
@@ -274,10 +310,10 @@
                     startApp(); 
                 } else showToast(data.error);
             } catch (e) { 
-                // محاكاة دخول لغرض التجربة إذا لم يكن هناك سيرفر حقيقي
-                user = { id: Date.now(), name, type: userType };
+                //Fallback: تسجيل وهمي لو السيرفر طافي عشان تشوف الشغل
+                user = { id: Date.now().toString(), name: name, type: userType };
                 localStorage.setItem('radar_session', JSON.stringify(user)); 
-                showToast("تم الدخول بنجاح (محلي)", "success"); 
+                showToast("تم الدخول (وضع الأوفلاين)", "success"); 
                 startApp();
             }
         }
@@ -286,18 +322,18 @@
             document.getElementById('auth-ui').classList.add('hidden'); 
             document.getElementById('main-ui').classList.remove('hidden');
             document.getElementById('display-name').innerHTML = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '📡 راصد نشط' : '🚗 سائق';
+            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '📡 مُسجل أغراض' : '🔍 باحث';
             
             if(user.type === 'merchant') document.getElementById('record-panel').classList.remove('hidden');
 
-            fetchBumps();
-            fetchConnectedUsers(); 
-            setInterval(fetchBumps, 3000);
-            setInterval(fetchConnectedUsers, 5000); 
+            fetchItems();
+            fetchConnectedUsers();
+            setInterval(fetchItems, 3000);
+            setInterval(fetchConnectedUsers, 5000);
             startGPSWatcher();
         }
 
-        // --- ميزة كشف المستخدمين المتصلين ---
+        // --- جلب المستخدمين ---
         async function fetchConnectedUsers() {
             try {
                 const res = await fetch('/api/users-online', {
@@ -307,7 +343,7 @@
                 });
                 connectedUsers = await res.json();
                 renderUsersNearby();
-            } catch(e) {}
+            } catch(e) { /* تجاهل لو مفيش سيرفر */ }
         }
 
         function renderUsersNearby() {
@@ -330,10 +366,9 @@
                 return `
                     <div class="user-node p-3 rounded-xl flex justify-between items-center">
                         <div class="flex items-center gap-2">
-                            <span class="text-lg">${u.type === 'merchant' ? '📡' : '🚗'}</span>
+                            <span class="text-lg">${u.type === 'merchant' ? '📡' : '🔍'}</span>
                             <div>
                                 <p class="text-xs font-bold text-white">${u.name}</p>
-                                <p class="text-[9px] text-gray-500">${u.type === 'merchant' ? 'راصد' : 'سائق'}</p>
                             </div>
                         </div>
                         <div class="text-[10px] font-bold text-gold-primary bg-gold-primary/10 px-2 py-1 rounded-lg">
@@ -344,27 +379,34 @@
             }).join('');
         }
 
-        // --- نظام المطبات والتنبيه ---
-        async function fetchBumps() {
+        // --- جلب الأغراض المسجلة ---
+        async function fetchItems() {
             try {
+                // استعملت نفس رابط المطبات حقك
                 const res = await fetch('/api/bumps');
-                systemBumps = await res.json();
-                renderBumps();
-            } catch(e) {}
+                systemItems = await res.json();
+                renderItems();
+                updateVisualRadar();
+            } catch(e) {
+                // لو السيرفر طافي يقرأ من المتصفح عشان فادي يشوف الشغل
+                systemItems = localItemsFallback;
+                renderItems();
+                updateVisualRadar();
+            }
         }
 
-        function renderBumps() {
-            if(systemBumps.length === 0) {
-                document.getElementById('bumps-list').innerHTML = `<p class="text-center text-gray-500 py-10">لا توجد مطبات مسجلة.</p>`;
+        function renderItems() {
+            if(systemItems.length === 0) {
+                document.getElementById('items-list').innerHTML = `<p class="text-center text-gray-500 py-10">لا توجد أغراض مسجلة.</p>`;
                 return;
             }
-            document.getElementById('bumps-list').innerHTML = systemBumps.slice().reverse().map(b => `
+            document.getElementById('items-list').innerHTML = systemItems.slice().reverse().map(b => `
                 <div class="p-4 bg-zinc-900/80 rounded-xl border border-white/5 flex justify-between items-center">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-yellow-900/30 text-yellow-500 flex items-center justify-center text-xl border border-yellow-500/20">⚠️</div>
+                        <div class="w-10 h-10 rounded-full bg-red-900/30 text-red-500 flex items-center justify-center text-xl border border-red-500/20">📍</div>
                         <div>
-                            <p class="font-bold text-sm text-gray-200">موقع مطب مثبت</p>
-                            <p class="text-[10px] text-gray-500">الراصد: ${b.recorderName || 'غير معروف'}</p>
+                            <p class="font-bold text-sm text-gray-200">موقع غرض مسجل</p>
+                            <p class="text-[10px] text-gray-500">المُسجل: ${b.userName || b.recorderName || 'مجهول'}</p>
                         </div>
                     </div>
                     <div class="text-[10px] text-gray-500 bg-black/40 px-3 py-1 rounded-full">
@@ -374,107 +416,128 @@
             `).join('');
         }
 
+        // --- تسجيل موقع غرض ---
         function recordCurrentLocation() {
             if (!navigator.geolocation) return showToast("المتصفح لا يدعم الموقع");
-            showToast("جاري التقاط الإحداثية...", "success");
+            showToast("جاري تسجيل مكان الغرض...", "success");
             navigator.geolocation.getCurrentPosition(async (pos) => {
-                const newBump = { lat: pos.coords.latitude, lng: pos.coords.longitude, userId: user.id, recorderName: user.name, timestamp: Date.now() };
+                const newItem = { 
+                    lat: pos.coords.latitude, 
+                    lng: pos.coords.longitude, 
+                    userId: user.id, 
+                    userName: user.name,
+                    timestamp: new Date().toISOString()
+                };
+
                 try {
                     await fetch('/api/add-bump', {
                         method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(newBump)
+                        body: JSON.stringify(newItem)
                     });
-                    showToast("تم تثبيت المطب بنجاح", "success");
-                    fetchBumps();
+                    showToast("تم حفظ مكان الغرض بنجاح!", "success");
+                    fetchItems();
                 } catch(e) { 
-                    // للحفظ المحلي أثناء التجربة بدون سيرفر
-                    systemBumps.push(newBump);
-                    renderBumps();
-                    showToast("تم تثبيت المطب محلياً", "success"); 
+                    // حفظ محلي لو السيرفر طافي
+                    localItemsFallback.push(newItem);
+                    localStorage.setItem('local_items', JSON.stringify(localItemsFallback));
+                    showToast("تم حفظ الغرض (محلياً)", "success");
+                    fetchItems();
                 }
             }, null, { enableHighAccuracy: true });
         }
 
+        // --- نظام الـ GPS والرادار ---
         function startGPSWatcher() {
             if (!navigator.geolocation) return;
             navigator.geolocation.watchPosition((pos) => {
                 myCurrentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 checkProximity();
+                updateVisualRadar(); // تحديث الرادار البصري لما تتحرك
             }, null, { enableHighAccuracy: true });
         }
 
-        // دالة فحص المسافة وتشغيل المنبه المستمر
-        function checkProximity() {
-            if(!myCurrentLocation || systemBumps.length === 0) return;
-            
-            let insideBumpZone = false;
+        // --- تحديث الرادار البصري (الميزة الجديدة) ---
+        function updateVisualRadar() {
+            const container = document.getElementById('radar-blips-container');
+            container.innerHTML = ''; // تنظيف الشاشة
 
-            for(let bump of systemBumps) {
-                const dist = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
+            if(!myCurrentLocation || systemItems.length === 0) return;
+
+            const maxRadarRadiusKm = 0.1; // الرادار يغطي 100 متر (0.1 كيلو)
+
+            systemItems.forEach(item => {
+                const distKm = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, item.lat, item.lng);
                 
-                // التعديل الجديد: 10 متر = 0.01 كم
-                if(dist <= 0.01) {
-                    insideBumpZone = true;
-                    break; 
-                }
-            }
+                // إذا الغرض أبعد من 100 متر لا ترسمه على الرادار
+                if(distKm > maxRadarRadiusKm) return; 
 
-            if(insideBumpZone) {
-                if(!isAlarming) {
-                    startContinuousAlert();
-                }
-            } else {
-                if(isAlarming) {
-                    stopContinuousAlert();
+                // حساب الزاوية (Bearing)
+                const bearing = calculateBearing(myCurrentLocation.lat, myCurrentLocation.lng, item.lat, item.lng);
+                
+                // تحويل المسافة إلى نسبة مئوية (الرادار نصف قطره 50%)
+                const distancePercent = (distKm / maxRadarRadiusKm) * 50;
+                
+                // حساب X و Y بناء على الزاوية والمسافة (مع تحويل الزاوية للراديان)
+                const bearingRad = bearing * (Math.PI / 180);
+                const x = 50 + (distancePercent * Math.sin(bearingRad));
+                const y = 50 - (distancePercent * Math.cos(bearingRad)); // ناقص لأن الY في الشاشة ينزل لتحت
+
+                // رسم النقطة (البلِب)
+                const blip = document.createElement('div');
+                blip.className = 'radar-blip';
+                blip.style.left = `${x}%`;
+                blip.style.top = `${y}%`;
+                blip.title = `غرض على بعد ${(distKm * 1000).toFixed(0)} متر`;
+                
+                container.appendChild(blip);
+            });
+        }
+
+        // حساب الزاوية (الاتجاه)
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const toRad = deg => deg * Math.PI / 180;
+            const toDeg = rad => rad * 180 / Math.PI;
+            
+            lat1 = toRad(lat1); lat2 = toRad(lat2);
+            lon1 = toRad(lon1); lon2 = toRad(lon2);
+            
+            const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+            const bearing = toDeg(Math.atan2(y, x));
+            
+            return (bearing + 360) % 360;
+        }
+
+        function checkProximity() {
+            if(!myCurrentLocation || systemItems.length === 0 || alertCooldown) return;
+            
+            for(let item of systemItems) {
+                const dist = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, item.lat, item.lng);
+                
+                // تنبيه لو قربت من الغرض 10 متر (0.01 كم)
+                if(dist <= 0.01) {
+                    triggerAlert();
+                    break; 
                 }
             }
         }
 
-        // وظائف الصوت والتنبيه المتكرر
-        function playBeepSound() {
+        function triggerAlert() {
+            showToast("🎯 أنت قريب جداً من الغرض المفقود!", "alert");
+            if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                // صوت يشبه السارينة القوية
-                osc.frequency.setValueAtTime(900, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.4); 
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.4);
+                osc.type = 'sine'; // صوت ألطف للأغراض
+                osc.frequency.setValueAtTime(600, ctx.currentTime);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 1);
             } catch(e) {}
             
-            // الاهتزاز كل مرة
-            if ("vibrate" in navigator) navigator.vibrate([200, 100]);
-        }
-
-        function startContinuousAlert() {
-            isAlarming = true;
-            // إظهار شاشة الرادار
-            document.getElementById('radar-alert-overlay').classList.remove('hidden');
-            document.getElementById('radar-alert-overlay').classList.add('flex');
-            
-            playBeepSound(); // تشغيل فوري
-            // تكرار الصوت كل نص ثانية تقريباً (طالما هو داخل الـ 10 متر)
-            alarmInterval = setInterval(() => {
-                playBeepSound();
-            }, 600); 
-        }
-
-        function stopContinuousAlert() {
-            isAlarming = false;
-            // إخفاء شاشة الرادار
-            document.getElementById('radar-alert-overlay').classList.add('hidden');
-            document.getElementById('radar-alert-overlay').classList.remove('flex');
-            
-            if(alarmInterval) {
-                clearInterval(alarmInterval);
-                alarmInterval = null;
-            }
+            alertCooldown = true;
+            setTimeout(() => { alertCooldown = false; }, 10000); 
         }
 
         function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -483,14 +546,10 @@
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c; // بالكم
+            return R * c; 
         }
 
-        function logout() { 
-            stopContinuousAlert(); // إيقاف الصوت لو خرج
-            localStorage.removeItem('radar_session'); 
-            location.reload(); 
-        }
+        function logout() { localStorage.removeItem('radar_session'); location.reload(); }
     </script>
 </body>
 </html>
