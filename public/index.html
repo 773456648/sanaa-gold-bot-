@@ -3,618 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة رادار الأغراض المفقودة</title>
+    <title>رادار القناص - نظام الطيارة الدروب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --gold-primary: #d4af37;
-            --gold-light: #f3e5ab;
-            --gold-dark: #aa7c11;
-            --bg-dark: #0a0a0c;
-            --surface-dark: rgba(20, 20, 25, 0.7);
-        }
-
-        body { 
-            background-color: var(--bg-dark); 
-            background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
-            color: #f0f0f0; 
-            font-family: 'Changa', sans-serif; 
-            overflow-x: hidden; 
-            min-height: 100vh;
-        }
-
-        .gold-text { 
-            background: linear-gradient(to left, var(--gold-light), var(--gold-primary), var(--gold-dark));
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-        
-        .gold-btn { 
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark)); 
-            color: #000; 
-            font-weight: 700; 
-            transition: all 0.3s ease;
-        }
-        .gold-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-
-        .glass-card { 
-            background: var(--surface-dark); 
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            border-radius: 24px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        input { 
-            background: rgba(0, 0, 0, 0.5) !important; 
-            border: 1px solid rgba(255, 255, 255, 0.1) !important; 
-            color: #fff; 
-            border-radius: 16px; 
-            padding: 16px; 
-            width: 100%; 
-            outline: none; 
-        }
-
-        .type-select { 
-            border: 2px solid rgba(255, 255, 255, 0.05); 
-            background: rgba(0, 0, 0, 0.3);
-            cursor: pointer; 
-        }
-        .type-select.active { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.08); }
-
-        #toast-container { position: fixed; bottom: 20px; left: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast {
-            min-width: 250px; padding: 16px 20px; border-radius: 12px;
-            background: rgba(15, 15, 20, 0.95); border-right: 4px solid var(--gold-primary);
-            color: #fff; transform: translateX(-120%); transition: transform 0.4s; display: flex; gap: 12px;
-        }
-        .toast.show { transform: translateX(0); }
-        .toast.error { border-right-color: #ef4444; }
-        .toast.success { border-right-color: #22c55e; }
-        .toast.alert { border-right-color: #f59e0b; background: rgba(245, 158, 11, 0.2); animation: pulse 0.5s infinite; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .fade-in { animation: fadeIn 0.8s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .user-node {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s;
-        }
-        .user-node:hover { background: rgba(212, 175, 55, 0.05); border-color: var(--gold-primary); }
-
-        /* ستايل الرادار البصري الجديد */
-        .radar-screen {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(21, 32, 21, 0.8) 0%, rgba(5, 10, 5, 0.9) 100%);
-            border: 2px solid var(--gold-primary);
-            margin: 0 auto;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.2) inset;
-        }
-        .radar-grid {
-            position: absolute;
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            background-image: 
-                linear-gradient(rgba(212, 175, 55, 0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(212, 175, 55, 0.2) 1px, transparent 1px);
-            background-size: 20px 20px;
-            background-position: center center;
-        }
-        .radar-circle {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 50%;
-        }
-        .radar-sweep {
-            position: absolute; top: 50%; left: 50%; width: 50%; height: 50%;
-            background: conic-gradient(from 0deg, transparent 70%, rgba(212, 175, 55, 0.5) 100%);
-            transform-origin: 0% 0%;
-            animation: sweep 4s linear infinite;
-        }
-        @keyframes sweep { 100% { transform: rotate(360deg); } }
-        
-        /* نقطة المستخدم (المركز) */
-        .radar-center {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 12px; height: 12px; background: #3b82f6; border-radius: 50%;
-            box-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6; z-index: 10;
-        }
-        /* نقاط الأغراض */
-        .radar-blip {
-            position: absolute; width: 10px; height: 10px; background: #ef4444; border-radius: 50%;
-            transform: translate(-50%, -50%); box-shadow: 0 0 10px #ef4444; z-index: 5;
-            animation: blipFade 2s infinite;
-        }
-        
-        /* سهم التوجيه الذكي (الإضافة الجديدة) */
-        .nav-arrow {
-            position: absolute; top: 50%; left: 50%;
-            width: 0; height: 0;
-            border-left: 12px solid transparent; border-right: 12px solid transparent;
-            border-bottom: 24px solid #22c55e;
-            transform-origin: 50% 100%;
-            margin-top: -24px; margin-left: -12px; z-index: 15;
-            transition: transform 0.2s ease-out;
-            filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.8));
-        }
-
-        @keyframes blipFade { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); } }
+        :root { --gold: #d4af37; --bg: #050505; }
+        body { background: var(--bg); color: #fff; font-family: 'Changa', sans-serif; overflow-x: hidden; }
+        .radar-box { position: relative; width: 300px; height: 300px; border-radius: 50%; border: 2px solid var(--gold); background: radial-gradient(circle, #101a10 0%, #000 100%); margin: 20px auto; overflow: hidden; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
+        .sweep { position: absolute; top: 50%; left: 50%; width: 50%; height: 50%; background: conic-gradient(from 0deg, transparent 80%, rgba(212, 175, 55, 0.4) 100%); transform-origin: 0% 0%; animation: rotate 3s linear infinite; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        .center-point { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; background: #3b82f6; border-radius: 50%; box-shadow: 0 0 15px #3b82f6; z-index: 20; }
+        .target-blip { position: absolute; width: 14px; height: 14px; background: #ff0000; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 15px #ff0000; z-index: 10; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
+        .target-locked { border-color: #22c55e !important; box-shadow: 0 0 40px #22c55e !important; }
+        .nav-arrow { position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid var(--gold); transform-origin: 50% 100%; margin-top: -40px; margin-left: -10px; z-index: 25; transition: 0.1s; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-6">
 
-    <div id="toast-container"></div>
-
-    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12 fade-in">
-        <div class="text-center space-y-2">
-            <h1 class="text-7xl md:text-8xl font-black gold-text italic tracking-tighter">RADAR</h1>
-            <p class="text-xs md:text-sm text-gray-400 tracking-[0.3em] uppercase font-light">نظام كشف وتتبع الأغراض والمواقع</p>
+    <div class="max-w-md mx-auto space-y-6">
+        <div class="text-center">
+            <h1 class="text-4xl font-black text-gold tracking-widest italic">SNIPER RADAR</h1>
+            <p class="text-[10px] text-gray-500 tracking-[0.5em] uppercase">نظام ملاحقة الإحداثيات بالملي</p>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div class="glass-card p-8 md:p-10 space-y-8 relative overflow-hidden">
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold mb-1">تسجيل الدخول</h2>
-                    <p class="text-sm text-gray-500">ادخل لتبدأ بتسجيل أماكن أغراضك وتتبعها</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-2xl text-center flex flex-col items-center gap-2">
-                        <span class="text-3xl">📡</span><span class="text-sm font-bold">مُسجل (يضيف الأغراض)</span>
-                    </div>
-                    <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 rounded-2xl text-center flex flex-col items-center gap-2">
-                        <span class="text-3xl">🔍</span><span class="text-sm font-bold">باحث (يتتبع فقط)</span>
-                    </div>
-                </div>
-
-                <div class="space-y-5">
-                    <input id="u-name" type="text" placeholder="الاسم الكامل">
-                    <input id="u-pass" type="password" placeholder="كلمة المرور">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 pt-2">
-                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-xl font-bold border border-white/5 shadow-lg">دخول</button>
-                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-xl">إنشاء حساب</button>
-                </div>
-            </div>
-
-            <div class="space-y-8 p-4">
-                <div>
-                    <h3 class="text-3xl font-black gold-text mb-4">وين حطيت أغراضي؟</h3>
-                    <ul class="text-gray-400 space-y-4 text-sm md:text-base leading-relaxed">
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تحديد دقيق لمكان الغرض الذي تركته.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> سهم توجيهي ذكي يدلك على المسار بدقة عالية.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تنبيه فوري بالملي عند الاقتراب من الغرض المفقود.</li>
-                    </ul>
-                </div>
-            </div>
+        <div class="radar-box" id="radar-container">
+            <div class="sweep"></div>
+            <div class="center-point"></div>
+            <div id="nav-arrow" class="nav-arrow"></div>
+            <div id="blip-container"></div>
         </div>
-    </div>
 
-    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
-        <header class="flex flex-col md:flex-row justify-between items-center glass-card p-4 md:p-6 gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-3xl">R</div>
-                <div>
-                    <h2 id="display-name" class="text-xl md:text-2xl font-black text-white leading-none mb-1"></h2>
-                    <span id="role-tag" class="text-[11px] text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-md font-bold"></span>
-                </div>
+        <div class="glass-card space-y-4">
+            <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                <span class="text-gray-400 text-sm">المسافة للهدف:</span>
+                <span id="dist-val" class="text-2xl font-black text-gold">--</span>
             </div>
-            <div class="flex gap-3">
-                <button id="radar-status" class="bg-green-900/20 text-green-400 px-4 py-2 rounded-xl text-sm font-bold border border-green-500/20 flex items-center gap-2">
-                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> GPS نشط
-                </button>
-                <button onclick="logout()" class="bg-red-900/20 text-red-400 px-4 py-2 rounded-xl text-sm font-bold border border-red-500/20">خروج</button>
+            <div class="flex justify-between items-center">
+                <span class="text-gray-400 text-sm">دقة الجهاز (GPS):</span>
+                <span id="acc-val" class="text-green-500 font-bold">--</span>
             </div>
-        </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            
-            <div class="lg:col-span-5 space-y-6">
-                <div class="glass-card p-6 flex flex-col items-center">
-                    <div class="w-full flex justify-between items-center mb-4">
-                        <h3 class="text-sm text-gold-primary font-bold">🎯 الرادار الذكي (توجيه دقيق)</h3>
-                        <button id="compass-btn" onclick="requestCompass()" class="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-lg text-[10px] font-bold border border-blue-500/30">تفعيل البوصلة 🧭</button>
-                    </div>
-                    
-                    <div class="radar-screen" id="radar-screen">
-                        <div class="radar-grid"></div>
-                        <div class="radar-circle" style="width: 50%; height: 50%;"></div>
-                        <div class="radar-circle" style="width: 100%; height: 100%;"></div>
-                        <div class="radar-sweep"></div>
-                        <div class="radar-center" title="موقعك الحالي"></div>
-                        <div id="nav-arrow" class="nav-arrow hidden"></div>
-                        <div id="radar-blips-container"></div>
-                    </div>
-                    
-                    <div class="mt-4 bg-black/50 w-full p-3 rounded-xl border border-white/5 text-center">
-                        <p id="closest-info" class="text-xs text-gray-300 font-bold">جاري البحث عن أقرب غرض...</p>
-                    </div>
-                </div>
-
-                <div id="record-panel" class="hidden glass-card p-6 text-center relative overflow-hidden">
-                    <button onclick="recordCurrentLocation()" class="gold-btn w-full h-24 rounded-2xl text-xl shadow-lg shadow-yellow-900/20 flex flex-col items-center justify-center gap-2 relative z-10">
-                        <span class="text-3xl">📍</span>
-                        <span>سجل غرض في موقعي الآن</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="lg:col-span-7 space-y-6">
-                
-                <div class="glass-card p-6 min-h-[300px] flex flex-col relative">
-                    <h3 class="text-xl font-black text-white mb-6 border-b border-white/5 pb-4 flex items-center justify-between">
-                        <span>📦 إحداثيات الأغراض المسجلة</span>
-                        <span class="text-xs font-normal text-gray-400 bg-black/40 px-3 py-1 rounded-full">تحديث لحظي</span>
-                    </h3>
-                    
-                    <div id="items-list" class="flex-grow space-y-3 overflow-y-auto max-h-[300px] pr-2">
-                        <div class="text-center text-gray-500 py-10">جاري جلب البيانات...</div>
-                    </div>
-                </div>
-
-                <div class="glass-card p-6">
-                    <h3 class="text-sm text-gray-300 font-bold mb-4">👥 المستخدمين القريبين منك</h3>
-                    <div id="users-nearby-list" class="space-y-2 max-h-[150px] overflow-y-auto">
-                        <p class="text-xs text-gray-500 text-center py-4">جاري البحث...</p>
-                    </div>
-                </div>
-
-            </div>
+            <button onclick="recordTarget()" class="w-full bg-gradient-to-r from-yellow-600 to-yellow-800 p-4 rounded-xl font-bold text-black shadow-lg active:scale-95 transition">
+                📍 تسجيل نقطة "المكنة" الآن
+            </button>
+            <button onclick="activateCompass()" id="comp-btn" class="w-full bg-blue-900/40 border border-blue-500/50 p-2 rounded-lg text-xs font-bold text-blue-400">
+                🧭 تفعيل البوصلة للتوجيه
+            </button>
         </div>
     </div>
 
     <script>
-        let user = null; 
-        let userType = 'merchant'; 
-        let systemItems = []; 
-        let connectedUsers = []; 
-        let myCurrentLocation = null;
-        let alertCooldown = false;
-        let currentHeading = 0; // اتجاه التلفون بالبوصلة
+        let myLoc = null;
+        let targetLoc = null;
+        let heading = 0;
 
-        let localItemsFallback = JSON.parse(localStorage.getItem('local_items') || '[]');
-
-        function showToast(msg, type = 'error') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icon = type === 'success' ? '✅' : (type === 'alert' ? '🎯' : '⚠️');
-            toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 4000);
-        }
-
-        function setType(t) { 
-            userType = t; 
-            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant'); 
-            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor'); 
-        }
-
-        window.onload = () => { 
-            const saved = localStorage.getItem('radar_session'); 
-            if (saved) { user = JSON.parse(saved); startApp(); } 
-        };
-
-        async function doAuth(action) {
-            const name = document.getElementById('u-name').value.trim();
-            const password = document.getElementById('u-pass').value;
-            if(!name || !password) return showToast("أدخل الاسم وكلمة المرور");
-            
-            try {
-                const res = await fetch('/api/auth', { 
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, 
-                    body: JSON.stringify({ name, password, type: userType, action }) 
+        // تفعيل البوصلة
+        function activateCompass() {
+            if (DeviceOrientationEvent && DeviceOrientationEvent.requestPermission) {
+                DeviceOrientationEvent.requestPermission().then(res => {
+                    if (res === 'granted') window.addEventListener('deviceorientation', e => updateHeading(e));
                 });
-                const data = await res.json();
-                if(res.ok) { 
-                    user = data; 
-                    localStorage.setItem('radar_session', JSON.stringify(user)); 
-                    showToast("تم الدخول بنجاح", "success"); 
-                    startApp(); 
-                } else showToast(data.error);
-            } catch (e) { 
-                user = { id: Date.now().toString(), name: name, type: userType };
-                localStorage.setItem('radar_session', JSON.stringify(user)); 
-                showToast("تم الدخول (وضع الأوفلاين)", "success"); 
-                startApp();
-            }
-        }
-
-        function startApp() {
-            document.getElementById('auth-ui').classList.add('hidden'); 
-            document.getElementById('main-ui').classList.remove('hidden');
-            document.getElementById('display-name').innerHTML = user.name;
-            document.getElementById('role-tag').innerText = user.type === 'merchant' ? '📡 مُسجل أغراض' : '🔍 باحث';
-            
-            if(user.type === 'merchant') document.getElementById('record-panel').classList.remove('hidden');
-
-            fetchItems();
-            fetchConnectedUsers();
-            setInterval(fetchItems, 3000);
-            setInterval(fetchConnectedUsers, 5000);
-            startGPSWatcher();
-        }
-
-        // --- تفعيل البوصلة (التوجيه) ---
-        function requestCompass() {
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                .then(permissionState => {
-                    if (permissionState === 'granted') {
-                        window.addEventListener('deviceorientation', handleOrientation);
-                        document.getElementById('compass-btn').style.display = 'none';
-                        showToast("تم تفعيل البوصلة بنجاح", "success");
-                    }
-                }).catch(console.error);
             } else {
-                window.addEventListener('deviceorientationabsolute', handleOrientation) || window.addEventListener('deviceorientation', handleOrientation);
-                document.getElementById('compass-btn').style.display = 'none';
-                showToast("تم تفعيل البوصلة", "success");
+                window.addEventListener('deviceorientationabsolute', e => updateHeading(e));
             }
+            document.getElementById('comp-btn').innerText = "البوصلة متصلة ✅";
         }
 
-        function handleOrientation(event) {
-            let heading = event.alpha;
-            // دقة للآيفون
-            if(typeof event.webkitCompassHeading !== "undefined") {
-                heading = event.webkitCompassHeading;
-            } else {
-                // للأندرويد
-                heading = 360 - event.alpha;
-            }
-            currentHeading = heading;
-            updateVisualRadar(); 
+        function updateHeading(e) {
+            heading = e.webkitCompassHeading || (360 - e.alpha);
+            updateUI();
         }
 
-        async function fetchConnectedUsers() {
-            try {
-                const res = await fetch('/api/users-online', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ userId: user.id, name: user.name, type: user.type, loc: myCurrentLocation })
-                });
-                connectedUsers = await res.json();
-                renderUsersNearby();
-            } catch(e) {}
+        // تسجيل الهدف (النقطة المكنة)
+        function recordTarget() {
+            navigator.geolocation.getCurrentPosition(pos => {
+                targetLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                localStorage.setItem('home_point', JSON.stringify(targetLoc));
+                alert("تم تثبيت نقطة المكنة بنجاح! طير وارجع لها.");
+            }, null, { enableHighAccuracy: true });
         }
 
-        function renderUsersNearby() {
-            const list = document.getElementById('users-nearby-list');
-            if(!myCurrentLocation) {
-                list.innerHTML = `<p class="text-[10px] text-gray-500 text-center py-4">جاري تحديد موقعك لرؤية الآخرين...</p>`;
-                return;
-            }
+        // مراقبة الحركة بالملي
+        navigator.geolocation.watchPosition(pos => {
+            myLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            document.getElementById('acc-val').innerText = "+/- " + pos.coords.accuracy.toFixed(1) + " متر";
+            updateUI();
+        }, null, { enableHighAccuracy: true, maximumAge: 0 });
 
-            const others = connectedUsers.filter(u => u.userId !== user.id && u.loc);
-            
-            if(others.length === 0) {
-                list.innerHTML = `<p class="text-[10px] text-gray-500 text-center py-4">لا يوجد مستخدمون آخرون قريباً</p>`;
-                return;
-            }
+        function updateUI() {
+            if (!myLoc || !targetLoc) return;
 
-            list.innerHTML = others.map(u => {
-                const d = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, u.loc.lat, u.loc.lng);
-                const distStr = d < 1 ? `${(d*1000).toFixed(0)} متر` : `${d.toFixed(2)} كم`;
-                return `
-                    <div class="user-node p-3 rounded-xl flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg">${u.type === 'merchant' ? '📡' : '🔍'}</span>
-                            <div>
-                                <p class="text-xs font-bold text-white">${u.name}</p>
-                            </div>
-                        </div>
-                        <div class="text-[10px] font-bold text-gold-primary bg-gold-primary/10 px-2 py-1 rounded-lg">
-                            يبعد ${distStr}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
+            const dist = calcDist(myLoc.lat, myLoc.lng, targetLoc.lat, targetLoc.lng);
+            const distMeters = (dist * 1000).toFixed(1);
+            document.getElementById('dist-val').innerText = distMeters + " م";
 
-        async function fetchItems() {
-            try {
-                const res = await fetch('/api/bumps');
-                systemItems = await res.json();
-                renderItems();
-                updateVisualRadar();
-            } catch(e) {
-                systemItems = localItemsFallback;
-                renderItems();
-                updateVisualRadar();
-            }
-        }
+            const bear = calcBear(myLoc.lat, myLoc.lng, targetLoc.lat, targetLoc.lng);
+            const relativeBear = (bear - heading + 360) % 360;
 
-        function renderItems() {
-            if(systemItems.length === 0) {
-                document.getElementById('items-list').innerHTML = `<p class="text-center text-gray-500 py-10">لا توجد أغراض مسجلة.</p>`;
-                return;
-            }
-            document.getElementById('items-list').innerHTML = systemItems.slice().reverse().map(b => `
-                <div class="p-4 bg-zinc-900/80 rounded-xl border border-white/5 flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-red-900/30 text-red-500 flex items-center justify-center text-xl border border-red-500/20">📍</div>
-                        <div>
-                            <p class="font-bold text-sm text-gray-200">موقع غرض مسجل</p>
-                            <p class="text-[10px] text-gray-500">المُسجل: ${b.userName || b.recorderName || 'مجهول'}</p>
-                        </div>
-                    </div>
-                    <div class="text-[10px] text-gray-500 bg-black/40 px-3 py-1 rounded-full">
-                        ${b.timestamp ? new Date(b.timestamp).toLocaleTimeString('ar-YE') : 'الآن'}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function recordCurrentLocation() {
-            if (!navigator.geolocation) return showToast("المتصفح لا يدعم الموقع");
-            showToast("جاري تسجيل مكان الغرض بدقة عالية...", "success");
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                const newItem = { 
-                    lat: pos.coords.latitude, 
-                    lng: pos.coords.longitude, 
-                    userId: user.id, 
-                    userName: user.name,
-                    timestamp: new Date().toISOString()
-                };
-
-                try {
-                    await fetch('/api/add-bump', {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(newItem)
-                    });
-                    showToast("تم حفظ مكان الغرض بنجاح!", "success");
-                    fetchItems();
-                } catch(e) { 
-                    localItemsFallback.push(newItem);
-                    localStorage.setItem('local_items', JSON.stringify(localItemsFallback));
-                    showToast("تم حفظ الغرض (محلياً)", "success");
-                    fetchItems();
-                }
-            }, null, { enableHighAccuracy: true, maximumAge: 0 }); // إجبار التلفون على أخذ قراءة جديدة دقيقة
-        }
-
-        function startGPSWatcher() {
-            if (!navigator.geolocation) return;
-            // تفعيل التتبع اللحظي بدقة عالية
-            navigator.geolocation.watchPosition((pos) => {
-                myCurrentLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                checkProximity();
-                updateVisualRadar(); 
-            }, null, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
-        }
-
-        function updateVisualRadar() {
-            const container = document.getElementById('radar-blips-container');
-            const infoText = document.getElementById('closest-info');
+            // تحريك السهم
             const arrow = document.getElementById('nav-arrow');
+            arrow.style.transform = `rotate(${relativeBear}deg)`;
+
+            // رسم النقطة في الرادار
+            const container = document.getElementById('blip-container');
+            container.innerHTML = '';
             
-            container.innerHTML = ''; 
-
-            if(!myCurrentLocation || systemItems.length === 0) {
-                infoText.innerText = "لا يوجد أغراض مسجلة حالياً";
-                arrow.classList.add('hidden');
-                return;
-            }
-
-            const maxRadarRadiusKm = 0.1; // 100 متر
-            let closestItem = null;
-            let minDistance = Infinity;
-
-            systemItems.forEach(item => {
-                const distKm = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, item.lat, item.lng);
-                
-                // تحديد أقرب غرض
-                if(distKm < minDistance) {
-                    minDistance = distKm;
-                    closestItem = item;
-                }
-
-                if(distKm > maxRadarRadiusKm) return; 
-
-                const bearing = calculateBearing(myCurrentLocation.lat, myCurrentLocation.lng, item.lat, item.lng);
-                
-                // حساب موقع النقطة على الشاشة مع مراعاة اتجاه التلفون
-                const relativeBearing = (bearing - currentHeading + 360) % 360;
-                const distancePercent = (distKm / maxRadarRadiusKm) * 50;
-                
-                const bearingRad = relativeBearing * (Math.PI / 180);
-                const x = 50 + (distancePercent * Math.sin(bearingRad));
-                const y = 50 - (distancePercent * Math.cos(bearingRad)); 
+            // نطاق الرادار البصري (50 متر)
+            if (dist <= 0.05) {
+                const distPercent = (dist / 0.05) * 50;
+                const rad = relativeBear * (Math.PI / 180);
+                const x = 50 + (distPercent * Math.sin(rad));
+                const y = 50 - (distPercent * Math.cos(rad));
 
                 const blip = document.createElement('div');
-                blip.className = 'radar-blip';
-                blip.style.left = `${x}%`;
-                blip.style.top = `${y}%`;
-                
+                blip.className = 'target-blip';
+                blip.style.left = x + '%';
+                blip.style.top = y + '%';
                 container.appendChild(blip);
-            });
+            }
 
-            // تحديث السهم والنص لأقرب غرض
-            if(closestItem) {
-                const distMeters = (minDistance * 1000).toFixed(1);
-                infoText.innerHTML = `📍 أقرب غرض على بعد: <span class="text-gold-primary text-lg">${distMeters} متر</span>`;
-                
-                const bearing = calculateBearing(myCurrentLocation.lat, myCurrentLocation.lng, closestItem.lat, closestItem.lng);
-                const relativeBearing = (bearing - currentHeading + 360) % 360;
-                
-                arrow.classList.remove('hidden');
-                arrow.style.transform = `rotate(${relativeBearing}deg)`;
-                
-                // تغيير لون السهم إذا اقترب جداً
-                if(minDistance <= 0.005) { // 5 متر
-                    arrow.style.borderBottomColor = "#ef4444"; // أحمر
-                } else if(minDistance <= 0.015) { // 15 متر
-                    arrow.style.borderBottomColor = "#f59e0b"; // برتقالي
-                } else {
-                    arrow.style.borderBottomColor = "#22c55e"; // أخضر
-                }
+            // إذا وصلت فوقها تماماً (أقل من 1.5 متر)
+            const radarBox = document.getElementById('radar-container');
+            if (dist <= 0.0015) {
+                radarBox.classList.add('target-locked');
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            } else {
+                radarBox.classList.remove('target-locked');
             }
         }
 
-        function calculateBearing(lat1, lon1, lat2, lon2) {
-            const toRad = deg => deg * Math.PI / 180;
-            const toDeg = rad => rad * 180 / Math.PI;
-            
-            lat1 = toRad(lat1); lat2 = toRad(lat2);
-            lon1 = toRad(lon1); lon2 = toRad(lon2);
-            
-            const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
-            const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
-            const bearing = toDeg(Math.atan2(y, x));
-            
-            return (bearing + 360) % 360;
+        function calcDist(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2-lat1)*Math.PI/180;
+            const dLon = (lon2-lon1)*Math.PI/180;
+            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        function checkProximity() {
-            if(!myCurrentLocation || systemItems.length === 0 || alertCooldown) return;
-            
-            for(let item of systemItems) {
-                const dist = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, item.lat, item.lng);
-                
-                // تنبيه لو قربت من الغرض 5 متر (بدل 10 متر عشان الدقة)
-                if(dist <= 0.005) {
-                    triggerAlert();
-                    break; 
-                }
-            }
+        function calcBear(lat1, lon1, lat2, lon2) {
+            const y = Math.sin((lon2-lon1)*Math.PI/180) * Math.cos(lat2*Math.PI/180);
+            const x = Math.cos(lat1*Math.PI/180)*Math.sin(lat2*Math.PI/180) - Math.sin(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.cos((lon2-lon1)*Math.PI/180);
+            return (Math.atan2(y, x)*180/Math.PI + 360) % 360;
         }
 
-        function triggerAlert() {
-            showToast("🎯 أنت فوق الغرض تماماً!", "alert");
-            if ("vibrate" in navigator) navigator.vibrate([100, 50, 100, 50, 100]); // هزاز سريع ومتقطع
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'square'; 
-                osc.frequency.setValueAtTime(800, ctx.currentTime);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + 0.5);
-            } catch(e) {}
-            
-            alertCooldown = true;
-            setTimeout(() => { alertCooldown = false; }, 8000); 
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; 
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c; 
-        }
-
-        function logout() { localStorage.removeItem('radar_session'); location.reload(); }
+        // استرجاع النقطة المحفوظة
+        const saved = localStorage.getItem('home_point');
+        if (saved) targetLoc = JSON.parse(saved);
     </script>
 </body>
 </html>
