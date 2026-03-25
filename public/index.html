@@ -3,305 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>رادار فادي - نسخة الدرون (IMU + GPS)</title>
+    <title>رادار فادي - نسخة الإصلاح</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background: #050505; color: #00ff41; font-family: 'Changa', sans-serif; touch-action: none; overflow: hidden; }
-        
-        /* واجهة الدخول */
-        #auth-box { background: linear-gradient(145deg, #0a0a0a, #111); box-shadow: 0 0 20px rgba(0,255,65,0.1); }
-        
-        /* الرادار */
-        .radar-hub { position: relative; width: 320px; height: 320px; border: 2px solid #00441a; border-radius: 50%; margin: 20px auto; background: radial-gradient(circle, #001a08 0%, #000 100%); box-shadow: 0 0 40px rgba(0,255,65,0.1) inset, 0 0 20px rgba(0,255,65,0.2); overflow: hidden; }
-        .grid-line { position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(0,255,65,0.2); }
-        .grid-v { position: absolute; left: 50%; top: 0; width: 1px; height: 100%; background: rgba(0,255,65,0.2); }
-        .ring { position: absolute; border: 1px dashed rgba(0,255,65,0.3); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-        
-        .sweep { position: absolute; top: 50%; left: 50%; width: 100%; height: 100%; background: conic-gradient(from 0deg, transparent 70%, rgba(0, 255, 65, 0.4) 100%); transform-origin: 0 0; animation: rotate 3s linear infinite; margin-top: -50%; margin-left: -50%; pointer-events: none; }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
-        
-        /* نقاط الهدف */
-        .target-point { position: absolute; width: 12px; height: 12px; background: #ff0000; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 10px red; z-index: 10; transition: background 0.3s; }
-        .target-point.active { background: #fff; box-shadow: 0 0 20px #fff, 0 0 40px #00ff41; z-index: 20; border: 2px solid #00ff41; }
-        .point-label { position: absolute; font-size: 10px; color: #fff; margin-top: 14px; white-space: nowrap; transform: translateX(-50%); font-weight: bold; text-shadow: 1px 1px 2px #000; }
-        
-        /* مؤشر المستخدم (الدرون) */
-        .nav-pointer { position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 25px solid #00ff41; transform-origin: 50% 100%; margin-top: -35px; margin-left: -10px; z-index: 100; filter: drop-shadow(0 0 8px #00ff41); }
-        
-        /* قفل الهدف */
-        .target-lock { background: rgba(255, 0, 0, 0.1) !important; border: 1px solid #ff0000 !important; animation: alert-pulse 0.5s infinite; }
-        @keyframes alert-pulse { 0% { box-shadow: inset 0 0 0px red; } 50% { box-shadow: inset 0 0 30px red; } 100% { box-shadow: inset 0 0 0px red; } }
+        body { background: #000; color: #0f0; font-family: sans-serif; overflow: hidden; touch-action: none; }
+        .radar-circle { 
+            position: relative; width: 280px; height: 280px; 
+            border: 2px solid #050; border-radius: 50%; margin: 20px auto; 
+            background: radial-gradient(circle, #001 0%, #000 100%);
+        }
+        .pointer { 
+            position: absolute; top: 50%; left: 50%; 
+            width: 0; height: 0; 
+            border-left: 10px solid transparent; border-right: 10px solid transparent; 
+            border-bottom: 25px solid #0f0; 
+            margin-top: -35px; margin-left: -10px;
+            transform-origin: 50% 100%;
+        }
+        .target { 
+            position: absolute; width: 12px; height: 12px; 
+            background: red; border-radius: 50%; transform: translate(-50%, -50%); 
+        }
+        #log { font-size: 10px; color: #888; text-align: left; height: 60px; overflow-y: auto; background: #111; padding: 5px; border-radius: 5px; }
     </style>
 </head>
-<body class="p-4 flex flex-col h-screen">
+<body class="p-4">
 
-    <div id="auth-box" class="max-w-xs mx-auto mt-20 p-6 rounded-3xl border border-[#00441a]">
-        <h1 class="text-2xl font-black mb-1 text-center">نظام الرصد التكتيكي</h1>
-        <p class="text-[10px] text-center text-gray-400 mb-6">IMU + GPS Fusion Enabled</p>
-        <input id="u" type="text" placeholder="اسم المستخدم" class="w-full bg-black p-3 rounded-lg mb-4 text-[#00ff41] border border-[#00441a] outline-none text-center">
-        <button onclick="login()" class="w-full bg-[#00ff41] text-black font-bold p-3 rounded-lg hover:bg-green-400 transition-colors">تشغيل النظام</button>
+    <h2 class="text-center font-bold mb-2">نظام الرصد المباشر</h2>
+
+    <div class="radar-circle" id="radar">
+        <div id="my-pointer" class="pointer"></div>
+        <div id="targets-layer"></div>
+        <div style="position:absolute; top:50%; width:100%; height:1px; background:#020;"></div>
+        <div style="position:absolute; left:50%; height:100%; width:1px; background:#020;"></div>
     </div>
 
-    <div id="radar-app" class="hidden flex-1 flex-col max-w-md mx-auto w-full">
-        
-        <div class="flex justify-between items-center mb-2 bg-[#001104] p-2 rounded-xl border border-[#00441a]">
-            <span id="user-tag" class="text-xs font-bold text-gray-300"></span>
-            <div class="text-left">
-                <div class="text-[9px] text-gray-500">دقة الإشارة (GPS)</div>
-                <div id="acc-val" class="text-sm font-bold text-blue-400 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-red-500 inline-block animate-pulse" id="gps-led"></span>
-                    جاري البحث...
-                </div>
-            </div>
+    <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-800 mb-4">
+        <div class="flex justify-between text-sm mb-2">
+            <span>المسافة: <b id="dist">--</b> متر</span>
+            <span>الدقة: <b id="acc">--</b></span>
         </div>
-
-        <div class="radar-hub" id="radar-main">
-            <div class="ring" style="width: 33%; height: 33%;"></div>
-            <div class="ring" style="width: 66%; height: 66%;"></div>
-            <div class="grid-line"></div><div class="grid-v"></div>
-            <div class="sweep"></div>
-            
-            <div id="pointer" class="nav-pointer"></div>
-            <div id="points-container"></div>
-        </div>
-
-        <div id="dist-card" class="bg-[#001104] p-5 rounded-2xl border border-[#00441a] my-2 relative overflow-hidden transition-all">
-            <div class="text-[10px] text-gray-400">المسافة إلى: <span id="target-name" class="text-white font-bold">لا يوجد هدف</span></div>
-            <div id="dist-val" class="text-5xl font-black tracking-tighter text-white mt-1">--<span class="text-lg text-gray-500 ml-1">m</span></div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 mb-2">
-            <button onclick="savePoint()" class="bg-[#1a0000] border border-red-800 text-red-500 p-3 rounded-xl font-bold text-sm hover:bg-red-900 hover:text-white transition-all">📍 رصد وتثبيت</button>
-            <button onclick="initSensors()" id="sensor-btn" class="bg-[#001a08] border border-[#00ff41] text-[#00ff41] p-3 rounded-xl font-bold text-sm hover:bg-[#00ff41] hover:text-black transition-all">🧭 تفعيل IMU</button>
-        </div>
-
-        <div class="flex-1 bg-[#001104] border border-[#00441a] rounded-xl p-3 flex flex-col overflow-hidden">
-            <div class="flex justify-between items-center mb-2 border-b border-[#00441a] pb-2">
-                <span class="text-xs font-bold text-gray-400">بنك الأهداف:</span>
-                <button onclick="clearPoints()" class="text-[10px] text-red-500 px-2 py-1 bg-red-950 rounded">مسح الكل</button>
-            </div>
-            <div id="points-list" class="space-y-2 overflow-y-auto flex-1 pr-1"></div>
-        </div>
+        <button onclick="savePoint()" class="w-full bg-red-600 text-white p-3 rounded-lg font-bold mb-2">📍 رصد هدف (حفظ مكاني)</button>
+        <button onclick="startSystem()" id="start-btn" class="w-full bg-green-600 text-white p-3 rounded-lg font-bold">🚀 تشغيل الحساسات</button>
     </div>
+
+    <div id="log">انتظر.. اضغط "تشغيل الحساسات" لبدء العمل...</div>
 
     <script>
-        // --- متغيرات النظام ---
-        let user = "";
-        let points = [];
-        let activeTarget = null;
-        
-        // --- متغيرات دمج الحساسات (Sensor Fusion) ---
-        let rawGpsHistory = []; // للاحتفاظ بآخر قراءات للـ GPS لعمل متوسط
-        let myPos = null; // الموقع المنعم النهائي
-        let gpsAccuracy = 999;
-        
-        let targetHeading = 0; // الزاوية القادمة من البوصلة
-        let currentHeading = 0; // الزاوية المعروضة حالياً (للتنعيم)
-        
-        let velocityX = 0, velocityY = 0; // لتعويض التسارع اللحظي (Dead Reckoning مبسط)
-        const RADAR_RANGE = 40; // الرادار يغطي 40 متر كحد أقصى للتركيز الدقيق
+        let myPos = null;
+        let heading = 0;
+        let savedPoint = null;
 
-        // 1. تسجيل الدخول
-        function login() {
-            user = document.getElementById('u').value.trim();
-            if(!user) return alert("الرجاء إدخال اسمك");
-            document.getElementById('auth-box').style.display = 'none';
-            document.getElementById('radar-app').style.display = 'flex';
-            document.getElementById('user-tag').innerText = "العميل: " + user;
-            loadPoints();
-            startTrackingGPS();
-            requestAnimationFrame(renderLoop); // تشغيل محرك الرسوميات (60fps)
+        function log(msg) {
+            const l = document.getElementById('log');
+            l.innerHTML = "> " + msg + "<br>" + l.innerHTML;
         }
 
-        // 2. تفعيل حساسات الحركة والبوصلة (IMU)
-        function initSensors() {
-            const btn = document.getElementById('sensor-btn');
+        // تشغيل الحساسات (لازم يضغط المستخدم أولاً)
+        async function startSystem() {
+            log("بدء تشغيل النظام...");
             
-            // البوصلة
-            if (window.DeviceOrientationEvent) {
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    DeviceOrientationEvent.requestPermission().then(state => {
-                        if(state === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                            setupMotion();
-                            btn.innerText = "✅ IMU نشط";
-                        }
-                    }).catch(console.error);
-                } else {
-                    window.addEventListener('deviceorientationabsolute', handleOrientation) || window.addEventListener('deviceorientation', handleOrientation);
-                    setupMotion();
-                    btn.innerText = "✅ IMU نشط";
-                }
+            // 1. طلب الجي بي اس
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    (p) => {
+                        myPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+                        document.getElementById('acc').innerText = p.coords.accuracy.toFixed(1) + "m";
+                        log("تم تحديد موقعك بدقة " + p.coords.accuracy.toFixed(1));
+                        updateUI();
+                    },
+                    (err) => log("خطأ جي بي اس: " + err.message),
+                    { enableHighAccuracy: true }
+                );
+            } else {
+                log("متصفحك لا يدعم الجي بي اس");
             }
-        }
 
-        // قراءة البوصلة
-        function handleOrientation(e) {
-            targetHeading = e.webkitCompassHeading || (360 - e.alpha);
-        }
-
-        // قراءة التسارع (للاستجابة اللحظية قبل ما الـ GPS يلقط الحركة)
-        function setupMotion() {
-            window.addEventListener('devicemotion', (e) => {
-                // نأخذ التسارع الخطي (بدون جاذبية الأرض)
-                let ax = e.acceleration.x || 0;
-                let ay = e.acceleration.y || 0;
-                
-                // فلتر لتجاهل الرعشة البسيطة جداً
-                if(Math.abs(ax) > 0.3) velocityX += ax * 0.05;
-                if(Math.abs(ay) > 0.3) velocityY += ay * 0.05;
-
-                // احتكاك وهمي عشان ما تستمر النقطة بالانزلاق
-                velocityX *= 0.90;
-                velocityY *= 0.90;
-            });
-        }
-
-        // 3. تتبع الـ GPS مع فلتر التنعيم
-        function startTrackingGPS() {
-            navigator.geolocation.watchPosition(pos => {
-                gpsAccuracy = pos.coords.accuracy;
-                const led = document.getElementById('gps-led');
-                
-                // تحديث حالة دقة الـ GPS
-                if(gpsAccuracy <= 5) {
-                    led.className = "w-2 h-2 rounded-full bg-green-500 inline-block";
-                    document.getElementById('acc-val').style.color = "#00ff41";
-                } else {
-                    led.className = "w-2 h-2 rounded-full bg-yellow-500 inline-block";
-                    document.getElementById('acc-val').style.color = "#fbbf24";
-                }
-                document.getElementById('acc-val').innerHTML = `<span class="${led.className}"></span> ±${gpsAccuracy.toFixed(1)}m`;
-
-                // فلتر المتوسط الحسابي (Low-Pass Filter) لمنع قفزات الـ GPS
-                const newLat = pos.coords.latitude;
-                const newLng = pos.coords.longitude;
-                
-                rawGpsHistory.push({lat: newLat, lng: newLng});
-                if(rawGpsHistory.length > 4) rawGpsHistory.shift(); // نحتفظ بآخر 4 قراءات فقط
-                
-                let avgLat = 0, avgLng = 0;
-                rawGpsHistory.forEach(p => { avgLat += p.lat; avgLng += p.lng; });
-                
-                myPos = { lat: avgLat / rawGpsHistory.length, lng: avgLng / rawGpsHistory.length };
-                
-                // تصفير السرعة الوهمية لأن الـ GPS أعطانا الموقع الحقيقي الآن
-                velocityX = 0; velocityY = 0;
-
-            }, (err) => {
-                document.getElementById('acc-val').innerText = "فقدان الإشارة!";
-            }, { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 });
-        }
-
-        // 4. محرك الرسوميات السلس (يشتغل 60 مرة بالثانية)
-        function renderLoop() {
-            if(myPos) {
-                // أ. تنعيم دوران البوصلة (عشان السهم ما يهتز)
-                let diff = targetHeading - currentHeading;
-                diff = ((diff + 540) % 360) - 180; 
-                currentHeading += diff * 0.1; // 0.1 سرعة النعومة
-                currentHeading = (currentHeading + 360) % 360;
-
-                // ب. تحديث الشاشة
-                updateRadarUI();
+            // 2. طلب البوصلة (خاصة للأيفون)
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                try {
+                    const permission = await DeviceOrientationEvent.requestPermission();
+                    if (permission === 'granted') {
+                        window.addEventListener('deviceorientation', handleCompass);
+                        log("تم تفعيل البوصلة (أيفون)");
+                    }
+                } catch (e) { log("فشل تصريح البوصلة"); }
+            } else {
+                window.addEventListener('deviceorientationabsolute', handleCompass) || window.addEventListener('deviceorientation', handleCompass);
+                log("تم تفعيل البوصلة (أندرويد)");
             }
-            requestAnimationFrame(renderLoop);
-        }
-
-        function updateRadarUI() {
-            const container = document.getElementById('points-container');
-            container.innerHTML = '';
             
-            // تدوير سهم المستخدم (الدرون)
-            const pointer = document.getElementById('pointer');
-            pointer.style.transform = `rotate(${currentHeading}deg)`;
-
-            points.forEach(p => {
-                const absoluteDist = calcDist(myPos.lat, myPos.lng, p.lat, p.lng) * 1000;
-                
-                if(absoluteDist <= RADAR_RANGE) {
-                    const bearing = calcBear(myPos.lat, myPos.lng, p.lat, p.lng);
-                    const angleRad = (bearing - 90) * (Math.PI / 180); // تحويل الزاوية للشاشة
-                    
-                    // دمج موقع الـ GPS مع حركة التسارع اللحظية (IMU)
-                    let simulatedDist = absoluteDist;
-                    let drawX = 50 + ((simulatedDist / RADAR_RANGE) * 50) * Math.cos(angleRad);
-                    let drawY = 50 + ((simulatedDist / RADAR_RANGE) * 50) * Math.sin(angleRad);
-                    
-                    // إضافة تأثير التسارع العكسي (إذا تحركت للأمام، الهدف يرجع للخلف لحظياً)
-                    drawX -= velocityX * 2;
-                    drawY -= velocityY * 2;
-
-                    const isActive = activeTarget && activeTarget.id === p.id;
-                    const cssClass = isActive ? 'target-point active' : 'target-point';
-                    
-                    container.innerHTML += `<div class="${cssClass}" style="left:${drawX}%; top:${drawY}%">
-                        <div class="point-label">${p.name}</div>
-                    </div>`;
-                }
-            });
-
-            // تحديث شاشة المسافة للهدف النشط
-            if(activeTarget) {
-                const distToTarget = calcDist(myPos.lat, myPos.lng, activeTarget.lat, activeTarget.lng) * 1000;
-                const distEl = document.getElementById('dist-val');
-                const cardEl = document.getElementById('dist-card');
-
-                // نظام القفل الذكي: نعتبر أننا وصلنا إذا كانت المسافة أقل من أو تساوي دقة الـ GPS الحالية
-                const lockThreshold = Math.max(1.5, gpsAccuracy * 0.8);
-
-                if(distToTarget <= lockThreshold) {
-                    distEl.innerHTML = `0.00<span class="text-lg text-gray-500 ml-1">m</span>`;
-                    distEl.style.color = "#ff0000";
-                    cardEl.classList.add('target-lock');
-                    if(navigator.vibrate) navigator.vibrate([50, 50, 50]); // نبض
-                } else {
-                    distEl.innerHTML = `${distToTarget.toFixed(1)}<span class="text-lg text-gray-500 ml-1">m</span>`;
-                    distEl.style.color = "#ffffff";
-                    cardEl.classList.remove('target-lock');
-                }
-            }
+            document.getElementById('start-btn').style.display = 'none';
         }
 
-        // --- دوال البيانات والحفظ ---
+        function handleCompass(e) {
+            heading = e.webkitCompassHeading || (360 - e.alpha) || 0;
+            document.getElementById('my-pointer').style.transform = `rotate(${heading}deg)`;
+            updateUI();
+        }
+
         function savePoint() {
-            if(!myPos || gpsAccuracy > 15) return alert("إشارة الـ GPS غير دقيقة حالياً للرصد.");
-            const name = prompt("أدخل اسم الهدف لتثبيته:");
-            if(!name) return;
-            points.push({ ...myPos, id: Date.now(), name: name });
-            localStorage.setItem('points_' + user, JSON.stringify(points));
-            loadPoints();
+            if(!myPos) return log("لا يوجد إشارة GPS بعد!");
+            savedPoint = { ...myPos };
+            log("تم حفظ النقطة بنجاح!");
+            updateUI();
         }
 
-        function loadPoints() {
-            points = JSON.parse(localStorage.getItem('points_' + user) || '[]');
-            const list = document.getElementById('points-list');
-            list.innerHTML = points.map(p => `
-                <div onclick="selectTarget(${p.id})" class="flex justify-between items-center p-3 bg-[#0a0a0a] border border-[#00441a] rounded-lg cursor-pointer hover:border-[#00ff41] transition-colors">
-                    <span class="font-bold text-sm">🎯 ${p.name}</span>
-                    <span class="text-[10px] text-gray-500">تتبع</span>
-                </div>
-            `).join('');
+        function updateUI() {
+            if(!myPos || !savedPoint) return;
+
+            const dist = getDist(myPos.lat, myPos.lng, savedPoint.lat, savedPoint.lng);
+            document.getElementById('dist').innerText = (dist * 1000).toFixed(1);
+
+            const bear = getBear(myPos.lat, myPos.lng, savedPoint.lat, savedPoint.lng);
+            const container = document.getElementById('targets-layer');
+            container.innerHTML = '';
+
+            // حساب مكان النقطة على الدائرة
+            const relBear = (bear - heading + 360) % 360;
+            const distPx = Math.min((dist * 1000), 100); // تصغير المسافة لتناسب الدائرة
+            const rad = (relBear - 90) * (Math.PI / 180);
+            const x = 50 + (distPx / 2) * Math.cos(rad);
+            const y = 50 + (distPx / 2) * Math.sin(rad);
+
+            container.innerHTML = `<div class="target" style="left:${x}%; top:${y}%"></div>`;
         }
 
-        function selectTarget(id) {
-            activeTarget = points.find(p => p.id === id);
-            document.getElementById('target-name').innerText = activeTarget.name;
-        }
-
-        function clearPoints() {
-            if(confirm("هل أنت متأكد من مسح جميع الأهداف؟")) {
-                localStorage.removeItem('points_'+user);
-                points = []; activeTarget = null;
-                document.getElementById('target-name').innerText = "لا يوجد هدف";
-                document.getElementById('dist-val').innerHTML = `--<span class="text-lg text-gray-500 ml-1">m</span>`;
-                loadPoints();
-            }
-        }
-
-        // --- المعادلات الرياضية الأساسية (Haversine) ---
-        function calcDist(l1, n1, l2, n2) {
+        function getDist(l1, n1, l2, n2) {
             const R = 6371;
             const dL = (l2-l1)*Math.PI/180;
             const dN = (n2-n1)*Math.PI/180;
@@ -309,7 +137,7 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        function calcBear(l1, n1, l2, n2) {
+        function getBear(l1, n1, l2, n2) {
             const y = Math.sin((n2-n1)*Math.PI/180)*Math.cos(l2*Math.PI/180);
             const x = Math.cos(l1*Math.PI/180)*Math.sin(l2*Math.PI/180)-Math.sin(l1*Math.PI/180)*Math.cos(l2*Math.PI/180)*Math.cos((n2-n1)*Math.PI/180);
             return (Math.atan2(y, x)*180/Math.PI + 360) % 360;
