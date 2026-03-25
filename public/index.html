@@ -3,37 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>رادار الطرقات الذكي | نظام الرصد المتقدم</title>
-    <!-- Tailwind & Fonts -->
+    <title>رادار الطرقات | نظام الرصد الذكي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --gold-primary: #d4af37;
             --gold-light: #f3e5ab;
-            --gold-dark: #aa7c11;
             --bg-dark: #0a0a0c;
             --surface-dark: rgba(20, 20, 25, 0.7);
         }
         body {
             background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
             color: #f0f0f0;
             font-family: 'Changa', sans-serif;
             overflow-x: hidden;
         }
         .gold-text {
-            background: linear-gradient(to left, var(--gold-light), var(--gold-primary), var(--gold-dark));
+            background: linear-gradient(to left, var(--gold-light), var(--gold-primary));
             -webkit-background-clip: text;
             color: transparent;
         }
         .gold-btn {
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+            background: linear-gradient(135deg, var(--gold-primary), #aa7c11);
             color: #000;
             font-weight: 700;
             transition: all 0.3s ease;
         }
-        .gold-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
         .glass-card {
             background: var(--surface-dark);
             backdrop-filter: blur(16px);
@@ -41,7 +37,7 @@
             border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
-        input, select {
+        input {
             background: rgba(0, 0, 0, 0.5) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
             color: #fff;
@@ -54,7 +50,7 @@
             border: 2px solid rgba(255, 255, 255, 0.05);
             background: rgba(0, 0, 0, 0.3);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: 0.2s;
         }
         .type-select.active { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.08); }
         #toast-container {
@@ -111,19 +107,20 @@
             transition: all 0.3s;
         }
         .user-node:hover { background: rgba(212, 175, 55, 0.05); border-color: var(--gold-primary); }
-        /* رادار canvas */
         #radar-canvas {
             width: 100%;
             height: 350px;
-            background: radial-gradient(circle at 50% 70%, #0a0f1e 0%, #030712 100%);
+            background: #030712;
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             display: block;
             margin-top: 1rem;
         }
-        .speedometer {
+        .speed-number {
             font-family: monospace;
-            letter-spacing: 2px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #60a5fa;
         }
     </style>
 </head>
@@ -171,7 +168,7 @@
                     <ul class="text-gray-400 space-y-4 text-sm md:text-base leading-relaxed">
                         <li class="flex gap-3"><span class="text-gold-primary">●</span> تنبيه فوري عند الاقتراب من مطب لمسافة 20 متر.</li>
                         <li class="flex gap-3"><span class="text-gold-primary">●</span> كشف مواقع المستخدمين الآخرين المتصلين بالنظام حالياً.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> رادار متحرك يعرض المطبات أمامك حسب المسافة الحقيقية.</li>
+                        <li class="flex gap-3"><span class="text-gold-primary">●</span> رادار بسيط يعرض المطبات أمامك حسب المسافة الحقيقية.</li>
                     </ul>
                 </div>
             </div>
@@ -197,18 +194,16 @@
             </div>
         </header>
 
-        <!-- الرادار الجديد (Canvas) -->
+        <!-- الرادار البسيط -->
         <div class="glass-card p-4 relative">
             <div class="absolute top-4 right-4 z-10 text-left">
-                <div class="text-4xl font-black text-blue-400 speedometer">
-                    <span id="speed-value">0</span> <span class="text-xs">كم/س</span>
-                </div>
-                <div id="accuracy-text" class="text-[10px] text-slate-400 font-mono">دقة GPS: --</div>
-                <div id="heading-text" class="text-[10px] text-slate-400 font-mono">اتجاه: --</div>
+                <div class="speed-number" id="speed-value">0</div>
+                <div class="text-xs text-gray-400">كم/س</div>
+                <div id="accuracy-text" class="text-[10px] text-slate-400 mt-1">دقة: --</div>
             </div>
             <div class="absolute top-4 left-4 z-10">
                 <div id="alert-status" class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold border border-green-500/50">
-                    النظام جاهز
+                    الطريق آمن
                 </div>
             </div>
             <canvas id="radar-canvas"></canvas>
@@ -218,9 +213,9 @@
             <!-- الجانب الأيمن: المستخدمين القريبين وتسجيل المطبات -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass-card p-6">
-                    <h3 class="text-sm text-gray-300 font-bold mb-4">👤 رادار المواقع (المستخدمين القريبين)</h3>
+                    <h3 class="text-sm text-gray-300 font-bold mb-4">👤 مستخدمون قريبون</h3>
                     <div id="users-nearby-list" class="space-y-2 max-h-[250px] overflow-y-auto">
-                        <p class="text-xs text-gray-500 text-center py-4">جاري البحث عن مستخدمين...</p>
+                        <p class="text-xs text-gray-500 text-center py-4">جاري البحث...</p>
                     </div>
                 </div>
 
@@ -230,7 +225,7 @@
                         <span class="text-3xl">📍</span>
                         <span>رصد مطب في موقعي الآن</span>
                     </button>
-                    <p class="text-[10px] text-gray-400 mt-4">تنبيه 20 متر مفعل لجميع السائقين</p>
+                    <p class="text-[10px] text-gray-400 mt-4">تنبيه 20 متر لجميع السائقين</p>
                 </div>
             </div>
 
@@ -238,7 +233,7 @@
             <div class="lg:col-span-8">
                 <div class="glass-card p-6 min-h-[500px] flex flex-col relative">
                     <h3 class="text-xl font-black text-white mb-6 border-b border-white/5 pb-4 flex items-center justify-between">
-                        <span>📡 إحداثيات المطبات المكتشفة</span>
+                        <span>📡 المطبات المسجلة</span>
                         <span class="text-xs font-normal text-gray-400 bg-black/40 px-3 py-1 rounded-full">تحديث لحظي</span>
                     </h3>
                     <div id="bumps-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] pr-2">
@@ -257,7 +252,6 @@
         let connectedUsers = [];
         let myCurrentLocation = null;
         let currentSpeed = 0;
-        let currentHeading = null;
         let alertCooldown = false;
         let activeAlertForBump = null;   // id of bump currently alerting
         let canvas = null;
@@ -296,7 +290,6 @@
                 gain.connect(audioCtx.destination);
                 silent.start();
                 silent.stop(audioCtx.currentTime + 0.1);
-                console.log("Audio ready");
             }
         }
 
@@ -347,7 +340,6 @@
             if (user.type === 'merchant') {
                 document.getElementById('record-panel').classList.remove('hidden');
             }
-            // تهيئة canvas
             canvas = document.getElementById('radar-canvas');
             ctx = canvas.getContext('2d');
             resizeCanvas();
@@ -477,14 +469,8 @@
                     lng: pos.coords.longitude
                 };
                 currentSpeed = (pos.coords.speed || 0) * 3.6;
-                currentHeading = pos.coords.heading || null;
                 document.getElementById('speed-value').innerText = Math.round(currentSpeed);
-                document.getElementById('accuracy-text').innerText = `دقة GPS: ±${Math.round(pos.coords.accuracy)}m`;
-                if (currentHeading !== null) {
-                    document.getElementById('heading-text').innerHTML = `اتجاه: ${Math.round(currentHeading)}°`;
-                } else {
-                    document.getElementById('heading-text').innerHTML = `اتجاه: --`;
-                }
+                document.getElementById('accuracy-text').innerHTML = `دقة: ±${Math.round(pos.coords.accuracy)}m`;
                 checkProximity();
                 fetchConnectedUsers();
             }, null, { enableHighAccuracy: true });
@@ -501,14 +487,12 @@
                     closestBump = bump;
                 }
             }
-            // التنبيه عند 20 متر
-            if (closestDist <= 0.02 && !alertCooldown) {
+            if (closestDist <= 0.02 && !alertCooldown) { // 20 متر
                 if (activeAlertForBump !== closestBump.id) {
                     activeAlertForBump = closestBump.id;
                     triggerAlert();
                 }
             } else if (closestDist > 0.05 && activeAlertForBump !== null) {
-                // خروج آمن: توقف التنبيه
                 activeAlertForBump = null;
                 const statusDiv = document.getElementById('alert-status');
                 statusDiv.innerText = 'الطريق آمن';
@@ -522,7 +506,7 @@
             playAlertSound();
             const statusDiv = document.getElementById('alert-status');
             statusDiv.innerText = '⚠️ خطر مطب!';
-            statusDiv.className = 'px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold danger-pulse';
+            statusDiv.className = 'px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold';
             alertCooldown = true;
             setTimeout(() => { alertCooldown = false; }, 10000);
         }
@@ -538,7 +522,7 @@
             return R * c;
         }
 
-        // ==================== رسم الرادار ====================
+        // ==================== رسم الرادار البسيط ====================
         function startAnimation() {
             if (animationId) cancelAnimationFrame(animationId);
             function draw() {
@@ -550,65 +534,59 @@
                     return;
                 }
                 ctx.clearRect(0, 0, w, h);
-                // خلفية داكنة مع شبكة
                 ctx.fillStyle = '#030712';
                 ctx.fillRect(0, 0, w, h);
-                // رسم شبكة دائرية (رادار)
+
                 const centerX = w/2;
-                const centerY = h - 70;
-                ctx.strokeStyle = '#1e293b';
-                ctx.lineWidth = 1;
-                for (let r = 40; r <= Math.min(w, h)/2; r += 40) {
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
-                // خطوط الطريق (محاكاة)
+                const bottomY = h - 60;
+
+                // رسم خطوط الطريق (خطين متقاربين في الأعلى)
                 ctx.beginPath();
-                ctx.moveTo(centerX - 50, h - 20);
-                ctx.lineTo(centerX - 15, 20);
-                ctx.moveTo(centerX + 50, h - 20);
-                ctx.lineTo(centerX + 15, 20);
+                ctx.moveTo(centerX - 35, bottomY);
+                ctx.lineTo(centerX - 10, 30);
+                ctx.moveTo(centerX + 35, bottomY);
+                ctx.lineTo(centerX + 10, 30);
                 ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // رسم المطبات حسب المسافة
+                // رسم المطبات على نفس الخط (في المنتصف)
                 if (myCurrentLocation && systemBumps.length) {
                     for (let bump of systemBumps) {
                         const distKm = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
                         const distMeters = distKm * 1000;
-                        if (distMeters < 150) { // نعرض المطبات ضمن 150 متر فقط
-                            // المسافة تؤثر على موقع العلامة (كلما اقترب كلما نزل للأسفل)
+                        if (distMeters < 150) {
+                            // كلما اقترب المطب (مسافة أقل) كلما نزل للأسفل
                             const maxDist = 150;
-                            const yOffset = Math.min(1, distMeters / maxDist) * (centerY - 60);
-                            const y = centerY - yOffset;
-                            const x = centerX + (Math.random() - 0.5) * 40; // نعطي انحراف بسيط
+                            const yRatio = Math.min(1, distMeters / maxDist);
+                            const y = bottomY - yRatio * (bottomY - 40);
+                            // x في المنتصف تماماً
+                            const x = centerX;
                             ctx.fillStyle = '#ef4444';
                             ctx.beginPath();
-                            ctx.arc(x, y, 10, 0, Math.PI*2);
+                            ctx.arc(x, y, 12, 0, Math.PI*2);
                             ctx.fill();
                             ctx.fillStyle = '#facc15';
-                            ctx.font = "bold 12px 'Changa'";
-                            ctx.shadowBlur = 0;
-                            ctx.fillText("⚠️", x-5, y-5);
+                            ctx.font = "bold 14px 'Changa'";
+                            ctx.fillText("⚠️", x-7, y-5);
                             ctx.fillStyle = '#9ca3af';
                             ctx.font = "10px monospace";
-                            ctx.fillText(`${Math.round(distMeters)}م`, x+12, y);
+                            ctx.fillText(`${Math.round(distMeters)}م`, x+12, y-5);
                         }
                     }
                 }
 
-                // رسم السيارة (مثلث)
+                // رسم السيارة (مثلث في الأسفل)
                 ctx.fillStyle = '#3b82f6';
                 ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(centerX - 18, centerY + 32);
-                ctx.lineTo(centerX + 18, centerY + 32);
+                ctx.moveTo(centerX, bottomY);
+                ctx.lineTo(centerX - 18, bottomY + 30);
+                ctx.lineTo(centerX + 18, bottomY + 30);
                 ctx.closePath();
                 ctx.fill();
                 ctx.fillStyle = 'white';
-                ctx.font = "bold 14px 'Changa'";
-                ctx.fillText("🚗", centerX-10, centerY-5);
+                ctx.font = "bold 16px 'Changa'";
+                ctx.fillText("🚗", centerX-10, bottomY-5);
 
                 animationId = requestAnimationFrame(draw);
             }
