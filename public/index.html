@@ -2,619 +2,625 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>رادار الطرقات | نظام الرصد الذكي</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💎 FADI SYSTEM PRO | منظومة فادي الذهبية</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
-        :root {
-            --gold-primary: #d4af37;
-            --gold-light: #f3e5ab;
-            --bg-dark: #0a0a0c;
-            --surface-dark: rgba(20, 20, 25, 0.7);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', 'Segoe UI', system-ui, sans-serif;
         }
+        
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap');
+        
+        :root {
+            --gold: #FFD700;
+            --gold-dark: #CCAC00;
+            --neon: #00ffff;
+            --dark-bg: #0A0C0F;
+            --card-bg: #1A1E24;
+            --input-bg: #2A2F36;
+        }
+        
         body {
-            background-color: var(--bg-dark);
-            color: #f0f0f0;
-            font-family: 'Changa', sans-serif;
+            background: var(--dark-bg);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            position: relative;
             overflow-x: hidden;
         }
-        .gold-text {
-            background: linear-gradient(to left, var(--gold-light), var(--gold-primary));
+        
+        /* خلفية متحركة */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.1) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* الهيدر */
+        .header {
+            text-align: center;
+            padding: 15px;
+            background: rgba(26, 30, 36, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            border: 2px solid var(--gold);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(45deg, #FFD700, #00ffff, #FFD700);
             -webkit-background-clip: text;
-            color: transparent;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 5px;
         }
-        .gold-btn {
-            background: linear-gradient(135deg, var(--gold-primary), #aa7c11);
-            color: #000;
-            font-weight: 700;
-            transition: all 0.3s ease;
+        
+        .role-badge {
+            display: inline-block;
+            padding: 8px 25px;
+            background: linear-gradient(45deg, var(--gold), var(--gold-dark));
+            color: black;
+            font-weight: bold;
+            border-radius: 50px;
+            font-size: 16px;
+            box-shadow: 0 0 20px var(--gold);
         }
-        .glass-card {
-            background: var(--surface-dark);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        
+        /* صندوق التسجيل */
+        .setup-box {
+            background: var(--card-bg);
+            border: 2px solid var(--neon);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+            margin-bottom: 20px;
         }
-        input {
-            background: rgba(0, 0, 0, 0.5) !important;
-            border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: #fff;
-            border-radius: 16px;
-            padding: 12px 16px;
+        
+        .setup-box input {
             width: 100%;
+            padding: 18px;
+            margin: 10px 0;
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        
+        .setup-box input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 25px var(--gold);
             outline: none;
         }
-        .type-select {
-            border: 2px solid rgba(255, 255, 255, 0.05);
-            background: rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: 0.2s;
+        
+        .setup-box input::placeholder {
+            color: #888;
+            font-size: 16px;
         }
-        .type-select.active { border-color: var(--gold-primary); background: rgba(212, 175, 55, 0.08); }
-        #toast-container {
+        
+        .btn-enter {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(45deg, var(--gold), #FFA500);
+            border: none;
+            border-radius: 20px;
+            color: black;
+            font-weight: bold;
+            font-size: 22px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 15px;
+            box-shadow: 0 0 30px var(--gold);
+        }
+        
+        .btn-enter:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 50px var(--gold);
+        }
+        
+        /* منطقة الفيديو */
+        #videoArea {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: black;
+            border-radius: 25px;
+            border: 3px solid var(--gold);
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 40px var(--gold);
+            z-index: 10;
+        }
+        
+        #remoteVid {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #localVid {
+            width: 120px;
+            height: 90px;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            border: 3px solid var(--neon);
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 0 20px var(--neon);
+        }
+        
+        /* منطقة الشات */
+        #chat {
+            flex: 1;
+            background: rgba(26, 30, 36, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 2px solid var(--neon);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            z-index: 10;
+            min-height: 300px;
+            max-height: 400px;
+        }
+        
+        /* الرسائل */
+        .msg {
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 85%;
+            font-size: 16px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            animation: popIn 0.3s ease;
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .msg.me {
+            background: linear-gradient(135deg, #1D2A35, #0F1A24);
+            align-self: flex-start;
+            border-right: 5px solid var(--neon);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+        }
+        
+        .msg.other {
+            background: linear-gradient(135deg, #2A2F36, #1A1F26);
+            align-self: flex-end;
+            border-left: 5px solid var(--gold);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
+        }
+        
+        .msg.sys {
+            background: rgba(255, 215, 0, 0.15);
+            align-self: center;
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-size: 14px;
+            max-width: 70%;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .msg b {
+            color: var(--gold);
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* شريط الإدخال */
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 40px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            z-index: 10;
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        .tool-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: var(--input-bg);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .tool-btn:hover {
+            transform: scale(1.1);
+            background: var(--gold);
+            color: black;
+            box-shadow: 0 0 25px var(--gold);
+        }
+        
+        #msgInput {
+            flex: 1;
+            padding: 18px;
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 30px;
+            color: white;
+            font-size: 18px;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        #msgInput:focus {
+            border-color: var(--neon);
+            box-shadow: 0 0 20px var(--neon);
+            outline: none;
+        }
+        
+        #msgInput::placeholder {
+            color: #888;
+            font-size: 16px;
+        }
+        
+        .btn-send {
+            background: linear-gradient(45deg, var(--gold), #FFA500);
+            border: none;
+            border-radius: 40px;
+            padding: 15px 25px;
+            color: black;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 20px var(--gold);
+            min-width: 100px;
+        }
+        
+        .btn-send:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px var(--gold);
+        }
+        
+        #endCallBtn {
+            background: #ff4444 !important;
+            border-color: white !important;
+            color: white !important;
+        }
+        
+        /* الإشعارات */
+        #toastContainer {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            right: 20px;
             z-index: 9999;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
+        
         .toast {
-            min-width: 250px;
-            padding: 12px 20px;
-            border-radius: 12px;
-            background: rgba(15, 15, 20, 0.95);
-            border-right: 4px solid var(--gold-primary);
-            color: #fff;
-            transform: translateX(-120%);
-            transition: transform 0.4s;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .toast.show { transform: translateX(0); }
-        .toast.error { border-right-color: #ef4444; }
-        .toast.success { border-right-color: #22c55e; }
-        .toast.alert { border-right-color: #f59e0b; animation: pulse 0.5s infinite; }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        .fade-in { animation: fadeIn 0.8s ease forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .radar-ping {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: rgba(212, 175, 55, 0.4);
-            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-            z-index: -1;
-        }
-        @keyframes ping {
-            75%, 100% { transform: scale(2); opacity: 0; }
-        }
-        .user-node {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.3s;
-        }
-        .user-node:hover { background: rgba(212, 175, 55, 0.05); border-color: var(--gold-primary); }
-        #radar-canvas {
-            width: 100%;
-            height: 350px;
-            background: #030712;
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            display: block;
-            margin-top: 1rem;
-        }
-        .speed-number {
-            font-family: monospace;
-            font-size: 2.5rem;
+            background: var(--card-bg);
+            border-right: 5px solid var(--gold);
+            padding: 15px 25px;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
             font-weight: bold;
-            color: #60a5fa;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
-
-    <div id="toast-container"></div>
-
-    <!-- شاشة تسجيل الدخول -->
-    <div id="auth-ui" class="max-w-6xl mx-auto mt-4 space-y-12 fade-in">
-        <div class="text-center space-y-2">
-            <h1 class="text-7xl md:text-8xl font-black gold-text italic tracking-tighter">RADAR</h1>
-            <p class="text-xs md:text-sm text-gray-400 tracking-[0.3em] uppercase font-light">نظام كشف المطبات والمواقع الذكي</p>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-            <div class="glass-card p-8 md:p-10 space-y-8 relative overflow-hidden">
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold mb-1">تسجيل الدخول</h2>
-                    <p class="text-sm text-gray-500">ادخل لتتمكن من رؤية الآخرين وتنبيههم</p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div id="sel-merchant" onclick="setType('merchant')" class="type-select active p-4 rounded-2xl text-center flex flex-col items-center gap-2">
-                        <span class="text-3xl">📡</span><span class="text-sm font-bold">راصد (نشط)</span>
-                    </div>
-                    <div id="sel-debtor" onclick="setType('debtor')" class="type-select p-4 rounded-2xl text-center flex flex-col items-center gap-2">
-                        <span class="text-3xl">🚗</span><span class="text-sm font-bold">سائق (مستمع)</span>
-                    </div>
-                </div>
-
-                <div class="space-y-5">
-                    <input id="u-name" type="text" placeholder="الاسم الكامل">
-                    <input id="u-pass" type="password" placeholder="كلمة المرور">
-                </div>
-
-                <div class="grid grid-cols-2 gap-4 pt-2">
-                    <button onclick="doAuth('login')" class="bg-zinc-800 py-4 rounded-xl font-bold border border-white/5 shadow-lg">دخول</button>
-                    <button onclick="doAuth('reg')" class="gold-btn py-4 rounded-xl">إنشاء حساب</button>
-                </div>
-            </div>
-
-            <div class="space-y-8 p-4">
-                <div>
-                    <h3 class="text-3xl font-black gold-text mb-4">رادار حي وشامل</h3>
-                    <ul class="text-gray-400 space-y-4 text-sm md:text-base leading-relaxed">
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> تنبيه فوري عند الاقتراب من مطب لمسافة 20 متر.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> كشف مواقع المستخدمين الآخرين المتصلين بالنظام حالياً.</li>
-                        <li class="flex gap-3"><span class="text-gold-primary">●</span> رادار بسيط يعرض المطبات أمامك حسب المسافة الحقيقية.</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+<body>
+    <div id="toastContainer"></div>
+    
+    <div class="header">
+        <h1>👑 FADI SYSTEM ULTRA 👑</h1>
+        <span class="role-badge" id="roleBadge">منتظر الدخول...</span>
     </div>
-
-    <!-- الواجهة الرئيسية -->
-    <div id="main-ui" class="hidden max-w-7xl mx-auto space-y-6 fade-in">
-        <header class="flex flex-col md:flex-row justify-between items-center glass-card p-4 md:p-6 gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 gold-btn rounded-2xl flex items-center justify-center text-black font-black text-3xl">R</div>
-                <div>
-                    <h2 id="display-name" class="text-xl md:text-2xl font-black text-white leading-none mb-1"></h2>
-                    <span id="role-tag" class="text-[11px] text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-md font-bold"></span>
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <div class="bg-green-900/20 text-green-400 px-4 py-2 rounded-xl text-sm font-bold border border-green-500/20 flex items-center gap-2">
-                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span> 
-                    <span id="gps-status">GPS نشط</span>
-                </div>
-                <button onclick="logout()" class="bg-red-900/20 text-red-400 px-4 py-2 rounded-xl text-sm font-bold border border-red-500/20">خروج</button>
-            </div>
-        </header>
-
-        <!-- الرادار البسيط -->
-        <div class="glass-card p-4 relative">
-            <div class="absolute top-4 right-4 z-10 text-left">
-                <div class="speed-number" id="speed-value">0</div>
-                <div class="text-xs text-gray-400">كم/س</div>
-                <div id="accuracy-text" class="text-[10px] text-slate-400 mt-1">دقة: --</div>
-            </div>
-            <div class="absolute top-4 left-4 z-10">
-                <div id="alert-status" class="px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold border border-green-500/50">
-                    الطريق آمن
-                </div>
-            </div>
-            <canvas id="radar-canvas"></canvas>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            <!-- الجانب الأيمن: المستخدمين القريبين وتسجيل المطبات -->
-            <div class="lg:col-span-4 space-y-6">
-                <div class="glass-card p-6">
-                    <h3 class="text-sm text-gray-300 font-bold mb-4">👤 مستخدمون قريبون</h3>
-                    <div id="users-nearby-list" class="space-y-2 max-h-[250px] overflow-y-auto">
-                        <p class="text-xs text-gray-500 text-center py-4">جاري البحث...</p>
-                    </div>
-                </div>
-
-                <div id="record-panel" class="hidden glass-card p-6 text-center relative overflow-hidden">
-                    <div class="radar-ping"></div>
-                    <button onclick="recordCurrentLocation()" class="gold-btn w-full h-24 rounded-2xl text-xl shadow-lg shadow-yellow-900/20 flex flex-col items-center justify-center gap-2 relative z-10">
-                        <span class="text-3xl">📍</span>
-                        <span>رصد مطب في موقعي الآن</span>
-                    </button>
-                    <p class="text-[10px] text-gray-400 mt-4">تنبيه 20 متر لجميع السائقين</p>
-                </div>
-            </div>
-
-            <!-- الجانب الأيسر: سجل المطبات -->
-            <div class="lg:col-span-8">
-                <div class="glass-card p-6 min-h-[500px] flex flex-col relative">
-                    <h3 class="text-xl font-black text-white mb-6 border-b border-white/5 pb-4 flex items-center justify-between">
-                        <span>📡 المطبات المسجلة</span>
-                        <span class="text-xs font-normal text-gray-400 bg-black/40 px-3 py-1 rounded-full">تحديث لحظي</span>
-                    </h3>
-                    <div id="bumps-list" class="flex-grow space-y-3 overflow-y-auto max-h-[450px] pr-2">
-                        <div class="text-center text-gray-500 py-10">جاري جلب البيانات...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    
+    <div class="setup-box" id="setup">
+        <input type="text" id="userName" placeholder="الاسم الثلاثي" autocomplete="off">
+        <input type="text" id="roomNum" placeholder="رقم الغرفة" autocomplete="off">
+        <button class="btn-enter" onclick="initFadi()">🚀 ادخل المنظومة</button>
+    </div>
+    
+    <div id="videoArea">
+        <video id="remoteVid" autoplay playsinline></video>
+        <video id="localVid" autoplay muted playsinline></video>
+    </div>
+    
+    <div id="chat"></div>
+    <audio id="remoteVoice" autoplay></audio>
+    
+    <div class="input-row" id="inputSection" style="display:none;">
+        <button class="tool-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+        <button class="tool-btn" onclick="callAll(false)">📞</button>
+        <button class="tool-btn" onclick="callAll(true)">🎥</button>
+        <button class="tool-btn" id="endCallBtn" onclick="endCall()">🛑</button>
+        <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') send()">
+        <button class="btn-send" onclick="send()">إرسال</button>
     </div>
 
     <script>
-        // ==================== متغيرات عامة ====================
-        let user = null;
-        let userType = 'merchant';
-        let systemBumps = [];
-        let connectedUsers = [];
-        let myCurrentLocation = null;
-        let currentSpeed = 0;
-        let alertCooldown = false;
-        let activeAlertForBump = null;   // id of bump currently alerting
-        let canvas = null;
-        let ctx = null;
-        let animationId = null;
-        let audioCtx = null;
-
-        // ==================== دوال مساعدة ====================
-        function showToast(msg, type = 'error') {
-            const container = document.getElementById('toast-container');
+        let peer, myName, myRoom, conns = [], currentCall, myStream;
+        let isMicMuted = false;
+        const chatBox = document.getElementById('chat');
+        const toastContainer = document.getElementById('toastContainer');
+        
+        const cfg = {
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            }
+        };
+        
+        // نظام الإشعارات
+        function showToast(msg, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icon = type === 'success' ? '✅' : (type === 'alert' ? '🚨' : '⚠️');
-            toast.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
+            toast.className = 'toast';
+            toast.textContent = msg;
+            toast.style.borderRightColor = type === 'gold' ? '#FFD700' : '#00ffff';
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
-
-        function setType(t) {
-            userType = t;
-            document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant');
-            document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
-        }
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const silent = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                gain.gain.value = 0;
-                silent.connect(gain);
-                gain.connect(audioCtx.destination);
-                silent.start();
-                silent.stop(audioCtx.currentTime + 0.1);
+        
+        // بداية التشغيل
+        function initFadi() {
+            myName = document.getElementById('userName').value.trim();
+            myRoom = document.getElementById('roomNum').value.trim();
+            
+            if(!myName || !myRoom) {
+                showToast('❌ اكتب اسمك ورقم الغرفة', 'gold');
+                return;
             }
+            
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('inputSection').style.display = 'flex';
+            showToast('⚡ جاري الاتصال...', 'info');
+            
+            tryHost();
         }
-
-        function playAlertSound() {
-            if (!audioCtx) return;
-            const oscillator = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            oscillator.type = 'sawtooth';
-            oscillator.frequency.value = 800;
-            gain.gain.value = 0.2;
-            oscillator.connect(gain);
-            gain.connect(audioCtx.destination);
-            oscillator.start();
-            oscillator.stop(audioCtx.currentTime + 0.8);
-        }
-
-        // ==================== دوال الشبكة ====================
-        async function doAuth(action) {
-            const name = document.getElementById('u-name').value.trim();
-            const password = document.getElementById('u-pass').value;
-            if (!name || !password) return showToast("أدخل الاسم وكلمة المرور");
-            try {
-                const res = await fetch('/api/auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, password, type: userType, action })
+        
+        function tryHost() {
+            peer = new Peer(myRoom, cfg);
+            
+            peer.on('open', () => {
+                document.getElementById('roleBadge').textContent = '👑 زعيم المجموعة';
+                log('👑 انت الزعيم.. المجموعة جاهزة', 'sys');
+                showToast('👑 انت الزعيم', 'gold');
+                
+                peer.on('connection', c => {
+                    conns.push(c);
+                    handleConn(c, true);
+                    showToast('📱 عضو جديد انضم', 'info');
                 });
-                const data = await res.json();
-                if (res.ok) {
-                    user = data;
-                    localStorage.setItem('radar_session', JSON.stringify(user));
-                    showToast("تم الدخول بنجاح", "success");
-                    startApp();
-                    initAudio();
+                
+                peer.on('call', call => handleCall(call));
+            });
+            
+            peer.on('error', err => {
+                if(err.type === 'unavailable-id') {
+                    joinRoom();
                 } else {
-                    showToast(data.error || "خطأ في المصادقة");
+                    showToast('⚠️ خطأ: ' + err.type, 'gold');
                 }
-            } catch (e) {
-                showToast("خطأ في الاتصال بالسيرفر");
-            }
-        }
-
-        function startApp() {
-            document.getElementById('auth-ui').classList.add('hidden');
-            document.getElementById('main-ui').classList.remove('hidden');
-            document.getElementById('display-name').textContent = user.name;
-            document.getElementById('role-tag').textContent = user.type === 'merchant' ? '📡 راصد نشط' : '🚗 سائق';
-            if (user.type === 'merchant') {
-                document.getElementById('record-panel').classList.remove('hidden');
-            }
-            canvas = document.getElementById('radar-canvas');
-            ctx = canvas.getContext('2d');
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            startAnimation();
-
-            fetchBumps();
-            fetchConnectedUsers();
-            setInterval(fetchBumps, 3000);
-            setInterval(fetchConnectedUsers, 5000);
-            startGPSWatcher();
-        }
-
-        function resizeCanvas() {
-            canvas.width = canvas.clientWidth;
-            canvas.height = canvas.clientHeight;
-        }
-
-        async function fetchBumps() {
-            try {
-                const res = await fetch('/api/bumps');
-                systemBumps = await res.json();
-                renderBumps();
-            } catch (e) { console.error(e); }
-        }
-
-        function renderBumps() {
-            const container = document.getElementById('bumps-list');
-            if (systemBumps.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 py-10">لا توجد مطبات مسجلة.</p>';
-                return;
-            }
-            container.innerHTML = systemBumps.slice().reverse().map(b => `
-                <div class="p-4 bg-zinc-900/80 rounded-xl border border-white/5 flex justify-between items-center">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-yellow-900/30 text-yellow-500 flex items-center justify-center text-xl border border-yellow-500/20">⚠️</div>
-                        <div>
-                            <p class="font-bold text-sm text-gray-200">موقع مطب مثبت</p>
-                            <p class="text-[10px] text-gray-500">الراصد: ${escapeHtml(b.recorderName)}</p>
-                        </div>
-                    </div>
-                    <div class="text-[10px] text-gray-500 bg-black/40 px-3 py-1 rounded-full">
-                        ${new Date(b.timestamp).toLocaleTimeString('ar-YE')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function fetchConnectedUsers() {
-            if (!user || !myCurrentLocation) return;
-            try {
-                const res = await fetch('/api/users-online', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        name: user.name,
-                        type: user.type,
-                        loc: myCurrentLocation
-                    })
-                });
-                connectedUsers = await res.json();
-                renderUsersNearby();
-            } catch (e) { console.error(e); }
-        }
-
-        function renderUsersNearby() {
-            const list = document.getElementById('users-nearby-list');
-            if (!myCurrentLocation) {
-                list.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-4">جاري تحديد موقعك...</p>';
-                return;
-            }
-            const others = connectedUsers.filter(u => u.userId !== user.id && u.loc);
-            if (others.length === 0) {
-                list.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-4">لا يوجد مستخدمون آخرون قريباً</p>';
-                return;
-            }
-            list.innerHTML = others.map(u => {
-                const d = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, u.loc.lat, u.loc.lng);
-                const distStr = d < 1 ? `${(d*1000).toFixed(0)} متر` : `${d.toFixed(2)} كم`;
-                return `
-                    <div class="user-node p-3 rounded-xl flex justify-between items-center">
-                        <div class="flex items-center gap-2">
-                            <span class="text-lg">${u.type === 'merchant' ? '📡' : '🚗'}</span>
-                            <div>
-                                <p class="text-xs font-bold text-white">${escapeHtml(u.name)}</p>
-                                <p class="text-[9px] text-gray-500">${u.type === 'merchant' ? 'راصد' : 'سائق'}</p>
-                            </div>
-                        </div>
-                        <div class="text-[10px] font-bold text-gold-primary bg-gold-primary/10 px-2 py-1 rounded-lg">
-                            يبعد ${distStr}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function recordCurrentLocation() {
-            if (!navigator.geolocation) return showToast("المتصفح لا يدعم الموقع");
-            showToast("جاري التقاط الإحداثية...", "success");
-            navigator.geolocation.getCurrentPosition(async (pos) => {
-                try {
-                    await fetch('/api/add-bump', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            lat: pos.coords.latitude,
-                            lng: pos.coords.longitude,
-                            userId: user.id,
-                            userName: user.name
-                        })
-                    });
-                    showToast("تم تثبيت المطب بنجاح", "success");
-                    fetchBumps();
-                } catch (e) {
-                    showToast("خطأ في الاتصال");
-                }
-            }, null, { enableHighAccuracy: true });
-        }
-
-        // ==================== الموقع والتنبيه ====================
-        function startGPSWatcher() {
-            if (!navigator.geolocation) return;
-            navigator.geolocation.watchPosition((pos) => {
-                myCurrentLocation = {
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude
-                };
-                currentSpeed = (pos.coords.speed || 0) * 3.6;
-                document.getElementById('speed-value').innerText = Math.round(currentSpeed);
-                document.getElementById('accuracy-text').innerHTML = `دقة: ±${Math.round(pos.coords.accuracy)}m`;
-                checkProximity();
-                fetchConnectedUsers();
-            }, null, { enableHighAccuracy: true });
-        }
-
-        function checkProximity() {
-            if (!myCurrentLocation || systemBumps.length === 0) return;
-            let closestDist = Infinity;
-            let closestBump = null;
-            for (let bump of systemBumps) {
-                const dist = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestBump = bump;
-                }
-            }
-            if (closestDist <= 0.02 && !alertCooldown) { // 20 متر
-                if (activeAlertForBump !== closestBump.id) {
-                    activeAlertForBump = closestBump.id;
-                    triggerAlert();
-                }
-            } else if (closestDist > 0.05 && activeAlertForBump !== null) {
-                activeAlertForBump = null;
-                const statusDiv = document.getElementById('alert-status');
-                statusDiv.innerText = 'الطريق آمن';
-                statusDiv.className = 'px-3 py-1 rounded-full bg-green-500/20 text-green-400 text-[10px] font-bold border border-green-500/50';
-            }
-        }
-
-        function triggerAlert() {
-            showToast("🚨 انتبه! مطب أمامك (20 متر فقط)", "alert");
-            if ("vibrate" in navigator) navigator.vibrate([500, 200, 500]);
-            playAlertSound();
-            const statusDiv = document.getElementById('alert-status');
-            statusDiv.innerText = '⚠️ خطر مطب!';
-            statusDiv.className = 'px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold';
-            alertCooldown = true;
-            setTimeout(() => { alertCooldown = false; }, 10000);
-        }
-
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371;
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R * c;
-        }
-
-        // ==================== رسم الرادار البسيط ====================
-        function startAnimation() {
-            if (animationId) cancelAnimationFrame(animationId);
-            function draw() {
-                if (!ctx || !canvas) return;
-                const w = canvas.width;
-                const h = canvas.height;
-                if (w === 0 || h === 0) {
-                    animationId = requestAnimationFrame(draw);
-                    return;
-                }
-                ctx.clearRect(0, 0, w, h);
-                ctx.fillStyle = '#030712';
-                ctx.fillRect(0, 0, w, h);
-
-                const centerX = w/2;
-                const bottomY = h - 60;
-
-                // رسم خطوط الطريق (خطين متقاربين في الأعلى)
-                ctx.beginPath();
-                ctx.moveTo(centerX - 35, bottomY);
-                ctx.lineTo(centerX - 10, 30);
-                ctx.moveTo(centerX + 35, bottomY);
-                ctx.lineTo(centerX + 10, 30);
-                ctx.strokeStyle = '#334155';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                // رسم المطبات على نفس الخط (في المنتصف)
-                if (myCurrentLocation && systemBumps.length) {
-                    for (let bump of systemBumps) {
-                        const distKm = calculateDistance(myCurrentLocation.lat, myCurrentLocation.lng, bump.lat, bump.lng);
-                        const distMeters = distKm * 1000;
-                        if (distMeters < 150) {
-                            // كلما اقترب المطب (مسافة أقل) كلما نزل للأسفل
-                            const maxDist = 150;
-                            const yRatio = Math.min(1, distMeters / maxDist);
-                            const y = bottomY - yRatio * (bottomY - 40);
-                            // x في المنتصف تماماً
-                            const x = centerX;
-                            ctx.fillStyle = '#ef4444';
-                            ctx.beginPath();
-                            ctx.arc(x, y, 12, 0, Math.PI*2);
-                            ctx.fill();
-                            ctx.fillStyle = '#facc15';
-                            ctx.font = "bold 14px 'Changa'";
-                            ctx.fillText("⚠️", x-7, y-5);
-                            ctx.fillStyle = '#9ca3af';
-                            ctx.font = "10px monospace";
-                            ctx.fillText(`${Math.round(distMeters)}م`, x+12, y-5);
-                        }
-                    }
-                }
-
-                // رسم السيارة (مثلث في الأسفل)
-                ctx.fillStyle = '#3b82f6';
-                ctx.beginPath();
-                ctx.moveTo(centerX, bottomY);
-                ctx.lineTo(centerX - 18, bottomY + 30);
-                ctx.lineTo(centerX + 18, bottomY + 30);
-                ctx.closePath();
-                ctx.fill();
-                ctx.fillStyle = 'white';
-                ctx.font = "bold 16px 'Changa'";
-                ctx.fillText("🚗", centerX-10, bottomY-5);
-
-                animationId = requestAnimationFrame(draw);
-            }
-            draw();
-        }
-
-        // ==================== أدوات الحماية ====================
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
             });
         }
-
-        function logout() {
-            localStorage.removeItem('radar_session');
-            location.reload();
+        
+        function joinRoom() {
+            peer = new Peer(myRoom + '-' + Math.floor(Math.random() * 9999), cfg);
+            
+            peer.on('open', () => {
+                document.getElementById('roleBadge').textContent = '👤 عضو في المجموعة';
+                log('✅ دخلت المجموعة', 'sys');
+                showToast('✅ تم الاتصال', 'info');
+                
+                let c = peer.connect(myRoom);
+                conns.push(c);
+                handleConn(c, false);
+            });
+            
+            peer.on('call', call => handleCall(call));
         }
-
-        window.onload = () => {
-            const saved = localStorage.getItem('radar_session');
-            if (saved) {
-                user = JSON.parse(saved);
-                startApp();
+        
+        function handleConn(c, isHost) {
+            c.on('open', () => {
+                c.send({ type: 'join', user: myName });
+            });
+            
+            c.on('data', d => {
+                if(isHost && d.type !== 'join') {
+                    conns.forEach(client => {
+                        if(client !== c) client.send(d);
+                    });
+                }
+                
+                if(d.type === 'msg') {
+                    log(d.text, 'other', d.user);
+                    if(d.text.includes('@' + myName)) {
+                        showToast(`💬 ${d.user} منشن لك`, 'gold');
+                    }
+                }
+                
+                if(d.type === 'join') {
+                    log(d.user + ' انضم للمجموعة', 'sys');
+                }
+            });
+        }
+        
+        function handleCall(call) {
+            if(confirm('📞 اتصال وارد.. تريد الرد؟')) {
+                navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: call.metadata?.video || false
+                }).then(s => {
+                    myStream = s;
+                    
+                    if(call.metadata?.video) {
+                        document.getElementById('videoArea').style.display = 'block';
+                        document.getElementById('localVid').srcObject = s;
+                    }
+                    
+                    call.answer(s);
+                    setupCall(call);
+                    
+                }).catch(e => {
+                    showToast('❌ لا يمكن فتح الكاميرا', 'gold');
+                });
+            } else {
+                call.close();
             }
+        }
+        
+        function setupCall(call) {
+            currentCall = call;
+            document.getElementById('endCallBtn').style.display = 'flex';
+            
+            call.on('stream', remoteStream => {
+                if(call.metadata?.video) {
+                    document.getElementById('remoteVid').srcObject = remoteStream;
+                } else {
+                    document.getElementById('remoteVoice').srcObject = remoteStream;
+                }
+            });
+            
+            call.on('close', () => endCall());
+        }
+        
+        function callAll(video) {
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: video
+            }).then(s => {
+                myStream = s;
+                
+                if(video) {
+                    document.getElementById('videoArea').style.display = 'block';
+                    document.getElementById('localVid').srcObject = s;
+                }
+                
+                conns.forEach(c => {
+                    let call = peer.call(c.peer, s, { metadata: { video: video } });
+                    setupCall(call);
+                });
+                
+                showToast(video ? '📹 مكالمة فيديو بدأت' : '📞 مكالمة صوتية بدأت', 'info');
+                
+            }).catch(e => {
+                showToast('❌ صلاحيات الكاميرا مطلوبة', 'gold');
+            });
+        }
+        
+        function endCall() {
+            if(currentCall) currentCall.close();
+            if(myStream) myStream.getTracks().forEach(t => t.stop());
+            
+            document.getElementById('videoArea').style.display = 'none';
+            document.getElementById('endCallBtn').style.display = 'none';
+            log('🔴 تم إنهاء المكالمة', 'sys');
+            showToast('🔴 انتهت المكالمة', 'info');
+        }
+        
+        function toggleMic() {
+            if(myStream) {
+                myStream.getAudioTracks().forEach(t => t.enabled = isMicMuted);
+                isMicMuted = !isMicMuted;
+                
+                document.getElementById('micBtn').style.background = isMicMuted ? '#ff4444' : '';
+                document.getElementById('micBtn').style.color = isMicMuted ? 'white' : '';
+                
+                showToast(isMicMuted ? '🔇 الميكروفون كاتم' : '🎤 الميكروفون شغال', 'info');
+            }
+        }
+        
+        function send() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            
+            if(!text) return;
+            
+            // عرض عندي
+            log(text, 'me', myName);
+            
+            // ارسال للكل
+            conns.forEach(c => {
+                c.send({ type: 'msg', user: myName, text: text });
+            });
+            
+            input.value = '';
+            input.focus();
+        }
+        
+        function log(msg, type, user = null) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            
+            if(type === 'sys') {
+                div.innerHTML = `⚡ ${msg}`;
+            } else {
+                // تحويل @ mentions
+                let formattedMsg = msg.replace(/@(\w+)/g, '<span style="background: #FFD70033; padding: 2px 5px; border-radius: 10px; color: #FFD700;">@$1</span>');
+                div.innerHTML = user ? `<b>${user}</b><br>${formattedMsg}` : formattedMsg;
+            }
+            
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        // تحذير الخروج
+        window.onbeforeunload = function() {
+            return "انت خارج من المنظومة!";
         };
     </script>
 </body>
