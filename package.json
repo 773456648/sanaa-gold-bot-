@@ -1,15 +1,13 @@
 {
-  "name": "insta-stay-online-pro",
-  "version": "2.0.0",
-  "description": "Instagram 24/7 Keep Online - Pro Version",
+  "name": "universal-session-keeper",
+  "version": "3.0.0",
+  "description": "Keep any session alive via HTTP Ping",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "puppeteer browsers install chrome"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "puppeteer": "^22.0.0"
+    "cors": "^2.8.5"
   }
 }
