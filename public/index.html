@@ -3,372 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة البقاء متصلاً - انستقرام</title>
+    <title>Instagram 24/7 - فادي</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --ig-primary: #E1306C;
-            --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-            --bg-dark: #0f1015;
-            --surface: #1a1b23;
-        }
-
-        body { 
-            background-color: var(--bg-dark); 
-            color: #fff; 
-            font-family: 'Tajawal', sans-serif; 
-            min-height: 100vh;
-        }
-
-        .gradient-text { 
-            background: var(--ig-gradient);
-            -webkit-background-clip: text;
-            color: transparent;
-        }
-
-        .glass-panel {
-            background: var(--surface);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        textarea, input {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border-radius: 12px;
-            padding: 12px;
-            width: 100%;
-            outline: none;
-            transition: border 0.3s;
-        }
-        
-        textarea:focus, input:focus { border-color: var(--ig-primary); }
-
-        .btn-start {
-            background: var(--ig-gradient);
-            color: white;
-            font-weight: bold;
-            border-radius: 12px;
-            padding: 14px;
-            width: 100%;
-            transition: opacity 0.3s, transform 0.2s;
-        }
-        .btn-start:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-start:active { transform: translateY(0); }
-
-        .btn-stop {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.5);
-        }
-
-        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
-        .status-online { background-color: #22c55e; box-shadow: 0 0 12px #22c55e; animation: pulse 2s infinite; }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-        }
-
-        .terminal {
-            background: #000; border-radius: 12px; padding: 12px; font-family: monospace;
-            font-size: 12px; color: #0f0; height: 150px; overflow-y: auto; border: 1px solid #333;
-        }
-        
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { background-color: #0f1015; color: #fff; font-family: 'Tajawal', sans-serif; }
+        .ig-gradient { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .glass { background: #1a1b23; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; }
+        .terminal { background: #000; color: #0f0; font-family: monospace; height: 150px; overflow-y: auto; padding: 10px; border-radius: 10px; font-size: 12px; }
+        .status-online { background: #22c55e; box-shadow: 0 0 10px #22c55e; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .hidden { display: none; }
     </style>
 </head>
-<body class="p-4 md:p-8 flex items-center justify-center">
+<body class="p-4 flex items-center justify-center min-h-screen">
 
-    <div id="login-screen" class="glass-panel p-8 max-w-md w-full text-center fade-in">
-        <h2 class="text-2xl font-bold gradient-text mb-6">تسجيل الدخول للنظام</h2>
-        <input type="password" id="sys-password" placeholder="أدخل كلمة المرور..." class="mb-4 text-center text-xl tracking-widest">
-        <button onclick="checkPassword()" class="btn-start">دخول</button>
-        <p id="login-error" class="text-red-500 text-sm mt-2 hidden">كلمة المرور خاطئة!</p>
+    <!-- شاشة الدخول -->
+    <div id="login-box" class="glass p-8 max-w-sm w-full text-center">
+        <h2 class="text-2xl font-bold mb-6">دخول النظام</h2>
+        <input type="password" id="pass" placeholder="كلمة المرور" class="w-full p-3 rounded-lg bg-black/40 border border-white/10 mb-4 text-center">
+        <button onclick="login()" class="ig-gradient w-full py-3 rounded-lg font-bold">دخول</button>
     </div>
 
-    <div id="main-app" class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
-        
-        <div class="glass-panel p-6 space-y-6">
-            <div class="text-center">
-                <h1 class="text-3xl font-bold gradient-text mb-2">Instagram 24/7 (Live Session)</h1>
-                <p class="text-gray-400 text-sm">أبقِ حسابك متصلاً باستمرار عبر متصفح خفي</p>
+    <!-- التطبيق الرئيسي -->
+    <div id="app-box" class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+        <div class="glass p-6 space-y-4">
+            <h1 class="text-xl font-bold text-center">إعداد البوت</h1>
+            
+            <div id="setup-form">
+                <input type="text" id="user" placeholder="@username" class="w-full p-3 rounded-lg bg-black/40 border border-white/10 mb-3" dir="ltr">
+                <textarea id="cookies" placeholder="Paste Cookies JSON here..." class="w-full p-3 rounded-lg bg-black/40 border border-white/10 h-32 text-xs" dir="ltr"></textarea>
+                <button onclick="start()" class="ig-gradient w-full py-3 rounded-lg font-bold mt-3">بدء التشغيل</button>
             </div>
 
-            <div id="setup-view" class="space-y-4">
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">اسم المستخدم (يوزرنيم):</label>
-                    <input type="text" id="ig-username" placeholder="@username" dir="ltr" class="text-left">
-                </div>
-
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">بيانات الـ Cookies:</label>
-                    <textarea id="ig-cookies" rows="4" placeholder='[{"domain": ".instagram.com", ...}]' dir="ltr" class="text-left font-mono text-xs text-gray-300"></textarea>
-                </div>
-
-                <div class="flex gap-2">
-                    <button onclick="startServerConnection()" class="btn-start flex-1 flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        تشغيل الجلسة المباشرة
-                    </button>
-                    <button onclick="saveAccount()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl font-bold transition">
-                        حفظ كقالب
-                    </button>
-                </div>
-
-                <div class="mt-6 pt-4 border-t border-white/10">
-                    <h3 class="text-sm font-bold mb-3 text-gray-300">الكوكيز المحفوظة:</h3>
-                    <div id="saved-accounts-list" class="space-y-2 max-h-40 overflow-y-auto pr-2">
-                    </div>
-                </div>
-            </div>
-
-            <div id="active-view" class="hidden space-y-4">
-                <div class="bg-black/50 border border-white/10 p-4 rounded-xl flex justify-between items-center">
+            <div id="status-panel" class="hidden space-y-4">
+                <div class="bg-green-500/10 border border-green-500/20 p-4 rounded-xl flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-400">حالة السيرفر:</p>
-                        <p class="font-bold text-lg flex items-center gap-2">
-                            <span class="status-dot status-online"></span> مبشر بالخاص 
+                        <p class="text-xs text-gray-400">الحالة الحالية:</p>
+                        <p class="font-bold text-green-400 flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full status-online"></span> متصل في السيرفر
                         </p>
                     </div>
-                    <div class="text-left">
-                        <p class="text-sm text-gray-400">الحساب:</p>
-                        <p id="display-username" class="font-bold text-ig-primary" dir="ltr"></p>
-                    </div>
+                    <p id="active-user" class="font-bold" dir="ltr"></p>
                 </div>
-
-                <div>
-                    <label class="block text-sm text-gray-400 mb-2">سجل عمليات السيرفر (Console):</label>
-                    <div id="terminal-log" class="terminal"></div>
-                </div>
-
-                <button onclick="stopServerConnection()" class="btn-start btn-stop mt-4 flex items-center justify-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
-                    إيقاف الجلسة
-                </button>
+                <div id="log" class="terminal"></div>
+                <button onclick="stop()" class="w-full py-3 rounded-lg font-bold bg-red-500/20 text-red-500 border border-red-500/50">إيقاف الجلسة</button>
             </div>
         </div>
 
-        <div class="glass-panel p-6 flex flex-col h-full min-h-[500px]">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">معاينة الصفحة</h2>
-                <span id="preview-status" class="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/20">غير متصل</span>
-            </div>
-            
-            <div id="profile-container" class="flex-grow bg-black/50 rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden">
-                <div id="empty-state" class="text-center p-6">
-                    <div class="w-16 h-16 mx-auto mb-4 opacity-50">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        <div class="glass p-6 text-center flex flex-col justify-center">
+            <h2 class="text-lg font-bold mb-4">المعاينة</h2>
+            <div id="preview" class="bg-black/20 rounded-2xl p-10">
+                <div id="preview-off">لا يوجد نشاط</div>
+                <div id="preview-on" class="hidden">
+                    <div class="w-20 h-20 mx-auto rounded-full ig-gradient p-1 mb-3">
+                        <div class="w-full h-full bg-black rounded-full border-4 border-black"></div>
                     </div>
-                    <p class="text-gray-500 text-sm">أدخل الكوكيز واضغط تشغيل لرؤية صفحتك هنا</p>
-                </div>
-
-                <div id="profile-view" class="hidden w-full h-full flex flex-col">
-                    <div class="p-4 border-b border-white/10 flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-yellow-400 to-fuchsia-600 p-[2px]">
-                            <div class="w-full h-full bg-black rounded-full border-2 border-black"></div>
-                        </div>
-                        <div>
-                            <h3 id="preview-user" class="font-bold text-lg" dir="ltr">username</h3>
-                            <p class="text-xs text-green-400 flex items-center gap-1">
-                                <span class="status-dot status-online scale-50"></span> نشط الآن
-                            </p>
-                        </div>
-                    </div>
-                    <div class="flex-grow relative">
-                        <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                            <p class="text-gray-400 mb-4 text-sm">المتصفح الخفي يعمل في السيرفر...</p>
-                            <a id="ig-link" href="#" target="_blank" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition text-white">
-                                فتح صفحتي
-                            </a>
-                        </div>
-                    </div>
+                    <p id="preview-name" class="font-bold text-xl"></p>
+                    <p class="text-green-400 text-sm mt-2">متصل الآن 24/7</p>
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
-        const API_URL = '/api';
-        let currentUsername = '';
-        let localPingInterval;
+        const API = '/api';
+        let currentBot = '';
 
-        async function checkPassword() {
-            const pwd = document.getElementById('sys-password').value;
-            try {
-                const res = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: pwd })
-                });
-                const data = await res.json();
-                
-                if(data.success) {
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('main-app').classList.remove('hidden');
-                    document.getElementById('main-app').classList.add('fade-in');
-                    loadSavedAccounts(); 
-                    // استدعاء دالة فحص الحالة عند الدخول مباشرة
-                    checkActiveBots();
-                } else {
-                    document.getElementById('login-error').classList.remove('hidden');
-                }
-            } catch (e) {
-                alert('خطأ في الاتصال بالسيرفر');
+        async function login() {
+            const p = document.getElementById('pass').value;
+            const res = await fetch(API+'/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:p})});
+            if((await res.json()).success) {
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('app-box').classList.remove('hidden');
+                refreshStatus(); // أول ما يدخل يشوف السيرفر
+            } else alert('غلط!');
+        }
+
+        async function refreshStatus() {
+            const res = await fetch(API+'/status');
+            const data = await res.json();
+            if(data.activeBots && data.activeBots.length > 0) {
+                currentBot = data.activeBots[0];
+                uiActive(currentBot);
+                addLog("تم استعادة الجلسة النشطة من السيرفر.");
             }
         }
 
-        // دالة التأكد من حالة البوت على السيرفر (عشان لو حدثت الصفحة يرجع يظهر إنه شغال)
-        async function checkActiveBots() {
-            try {
-                const res = await fetch(`${API_URL}/status`);
-                const data = await res.json();
-                if (data.activeBots && data.activeBots.length > 0) {
-                    currentUsername = data.activeBots[0];
-                    showActiveUI(currentUsername);
-                    logToTerminal(`تم استعادة الاتصال. الجلسة المباشرة لحساب ${currentUsername} لا تزال تعمل في السيرفر.`);
-                }
-            } catch (e) {
-                console.log("فشل في جلب حالة البوتات.");
-            }
+        function uiActive(user) {
+            document.getElementById('setup-form').classList.add('hidden');
+            document.getElementById('status-panel').classList.remove('hidden');
+            document.getElementById('preview-off').classList.add('hidden');
+            document.getElementById('preview-on').classList.remove('hidden');
+            document.getElementById('active-user').innerText = user;
+            document.getElementById('preview-name').innerText = user;
         }
 
-        function showActiveUI(username) {
-            document.getElementById('setup-view').classList.add('hidden');
-            document.getElementById('active-view').classList.remove('hidden');
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('profile-view').classList.remove('hidden');
+        async function start() {
+            const username = document.getElementById('user').value;
+            const cookies = document.getElementById('cookies').value;
+            if(!username || !cookies) return alert('املي البيانات!');
             
-            const formattedUser = username.startsWith('@') ? username : '@' + username;
-            document.getElementById('display-username').innerText = formattedUser;
-            document.getElementById('preview-user').innerText = formattedUser;
-            document.getElementById('ig-link').href = `https://www.instagram.com/${formattedUser.replace('@', '')}`;
-
-            const statusBadge = document.getElementById('preview-status');
-            statusBadge.innerText = 'متصل 24/7';
-            statusBadge.className = 'text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/20';
-
-            clearInterval(localPingInterval);
-            localPingInterval = setInterval(() => {
-                logToTerminal(`[${new Date().toLocaleTimeString()}] إشارة البقاء متصلاً تعمل عبر السيرفر...`);
-            }, 30000); 
-        }
-
-        async function loadSavedAccounts() {
-            try {
-                const res = await fetch(`${API_URL}/accounts`);
-                const accounts = await res.json();
-                const listDiv = document.getElementById('saved-accounts-list');
-                listDiv.innerHTML = '';
-
-                if(accounts.length === 0) {
-                    listDiv.innerHTML = '<p class="text-xs text-gray-500">لا توجد حسابات محفوظة بعد.</p>';
-                    return;
-                }
-
-                accounts.forEach(acc => {
-                    listDiv.innerHTML += `
-                        <div class="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-white/5">
-                            <span class="text-sm text-ig-primary font-bold" dir="ltr">${acc.username}</span>
-                            <div class="flex gap-2">
-                                <button onclick="useAccount('${acc.username}', '${btoa(encodeURIComponent(acc.cookies))}')" class="text-xs bg-green-600/20 text-green-400 px-3 py-1 rounded hover:bg-green-600/40 transition">استخدام</button>
-                                <button onclick="deleteAccount('${acc.username}')" class="text-xs bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600/40 transition">حذف</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch(e) {}
-        }
-
-        function useAccount(username, encodedCookies) {
-            document.getElementById('ig-username').value = username;
-            document.getElementById('ig-cookies').value = decodeURIComponent(atob(encodedCookies));
-        }
-
-        async function saveAccount() {
-            const username = document.getElementById('ig-username').value.trim();
-            const cookies = document.getElementById('ig-cookies').value.trim();
-            if(!username || !cookies) return alert('أدخل اليوزر والكوكيز أولاً');
-
-            await fetch(`${API_URL}/accounts`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, cookies })
-            });
-            loadSavedAccounts();
-        }
-
-        async function deleteAccount(username) {
-            if(!confirm(`هل أنت متأكد من حذف ${username}؟`)) return;
-            await fetch(`${API_URL}/accounts/${username}`, { method: 'DELETE' });
-            loadSavedAccounts();
-        }
-
-        async function startServerConnection() {
-            const username = document.getElementById('ig-username').value.trim();
-            const cookies = document.getElementById('ig-cookies').value.trim();
-
-            if(!username || !cookies) return alert('أكمل البيانات');
-            currentUsername = username;
-
-            try {
-                document.getElementById('terminal-log').innerHTML = '';
-                logToTerminal(`جاري تجهيز المتصفح الخفي وإرسال البيانات...`);
-                
-                const res = await fetch(`${API_URL}/start`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, cookies })
-                });
-                
-                const data = await res.json();
-                if(!data.success) throw new Error();
-
-                showActiveUI(username);
-                logToTerminal(`تم تشغيل الجلسة المباشرة بنجاح لحساب ${username}.`);
-
-            } catch(e) {
-                alert('حدث خطأ أثناء تشغيل السيرفر');
-            }
-        }
-
-        async function stopServerConnection() {
-            clearInterval(localPingInterval);
+            addLog("جاري بدء الجلسة في السيرفر...");
+            await fetch(API+'/start', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username, cookies})});
             
-            if(currentUsername) {
-                await fetch(`${API_URL}/stop`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUsername })
-                });
-            }
-
-            document.getElementById('setup-view').classList.remove('hidden');
-            document.getElementById('active-view').classList.add('hidden');
-            document.getElementById('empty-state').classList.remove('hidden');
-            document.getElementById('profile-view').classList.add('hidden');
-
-            const statusBadge = document.getElementById('preview-status');
-            statusBadge.innerText = 'غير متصل';
-            statusBadge.className = 'text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/20';
-            currentUsername = '';
+            // حفظ الحساب في السيرفر عشان يشتغل تلقائياً لو طفى السيرفر
+            await fetch(API+'/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username, cookies})});
+            
+            uiActive(username);
+            currentBot = username;
         }
 
-        function logToTerminal(msg) {
-            const terminal = document.getElementById('terminal-log');
-            terminal.innerHTML += `> ${msg}<br>`;
-            terminal.scrollTop = terminal.scrollHeight;
+        async function stop() {
+            await fetch(API+'/stop', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:currentBot})});
+            location.reload();
         }
 
-        document.getElementById('sys-password').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkPassword();
-        });
+        function addLog(m) {
+            const l = document.getElementById('log');
+            l.innerHTML += `> ${m}<br>`;
+            l.scrollTop = l.scrollHeight;
+        }
+
+        // فحص الحالة كل دقيقة للتأكد إن كل شي تمام
+        setInterval(refreshStatus, 60000);
     </script>
 </body>
 </html>
