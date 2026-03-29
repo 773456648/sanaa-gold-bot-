@@ -1,192 +1,105 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
-const puppeteer = require('puppeteer');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); 
+app.use(express.static('public'));
 
-// كلمة السر للدخول للنظام
 const SYSTEM_PASSWORD = '771232690';
-const DB_FILE = path.join(__dirname, 'accounts.json');
 
-// ذاكرة السيرفر للحسابات الشغالة حالياً
-const activeBots = {};
+// هنا نحفظ الجلسات الشغالة حالياً في السيرفر
+const activeSessions = {};
 
-// دوال حفظ وقراءة الحسابات
-function getAccounts() {
-    if (!fs.existsSync(DB_FILE)) return [];
+// دالة تحويل الكوكيز من JSON إلى نص عادي عشان يقبلها السيرفر
+function parseCookies(cookieInput) {
     try {
-        const data = fs.readFileSync(DB_FILE);
-        return JSON.parse(data);
-    } catch(e) { return []; }
+        const parsed = JSON.parse(cookieInput);
+        if (Array.isArray(parsed)) {
+            return parsed.map(c => `${c.name}=${c.value}`).join('; ');
+        }
+        return cookieInput;
+    } catch (e) {
+        return cookieInput; // إذا كانت نص جاهز، نرجعها زي ما هي
+    }
 }
 
-function saveAccounts(accounts) {
-    fs.writeFileSync(DB_FILE, JSON.stringify(accounts, null, 2));
-}
-
-// الدالة الأسطورية لتشغيل البوت بذكاء
-async function startBotLogic(username, cookies) {
-    // تنظيف أي جلسة سابقة لنفس الحساب عشان ما يصير تعليق
-    if (activeBots[username]) {
-        console.log(`[${username}] يتم إيقاف الجلسة القديمة لتجديدها...`);
-        clearInterval(activeBots[username].interval);
-        try { await activeBots[username].browser.close(); } catch (e) {}
-        delete activeBots[username];
+// دالة التشغيل: ترسل طلب للموقع كل 60 ثانية
+function startSessionPing(username, targetUrl, cookies) {
+    // لو كان شغال من قبل، نوقفه عشان نحدثه
+    if (activeSessions[username]) {
+        clearInterval(activeSessions[username].interval);
     }
 
-    try {
-        console.log(`[${username}] جاري تهيئة المتصفح الخفي...`);
-        
-        // إعدادات مدرعة مخصصة للسيرفرات الضعيفة مثل Render لتوفير الرام
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
-                '--no-first-run',
-                '--no-zygote',
-                '--single-process',
-                '--disable-gpu'
-            ]
-        });
+    const cookieString = parseCookies(cookies);
 
-        const page = await browser.newPage();
-        
-        // منع تحميل الصور والفيديوهات لتوفير 80% من الرامات
-        await page.setRequestInterception(true);
-        page.on('request', (req) => {
-            if (req.resourceType() === 'image' || req.resourceType() === 'media' || req.resourceType() === 'font') {
-                req.abort();
-            } else {
-                req.continue();
-            }
-        });
-
-        // تمويه البصمة
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
-        await page.setViewport({ width: 1366, height: 768 });
-
-        // زرع الكوكيز بحذر
-        let cookieArray = [];
+    // دالة إرسال الطلب (التحديث)
+    const sendPing = async () => {
         try {
-            cookieArray = JSON.parse(cookies);
-        } catch (e) {
-            console.log(`[${username}] خطأ: صيغة الكوكيز غير صحيحة!`);
-            await browser.close();
-            return;
-        }
-        await page.setCookie(...cookieArray);
-
-        // الدخول لصفحة الرسائل
-        console.log(`[${username}] جاري الدخول لانستقرام...`);
-        await page.goto('https://www.instagram.com/direct/', { waitUntil: 'domcontentloaded', timeout: 90000 });
-        
-        console.log(`[${username}] متصل الآن 🟢`);
-
-        // محاكاة النشاط البشري كل 45 ثانية
-        const activityInterval = setInterval(async () => {
-            try {
-                if (browser.isConnected()) {
-                    // حركة ماوس عشوائية
-                    await page.mouse.move(Math.floor(Math.random() * 800), Math.floor(Math.random() * 600));
-                    // سكرول عشوائي للأعلى والأسفل
-                    await page.evaluate(() => {
-                        window.scrollBy(0, Math.floor(Math.random() * 300) - 150);
-                    });
-                } else {
-                    clearInterval(activityInterval);
-                    delete activeBots[username];
+            await fetch(targetUrl, {
+                headers: {
+                    'Cookie': cookieString,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
                 }
-            } catch (e) {
-                // تجاهل الأخطاء البسيطة أثناء التحريك
-            }
-        }, 45000);
-
-        // حفظ البوت في الذاكرة
-        activeBots[username] = { browser, interval: activityInterval };
-
-    } catch (error) {
-        console.error(`[${username}] خطأ فادح أثناء التشغيل: ${error.message}`);
-        if(activeBots[username]) {
-            clearInterval(activeBots[username].interval);
-            try { await activeBots[username].browser.close(); } catch(e){}
-            delete activeBots[username];
+            });
+            console.log(`[${username}] تم إرسال تحديث الاتصال بنجاح إلى ${targetUrl}`);
+        } catch (error) {
+            console.log(`[${username}] فشل في إرسال التحديث، لكن السيرفر مستمر في المحاولة.`);
         }
-    }
+    };
+
+    // إرسال أول طلب فوراً
+    sendPing();
+
+    // تشغيل المؤقت: كل 60 ثانية (60000 ملي ثانية)
+    const interval = setInterval(sendPing, 60000);
+
+    // حفظ الجلسة في ذاكرة السيرفر
+    activeSessions[username] = {
+        targetUrl: targetUrl,
+        interval: interval
+    };
 }
 
-// مسارات الـ API (الروابط)
+
+// --- روابط الـ API ---
+
 app.post('/api/login', (req, res) => {
     if (req.body.password === SYSTEM_PASSWORD) res.json({ success: true });
-    else res.status(401).json({ success: false, message: 'كلمة السر خاطئة' });
+    else res.status(401).json({ success: false });
 });
-
-app.get('/api/accounts', (req, res) => res.json(getAccounts()));
 
 app.post('/api/start', (req, res) => {
-    const { username, cookies } = req.body;
-    if (!username || !cookies) return res.status(400).json({ error: 'بيانات ناقصة' });
+    const { username, targetUrl, cookies } = req.body;
+    if (!username || !targetUrl || !cookies) {
+        return res.status(400).json({ error: 'بيانات ناقصة' });
+    }
 
-    // حفظ في القاعدة لضمان الاستمرارية
-    let accounts = getAccounts();
-    const index = accounts.findIndex(a => a.username === username);
-    if (index >= 0) accounts[index].cookies = cookies;
-    else accounts.push({ username, cookies });
-    saveAccounts(accounts);
-
-    // تشغيل فوري في الخلفية
-    startBotLogic(username, cookies);
-    res.json({ success: true, message: 'تم استلام الأمر، السيرفر يعمل الآن...' });
+    startSessionPing(username, targetUrl, cookies);
+    res.json({ success: true });
 });
 
-app.post('/api/stop', async (req, res) => {
+app.post('/api/stop', (req, res) => {
     const { username } = req.body;
-    if (activeBots[username]) {
-        clearInterval(activeBots[username].interval);
-        try { await activeBots[username].browser.close(); } catch (e) {}
-        delete activeBots[username];
-        console.log(`[${username}] تم إيقاف الجلسة يدوياً.`);
+    if (activeSessions[username]) {
+        clearInterval(activeSessions[username].interval);
+        delete activeSessions[username];
+        console.log(`[${username}] تم إيقاف الجلسة.`);
     }
     res.json({ success: true });
 });
 
-app.delete('/api/accounts/:username', async (req, res) => {
-    const username = req.params.username;
-    let accounts = getAccounts();
-    accounts = accounts.filter(a => a.username !== username);
-    saveAccounts(accounts);
-    
-    if (activeBots[username]) {
-        clearInterval(activeBots[username].interval);
-        try { await activeBots[username].browser.close(); } catch (e) {}
-        delete activeBots[username];
-    }
-    res.json({ success: true });
+// هذا الرابط اللي الصفحة تسأله: "مين الشغال الحين؟"
+app.get('/api/status', (req, res) => {
+    const sessionsList = Object.keys(activeSessions).map(user => {
+        return { username: user, targetUrl: activeSessions[user].targetUrl };
+    });
+    res.json({ activeSessions: sessionsList });
 });
 
-// لمعرفة حالة البوتات الشغالة حالياً (مهم للواجهة)
-app.get('/api/status', (req, res) => res.json({ activeBots: Object.keys(activeBots) }));
 
-// مسار مهم جداً لإنعاش السيرفر من موقع cron-job
-app.get('/ping', (req, res) => res.send('Server is awake!'));
-
-// تشغيل السيرفر
 app.listen(PORT, () => {
-    console.log(`Server is LIVE on port ${PORT}`);
-    
-    // النظام المدرع: تشغيل الحسابات المحفوظة فور إقلاع السيرفر
-    const saved = getAccounts();
-    if(saved.length > 0) {
-        console.log(`جارِ إعادة تشغيل ${saved.length} حسابات محفوظة مسبقاً...`);
-        saved.forEach(acc => startBotLogic(acc.username, acc.cookies));
-    }
+    console.log(`Server running on port ${PORT}...`);
 });
