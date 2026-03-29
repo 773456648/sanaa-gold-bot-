@@ -203,7 +203,6 @@
     </div>
 
     <script>
-        // إعدادات الـ API (بما أن الواجهة والسيرفر في نفس المكان، نستخدم مسار نسبي)
         const API_URL = '/api';
         let currentUsername = '';
         let localPingInterval;
@@ -223,13 +222,51 @@
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('main-app').classList.remove('hidden');
                     document.getElementById('main-app').classList.add('fade-in');
-                    loadSavedAccounts(); // تحميل الحسابات بعد الدخول
+                    loadSavedAccounts(); 
+                    checkActiveBots(); // فحص إذا كان هناك بوت شغال حالياً
                 } else {
                     document.getElementById('login-error').classList.remove('hidden');
                 }
             } catch (e) {
                 alert('خطأ في الاتصال بالسيرفر');
             }
+        }
+
+        // دالة جديدة: تسأل السيرفر إذا كان في حساب شغال حتى لو حدثنا الصفحة
+        async function checkActiveBots() {
+            try {
+                const res = await fetch(`${API_URL}/status`);
+                const data = await res.json();
+                if (data.activeBots && data.activeBots.length > 0) {
+                    // إذا وجد حساب شغال، اعرضه فوراً
+                    currentUsername = data.activeBots[0];
+                    showActiveUI(currentUsername);
+                    logToTerminal(`تم استعادة الاتصال. البوت لحساب ${currentUsername} لا يزال يعمل في الخلفية.`);
+                }
+            } catch (e) { console.error('Error fetching status:', e); }
+        }
+
+        // دالة تغيير شكل الواجهة لتصبح "شغالة"
+        function showActiveUI(username) {
+            document.getElementById('setup-view').classList.add('hidden');
+            document.getElementById('active-view').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('profile-view').classList.remove('hidden');
+            
+            const formattedUser = username.startsWith('@') ? username : '@' + username;
+            document.getElementById('display-username').innerText = formattedUser;
+            document.getElementById('preview-user').innerText = formattedUser;
+            document.getElementById('ig-link').href = `https://www.instagram.com/${formattedUser.replace('@', '')}`;
+
+            const statusBadge = document.getElementById('preview-status');
+            statusBadge.innerText = 'متصل 24/7';
+            statusBadge.className = 'text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/20';
+
+            // محاكاة الشاشة (السيرفر يعمل في الخلفية أصلاً)
+            clearInterval(localPingInterval);
+            localPingInterval = setInterval(() => {
+                logToTerminal(`[${new Date().toLocaleTimeString()}] إشارة البقاء متصلاً تعمل عبر السيرفر...`);
+            }, 5000); // فقط للواجهة
         }
 
         // 2. جلب وعرض الحسابات المحفوظة
@@ -295,6 +332,9 @@
             currentUsername = username;
 
             try {
+                document.getElementById('terminal-log').innerHTML = '';
+                logToTerminal(`تم الإرسال لسيرفر Node.js...`);
+                
                 // إرسال طلب التشغيل للسيرفر
                 const res = await fetch(`${API_URL}/start`, {
                     method: 'POST',
@@ -305,29 +345,16 @@
                 const data = await res.json();
                 if(!data.success) throw new Error();
 
-                // تحديث الواجهة
-                document.getElementById('setup-view').classList.add('hidden');
-                document.getElementById('active-view').classList.remove('hidden');
-                document.getElementById('empty-state').classList.add('hidden');
-                document.getElementById('profile-view').classList.remove('hidden');
-                
-                const formattedUser = username.startsWith('@') ? username : '@' + username;
-                document.getElementById('display-username').innerText = formattedUser;
-                document.getElementById('preview-user').innerText = formattedUser;
-                document.getElementById('ig-link').href = `https://www.instagram.com/${formattedUser.replace('@', '')}`;
+                // حفظ الحساب تلقائياً عند التشغيل لضمان استمراريته
+                await fetch(`${API_URL}/accounts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, cookies })
+                });
+                loadSavedAccounts();
 
-                const statusBadge = document.getElementById('preview-status');
-                statusBadge.innerText = 'متصل 24/7';
-                statusBadge.className = 'text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/20';
-
-                document.getElementById('terminal-log').innerHTML = '';
-                logToTerminal(`تم الإرسال لسيرفر Node.js...`);
-                logToTerminal(`بدء عملية (Keep-Alive) في الخلفية لحساب ${formattedUser}...`);
-
-                // محاكاة الشاشة (السيرفر يعمل في الخلفية أصلاً)
-                localPingInterval = setInterval(() => {
-                    logToTerminal(`[${new Date().toLocaleTimeString()}] تم إرسال طلب Ping بنجاح عبر السيرفر.`);
-                }, 5000); // فقط للواجهة
+                showActiveUI(username);
+                logToTerminal(`بدء عملية (Keep-Alive) في الخلفية لحساب ${username}...`);
 
             } catch(e) {
                 alert('حدث خطأ أثناء تشغيل السيرفر');
@@ -354,6 +381,7 @@
             const statusBadge = document.getElementById('preview-status');
             statusBadge.innerText = 'غير متصل';
             statusBadge.className = 'text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/20';
+            currentUsername = '';
         }
 
         function logToTerminal(msg) {
