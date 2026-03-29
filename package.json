@@ -1,14 +1,17 @@
 {
-  "name": "ig-keep-alive",
+  "name": "ig-keep-alive-live",
   "version": "1.0.0",
-  "description": "Instagram Keep Alive Bot",
-  "main": "server.js",
+  "description": "Instagram 24/7 Live Session Bot using Puppeteer",
+  "main": "app.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node app.js"
   },
   "dependencies": {
-    "axios": "^1.6.8",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "puppeteer": "^22.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
