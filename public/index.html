@@ -82,26 +82,10 @@
         
         .fade-in { animation: fadeIn 0.5s ease-in; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* شاشة تحميل بسيطة */
-        #page-loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark); z-index: 9999;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--ig-primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="p-4 md:p-8 flex items-center justify-center">
 
-    <!-- شاشة التحميل الأولية -->
-    <div id="page-loader" class="hidden">
-        <div class="spinner mb-4"></div>
-        <p class="text-gray-400 font-bold">جاري المزامنة مع السيرفر...</p>
-    </div>
-
-    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen" class="glass-panel p-8 max-w-md w-full text-center fade-in">
         <h2 class="text-2xl font-bold gradient-text mb-6">تسجيل الدخول للنظام</h2>
         <input type="password" id="sys-password" placeholder="أدخل كلمة المرور..." class="mb-4 text-center text-xl tracking-widest">
@@ -109,10 +93,10 @@
         <p id="login-error" class="text-red-500 text-sm mt-2 hidden">كلمة المرور خاطئة!</p>
     </div>
 
-    <!-- التطبيق الرئيسي -->
     <div id="main-app" class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
         
         <div class="glass-panel p-6 space-y-6 relative">
+            <!-- زر تسجيل الخروج -->
             <button onclick="logout()" class="absolute top-4 left-4 text-xs bg-red-500/10 text-red-400 px-3 py-1 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition">تسجيل الخروج</button>
 
             <div class="text-center mt-4">
@@ -120,7 +104,6 @@
                 <p class="text-gray-400 text-sm">أبقِ حسابك متصلاً باستمرار عبر متصفح خفي بالسيرفر</p>
             </div>
 
-            <!-- واجهة الإعداد والتشغيل -->
             <div id="setup-view" class="space-y-4">
                 <div>
                     <label class="block text-sm text-gray-400 mb-2">اسم المستخدم (يوزرنيم):</label>
@@ -149,7 +132,6 @@
                 </div>
             </div>
 
-            <!-- واجهة الحساب الشغال -->
             <div id="active-view" class="hidden space-y-4">
                 <div class="bg-black/50 border border-white/10 p-4 rounded-xl flex justify-between items-center">
                     <div>
@@ -221,13 +203,10 @@
         let currentUsername = '';
         let localPingInterval;
 
-        // النظام الأساسي: عند التحديث أو الدخول لأول مرة
-        window.addEventListener('DOMContentLoaded', async () => {
+        // عند تحميل الصفحة، نتحقق هل المستخدم مسجل دخول سابقاً؟
+        window.addEventListener('DOMContentLoaded', () => {
             if (localStorage.getItem('sys_logged_in') === 'true') {
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('page-loader').classList.remove('hidden');
-                await initApp();
-                document.getElementById('page-loader').classList.add('hidden');
+                showMainApp();
             }
         });
 
@@ -242,11 +221,9 @@
                 const data = await res.json();
                 
                 if(data.success) {
+                    // حفظ حالة تسجيل الدخول في المتصفح حتى لا يطلبها عند التحديث
                     localStorage.setItem('sys_logged_in', 'true');
-                    document.getElementById('login-screen').classList.add('hidden');
-                    document.getElementById('page-loader').classList.remove('hidden');
-                    await initApp();
-                    document.getElementById('page-loader').classList.add('hidden');
+                    showMainApp();
                 } else {
                     document.getElementById('login-error').classList.remove('hidden');
                 }
@@ -260,28 +237,31 @@
             window.location.reload();
         }
 
-        async function initApp() {
+        function showMainApp() {
+            document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('main-app').classList.add('fade-in');
             loadSavedAccounts(); 
-            await checkActiveBots(); // يفحص السيرفر، لو البوت شغال يعرضه فوراً
+            checkActiveBots(); // فحص ما إذا كان هناك بوت شغال في السيرفر حالياً
         }
 
+        // دالة التأكد من حالة البوت على السيرفر لجلب الجلسة الشغالة فوراً
         async function checkActiveBots() {
             try {
                 const res = await fetch(`${API_URL}/status`);
                 const data = await res.json();
                 
-                // إذا وجدنا بوت شغال في السيرفر، نستعيده فوراً
+                // إذا كان السيرفر مشغل بوت بالفعل، نعرض واجهة البوت الشغال مباشرة
                 if (data.activeBots && data.activeBots.length > 0) {
                     currentUsername = data.activeBots[0];
                     showActiveUI(currentUsername);
-                    logToTerminal(`✅ تم استعادة الاتصال. الجلسة المباشرة لحساب ${currentUsername} لا تزال تعمل في السيرفر بأمان.`);
+                    logToTerminal(`تم استعادة الاتصال. الجلسة المباشرة لحساب ${currentUsername} لا تزال تعمل في السيرفر بسلام.`);
                 } else {
+                    // إذا لم يكن هناك بوت شغال، نتأكد أن الواجهة على وضع الإعدادات
                     resetUI();
                 }
             } catch (e) {
-                console.log("فشل في جلب حالة البوتات.");
+                console.log("فشل في جلب حالة البوتات من السيرفر.");
             }
         }
 
@@ -379,7 +359,7 @@
             try {
                 document.getElementById('terminal-log').innerHTML = '';
                 logToTerminal(`جاري تجهيز المتصفح الخفي وإرسال البيانات...`);
-                showActiveUI(username); 
+                showActiveUI(username); // نظهر الواجهة فوراً لكي لا ينتظر المستخدم طويلاً
                 
                 const res = await fetch(`${API_URL}/start`, {
                     method: 'POST',
@@ -393,10 +373,7 @@
                     throw new Error(data.message || 'خطأ غير معروف');
                 }
 
-                logToTerminal(`🚀 تم تشغيل الجلسة المباشرة بنجاح لحساب ${username}.`);
-                
-                // تحديث قائمة الحسابات لأن السيرفر حفظها تلقائياً كضمان
-                loadSavedAccounts();
+                logToTerminal(`تم تشغيل الجلسة المباشرة بنجاح لحساب ${username}.`);
 
             } catch(e) {
                 alert('حدث خطأ أثناء تشغيل السيرفر');
