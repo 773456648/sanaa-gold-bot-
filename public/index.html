@@ -66,7 +66,6 @@
         }
 
         .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
-        .status-offline { background-color: #ef4444; box-shadow: 0 0 8px #ef4444; }
         .status-online { background-color: #22c55e; box-shadow: 0 0 12px #22c55e; animation: pulse 2s infinite; }
 
         @keyframes pulse {
@@ -134,7 +133,7 @@
                     <div>
                         <p class="text-sm text-gray-400">حالة السيرفر:</p>
                         <p class="font-bold text-lg flex items-center gap-2">
-                            <span class="status-dot status-online"></span> مبشر بالخاص 😅
+                            <span class="status-dot status-online"></span> مبشر بالخاص 
                         </p>
                     </div>
                     <div class="text-left">
@@ -215,6 +214,7 @@
                     document.getElementById('main-app').classList.remove('hidden');
                     document.getElementById('main-app').classList.add('fade-in');
                     loadSavedAccounts(); 
+                    // استدعاء دالة فحص الحالة عند الدخول مباشرة
                     checkActiveBots();
                 } else {
                     document.getElementById('login-error').classList.remove('hidden');
@@ -224,6 +224,7 @@
             }
         }
 
+        // دالة التأكد من حالة البوت على السيرفر (عشان لو حدثت الصفحة يرجع يظهر إنه شغال)
         async function checkActiveBots() {
             try {
                 const res = await fetch(`${API_URL}/status`);
@@ -231,9 +232,11 @@
                 if (data.activeBots && data.activeBots.length > 0) {
                     currentUsername = data.activeBots[0];
                     showActiveUI(currentUsername);
-                    logToTerminal(`تم استعادة الاتصال. المتصفح الخفي لحساب ${currentUsername} لا يزال يعمل.`);
+                    logToTerminal(`تم استعادة الاتصال. الجلسة المباشرة لحساب ${currentUsername} لا تزال تعمل في السيرفر.`);
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.log("فشل في جلب حالة البوتات.");
+            }
         }
 
         function showActiveUI(username) {
@@ -253,7 +256,7 @@
 
             clearInterval(localPingInterval);
             localPingInterval = setInterval(() => {
-                logToTerminal(`[${new Date().toLocaleTimeString()}] يتم تحريك الماوس داخلياً لضمان الاتصال...`);
+                logToTerminal(`[${new Date().toLocaleTimeString()}] إشارة البقاء متصلاً تعمل عبر السيرفر...`);
             }, 30000); 
         }
 
@@ -316,7 +319,7 @@
 
             try {
                 document.getElementById('terminal-log').innerHTML = '';
-                logToTerminal(`جاري تجهيز المتصفح الخفي...`);
+                logToTerminal(`جاري تجهيز المتصفح الخفي وإرسال البيانات...`);
                 
                 const res = await fetch(`${API_URL}/start`, {
                     method: 'POST',
@@ -327,15 +330,8 @@
                 const data = await res.json();
                 if(!data.success) throw new Error();
 
-                await fetch(`${API_URL}/accounts`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, cookies })
-                });
-                loadSavedAccounts();
-
                 showActiveUI(username);
-                logToTerminal(`تم الدخول للصفحة بنجاح لحساب ${username}...`);
+                logToTerminal(`تم تشغيل الجلسة المباشرة بنجاح لحساب ${username}.`);
 
             } catch(e) {
                 alert('حدث خطأ أثناء تشغيل السيرفر');
