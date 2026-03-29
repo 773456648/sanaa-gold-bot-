@@ -1,42 +1,415 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>IG Runner</title>
-<style>
-body { font-family: Arial; text-align:center; margin-top:50px; }
-button { padding:15px; margin:10px; font-size:18px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة البقاء متصلاً - انستقرام</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ig-primary: #E1306C;
+            --ig-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+            --bg-dark: #0f1015;
+            --surface: #1a1b23;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            color: #fff; 
+            font-family: 'Tajawal', sans-serif; 
+            min-height: 100vh;
+        }
+
+        .gradient-text { 
+            background: var(--ig-gradient);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .glass-panel {
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        textarea, input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        textarea:focus, input:focus { border-color: var(--ig-primary); }
+
+        .btn-start {
+            background: var(--ig-gradient);
+            color: white;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 14px;
+            width: 100%;
+            transition: opacity 0.3s, transform 0.2s;
+            cursor: pointer;
+        }
+        .btn-start:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-start:active { transform: translateY(0); }
+
+        .btn-stop {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .status-dot { height: 12px; width: 12px; border-radius: 50%; display: inline-block; }
+        .status-online { background-color: #22c55e; box-shadow: 0 0 12px #22c55e; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        .terminal {
+            background: #000; border-radius: 12px; padding: 12px; font-family: monospace;
+            font-size: 12px; color: #0f0; height: 150px; overflow-y: auto; border: 1px solid #333;
+        }
+        
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-<body>
+<body class="p-4 md:p-8 flex items-center justify-center">
 
-<h2>تشغيل الجلسة</h2>
+    <div id="login-screen" class="glass-panel p-8 max-w-md w-full text-center fade-in">
+        <h2 class="text-2xl font-bold gradient-text mb-6">تسجيل الدخول للنظام</h2>
+        <input type="password" id="sys-password" placeholder="أدخل كلمة المرور..." class="mb-4 text-center text-xl tracking-widest">
+        <button onclick="checkPassword()" class="btn-start">دخول</button>
+        <p id="login-error" class="text-red-500 text-sm mt-2 hidden">كلمة المرور خاطئة!</p>
+    </div>
 
-<button onclick="start()">تشغيل المتصفح</button>
-<button onclick="keepAlive()">تفعيل النشاط</button>
-<button onclick="stop()">إيقاف</button>
+    <div id="main-app" class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+        
+        <div class="glass-panel p-6 space-y-6 relative">
+            <!-- زر تسجيل الخروج -->
+            <button onclick="logout()" class="absolute top-4 left-4 text-xs bg-red-500/10 text-red-400 px-3 py-1 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition">تسجيل الخروج</button>
 
-<p id="status"></p>
+            <div class="text-center mt-4">
+                <h1 class="text-3xl font-bold gradient-text mb-2">Instagram 24/7</h1>
+                <p class="text-gray-400 text-sm">أبقِ حسابك متصلاً باستمرار عبر متصفح خفي بالسيرفر</p>
+            </div>
 
-<script>
-const API = '/api';
+            <div id="setup-view" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">اسم المستخدم (يوزرنيم):</label>
+                    <input type="text" id="ig-username" placeholder="@username" dir="ltr" class="text-left">
+                </div>
 
-async function start() {
-    const res = await fetch(API + '/start', { method: 'POST' });
-    const data = await res.json();
-    document.getElementById('status').innerText = data.message;
-}
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">بيانات الـ Cookies:</label>
+                    <textarea id="ig-cookies" rows="4" placeholder='[{"domain": ".instagram.com", ...}]' dir="ltr" class="text-left font-mono text-xs text-gray-300"></textarea>
+                </div>
 
-async function keepAlive() {
-    await fetch(API + '/keep-alive', { method: 'POST' });
-    document.getElementById('status').innerText = "تم تفعيل النشاط";
-}
+                <div class="flex gap-2">
+                    <button onclick="startServerConnection()" class="btn-start flex-1 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        تشغيل الجلسة المباشرة
+                    </button>
+                    <button onclick="saveAccount()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl font-bold transition">
+                        حفظ كقالب
+                    </button>
+                </div>
 
-async function stop() {
-    await fetch(API + '/stop', { method: 'POST' });
-    document.getElementById('status').innerText = "تم الإيقاف";
-}
-</script>
+                <div class="mt-6 pt-4 border-t border-white/10">
+                    <h3 class="text-sm font-bold mb-3 text-gray-300">الكوكيز المحفوظة:</h3>
+                    <div id="saved-accounts-list" class="space-y-2 max-h-40 overflow-y-auto pr-2">
+                    </div>
+                </div>
+            </div>
 
+            <div id="active-view" class="hidden space-y-4">
+                <div class="bg-black/50 border border-white/10 p-4 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-400">حالة السيرفر:</p>
+                        <p class="font-bold text-lg flex items-center gap-2">
+                            <span class="status-dot status-online"></span> مبشر بالخاص 
+                        </p>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm text-gray-400">الحساب:</p>
+                        <p id="display-username" class="font-bold text-ig-primary" dir="ltr"></p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">سجل عمليات السيرفر (Console):</label>
+                    <div id="terminal-log" class="terminal"></div>
+                </div>
+
+                <button onclick="stopServerConnection()" class="btn-start btn-stop mt-4 flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
+                    إيقاف الجلسة
+                </button>
+            </div>
+        </div>
+
+        <div class="glass-panel p-6 flex flex-col h-full min-h-[500px]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">معاينة الصفحة</h2>
+                <span id="preview-status" class="text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/20">غير متصل</span>
+            </div>
+            
+            <div id="profile-container" class="flex-grow bg-black/50 rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden">
+                <div id="empty-state" class="text-center p-6">
+                    <div class="w-16 h-16 mx-auto mb-4 opacity-50">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </div>
+                    <p class="text-gray-500 text-sm">أدخل الكوكيز واضغط تشغيل لرؤية صفحتك هنا</p>
+                </div>
+
+                <div id="profile-view" class="hidden w-full h-full flex flex-col">
+                    <div class="p-4 border-b border-white/10 flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-yellow-400 to-fuchsia-600 p-[2px]">
+                            <div class="w-full h-full bg-black rounded-full border-2 border-black"></div>
+                        </div>
+                        <div>
+                            <h3 id="preview-user" class="font-bold text-lg" dir="ltr">username</h3>
+                            <p class="text-xs text-green-400 flex items-center gap-1">
+                                <span class="status-dot status-online scale-50"></span> نشط الآن
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex-grow relative">
+                        <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                            <p class="text-gray-400 mb-4 text-sm">المتصفح الخفي يعمل في السيرفر بشكل مستمر...</p>
+                            <a id="ig-link" href="#" target="_blank" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition text-white">
+                                فتح صفحتي للتحقق
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let currentUsername = '';
+        let localPingInterval;
+
+        // عند تحميل الصفحة، نتحقق هل المستخدم مسجل دخول سابقاً؟
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('sys_logged_in') === 'true') {
+                showMainApp();
+            }
+        });
+
+        async function checkPassword() {
+            const pwd = document.getElementById('sys-password').value;
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    // حفظ حالة تسجيل الدخول في المتصفح حتى لا يطلبها عند التحديث
+                    localStorage.setItem('sys_logged_in', 'true');
+                    showMainApp();
+                } else {
+                    document.getElementById('login-error').classList.remove('hidden');
+                }
+            } catch (e) {
+                alert('خطأ في الاتصال بالسيرفر');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('sys_logged_in');
+            window.location.reload();
+        }
+
+        function showMainApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('fade-in');
+            loadSavedAccounts(); 
+            checkActiveBots(); // فحص ما إذا كان هناك بوت شغال في السيرفر حالياً
+        }
+
+        // دالة التأكد من حالة البوت على السيرفر لجلب الجلسة الشغالة فوراً
+        async function checkActiveBots() {
+            try {
+                const res = await fetch(`${API_URL}/status`);
+                const data = await res.json();
+                
+                // إذا كان السيرفر مشغل بوت بالفعل، نعرض واجهة البوت الشغال مباشرة
+                if (data.activeBots && data.activeBots.length > 0) {
+                    currentUsername = data.activeBots[0];
+                    showActiveUI(currentUsername);
+                    logToTerminal(`تم استعادة الاتصال. الجلسة المباشرة لحساب ${currentUsername} لا تزال تعمل في السيرفر بسلام.`);
+                } else {
+                    // إذا لم يكن هناك بوت شغال، نتأكد أن الواجهة على وضع الإعدادات
+                    resetUI();
+                }
+            } catch (e) {
+                console.log("فشل في جلب حالة البوتات من السيرفر.");
+            }
+        }
+
+        function showActiveUI(username) {
+            document.getElementById('setup-view').classList.add('hidden');
+            document.getElementById('active-view').classList.remove('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('profile-view').classList.remove('hidden');
+            
+            const formattedUser = username.startsWith('@') ? username : '@' + username;
+            document.getElementById('display-username').innerText = formattedUser;
+            document.getElementById('preview-user').innerText = formattedUser;
+            document.getElementById('ig-link').href = `https://www.instagram.com/${formattedUser.replace('@', '')}`;
+
+            const statusBadge = document.getElementById('preview-status');
+            statusBadge.innerText = 'متصل 24/7';
+            statusBadge.className = 'text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/20';
+
+            clearInterval(localPingInterval);
+            localPingInterval = setInterval(() => {
+                logToTerminal(`[${new Date().toLocaleTimeString()}] إشارة البقاء متصلاً تعمل عبر السيرفر...`);
+            }, 30000); 
+        }
+
+        function resetUI() {
+            document.getElementById('setup-view').classList.remove('hidden');
+            document.getElementById('active-view').classList.add('hidden');
+            document.getElementById('empty-state').classList.remove('hidden');
+            document.getElementById('profile-view').classList.add('hidden');
+
+            const statusBadge = document.getElementById('preview-status');
+            statusBadge.innerText = 'غير متصل';
+            statusBadge.className = 'text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/20';
+            currentUsername = '';
+            document.getElementById('terminal-log').innerHTML = '';
+        }
+
+        async function loadSavedAccounts() {
+            try {
+                const res = await fetch(`${API_URL}/accounts`);
+                const accounts = await res.json();
+                const listDiv = document.getElementById('saved-accounts-list');
+                listDiv.innerHTML = '';
+
+                if(accounts.length === 0) {
+                    listDiv.innerHTML = '<p class="text-xs text-gray-500">لا توجد حسابات محفوظة بعد.</p>';
+                    return;
+                }
+
+                accounts.forEach(acc => {
+                    listDiv.innerHTML += `
+                        <div class="flex justify-between items-center bg-black/40 p-3 rounded-lg border border-white/5">
+                            <span class="text-sm text-ig-primary font-bold" dir="ltr">${acc.username}</span>
+                            <div class="flex gap-2">
+                                <button onclick="useAccount('${acc.username}', '${btoa(encodeURIComponent(acc.cookies))}')" class="text-xs bg-green-600/20 text-green-400 px-3 py-1 rounded hover:bg-green-600/40 transition">استخدام</button>
+                                <button onclick="deleteAccount('${acc.username}')" class="text-xs bg-red-600/20 text-red-400 px-3 py-1 rounded hover:bg-red-600/40 transition">حذف</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) {}
+        }
+
+        function useAccount(username, encodedCookies) {
+            document.getElementById('ig-username').value = username;
+            document.getElementById('ig-cookies').value = decodeURIComponent(atob(encodedCookies));
+        }
+
+        async function saveAccount() {
+            const username = document.getElementById('ig-username').value.trim();
+            const cookies = document.getElementById('ig-cookies').value.trim();
+            if(!username || !cookies) return alert('أدخل اليوزر والكوكيز أولاً');
+
+            await fetch(`${API_URL}/accounts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, cookies })
+            });
+            loadSavedAccounts();
+        }
+
+        async function deleteAccount(username) {
+            if(!confirm(`هل أنت متأكد من حذف ${username}؟`)) return;
+            await fetch(`${API_URL}/accounts/${username}`, { method: 'DELETE' });
+            loadSavedAccounts();
+        }
+
+        async function startServerConnection() {
+            const username = document.getElementById('ig-username').value.trim();
+            const cookies = document.getElementById('ig-cookies').value.trim();
+
+            if(!username || !cookies) return alert('أكمل البيانات');
+            currentUsername = username;
+
+            try {
+                document.getElementById('terminal-log').innerHTML = '';
+                logToTerminal(`جاري تجهيز المتصفح الخفي وإرسال البيانات...`);
+                showActiveUI(username); // نظهر الواجهة فوراً لكي لا ينتظر المستخدم طويلاً
+                
+                const res = await fetch(`${API_URL}/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, cookies })
+                });
+                
+                const data = await res.json();
+                if(!data.success) {
+                    resetUI();
+                    throw new Error(data.message || 'خطأ غير معروف');
+                }
+
+                logToTerminal(`تم تشغيل الجلسة المباشرة بنجاح لحساب ${username}.`);
+
+            } catch(e) {
+                alert('حدث خطأ أثناء تشغيل السيرفر');
+                resetUI();
+            }
+        }
+
+        async function stopServerConnection() {
+            clearInterval(localPingInterval);
+            
+            if(currentUsername) {
+                try {
+                    await fetch(`${API_URL}/stop`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: currentUsername })
+                    });
+                } catch(e) {
+                    console.log('Error stopping bot on server');
+                }
+            }
+
+            resetUI();
+        }
+
+        function logToTerminal(msg) {
+            const terminal = document.getElementById('terminal-log');
+            if(terminal) {
+                terminal.innerHTML += `> ${msg}<br>`;
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+
+        document.getElementById('sys-password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+    </script>
 </body>
 </html>
