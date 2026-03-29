@@ -86,7 +86,6 @@
 </head>
 <body class="p-4 md:p-8 flex items-center justify-center">
 
-    <!-- شاشة تسجيل الدخول -->
     <div id="login-screen" class="glass-panel p-8 max-w-md w-full text-center fade-in">
         <h2 class="text-2xl font-bold gradient-text mb-6">تسجيل الدخول للنظام</h2>
         <input type="password" id="sys-password" placeholder="أدخل كلمة المرور..." class="mb-4 text-center text-xl tracking-widest">
@@ -94,14 +93,12 @@
         <p id="login-error" class="text-red-500 text-sm mt-2 hidden">كلمة المرور خاطئة!</p>
     </div>
 
-    <!-- لوحة التحكم الرئيسية (مخفية البداية) -->
     <div id="main-app" class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
         
-        <!-- القسم الأول: التحكم والحسابات المحفوظة -->
         <div class="glass-panel p-6 space-y-6">
             <div class="text-center">
-                <h1 class="text-3xl font-bold gradient-text mb-2">Instagram 24/7</h1>
-                <p class="text-gray-400 text-sm">أبقِ حسابك متصلاً باستمرار عبر سيرفراتنا</p>
+                <h1 class="text-3xl font-bold gradient-text mb-2">Instagram 24/7 (Live Session)</h1>
+                <p class="text-gray-400 text-sm">أبقِ حسابك متصلاً باستمرار عبر متصفح خفي</p>
             </div>
 
             <div id="setup-view" class="space-y-4">
@@ -111,36 +108,33 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm text-gray-400 mb-2">بيانات الـ Cookies (من إضافة Cookie-Editor):</label>
+                    <label class="block text-sm text-gray-400 mb-2">بيانات الـ Cookies:</label>
                     <textarea id="ig-cookies" rows="4" placeholder='[{"domain": ".instagram.com", ...}]' dir="ltr" class="text-left font-mono text-xs text-gray-300"></textarea>
                 </div>
 
                 <div class="flex gap-2">
                     <button onclick="startServerConnection()" class="btn-start flex-1 flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        تشغيل البوت
+                        تشغيل الجلسة المباشرة
                     </button>
                     <button onclick="saveAccount()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl font-bold transition">
                         حفظ كقالب
                     </button>
                 </div>
 
-                <!-- قائمة الحسابات المحفوظة -->
                 <div class="mt-6 pt-4 border-t border-white/10">
-                    <h3 class="text-sm font-bold mb-3 text-gray-300">الكوكيز المحفوظة سابقاً:</h3>
+                    <h3 class="text-sm font-bold mb-3 text-gray-300">الكوكيز المحفوظة:</h3>
                     <div id="saved-accounts-list" class="space-y-2 max-h-40 overflow-y-auto pr-2">
-                        <!-- سيتم تعبئة هذا القسم عبر الجافاسكربت -->
                     </div>
                 </div>
             </div>
 
-            <!-- واجهة العمل عند التشغيل -->
             <div id="active-view" class="hidden space-y-4">
                 <div class="bg-black/50 border border-white/10 p-4 rounded-xl flex justify-between items-center">
                     <div>
                         <p class="text-sm text-gray-400">حالة السيرفر:</p>
                         <p class="font-bold text-lg flex items-center gap-2">
-                            <span class="status-dot status-online"></span> متصل ويعمل
+                            <span class="status-dot status-online"></span> مبشر بالخاص 😅
                         </p>
                     </div>
                     <div class="text-left">
@@ -156,12 +150,11 @@
 
                 <button onclick="stopServerConnection()" class="btn-start btn-stop mt-4 flex items-center justify-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path></svg>
-                    إيقاف الاتصال
+                    إيقاف الجلسة
                 </button>
             </div>
         </div>
 
-        <!-- القسم الثاني: عرض الصفحة الشخصية -->
         <div class="glass-panel p-6 flex flex-col h-full min-h-[500px]">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-bold">معاينة الصفحة</h2>
@@ -190,7 +183,7 @@
                     </div>
                     <div class="flex-grow relative">
                         <div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                            <p class="text-gray-400 mb-4 text-sm">البوت يعمل في الخلفية على السيرفر...</p>
+                            <p class="text-gray-400 mb-4 text-sm">المتصفح الخفي يعمل في السيرفر...</p>
                             <a id="ig-link" href="#" target="_blank" class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition text-white">
                                 فتح صفحتي
                             </a>
@@ -207,7 +200,6 @@
         let currentUsername = '';
         let localPingInterval;
 
-        // 1. نظام تسجيل الدخول
         async function checkPassword() {
             const pwd = document.getElementById('sys-password').value;
             try {
@@ -223,7 +215,7 @@
                     document.getElementById('main-app').classList.remove('hidden');
                     document.getElementById('main-app').classList.add('fade-in');
                     loadSavedAccounts(); 
-                    checkActiveBots(); // فحص إذا كان هناك بوت شغال حالياً
+                    checkActiveBots();
                 } else {
                     document.getElementById('login-error').classList.remove('hidden');
                 }
@@ -232,21 +224,18 @@
             }
         }
 
-        // دالة جديدة: تسأل السيرفر إذا كان في حساب شغال حتى لو حدثنا الصفحة
         async function checkActiveBots() {
             try {
                 const res = await fetch(`${API_URL}/status`);
                 const data = await res.json();
                 if (data.activeBots && data.activeBots.length > 0) {
-                    // إذا وجد حساب شغال، اعرضه فوراً
                     currentUsername = data.activeBots[0];
                     showActiveUI(currentUsername);
-                    logToTerminal(`تم استعادة الاتصال. البوت لحساب ${currentUsername} لا يزال يعمل في الخلفية.`);
+                    logToTerminal(`تم استعادة الاتصال. المتصفح الخفي لحساب ${currentUsername} لا يزال يعمل.`);
                 }
-            } catch (e) { console.error('Error fetching status:', e); }
+            } catch (e) {}
         }
 
-        // دالة تغيير شكل الواجهة لتصبح "شغالة"
         function showActiveUI(username) {
             document.getElementById('setup-view').classList.add('hidden');
             document.getElementById('active-view').classList.remove('hidden');
@@ -262,14 +251,12 @@
             statusBadge.innerText = 'متصل 24/7';
             statusBadge.className = 'text-xs bg-green-500/20 text-green-400 px-3 py-1 rounded-full border border-green-500/20';
 
-            // محاكاة الشاشة (السيرفر يعمل في الخلفية أصلاً)
             clearInterval(localPingInterval);
             localPingInterval = setInterval(() => {
-                logToTerminal(`[${new Date().toLocaleTimeString()}] إشارة البقاء متصلاً تعمل عبر السيرفر...`);
-            }, 5000); // فقط للواجهة
+                logToTerminal(`[${new Date().toLocaleTimeString()}] يتم تحريك الماوس داخلياً لضمان الاتصال...`);
+            }, 30000); 
         }
 
-        // 2. جلب وعرض الحسابات المحفوظة
         async function loadSavedAccounts() {
             try {
                 const res = await fetch(`${API_URL}/accounts`);
@@ -293,16 +280,14 @@
                         </div>
                     `;
                 });
-            } catch(e) { console.error('Error loading accounts:', e); }
+            } catch(e) {}
         }
 
-        // 3. وضع الكوكيز المحفوظة في المربعات
         function useAccount(username, encodedCookies) {
             document.getElementById('ig-username').value = username;
             document.getElementById('ig-cookies').value = decodeURIComponent(atob(encodedCookies));
         }
 
-        // 4. حفظ الكوكيز في السيرفر
         async function saveAccount() {
             const username = document.getElementById('ig-username').value.trim();
             const cookies = document.getElementById('ig-cookies').value.trim();
@@ -316,14 +301,12 @@
             loadSavedAccounts();
         }
 
-        // 5. حذف حساب
         async function deleteAccount(username) {
             if(!confirm(`هل أنت متأكد من حذف ${username}؟`)) return;
             await fetch(`${API_URL}/accounts/${username}`, { method: 'DELETE' });
             loadSavedAccounts();
         }
 
-        // 6. تشغيل السيرفر (إرسال للباك اند)
         async function startServerConnection() {
             const username = document.getElementById('ig-username').value.trim();
             const cookies = document.getElementById('ig-cookies').value.trim();
@@ -333,9 +316,8 @@
 
             try {
                 document.getElementById('terminal-log').innerHTML = '';
-                logToTerminal(`تم الإرسال لسيرفر Node.js...`);
+                logToTerminal(`جاري تجهيز المتصفح الخفي...`);
                 
-                // إرسال طلب التشغيل للسيرفر
                 const res = await fetch(`${API_URL}/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -345,7 +327,6 @@
                 const data = await res.json();
                 if(!data.success) throw new Error();
 
-                // حفظ الحساب تلقائياً عند التشغيل لضمان استمراريته
                 await fetch(`${API_URL}/accounts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -354,14 +335,13 @@
                 loadSavedAccounts();
 
                 showActiveUI(username);
-                logToTerminal(`بدء عملية (Keep-Alive) في الخلفية لحساب ${username}...`);
+                logToTerminal(`تم الدخول للصفحة بنجاح لحساب ${username}...`);
 
             } catch(e) {
                 alert('حدث خطأ أثناء تشغيل السيرفر');
             }
         }
 
-        // 7. إيقاف السيرفر
         async function stopServerConnection() {
             clearInterval(localPingInterval);
             
@@ -390,7 +370,6 @@
             terminal.scrollTop = terminal.scrollHeight;
         }
 
-        // دعم الضغط على Enter في تسجيل الدخول
         document.getElementById('sys-password').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') checkPassword();
         });
