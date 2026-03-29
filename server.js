@@ -31,6 +31,44 @@ function saveAccounts(accounts) {
     fs.writeFileSync(DB_FILE, JSON.stringify(accounts, null, 2));
 }
 
+// دالة منفصلة لتشغيل البوت (عشان نستخدمها في API وفي التشغيل التلقائي)
+function startBotLogic(username, cookies) {
+    // إذا كان شغال مسبقاً، نوقفه أولاً
+    if (activeBots[username]) {
+        clearInterval(activeBots[username]);
+    }
+
+    // تجهيز الكوكيز بصيغة String لطلب axios
+    let cookieString = cookies;
+    try {
+        const cookieObj = JSON.parse(cookies);
+        if(Array.isArray(cookieObj)){
+             cookieString = cookieObj.map(c => `${c.name}=${c.value}`).join('; ');
+        }
+    } catch (e) {}
+
+    // دالة محاكاة التصفح
+    const pingInstagram = async () => {
+        try {
+            await axios.get('https://www.instagram.com/', {
+                headers: {
+                    'Cookie': cookieString,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+                }
+            });
+            console.log(`[${new Date().toLocaleTimeString()}] Ping Success for ${username}`);
+        } catch (error) {
+            console.log(`[${new Date().toLocaleTimeString()}] Ping Failed for ${username}`);
+        }
+    };
+
+    // تشغيل فوري ثم كل 5 دقائق
+    pingInstagram();
+    activeBots[username] = setInterval(pingInstagram, 5 * 60 * 1000); // 5 دقائق
+}
+
+
 // 1. مسار تسجيل الدخول
 app.post('/api/login', (req, res) => {
     const { password } = req.body;
@@ -83,44 +121,7 @@ app.delete('/api/accounts/:username', (req, res) => {
 // 5. مسار تشغيل البوت (Ping)
 app.post('/api/start', (req, res) => {
     const { username, cookies } = req.body;
-    
-    // إذا كان شغال مسبقاً، نوقفه أولاً
-    if (activeBots[username]) {
-        clearInterval(activeBots[username]);
-    }
-
-    // تجهيز الكوكيز بصيغة String لطلب axios
-    let cookieString = cookies;
-    try {
-        // إذا كان بصيغة JSON القادمة من الإضافة، نحولها
-        const cookieObj = JSON.parse(cookies);
-        if(Array.isArray(cookieObj)){
-             cookieString = cookieObj.map(c => `${c.name}=${c.value}`).join('; ');
-        }
-    } catch (e) {
-        // إذا كان نص عادي نتركه كما هو
-    }
-
-    // دالة محاكاة التصفح
-    const pingInstagram = async () => {
-        try {
-            await axios.get('https://www.instagram.com/', {
-                headers: {
-                    'Cookie': cookieString,
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
-                }
-            });
-            console.log(`[${new Date().toLocaleTimeString()}] Ping Success for ${username}`);
-        } catch (error) {
-            console.log(`[${new Date().toLocaleTimeString()}] Ping Failed for ${username} - ${error.message}`);
-        }
-    };
-
-    // تشغيل فوري ثم كل 5 دقائق
-    pingInstagram();
-    activeBots[username] = setInterval(pingInstagram, 5 * 60 * 1000); // 5 دقائق
-
+    startBotLogic(username, cookies);
     res.json({ success: true, message: 'تم تشغيل السيرفر لهذا الحساب' });
 });
 
@@ -134,6 +135,20 @@ app.post('/api/stop', (req, res) => {
     res.json({ success: true, message: 'تم الإيقاف' });
 });
 
+// 7. مسار جديد: جلب حالة البوتات (عشان الواجهة تعرف مين شغال بعد التحديث)
+app.get('/api/status', (req, res) => {
+    res.json({ activeBots: Object.keys(activeBots) });
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    
+    // تشغيل البوتات المحفوظة تلقائياً عند بدء تشغيل السيرفر
+    const savedAccounts = getAccounts();
+    if(savedAccounts.length > 0) {
+        console.log(`Auto-starting ${savedAccounts.length} saved accounts...`);
+        savedAccounts.forEach(acc => {
+            startBotLogic(acc.username, acc.cookies);
+        });
+    }
 });
