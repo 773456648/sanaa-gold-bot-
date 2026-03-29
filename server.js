@@ -9,12 +9,13 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static('public')); // الواجهة الأمامية يجب أن تكون في مجلد public
 
+// كلمة السر للدخول
 const SYSTEM_PASSWORD = '771232690';
 const DB_FILE = path.join(__dirname, 'accounts.json');
 
-// مخزن الجلسات النشطة في ذاكرة السيرفر
+// المتغير لحفظ البوتات الشغالة (يحفظ المتصفح عشان نقدر نغلقه أو نتحقق منه)
 const activeBots = {};
 
 function getAccounts() {
@@ -22,80 +23,132 @@ function getAccounts() {
     try {
         const data = fs.readFileSync(DB_FILE);
         return JSON.parse(data);
-    } catch (e) { return []; }
+    } catch(e) {
+        return [];
+    }
 }
 
 function saveAccounts(accounts) {
     fs.writeFileSync(DB_FILE, JSON.stringify(accounts, null, 2));
 }
 
+// دالة تشغيل المتصفح الخفي (الجلسة المباشرة)
 async function startBotLogic(username, cookies) {
-    // إذا الحساب شغال أصلاً، ما نكررش التشغيل
-    if (activeBots[username]) return;
+    // إيقاف المتصفح لو كان شغال من قبل لنفس الحساب عشان ما تتكرر الجلسات
+    if (activeBots[username]) {
+        console.log(`[${username}] يتم إيقاف الجلسة السابقة لإعادة تشغيلها...`);
+        clearInterval(activeBots[username].interval);
+        try { await activeBots[username].browser.close(); } catch (e) {}
+        delete activeBots[username];
+    }
 
     try {
-        console.log(`[${username}] جاري إطلاق المتصفح الخفي...`);
+        console.log(`[${username}] جاري فتح المتصفح الخفي...`);
         const browser = await puppeteer.launch({
-            headless: true,
+            headless: true, // مخفي داخل السيرفر
             args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         });
 
         const page = await browser.newPage();
+        
+        // تمويه كأنك تتصفح من كمبيوتر حقيقي
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-        let cookieArray = JSON.parse(cookies);
+        // تجهيز الكوكيز
+        let cookieArray = [];
+        try {
+            cookieArray = JSON.parse(cookies);
+        } catch (e) {
+            console.log(`[${username}] خطأ في صيغة الكوكيز!`);
+            await browser.close();
+            return;
+        }
+
         await page.setCookie(...cookieArray);
 
-        // الذهاب للخاص لضمان حالة "نشط الآن"
-        await page.goto('https://www.instagram.com/direct/', { waitUntil: 'networkidle2' });
-        
+        // الدخول لصفحة الرسائل المباشرة
+        await page.goto('https://www.instagram.com/direct/', { waitUntil: 'networkidle2', timeout: 60000 });
+        console.log(`[${new Date().toLocaleTimeString()}] ${username} مبشر الآن وجالس في الخاص!`);
+
+        // دالة تحرك الماوس كل 30 ثانية عشان انستقرام يحسبك صاحي
         const activityInterval = setInterval(async () => {
             try {
                 if (browser.isConnected()) {
                     await page.mouse.move(Math.random() * 500, Math.random() * 500);
                 } else {
                     clearInterval(activityInterval);
+                    delete activeBots[username]; // مسح البوت إذا انقطع المتصفح
                 }
-            } catch (e) {}
+            } catch (e) {
+                // تجاهل الأخطاء البسيطة لحركة الماوس
+            }
         }, 30000);
 
-        activeBots[username] = { 
-            browser, 
-            interval: activityInterval,
-            startTime: new Date().toISOString() 
-        };
-        console.log(`[${username}] البوت شغال الآن في السيرفر بنجاح.`);
+        // حفظ الجلسة عشان نقدر نوقفها بعدين أو نتأكد من حالتها
+        activeBots[username] = { browser, interval: activityInterval };
 
     } catch (error) {
-        console.log(`[${username}] خطأ: ${error.message}`);
+        console.log(`[${username}] خطأ أثناء تشغيل الجلسة:`, error.message);
+        // في حالة الفشل نحذفها من القائمة
+        if(activeBots[username]) {
+            clearInterval(activeBots[username].interval);
+            delete activeBots[username];
+        }
     }
 }
 
 app.post('/api/login', (req, res) => {
-    res.json({ success: req.body.password === SYSTEM_PASSWORD });
+    const { password } = req.body;
+    if (password === SYSTEM_PASSWORD) {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, message: 'كلمة السر خاطئة' });
+    }
 });
 
-app.get('/api/accounts', (req, res) => res.json(getAccounts()));
+app.get('/api/accounts', (req, res) => {
+    res.json(getAccounts());
+});
 
 app.post('/api/accounts', (req, res) => {
     const { username, cookies } = req.body;
+    if (!username || !cookies) return res.status(400).json({ error: 'بيانات ناقصة' });
+
     let accounts = getAccounts();
-    const idx = accounts.findIndex(acc => acc.username === username);
-    if (idx >= 0) accounts[idx].cookies = cookies;
-    else accounts.push({ username, cookies });
+    const existingIndex = accounts.findIndex(acc => acc.username === username);
+    if (existingIndex >= 0) {
+        accounts[existingIndex].cookies = cookies;
+    } else {
+        accounts.push({ username, cookies });
+    }
+    
     saveAccounts(accounts);
-    res.json({ success: true });
+    res.json({ success: true, message: 'تم الحفظ بنجاح' });
 });
 
-app.get('/api/status', (req, res) => {
-    // نرسل قائمة باليوزرات الشغالة حالياً في السيرفر
-    res.json({ activeBots: Object.keys(activeBots) });
+app.delete('/api/accounts/:username', async (req, res) => {
+    const username = req.params.username;
+    let accounts = getAccounts();
+    accounts = accounts.filter(acc => acc.username !== username);
+    saveAccounts(accounts);
+    
+    // إيقاف البوت إذا كان شغال وتم حذفه
+    if (activeBots[username]) {
+        clearInterval(activeBots[username].interval);
+        try { await activeBots[username].browser.close(); } catch (e) {}
+        delete activeBots[username];
+    }
+    
+    res.json({ success: true, message: 'تم الحذف' });
 });
 
 app.post('/api/start', (req, res) => {
     const { username, cookies } = req.body;
+    
+    // تشغيل البوت في الخلفية (عدم انتظار المتصفح ليفتح بالكامل حتى لا يعلق الطلب)
     startBotLogic(username, cookies);
-    res.json({ success: true });
+    
+    res.json({ success: true, message: 'بدأ السيرفر في تجهيز المتصفح المباشر' });
 });
 
 app.post('/api/stop', async (req, res) => {
@@ -104,13 +157,25 @@ app.post('/api/stop', async (req, res) => {
         clearInterval(activeBots[username].interval);
         try { await activeBots[username].browser.close(); } catch (e) {}
         delete activeBots[username];
+        console.log(`[${username}] تم إيقاف الجلسة بناءً على طلب المستخدم.`);
     }
-    res.json({ success: true });
+    res.json({ success: true, message: 'تم إغلاق المتصفح الخفي' });
+});
+
+// هذا الرابط مهم جداً: الواجهة الأمامية تسأله دائماً لمعرفة البوتات الشغالة فعلياً
+app.get('/api/status', (req, res) => {
+    res.json({ activeBots: Object.keys(activeBots) });
 });
 
 app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-    // إعادة تشغيل الجلسات المحفوظة تلقائياً عند إعادة تشغيل السيرفر
-    const saved = getAccounts();
-    saved.forEach(acc => startBotLogic(acc.username, acc.cookies));
+    console.log(`Server is running on port ${PORT}`);
+    
+    // تشغيل الحسابات المحفوظة تلقائياً عند إقلاع السيرفر
+    const savedAccounts = getAccounts();
+    if(savedAccounts.length > 0) {
+        console.log(`Auto-starting ${savedAccounts.length} saved live sessions...`);
+        savedAccounts.forEach(acc => {
+            startBotLogic(acc.username, acc.cookies);
+        });
+    }
 });
