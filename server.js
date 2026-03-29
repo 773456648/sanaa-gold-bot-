@@ -1,252 +1,139 @@
 const express = require('express');
+const cors = require('cors');
 const fs = require('fs');
-const bcrypt = require('bcrypt');
-const axios = require('axios');
-const FormData = require('form-data');
 const path = require('path');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// إعدادات تيليجرام
-const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
-const MY_CHAT_ID = '5042495708';
-const ADMIN_PASSWORD = '771232690';
-
-// مسار قاعدة البيانات
-const DB_PATH = './radar_db.json';
-let db = { users: [], bumps: [] };
-let writeLock = false; // قفل بسيط لمنع الكتابة المتزامنة
-
-// تحميل قاعدة البيانات
-if (fs.existsSync(DB_PATH)) {
-    try {
-        db = JSON.parse(fs.readFileSync(DB_PATH));
-        if (!db.bumps) db.bumps = [];
-    } catch (e) {
-        db = { users: [], bumps: [] };
-    }
-}
-
-// حفظ قاعدة البيانات مع قفل
-async function saveDB() {
-    while (writeLock) await new Promise(r => setTimeout(r, 10));
-    writeLock = true;
-    try {
-        fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
-    } finally {
-        writeLock = false;
-    }
-}
-
-// تخزين المستخدمين المتصلين مؤقتاً
-let onlineUsers = [];
-
-// دالة إرسال رسالة إلى تيليجرام
-async function sendToTelegram(message) {
-    try {
-        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-            chat_id: MY_CHAT_ID,
-            text: message,
-            parse_mode: 'Markdown'
-        });
-    } catch (e) {
-        console.error('Telegram error:', e.message);
-    }
-}
-
-// إرسال نسخة احتياطية (ملف قاعدة البيانات)
-let lastBackupMessageId = null;
-async function sendBackup(caption = '📦 نسخة احتياطية لقاعدة بيانات الرادار') {
-    try {
-        if (lastBackupMessageId) {
-            await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/deleteMessage`, {
-                chat_id: MY_CHAT_ID,
-                message_id: lastBackupMessageId
-            }).catch(() => {});
-        }
-        const form = new FormData();
-        form.append('chat_id', MY_CHAT_ID);
-        form.append('caption', caption);
-        form.append('document', fs.createReadStream(DB_PATH));
-        const response = await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, form, {
-            headers: form.getHeaders()
-        });
-        if (response.data && response.data.result) {
-            lastBackupMessageId = response.data.result.message_id;
-        }
-    } catch (e) {
-        console.error('Backup error:', e.message);
-    }
-}
-
-// إرسال نسخة احتياطية كل ساعة
-setInterval(() => sendBackup('📦 نسخة احتياطية دورية'), 60 * 60 * 1000);
-
-// Middleware
+// إعدادات الميدلوير
+app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // المجلد الذي يحتوي على index.html
+app.use(express.static('public')); // ربط مجلد الواجهة
 
-// ======================= واجهات برمجية =======================
+// كلمة السر للدخول
+const SYSTEM_PASSWORD = '771232690';
+const DB_FILE = path.join(__dirname, 'accounts.json');
 
-// تسجيل الدخول / إنشاء حساب
-app.post('/api/auth', async (req, res) => {
-    const { name, password, type, action } = req.body;
-    if (!name || !password || !type) {
-        return res.status(400).json({ error: 'بيانات ناقصة' });
-    }
-    const normalizedName = name.trim().toLowerCase();
-    const existingUser = db.users.find(u => u.name.toLowerCase() === normalizedName && u.type === type);
+// المتغير لحفظ البوتات الشغالة
+const activeBots = {};
 
-    if (action === 'reg') {
-        if (existingUser) {
-            return res.status(400).json({ error: 'الاسم مسجل مسبقاً' });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = {
-            id: 'R' + Math.random().toString(36).substr(2, 7),
-            name: name.trim(),
-            password: hashedPassword,
-            type,
-            createdAt: new Date().toISOString()
-        };
-        db.users.push(newUser);
-        await saveDB();
-        sendToTelegram(`✨ *تسجيل مستخدم جديد*\nالاسم: ${newUser.name}\nالنوع: ${type === 'merchant' ? 'راصد' : 'سائق'}`);
-        // لا نرسل كلمة المرور في الرد
-        const { password: _, ...safeUser } = newUser;
-        return res.json(safeUser);
+// دالة قراءة الحسابات المحفوظة
+function getAccounts() {
+    if (!fs.existsSync(DB_FILE)) return [];
+    const data = fs.readFileSync(DB_FILE);
+    return JSON.parse(data);
+}
+
+// دالة حفظ الحسابات
+function saveAccounts(accounts) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(accounts, null, 2));
+}
+
+// 1. مسار تسجيل الدخول
+app.post('/api/login', (req, res) => {
+    const { password } = req.body;
+    if (password === SYSTEM_PASSWORD) {
+        res.json({ success: true });
     } else {
-        // تسجيل الدخول
-        if (!existingUser) {
-            return res.status(403).json({ error: 'الاسم غير موجود' });
-        }
-        const match = await bcrypt.compare(password, existingUser.password);
-        if (!match) {
-            return res.status(403).json({ error: 'كلمة المرور خاطئة' });
-        }
-        const { password: _, ...safeUser } = existingUser;
-        return res.json(safeUser);
+        res.status(401).json({ success: false, message: 'كلمة السر خاطئة' });
     }
 });
 
-// جلب جميع المطبات
-app.get('/api/bumps', (req, res) => {
-    res.json(db.bumps);
+// 2. مسار جلب الحسابات المحفوظة
+app.get('/api/accounts', (req, res) => {
+    res.json(getAccounts());
 });
 
-// إضافة مطب جديد
-app.post('/api/add-bump', async (req, res) => {
-    const { lat, lng, userId, userName } = req.body;
-    if (!lat || !lng || !userId || !userName) {
-        return res.status(400).json({ error: 'بيانات غير كاملة' });
-    }
-    // التحقق من وجود المستخدم
-    const user = db.users.find(u => u.id === userId);
-    if (!user) {
-        return res.status(403).json({ error: 'مستخدم غير مصرح به' });
-    }
-    const userBumpsCount = db.bumps.filter(b => b.recorderId === userId).length + 1;
-    const newBump = {
-        id: Date.now(),
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        recorderId: userId,
-        recorderName: userName,
-        recorderTotal: userBumpsCount,
-        timestamp: new Date().toISOString()
-    };
-    db.bumps.push(newBump);
-    await saveDB();
+// 3. مسار حفظ حساب جديد
+app.post('/api/accounts', (req, res) => {
+    const { username, cookies } = req.body;
+    if (!username || !cookies) return res.status(400).json({ error: 'بيانات ناقصة' });
 
-    // إرسال إشعار تيليجرام
-    const tgMsg = `🚨 *تم رصد مطب جديد!*\n\n📍 الإحداثيات: \`${lat}, ${lng}\`\n👤 الراصد: *${userName}*\n📈 إجمالي المطبات التي رصدها: ${userBumpsCount}\n\n[🔗 فتح على الخريطة](https://www.google.com/maps/search/?api=1&query=${lat},${lng})`;
-    sendToTelegram(tgMsg);
-
-    res.json({ success: true, bump: newBump });
-});
-
-// تحديث المستخدمين المتصلين
-app.post('/api/users-online', (req, res) => {
-    const { userId, name, type, loc } = req.body;
-    if (!userId) return res.status(400).json({ error: 'userId مطلوب' });
-    const now = Date.now();
-    // إزالة المستخدمين الذين لم يتم تحديثهم منذ 30 ثانية
-    onlineUsers = onlineUsers.filter(u => now - u.lastSeen < 30000);
-    const existing = onlineUsers.find(u => u.userId === userId);
-    if (existing) {
-        existing.name = name || existing.name;
-        existing.type = type || existing.type;
-        existing.loc = loc || existing.loc;
-        existing.lastSeen = now;
+    let accounts = getAccounts();
+    // تحديث إذا كان موجود، أو إضافة جديد
+    const existingIndex = accounts.findIndex(acc => acc.username === username);
+    if (existingIndex >= 0) {
+        accounts[existingIndex].cookies = cookies;
     } else {
-        onlineUsers.push({ userId, name, type, loc, lastSeen: now });
+        accounts.push({ username, cookies });
     }
-    // إرجاع القائمة الكاملة
-    res.json(onlineUsers);
+    
+    saveAccounts(accounts);
+    res.json({ success: true, message: 'تم الحفظ بنجاح' });
 });
 
-// Webhook لتلقي أوامر تيليجرام
-app.post('/api/tg-webhook', async (req, res) => {
-    const update = req.body;
-    if (!update.message) return res.sendStatus(200);
+// 4. مسار حذف حساب
+app.delete('/api/accounts/:username', (req, res) => {
+    const username = req.params.username;
+    let accounts = getAccounts();
+    accounts = accounts.filter(acc => acc.username !== username);
+    saveAccounts(accounts);
+    
+    // إيقاف البوت إذا كان شغال
+    if (activeBots[username]) {
+        clearInterval(activeBots[username]);
+        delete activeBots[username];
+    }
+    
+    res.json({ success: true, message: 'تم الحذف' });
+});
 
-    // استعادة نسخة احتياطية من ملف مرفق
-    if (update.message.document && update.message.document.file_name === 'radar_db.json') {
-        const fileId = update.message.document.file_id;
+// 5. مسار تشغيل البوت (Ping)
+app.post('/api/start', (req, res) => {
+    const { username, cookies } = req.body;
+    
+    // إذا كان شغال مسبقاً، نوقفه أولاً
+    if (activeBots[username]) {
+        clearInterval(activeBots[username]);
+    }
+
+    // تجهيز الكوكيز بصيغة String لطلب axios
+    let cookieString = cookies;
+    try {
+        // إذا كان بصيغة JSON القادمة من الإضافة، نحولها
+        const cookieObj = JSON.parse(cookies);
+        if(Array.isArray(cookieObj)){
+             cookieString = cookieObj.map(c => `${c.name}=${c.value}`).join('; ');
+        }
+    } catch (e) {
+        // إذا كان نص عادي نتركه كما هو
+    }
+
+    // دالة محاكاة التصفح
+    const pingInstagram = async () => {
         try {
-            const fileInfo = await axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${fileId}`);
-            const filePath = fileInfo.data.result.file_path;
-            const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${filePath}`;
-            const response = await axios.get(fileUrl, { responseType: 'stream' });
-            const writer = fs.createWriteStream(DB_PATH);
-            response.data.pipe(writer);
-            await new Promise((resolve, reject) => {
-                writer.on('finish', resolve);
-                writer.on('error', reject);
+            await axios.get('https://www.instagram.com/', {
+                headers: {
+                    'Cookie': cookieString,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+                }
             });
-            // إعادة تحميل قاعدة البيانات
-            const newDb = JSON.parse(fs.readFileSync(DB_PATH));
-            db = newDb;
-            if (!db.bumps) db.bumps = [];
-            sendToTelegram('✅ تم استعادة قاعدة البيانات بنجاح');
-        } catch (e) {
-            sendToTelegram('❌ فشل استعادة قاعدة البيانات');
+            console.log(`[${new Date().toLocaleTimeString()}] Ping Success for ${username}`);
+        } catch (error) {
+            console.log(`[${new Date().toLocaleTimeString()}] Ping Failed for ${username} - ${error.message}`);
         }
-        return res.sendStatus(200);
-    }
+    };
 
-    // أوامر نصية
-    if (!update.message.text) return res.sendStatus(200);
-    const chatId = String(update.message.chat.id);
-    const fullText = update.message.text.trim();
-    if (chatId !== MY_CHAT_ID || !fullText.startsWith(ADMIN_PASSWORD)) {
-        return res.sendStatus(200);
-    }
+    // تشغيل فوري ثم كل 5 دقائق
+    pingInstagram();
+    activeBots[username] = setInterval(pingInstagram, 5 * 60 * 1000); // 5 دقائق
 
-    const cmd = fullText.substring(ADMIN_PASSWORD.length).trim();
-    if (cmd === 'البيانات') {
-        await sendBackup('📦 نسخة بناءً على طلبك');
-    } else if (cmd === 'العدد') {
-        await sendToTelegram(`📊 *الإحصائيات*\n👥 المستخدمون: ${db.users.length}\n⚠️ المطبات: ${db.bumps.length}`);
-    } else if (cmd === 'نظف') {
-        // حذف المستخدمين غير النشطين (اختياري)
-        const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        const oldUsers = db.users.filter(u => new Date(u.createdAt).getTime() < cutoff);
-        if (oldUsers.length) {
-            db.users = db.users.filter(u => new Date(u.createdAt).getTime() >= cutoff);
-            await saveDB();
-            sendToTelegram(`🧹 تم حذف ${oldUsers.length} مستخدم قديم`);
-        } else {
-            sendToTelegram('لا يوجد مستخدمين قديمين للحذف');
-        }
-    }
-    res.sendStatus(200);
+    res.json({ success: true, message: 'تم تشغيل السيرفر لهذا الحساب' });
 });
 
-// تشغيل الخادم
+// 6. مسار إيقاف البوت
+app.post('/api/stop', (req, res) => {
+    const { username } = req.body;
+    if (activeBots[username]) {
+        clearInterval(activeBots[username]);
+        delete activeBots[username];
+    }
+    res.json({ success: true, message: 'تم الإيقاف' });
+});
+
 app.listen(PORT, () => {
-    console.log(`🚀 RADAR SYSTEM running on port ${PORT}`);
-    // إرسال إشعار بدء التشغيل
-    sendToTelegram('🟢 نظام الرادار قيد التشغيل');
+    console.log(`Server is running on port ${PORT}`);
 });
