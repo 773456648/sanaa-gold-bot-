@@ -1,105 +1,97 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const { IgApiClient } = require('instagram-private-api');
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const port = process.env.PORT || 3000;
 
-app.use(cors());
+// إعدادات الـ CORS للسماح للتطبيق بإرسال البيانات
+app.use(cors({
+    origin: '*',
+    methods: ['POST', 'GET']
+}));
 app.use(express.json());
-app.use(express.static('public'));
 
-const SYSTEM_PASSWORD = '771232690';
+// متغير لتخزين بيانات الجلسة في الذاكرة
+let currentSessionData = null;
+const ig = new IgApiClient();
 
-// هنا نحفظ الجلسات الشغالة حالياً في السيرفر
-const activeSessions = {};
+// 1. مسار (Endpoint) لاستقبال بيانات الجلسة من التطبيق
+app.post('/api/save-session', (req, res) => {
+    const { cookies, userAgent } = req.body;
 
-// دالة تحويل الكوكيز من JSON إلى نص عادي عشان يقبلها السيرفر
-function parseCookies(cookieInput) {
+    if (!cookies || !userAgent) {
+        console.log('❌ طلب غير مكتمل من التطبيق.');
+        return res.status(400).json({ error: 'Missing data' });
+    }
+
+    // حفظ البيانات
+    currentSessionData = { cookies, userAgent };
+    console.log('✅ تم استلام جلسة جديدة بنجاح من التطبيق!');
+    console.log('📱 User-Agent المستلم:', userAgent);
+    
+    // تشغيل النشاط فوراً بعد استلام الجلسة
+    performActivity();
+
+    res.status(200).json({ message: 'Session saved successfully', status: 'active' });
+});
+
+// 2. مسار للتحقق من حالة السيرفر (مفيد لموقع Cron-job.org)
+app.get('/', (req, res) => {
+    const status = currentSessionData ? 'يوجد جلسة نشطة 🟢' : 'بانتظار الجلسة من التطبيق 🔴';
+    res.send(`<h1>سيرفر البقاء متصلاً يعمل</h1><p>الحالة: ${status}</p>`);
+});
+
+// 3. الدالة التي تقوم بمحاكاة النشاط على إنستقرام
+async function performActivity() {
+    if (!currentSessionData) {
+        console.log('⏳ لا توجد جلسة محفوظة بعد. بانتظار التطبيق...');
+        return;
+    }
+
     try {
-        const parsed = JSON.parse(cookieInput);
-        if (Array.isArray(parsed)) {
-            return parsed.map(c => `${c.name}=${c.value}`).join('; ');
+        console.log('🔄 جاري إرسال إشارة "نشط الآن" لإنستقرام...');
+
+        // إعداد العميل (Client) بنفس بصمة الهاتف
+        ig.state.generateDevice(process.env.IG_USERNAME || 'android_device');
+        
+        // استعادة الجلسة (Deserialize) باستخدام الكوكيز والـ User-Agent المستلمة
+        await ig.state.deserialize({
+            constants: ig.state.constants,
+            cookies: currentSessionData.cookies,
+        });
+
+        // محاولة تعيين الـ User-Agent بشكل يدوي ليتطابق مع الهاتف
+        ig.request.defaults.headers = {
+            ...ig.request.defaults.headers,
+            'User-Agent': currentSessionData.userAgent
+        };
+
+        // الإجراء 1: تحديث صندوق الرسائل (أقوى إشارة للنشاط)
+        await ig.feed.directInbox().items();
+        
+        // الإجراء 2: تحديث الصفحة الرئيسية (Feed)
+        await ig.feed.timeline().items();
+
+        console.log(`✅ تمت محاكاة النشاط بنجاح في: ${new Date().toLocaleTimeString()}`);
+
+    } catch (error) {
+        console.error('❌ حدث خطأ أثناء محاكاة النشاط:', error.message);
+        
+        // إذا انتهت صلاحية الجلسة أو تم تسجيل الخروج
+        if (error.message.includes('login_required') || error.status === 401) {
+            console.log('⚠️ الجلسة منتهية الصلاحية. السيرفر بانتظار تسجيل دخول جديد من التطبيق.');
+            currentSessionData = null; // تفريغ الجلسة
         }
-        return cookieInput;
-    } catch (e) {
-        return cookieInput; // إذا كانت نص جاهز، نرجعها زي ما هي
     }
 }
 
-// دالة التشغيل: ترسل طلب للموقع كل 60 ثانية
-function startSessionPing(username, targetUrl, cookies) {
-    // لو كان شغال من قبل، نوقفه عشان نحدثه
-    if (activeSessions[username]) {
-        clearInterval(activeSessions[username].interval);
-    }
-
-    const cookieString = parseCookies(cookies);
-
-    // دالة إرسال الطلب (التحديث)
-    const sendPing = async () => {
-        try {
-            await fetch(targetUrl, {
-                headers: {
-                    'Cookie': cookieString,
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-                }
-            });
-            console.log(`[${username}] تم إرسال تحديث الاتصال بنجاح إلى ${targetUrl}`);
-        } catch (error) {
-            console.log(`[${username}] فشل في إرسال التحديث، لكن السيرفر مستمر في المحاولة.`);
-        }
-    };
-
-    // إرسال أول طلب فوراً
-    sendPing();
-
-    // تشغيل المؤقت: كل 60 ثانية (60000 ملي ثانية)
-    const interval = setInterval(sendPing, 60000);
-
-    // حفظ الجلسة في ذاكرة السيرفر
-    activeSessions[username] = {
-        targetUrl: targetUrl,
-        interval: interval
-    };
-}
-
-
-// --- روابط الـ API ---
-
-app.post('/api/login', (req, res) => {
-    if (req.body.password === SYSTEM_PASSWORD) res.json({ success: true });
-    else res.status(401).json({ success: false });
-});
-
-app.post('/api/start', (req, res) => {
-    const { username, targetUrl, cookies } = req.body;
-    if (!username || !targetUrl || !cookies) {
-        return res.status(400).json({ error: 'بيانات ناقصة' });
-    }
-
-    startSessionPing(username, targetUrl, cookies);
-    res.json({ success: true });
-});
-
-app.post('/api/stop', (req, res) => {
-    const { username } = req.body;
-    if (activeSessions[username]) {
-        clearInterval(activeSessions[username].interval);
-        delete activeSessions[username];
-        console.log(`[${username}] تم إيقاف الجلسة.`);
-    }
-    res.json({ success: true });
-});
-
-// هذا الرابط اللي الصفحة تسأله: "مين الشغال الحين؟"
-app.get('/api/status', (req, res) => {
-    const sessionsList = Object.keys(activeSessions).map(user => {
-        return { username: user, targetUrl: activeSessions[user].targetUrl };
-    });
-    res.json({ activeSessions: sessionsList });
-});
-
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}...`);
+// 4. تشغيل السيرفر
+app.listen(port, () => {
+    console.log(`🚀 السيرفر يعمل على المنفذ ${port}`);
+    console.log(`🔗 رابط استلام الجلسات سيكون: https://[your-render-app-url]/api/save-session`);
+    
+    // إعداد التكرار (Interval): تشغيل دالة النشاط كل 4 دقائق (240,000 مللي ثانية)
+    setInterval(performActivity, 240000);
 });
