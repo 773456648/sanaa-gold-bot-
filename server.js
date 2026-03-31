@@ -1,97 +1,49 @@
-require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const { IgApiClient } = require('instagram-private-api');
-
 const app = express();
 const port = process.env.PORT || 3000;
 
-// إعدادات الـ CORS للسماح للتطبيق بإرسال البيانات
-app.use(cors({
-    origin: '*',
-    methods: ['POST', 'GET']
-}));
-app.use(express.json());
-
-// متغير لتخزين بيانات الجلسة في الذاكرة
-let currentSessionData = null;
 const ig = new IgApiClient();
 
-// 1. مسار (Endpoint) لاستقبال بيانات الجلسة من التطبيق
-app.post('/api/save-session', (req, res) => {
-    const { cookies, userAgent } = req.body;
+// بيانات حسابك (تأكد من تغيير كلمة السر لاحقاً للأمان)
+const USERNAME = 'dvqkcaqnssa39';
+const PASSWORD = 'god12god1';
 
-    if (!cookies || !userAgent) {
-        console.log('❌ طلب غير مكتمل من التطبيق.');
-        return res.status(400).json({ error: 'Missing data' });
-    }
+let loginStatus = "جاري محاولة تسجيل الدخول...";
 
-    // حفظ البيانات
-    currentSessionData = { cookies, userAgent };
-    console.log('✅ تم استلام جلسة جديدة بنجاح من التطبيق!');
-    console.log('📱 User-Agent المستلم:', userAgent);
-    
-    // تشغيل النشاط فوراً بعد استلام الجلسة
-    performActivity();
-
-    res.status(200).json({ message: 'Session saved successfully', status: 'active' });
-});
-
-// 2. مسار للتحقق من حالة السيرفر (مفيد لموقع Cron-job.org)
-app.get('/', (req, res) => {
-    const status = currentSessionData ? 'يوجد جلسة نشطة 🟢' : 'بانتظار الجلسة من التطبيق 🔴';
-    res.send(`<h1>سيرفر البقاء متصلاً يعمل</h1><p>الحالة: ${status}</p>`);
-});
-
-// 3. الدالة التي تقوم بمحاكاة النشاط على إنستقرام
-async function performActivity() {
-    if (!currentSessionData) {
-        console.log('⏳ لا توجد جلسة محفوظة بعد. بانتظار التطبيق...');
-        return;
-    }
-
+async function loginToInstagram() {
     try {
-        console.log('🔄 جاري إرسال إشارة "نشط الآن" لإنستقرام...');
-
-        // إعداد العميل (Client) بنفس بصمة الهاتف
-        ig.state.generateDevice(process.env.IG_USERNAME || 'android_device');
+        ig.state.generateDevice(USERNAME);
+        await ig.simulate.preLoginFlow();
+        const loggedInUser = await ig.account.login(USERNAME, PASSWORD);
         
-        // استعادة الجلسة (Deserialize) باستخدام الكوكيز والـ User-Agent المستلمة
-        await ig.state.deserialize({
-            constants: ig.state.constants,
-            cookies: currentSessionData.cookies,
-        });
-
-        // محاولة تعيين الـ User-Agent بشكل يدوي ليتطابق مع الهاتف
-        ig.request.defaults.headers = {
-            ...ig.request.defaults.headers,
-            'User-Agent': currentSessionData.userAgent
-        };
-
-        // الإجراء 1: تحديث صندوق الرسائل (أقوى إشارة للنشاط)
-        await ig.feed.directInbox().items();
+        // محاكاة نشاط بعد الدخول لضمان عدم الحظر
+        process.nextTick(async () => await ig.simulate.postLoginFlow());
         
-        // الإجراء 2: تحديث الصفحة الرئيسية (Feed)
-        await ig.feed.timeline().items();
-
-        console.log(`✅ تمت محاكاة النشاط بنجاح في: ${new Date().toLocaleTimeString()}`);
-
+        loginStatus = `✅ تم الدخول بنجاح! اسم المستخدم: ${loggedInUser.username}`;
+        console.log(loginStatus);
     } catch (error) {
-        console.error('❌ حدث خطأ أثناء محاكاة النشاط:', error.message);
-        
-        // إذا انتهت صلاحية الجلسة أو تم تسجيل الخروج
-        if (error.message.includes('login_required') || error.status === 401) {
-            console.log('⚠️ الجلسة منتهية الصلاحية. السيرفر بانتظار تسجيل دخول جديد من التطبيق.');
-            currentSessionData = null; // تفريغ الجلسة
-        }
+        loginStatus = `❌ فشل تسجيل الدخول: ${error.message}`;
+        console.error(loginStatus);
     }
 }
 
-// 4. تشغيل السيرفر
+// تشغيل محاولة الدخول عند تشغيل السيرفر
+loginToInstagram();
+
+app.get('/', (req, res) => {
+    res.send(`
+        <div style="font-family: Arial; text-align: center; margin-top: 50px;">
+            <h1>مراقب حساب إنستقرام</h1>
+            <div style="padding: 20px; border: 2px solid #ccc; display: inline-block; border-radius: 10px;">
+                <p style="font-size: 20px;">حالة الحساب الآن:</p>
+                <h3 style="color: ${loginStatus.includes('✅') ? 'green' : 'red'}">${loginStatus}</h3>
+            </div>
+            <p style="margin-top: 20px;">هذا السيرفر يعمل الآن لضمان بقاء حسابك نشطاً.</p>
+        </div>
+    `);
+});
+
 app.listen(port, () => {
-    console.log(`🚀 السيرفر يعمل على المنفذ ${port}`);
-    console.log(`🔗 رابط استلام الجلسات سيكون: https://[your-render-app-url]/api/save-session`);
-    
-    // إعداد التكرار (Interval): تشغيل دالة النشاط كل 4 دقائق (240,000 مللي ثانية)
-    setInterval(performActivity, 240000);
+    console.log(`Server is running on port ${port}`);
 });
