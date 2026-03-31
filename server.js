@@ -8,7 +8,7 @@ const ig = new IgApiClient();
 
 // بيانات الحساب
 const USERNAME = 'dvqkcaqnssa39';
-const PASSWORD = 'god12god1';
+const PASSWORD = 'god12god12';
 
 let loginStatus = "⏳ جاري محاولة تسجيل الدخول...";
 let lastCheck = "لم يتم الفحص بعد";
