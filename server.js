@@ -6,12 +6,12 @@ const { promisify } = require('util');
 const app = express();
 const port = process.env.PORT || 10000;
 
-// إعداد SQLite لتخزين الجلسة بشكل دائم
+// إعداد SQLite
 const db = new sqlite3.Database('./session.db');
 const dbGet = promisify(db.get).bind(db);
 const dbRun = promisify(db.run).bind(db);
 
-// إنشاء الجدول إذا لم يكن موجوداً
+// إنشاء الجدول
 dbRun(`
   CREATE TABLE IF NOT EXISTS session (
     key TEXT PRIMARY KEY,
@@ -19,7 +19,7 @@ dbRun(`
   )
 `).catch(err => console.error('خطأ في إنشاء جدول الجلسة:', err));
 
-// قراءة البيانات من قاعدة البيانات
+// دوال مساعدة
 async function loadSession() {
   try {
     const row = await dbGet("SELECT value FROM session WHERE key = 'instagram_session'");
@@ -32,97 +32,122 @@ async function loadSession() {
   return null;
 }
 
-// حفظ البيانات في قاعدة البيانات
 async function saveSession(data) {
+  if (!data) {
+    console.error('⚠️ محاولة حفظ جلسة فارغة (undefined) – تم تجاهلها');
+    return false;
+  }
   try {
     await dbRun(
       "INSERT OR REPLACE INTO session (key, value) VALUES (?, ?)",
       ['instagram_session', JSON.stringify(data)]
     );
+    return true;
   } catch (err) {
     console.error('فشل في حفظ الجلسة:', err);
+    return false;
   }
 }
 
-// تأخير زمني
+async function clearSession() {
+  try {
+    await dbRun("DELETE FROM session WHERE key = 'instagram_session'");
+    console.log('🗑️ تم مسح الجلسة المخزنة');
+  } catch (err) {
+    console.error('فشل في مسح الجلسة:', err);
+  }
+}
+
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// متغيرات البيئة (آمنة)
+// متغيرات البيئة (يجب تعيينها في لوحة التحكم)
 const USERNAME = process.env.INSTA_USERNAME;
 const PASSWORD = process.env.INSTA_PASSWORD;
 const PROXY_URL = process.env.PROXY_URL;
 
-// حالة تسجيل الدخول الحالية
 let loginStatus = "⏳ جاري تهيئة النظام...";
 let rawErrorDetails = "لا يوجد أخطاء بعد.";
-let isLoggingIn = false; // لمنع تكرار المحاولات
+let isLoggingIn = false;
+let ig = null;  // سيتم إنشاؤه داخل كل محاولة
 
-// إنشاء عميل Instagram
-let ig = new IgApiClient();
-
-if (PROXY_URL) {
-  ig.state.proxyUrl = PROXY_URL;
-  console.log(`✅ تم تعيين البروكسي: ${PROXY_URL}`);
+// دالة إنشاء عميل جديد
+function createIgClient() {
+  const client = new IgApiClient();
+  if (PROXY_URL) {
+    client.state.proxyUrl = PROXY_URL;
+  }
+  return client;
 }
 
-// دالة تسجيل الدخول الرئيسية مع إعادة المحاولة التلقائية
-async function performLogin() {
+// محاولة تسجيل الدخول
+async function performLogin(forceFresh = false) {
   if (isLoggingIn) {
     console.log('محاولة دخول قيد التنفيذ بالفعل، انتظر...');
-    return;
+    return false;
   }
   isLoggingIn = true;
+  ig = createIgClient();
 
   try {
     console.log('بدء عملية تسجيل الدخول...');
     loginStatus = "🔄 جاري تسجيل الدخول...";
-    
-    // توليد جهاز ثابت
+
     ig.state.generateDevice(USERNAME);
-    
-    // محاولة استعادة الجلسة المحفوظة
-    const savedSession = await loadSession();
-    if (savedSession) {
-      console.log('استعادة جلسة محفوظة...');
-      try {
-        await ig.state.deserialize(savedSession);
-        const userInfo = await ig.user.info(ig.state.cookieUserId);
-        loginStatus = `✅ تم الدخول بالجلسة المحفوظة! الحساب: ${userInfo.username}`;
-        rawErrorDetails = "تمت العملية بنجاح.";
-        console.log(loginStatus);
-        isLoggingIn = false;
-        return;
-      } catch (err) {
-        console.log('فشلت استعادة الجلسة، سنحاول تسجيل الدخول من جديد.');
-        // إذا فشلت الاستعادة، نكمل لتسجيل الدخول العادي
+
+    // محاولة استعادة الجلسة إذا لم نطلب تسجيل دخول جديد
+    if (!forceFresh) {
+      const savedSession = await loadSession();
+      if (savedSession && savedSession.cookies) {
+        console.log('استعادة جلسة محفوظة...');
+        try {
+          await ig.state.deserialize(savedSession);
+          // التحقق من صحة الجلسة
+          const userInfo = await ig.user.info(ig.state.cookieUserId);
+          loginStatus = `✅ تم الدخول بالجلسة المحفوظة! الحساب: ${userInfo.username}`;
+          rawErrorDetails = "تمت العملية بنجاح.";
+          console.log(loginStatus);
+          isLoggingIn = false;
+          return true;
+        } catch (err) {
+          console.log('فشلت استعادة الجلسة، سنحاول تسجيل الدخول من جديد.');
+          await clearSession();
+          // نستمر لتسجيل الدخول العادي
+        }
       }
     }
-    
-    // محاكاة ما قبل الدخول
+
+    // تسجيل دخول جديد
     console.log('تنفيذ preLoginFlow...');
     await ig.simulate.preLoginFlow();
     await delay(3000);
-    
+
     console.log('محاولة تسجيل الدخول بالباسورد...');
     const loggedInUser = await ig.account.login(USERNAME, PASSWORD);
     await delay(2000);
-    
-    // حفظ الجلسة الجديدة
+
+    // حفظ الجلسة
     const serialized = await ig.state.serialize();
+    if (!serialized) {
+      throw new Error('serialize returned undefined');
+    }
     delete serialized.constants;
-    await saveSession(serialized);
-    
-    // تنفيذ postLoginFlow في الخلفية
+    const saved = await saveSession(serialized);
+    if (!saved) {
+      console.warn('⚠️ لم نتمكن من حفظ الجلسة، لكن الدخول تم بنجاح مؤقتاً');
+    }
+
     process.nextTick(() => ig.simulate.postLoginFlow().catch(e => console.log('postLoginFlow error:', e.message)));
-    
+
     loginStatus = `✅ تم الدخول بنجاح! المستخدم: ${loggedInUser.username}`;
     rawErrorDetails = "تمت العملية بنجاح.";
     console.log(loginStatus);
-    
+    isLoggingIn = false;
+    return true;
+
   } catch (error) {
     console.error('خطأ في تسجيل الدخول:', error);
     rawErrorDetails = error.toString();
-    
+
     if (error.message.includes('checkpoint_required')) {
       loginStatus = "⚠️ إنستقرام طلب تحقق (checkpoint). يجب فتح الجوال والضغط على 'هذا أنا'.";
     } else if (error.message.includes('bad_password')) {
@@ -132,21 +157,22 @@ async function performLogin() {
     } else {
       loginStatus = `❌ فشل الدخول: ${error.message.substring(0, 100)}`;
     }
-  } finally {
+
     isLoggingIn = false;
+    return false;
   }
 }
 
-// تشغيل محاولة الدخول فور بدء السيرفر
-performLogin();
+// بدء المحاولة فور التشغيل
+performLogin().catch(console.error);
 
-// إعادة المحاولة كل ساعة إذا فشل الدخول
+// إعادة محاولة كل 30 دقيقة إذا لم يكن مسجلاً
 setInterval(() => {
   if (!loginStatus.includes('✅')) {
     console.log('حالة الدخول غير ناجحة، إعادة محاولة...');
-    performLogin();
+    performLogin(false).catch(console.error);
   }
-}, 60 * 60 * 1000); // كل ساعة
+}, 30 * 60 * 1000);
 
 // صفحة المراقبة
 app.get('/', (req, res) => {
@@ -186,7 +212,8 @@ app.get('/', (req, res) => {
         </div>` : ''}
 
         <button onclick="retryLogin()">محاولة تسجيل الدخول مجدداً 🔄</button>
-        <div class="info">dvqkcaqnssa39 | تحديث تلقائي كل ساعة</div>
+        <button onclick="resetAndRetry()" style="background: #444; margin-top: 8px;">إعادة ضبط الجلسة والمحاولة 🧹</button>
+        <div class="info">dvqkcaqnssa39 | تحديث تلقائي كل 30 دقيقة</div>
       </div>
 
       <script>
@@ -195,11 +222,11 @@ app.get('/', (req, res) => {
           btn.innerText = 'جاري المحاولة...';
           btn.disabled = true;
           try {
-            const response = await fetch('/retry-login', { method: 'POST' });
+            const response = await fetch('/retry-login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ reset: false }) });
             const result = await response.json();
             if (result.status === 'started') {
               alert('تم بدء محاولة جديدة، انتظر قليلاً ثم أعد تحميل الصفحة.');
-              setTimeout(() => location.reload(), 3000);
+              setTimeout(() => location.reload(), 4000);
             } else {
               alert('فشل في بدء المحاولة: ' + result.message);
               btn.innerText = 'محاولة تسجيل الدخول مجدداً 🔄';
@@ -211,20 +238,51 @@ app.get('/', (req, res) => {
             btn.disabled = false;
           }
         }
+
+        async function resetAndRetry() {
+          if (!confirm('هل تريد مسح الجلسة المخزنة والمحاولة من جديد؟')) return;
+          const btn = event.target;
+          btn.innerText = 'جاري...';
+          btn.disabled = true;
+          try {
+            const response = await fetch('/retry-login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ reset: true }) });
+            const result = await response.json();
+            if (result.status === 'started') {
+              alert('تم مسح الجلسة وبدء محاولة جديدة، انتظر قليلاً ثم أعد تحميل الصفحة.');
+              setTimeout(() => location.reload(), 4000);
+            } else {
+              alert('فشل: ' + result.message);
+              btn.innerText = 'إعادة ضبط الجلسة والمحاولة 🧹';
+              btn.disabled = false;
+            }
+          } catch (err) {
+            alert('خطأ في الاتصال.');
+            btn.innerText = 'إعادة ضبط الجلسة والمحاولة 🧹';
+            btn.disabled = false;
+          }
+        }
       </script>
     </body>
     </html>
   `);
 });
 
-// نقطة إعادة المحاولة
+// نقاط API للمحاولة
 app.post('/retry-login', async (req, res) => {
+  let reset = false;
+  if (req.body && req.body.reset === true) reset = true;
+
   if (isLoggingIn) {
     return res.json({ status: 'busy', message: 'يوجد محاولة دخول قيد التنفيذ حالياً.' });
   }
+
+  if (reset) {
+    await clearSession();
+  }
+
   // بدء محاولة جديدة في الخلفية
-  performLogin().catch(console.error);
-  res.json({ status: 'started', message: 'تم بدء محاولة تسجيل الدخول.' });
+  performLogin(reset).catch(console.error);
+  res.json({ status: 'started', message: reset ? 'تم مسح الجلسة وبدء محاولة جديدة.' : 'تم بدء محاولة تسجيل الدخول.' });
 });
 
 // تشغيل السيرفر
