@@ -1,296 +1,255 @@
 const express = require('express');
-const { IgApiClient } = require('instagram-private-api');
-const sqlite3 = require('sqlite3').verbose();
-const { promisify } = require('util');
-
+const fs = require('fs');
+const axios = require('axios');
+const FormData = require('form-data');
 const app = express();
-const port = process.env.PORT || 10000;
 
-// إعداد SQLite
-const db = new sqlite3.Database('./session.db');
-const dbGet = promisify(db.get).bind(db);
-const dbRun = promisify(db.run).bind(db);
+const PORT = process.env.PORT || 3000;
+const DB_PATH = './heiba_royal_db.json';
 
-// إنشاء الجدول
-dbRun(`
-  CREATE TABLE IF NOT EXISTS session (
-    key TEXT PRIMARY KEY,
-    value TEXT
-  )
-`).catch(err => console.error('خطأ في إنشاء جدول الجلسة:', err));
+// إعدادات التلجرام
+const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
+const MY_CHAT_ID = '5042495708';
+const ADMIN_PASSWORD = '771232690'; 
 
-// دوال مساعدة
-async function loadSession() {
-  try {
-    const row = await dbGet("SELECT value FROM session WHERE key = 'instagram_session'");
-    if (row && row.value) {
-      return JSON.parse(row.value);
-    }
-  } catch (err) {
-    console.error('فشل في تحميل الجلسة:', err);
-  }
-  return null;
+app.use(express.json());
+app.use(express.static('public'));
+
+let db = { users: [] };
+if (fs.existsSync(DB_PATH)) {
+    try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [] }; }
 }
 
-async function saveSession(data) {
-  if (!data) {
-    console.error('⚠️ محاولة حفظ جلسة فارغة (undefined) – تم تجاهلها');
-    return false;
-  }
-  try {
-    await dbRun(
-      "INSERT OR REPLACE INTO session (key, value) VALUES (?, ?)",
-      ['instagram_session', JSON.stringify(data)]
-    );
-    return true;
-  } catch (err) {
-    console.error('فشل في حفظ الجلسة:', err);
-    return false;
-  }
+const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+
+// دالة إرسال الرسائل النصية
+async function sendToTelegram(message) {
+    try {
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            chat_id: MY_CHAT_ID,
+            text: message,
+            parse_mode: 'Markdown'
+        });
+    } catch (e) { console.error("Telegram Error"); }
 }
 
-async function clearSession() {
-  try {
-    await dbRun("DELETE FROM session WHERE key = 'instagram_session'");
-    console.log('🗑️ تم مسح الجلسة المخزنة');
-  } catch (err) {
-    console.error('فشل في مسح الجلسة:', err);
-  }
-}
+// --- المتغير الجديد لحفظ معرف آخر رسالة تحتوي على قاعدة البيانات ---
+let lastBackupMessageId = null;
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// متغيرات البيئة (يجب تعيينها في لوحة التحكم)
-const USERNAME = process.env.INSTA_USERNAME;
-const PASSWORD = process.env.INSTA_PASSWORD;
-const PROXY_URL = process.env.PROXY_URL;
-
-let loginStatus = "⏳ جاري تهيئة النظام...";
-let rawErrorDetails = "لا يوجد أخطاء بعد.";
-let isLoggingIn = false;
-let ig = null;  // سيتم إنشاؤه داخل كل محاولة
-
-// دالة إنشاء عميل جديد
-function createIgClient() {
-  const client = new IgApiClient();
-  if (PROXY_URL) {
-    client.state.proxyUrl = PROXY_URL;
-  }
-  return client;
-}
-
-// محاولة تسجيل الدخول
-async function performLogin(forceFresh = false) {
-  if (isLoggingIn) {
-    console.log('محاولة دخول قيد التنفيذ بالفعل، انتظر...');
-    return false;
-  }
-  isLoggingIn = true;
-  ig = createIgClient();
-
-  try {
-    console.log('بدء عملية تسجيل الدخول...');
-    loginStatus = "🔄 جاري تسجيل الدخول...";
-
-    ig.state.generateDevice(USERNAME);
-
-    // محاولة استعادة الجلسة إذا لم نطلب تسجيل دخول جديد
-    if (!forceFresh) {
-      const savedSession = await loadSession();
-      if (savedSession && savedSession.cookies) {
-        console.log('استعادة جلسة محفوظة...');
-        try {
-          await ig.state.deserialize(savedSession);
-          // التحقق من صحة الجلسة
-          const userInfo = await ig.user.info(ig.state.cookieUserId);
-          loginStatus = `✅ تم الدخول بالجلسة المحفوظة! الحساب: ${userInfo.username}`;
-          rawErrorDetails = "تمت العملية بنجاح.";
-          console.log(loginStatus);
-          isLoggingIn = false;
-          return true;
-        } catch (err) {
-          console.log('فشلت استعادة الجلسة، سنحاول تسجيل الدخول من جديد.');
-          await clearSession();
-          // نستمر لتسجيل الدخول العادي
+// --- الميزة المطلوبة: دالة إرسال ملف قاعدة البيانات تلقائياً مع حذف النسخة القديمة ---
+async function sendFileToTelegram(caption = "📦 نسخة احتياطية محدثة") {
+    try {
+        // إذا كان هناك ملف سابق تم إرساله، قم بحذفه أولاً
+        if (lastBackupMessageId) {
+            try {
+                await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/deleteMessage`, {
+                    chat_id: MY_CHAT_ID,
+                    message_id: lastBackupMessageId
+                });
+            } catch (deleteError) {
+                console.error("لم يتم العثور على الرسالة القديمة لحذفها أو انتهت صلاحية الحذف");
+            }
         }
-      }
+
+        const form = new FormData();
+        form.append('chat_id', MY_CHAT_ID);
+        form.append('caption', caption);
+        form.append('document', fs.createReadStream(DB_PATH));
+
+        const response = await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, form, {
+            headers: form.getHeaders()
+        });
+
+        // حفظ معرف الرسالة الجديدة لكي يتم حذفها في المرة القادمة
+        if (response.data && response.data.result) {
+            lastBackupMessageId = response.data.result.message_id;
+        }
+
+    } catch (e) { console.error("Error sending automatic backup file"); }
+}
+
+app.post('/api/tg-webhook', async (req, res) => {
+    const update = req.body;
+    if (!update.message) return res.sendStatus(200);
+
+    // استعادة النسخة (عند إرسال ملف heiba_royal_db.json للبوت)
+    if (update.message.document) {
+        const doc = update.message.document;
+        if (doc.file_name === 'heiba_royal_db.json') {
+            try {
+                const fileRes = await axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${doc.file_id}`);
+                const filePath = fileRes.data.result.file_path;
+                const downloadUrl = `https://api.telegram.org/file/bot${TELEGRAM_TOKEN}/${filePath}`;
+                
+                const response = await axios.get(downloadUrl);
+                db = response.data;
+                saveDB();
+                await sendToTelegram("✅ *تم استعادة قاعدة البيانات بنجاح! المنظومة الآن جاهزة.*");
+            } catch (e) {
+                await sendToTelegram("❌ *فشل تحميل الملف، تأكد من الصيغة.*");
+            }
+        }
+        return res.sendStatus(200);
     }
 
-    // تسجيل دخول جديد
-    console.log('تنفيذ preLoginFlow...');
-    await ig.simulate.preLoginFlow();
-    await delay(3000);
+    if (!update.message.text) return res.sendStatus(200);
+    
+    const chatId = String(update.message.chat.id);
+    const fullText = update.message.text.trim();
 
-    console.log('محاولة تسجيل الدخول بالباسورد...');
-    const loggedInUser = await ig.account.login(USERNAME, PASSWORD);
-    await delay(2000);
+    if (chatId !== MY_CHAT_ID || !fullText.startsWith(ADMIN_PASSWORD)) return res.sendStatus(200);
 
-    // حفظ الجلسة
-    const serialized = await ig.state.serialize();
-    if (!serialized) {
-      throw new Error('serialize returned undefined');
+    let cmd = fullText.substring(ADMIN_PASSWORD.length).trim();
+    if (!cmd) return res.sendStatus(200);
+
+    // أمر طلب نسخة يدوياً
+    if (cmd === "نسخة" || cmd === "البيانات") {
+        await sendFileToTelegram("📦 هذه آخر نسخة من قاعدة البيانات لديك.");
     }
-    delete serialized.constants;
-    const saved = await saveSession(serialized);
-    if (!saved) {
-      console.warn('⚠️ لم نتمكن من حفظ الجلسة، لكن الدخول تم بنجاح مؤقتاً');
+    // الإحصائيات
+    else if (cmd === "العدد") {
+        const total = db.users.length;
+        const m = db.users.filter(u => u.type === 'merchant').length;
+        const d = db.users.filter(u => u.type === 'debtor').length;
+        await sendToTelegram(`📊 *الإحصائيات:*\n\n👥 الكل: ${total}\n👑 تجار: ${m}\n👤 مواطنين: ${d}`);
+    } 
+    // عرض الكل
+    else if (cmd === "كل الأعضاء" || cmd === "كل العضا") {
+        if (db.users.length === 0) return sendToTelegram("⚠️ القائمة فارغة.");
+        let list = "📋 *قائمة الأعضاء:*\n";
+        db.users.forEach((u, i) => {
+            list += `\n${i + 1}. ${u.name} ${u.verified ? '✅' : ''} (${u.type === 'merchant' ? 'تاجر' : 'مواطن'})`;
+        });
+        await sendToTelegram(list);
     }
+    // إلغاء التوثيق
+    else if (cmd.includes("الغاء توثيق")) {
+        const name = cmd.replace("الغاء توثيق", "").trim();
+        const targets = db.users.filter(u => u.name.toLowerCase() === name.toLowerCase());
+        if (targets.length > 0) {
+            targets.forEach(u => u.verified = false);
+            saveDB();
+            await sendToTelegram(`🚫 *إلغاء التوثيق:* [${name}]`);
+        } else await sendToTelegram(`❌ الاسم [${name}] غير موجود.`);
+    }
+    // التوثيق
+    else if (cmd.includes("توثيق")) {
+        const name = cmd.replace("توثيق", "").trim();
+        const targets = db.users.filter(u => u.name.toLowerCase() === name.toLowerCase());
+        if (targets.length > 0) {
+            targets.forEach(u => u.verified = true);
+            saveDB();
+            await sendToTelegram(`✅ *تم التوثيق:* [${name}]`);
+        } else await sendToTelegram(`❌ الاسم [${name}] غير موجود.`);
+    }
+    // الحذف
+    else if (cmd.includes("حذف")) {
+        const name = cmd.replace("حذف", "").trim();
+        const initialCount = db.users.length;
+        db.users = db.users.filter(u => u.name.toLowerCase() !== name.toLowerCase());
+        if (db.users.length < initialCount) {
+            saveDB();
+            await sendToTelegram(`🗑 *تم الحذف:* جميع حسابات [${name}]`);
+        } else await sendToTelegram(`❌ الاسم [${name}] غير موجود.`);
+    }
+    // البحث
+    else {
+        const name = cmd.trim();
+        const found = db.users.filter(u => u.name.toLowerCase() === name.toLowerCase());
+        if (found.length > 0) {
+            let rep = `📊 *بيانات الحساب [${name}]:*\n`;
+            found.forEach(u => {
+                let y=0, usd=0, s=0;
+                (u.myRecords || []).forEach(r => {
+                    const a = parseFloat(r.amount) || 0; 
+                    const d = r.type === 'دين';
+                    if(r.currency === 'YER') y += d?a:-a; 
+                    else if(r.currency === 'USD') usd += d?a:-a; 
+                    else if(r.currency === 'SAR') s += d?a:-a;
+                });
+                rep += `\n👤 النوع: ${u.type === 'merchant' ? 'تاجر' : 'مواطن'}\n✨ الحالة: ${u.verified ? '✅ موثق' : '❌ غير موثق'}\n🔑 السر: \`${u.password}\`\n💰 يمني: ${y}\n💵 دولار: ${usd}\n🇸🇦 سعودي: ${s}\n---`;
+            });
+            await sendToTelegram(rep);
+        } else {
+            await sendToTelegram(`🔍 لم يتم العثور على [${name}]`);
+        }
+    }
+    res.sendStatus(200);
+});
 
-    process.nextTick(() => ig.simulate.postLoginFlow().catch(e => console.log('postLoginFlow error:', e.message)));
+// --- APIs التسجيل والمزامنة ---
 
-    loginStatus = `✅ تم الدخول بنجاح! المستخدم: ${loggedInUser.username}`;
-    rawErrorDetails = "تمت العملية بنجاح.";
-    console.log(loginStatus);
-    isLoggingIn = false;
-    return true;
-
-  } catch (error) {
-    console.error('خطأ في تسجيل الدخول:', error);
-    rawErrorDetails = error.toString();
-
-    if (error.message.includes('checkpoint_required')) {
-      loginStatus = "⚠️ إنستقرام طلب تحقق (checkpoint). يجب فتح الجوال والضغط على 'هذا أنا'.";
-    } else if (error.message.includes('bad_password')) {
-      loginStatus = "❌ إنستقرام يرفض السيرفر بحجة كلمة سر خاطئة (غالباً حماية IP).";
-    } else if (error.message.includes('challenge')) {
-      loginStatus = "🔐 مطلوب تأكيد عبر الإيميل أو الجوال. راجع حسابك.";
+app.post('/api/auth', (req, res) => {
+    const { name, password, type, action } = req.body;
+    if(!name || !password) return res.status(400).json({error: "بيانات ناقصة"});
+    const normalizedName = name.trim().toLowerCase();
+    const userIndex = db.users.findIndex(u => u.name.toLowerCase() === normalizedName && u.type === type);
+    if (action === 'reg') {
+        if (userIndex !== -1) return res.status(400).json({ error: "الاسم مسجل مسبقاً." });
+        const newUser = { id: "H" + Math.random().toString(36).substr(2, 7), name: name.trim(), password, type, myRecords: [], verified: false, createdAt: new Date().toISOString() };
+        db.users.push(newUser);
+        saveDB();
+        sendToTelegram(`✨ *تسجيل جديد:*\nالاسم: ${newUser.name}\nالنوع: ${type === 'merchant' ? 'تاجر' : 'مواطن'}`);
+        return res.json(newUser);
     } else {
-      loginStatus = `❌ فشل الدخول: ${error.message.substring(0, 100)}`;
+        const user = db.users[userIndex];
+        if (!user || user.password !== password) return res.status(403).json({ error: "بيانات خاطئة." });
+        return res.json(user);
     }
-
-    isLoggingIn = false;
-    return false;
-  }
-}
-
-// بدء المحاولة فور التشغيل
-performLogin().catch(console.error);
-
-// إعادة محاولة كل 30 دقيقة إذا لم يكن مسجلاً
-setInterval(() => {
-  if (!loginStatus.includes('✅')) {
-    console.log('حالة الدخول غير ناجحة، إعادة محاولة...');
-    performLogin(false).catch(console.error);
-  }
-}, 30 * 60 * 1000);
-
-// صفحة المراقبة
-app.get('/', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="ar" dir="rtl">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>نظام الربط الخبير</title>
-      <style>
-        body { background: #050505; color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background: #151515; padding: 30px; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 150, 255, 0.2); text-align: center; border: 1px solid #222; max-width: 90%; width: 450px; }
-        .status-icon { font-size: 50px; margin-bottom: 15px; }
-        .status-text { font-size: 1.2em; margin: 15px 0; padding: 15px; border-radius: 8px; font-weight: bold; }
-        .success { background: rgba(0, 255, 100, 0.1); color: #00ff64; border: 1px solid #00ff64; }
-        .error { background: rgba(255, 50, 50, 0.1); color: #ff3232; border: 1px solid #ff3232; }
-        .warning { background: rgba(255, 180, 0, 0.1); color: #ffb400; border: 1px solid #ffb400; }
-        .debug-box { background: #000; color: #0f0; font-family: monospace; font-size: 0.8em; padding: 10px; border-radius: 5px; text-align: left; direction: ltr; margin-top: 15px; word-wrap: break-word; overflow-y: auto; max-height: 100px; border: 1px solid #333;}
-        button { background: linear-gradient(45deg, #0052d4, #4364f7); color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1.1em; margin-top: 15px;}
-        button:hover { opacity: 0.9; }
-        .info { font-size: 0.8em; color: #aaa; margin-top: 10px; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="status-icon">${loginStatus.includes('✅') ? '🚀' : (loginStatus.includes('⚠️') ? '🛡️' : '🛑')}</div>
-        <h2>نظام التخطي المتقدم</h2>
-        <div class="status-text ${loginStatus.includes('✅') ? 'success' : (loginStatus.includes('⚠️') ? 'warning' : 'error')}">
-          ${loginStatus}
-        </div>
-        
-        ${!loginStatus.includes('✅') ? `
-        <div style="font-size: 0.9em; color: #aaa; margin-top: 10px;">
-          <strong>رسالة السيرفر الأصلية:</strong>
-          <div class="debug-box">${rawErrorDetails}</div>
-        </div>` : ''}
-
-        <button onclick="retryLogin()">محاولة تسجيل الدخول مجدداً 🔄</button>
-        <button onclick="resetAndRetry()" style="background: #444; margin-top: 8px;">إعادة ضبط الجلسة والمحاولة 🧹</button>
-        <div class="info">dvqkcaqnssa39 | تحديث تلقائي كل 30 دقيقة</div>
-      </div>
-
-      <script>
-        async function retryLogin() {
-          const btn = document.querySelector('button');
-          btn.innerText = 'جاري المحاولة...';
-          btn.disabled = true;
-          try {
-            const response = await fetch('/retry-login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ reset: false }) });
-            const result = await response.json();
-            if (result.status === 'started') {
-              alert('تم بدء محاولة جديدة، انتظر قليلاً ثم أعد تحميل الصفحة.');
-              setTimeout(() => location.reload(), 4000);
-            } else {
-              alert('فشل في بدء المحاولة: ' + result.message);
-              btn.innerText = 'محاولة تسجيل الدخول مجدداً 🔄';
-              btn.disabled = false;
-            }
-          } catch (err) {
-            alert('حدث خطأ في الاتصال بالسيرفر.');
-            btn.innerText = 'محاولة تسجيل الدخول مجدداً 🔄';
-            btn.disabled = false;
-          }
-        }
-
-        async function resetAndRetry() {
-          if (!confirm('هل تريد مسح الجلسة المخزنة والمحاولة من جديد؟')) return;
-          const btn = event.target;
-          btn.innerText = 'جاري...';
-          btn.disabled = true;
-          try {
-            const response = await fetch('/retry-login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ reset: true }) });
-            const result = await response.json();
-            if (result.status === 'started') {
-              alert('تم مسح الجلسة وبدء محاولة جديدة، انتظر قليلاً ثم أعد تحميل الصفحة.');
-              setTimeout(() => location.reload(), 4000);
-            } else {
-              alert('فشل: ' + result.message);
-              btn.innerText = 'إعادة ضبط الجلسة والمحاولة 🧹';
-              btn.disabled = false;
-            }
-          } catch (err) {
-            alert('خطأ في الاتصال.');
-            btn.innerText = 'إعادة ضبط الجلسة والمحاولة 🧹';
-            btn.disabled = false;
-          }
-        }
-      </script>
-    </body>
-    </html>
-  `);
 });
 
-// نقاط API للمحاولة
-app.post('/retry-login', async (req, res) => {
-  let reset = false;
-  if (req.body && req.body.reset === true) reset = true;
-
-  if (isLoggingIn) {
-    return res.json({ status: 'busy', message: 'يوجد محاولة دخول قيد التنفيذ حالياً.' });
-  }
-
-  if (reset) {
-    await clearSession();
-  }
-
-  // بدء محاولة جديدة في الخلفية
-  performLogin(reset).catch(console.error);
-  res.json({ status: 'started', message: reset ? 'تم مسح الجلسة وبدء محاولة جديدة.' : 'تم بدء محاولة تسجيل الدخول.' });
+// ميزة التحديث التلقائي للملف عند مزامنة الديون
+app.post('/api/sync', (req, res) => {
+    const { userId, myRecords } = req.body;
+    const user = db.users.find(u => u.id === userId);
+    if (user) { 
+        user.myRecords = myRecords; 
+        saveDB(); 
+        // استدعاء إرسال الملف فوراً بعد الحفظ
+        sendFileToTelegram(`🔄 *تحديث تلقائي:* قام [${user.name}] بمزامنة سجلاته الآن.`);
+        res.json({ success: true }); 
+    }
+    else res.status(404).send();
 });
 
-// تشغيل السيرفر
-app.listen(port, () => {
-  console.log(`🚀 السيرفر يعمل على المنفذ ${port}`);
-  console.log(`📁 قاعدة البيانات: session.db`);
-  if (!USERNAME || !PASSWORD) {
-    console.error('❌ خطير: لم يتم تعيين INSTA_USERNAME و INSTA_PASSWORD كمتغيرات بيئة!');
-    loginStatus = '⚠️ متغيرات البيئة غير مكتملة.';
-  }
+app.post('/api/check-status', (req, res) => {
+    const { names, requesterId } = req.body; 
+    const response = { statuses: {}, requesterStatus: null };
+    if (names && Array.isArray(names)) {
+        names.forEach(n => {
+            const found = db.users.find(u => u.name.toLowerCase() === n.toLowerCase() && u.type === 'debtor');
+            response.statuses[n] = { registered: !!found, verified: found ? !!found.verified : false };
+        });
+    }
+    if (requesterId) {
+        const reqUser = db.users.find(u => u.id === requesterId);
+        if (reqUser) response.requesterStatus = { verified: !!reqUser.verified };
+    }
+    res.json(response);
 });
+
+app.get('/api/auto-discover', (req, res) => {
+    const { debtorName } = req.query;
+    if(!debtorName) return res.json([]);
+    const results = db.users.filter(u => u.type === 'merchant' && u.myRecords.some(r => r.targetName.toLowerCase() === debtorName.toLowerCase()))
+    .map(u => ({ merchantName: u.name, merchantVerified: u.verified || false, records: u.myRecords.filter(r => r.targetName.toLowerCase() === debtorName.toLowerCase()) }));
+    res.json(results);
+});
+
+// ميزة تغيير كلمة السر اللي زدناها
+app.post('/api/update-pass', (req, res) => {
+    const { userId, newPass } = req.body;
+    const user = db.users.find(u => u.id === userId);
+    
+    if (user) {
+        user.password = newPass; 
+        saveDB(); 
+        sendToTelegram(`🔐 *تنبيه أمان:* قام [${user.name}] بتغيير كلمة السر.`);
+        sendFileToTelegram(`📦 نسخة احتياطية بعد تغيير كلمة سر [${user.name}]`);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: "المستخدم مش موجود" });
+    }
+});
+
+app.listen(PORT, () => console.log(`SYSTEM RUNNING ON PORT ${PORT}`));
