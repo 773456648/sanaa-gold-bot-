@@ -15,9 +15,12 @@ const ADMIN_PASSWORD = '771232690';
 app.use(express.json());
 app.use(express.static('public'));
 
-let db = { users: [] };
+let db = { users: [], ads: [] }; // تمت إضافة مصفوفة الإعلانات
 if (fs.existsSync(DB_PATH)) {
-    try { db = JSON.parse(fs.readFileSync(DB_PATH)); } catch (e) { db = { users: [] }; }
+    try { 
+        db = JSON.parse(fs.readFileSync(DB_PATH)); 
+        if(!db.ads) db.ads = []; // تهيئة الإعلانات إذا لم تكن موجودة في النسخة القديمة
+    } catch (e) { db = { users: [], ads: [] }; }
 }
 
 const saveDB = () => fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
@@ -33,22 +36,17 @@ async function sendToTelegram(message) {
     } catch (e) { console.error("Telegram Error"); }
 }
 
-// --- المتغير الجديد لحفظ معرف آخر رسالة تحتوي على قاعدة البيانات ---
 let lastBackupMessageId = null;
 
-// --- الميزة المطلوبة: دالة إرسال ملف قاعدة البيانات تلقائياً مع حذف النسخة القديمة ---
 async function sendFileToTelegram(caption = "📦 نسخة احتياطية محدثة") {
     try {
-        // إذا كان هناك ملف سابق تم إرساله، قم بحذفه أولاً
         if (lastBackupMessageId) {
             try {
                 await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/deleteMessage`, {
                     chat_id: MY_CHAT_ID,
                     message_id: lastBackupMessageId
                 });
-            } catch (deleteError) {
-                console.error("لم يتم العثور على الرسالة القديمة لحذفها أو انتهت صلاحية الحذف");
-            }
+            } catch (deleteError) { }
         }
 
         const form = new FormData();
@@ -60,23 +58,16 @@ async function sendFileToTelegram(caption = "📦 نسخة احتياطية مح
             headers: form.getHeaders()
         });
 
-        // حفظ معرف الرسالة الجديدة لكي يتم حذفها في المرة القادمة
         if (response.data && response.data.result) {
             lastBackupMessageId = response.data.result.message_id;
-            
-            // === إضافة بسيطة: تثبيت الرسالة ليجدها السيرفر عند إعادة التشغيل ===
             try {
                 await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/pinChatMessage`, {
                     chat_id: MY_CHAT_ID,
                     message_id: lastBackupMessageId,
                     disable_notification: true
                 });
-            } catch (pinError) {
-                console.error("لم يتم تثبيت الرسالة");
-            }
-            // ==========================================================
+            } catch (pinError) { }
         }
-
     } catch (e) { console.error("Error sending automatic backup file"); }
 }
 
@@ -84,7 +75,6 @@ app.post('/api/tg-webhook', async (req, res) => {
     const update = req.body;
     if (!update.message) return res.sendStatus(200);
 
-    // استعادة النسخة (عند إرسال ملف heiba_royal_db.json للبوت)
     if (update.message.document) {
         const doc = update.message.document;
         if (doc.file_name === 'heiba_royal_db.json') {
@@ -95,6 +85,7 @@ app.post('/api/tg-webhook', async (req, res) => {
                 
                 const response = await axios.get(downloadUrl);
                 db = response.data;
+                if(!db.ads) db.ads = []; // حماية إضافية عند الاستعادة
                 saveDB();
                 await sendToTelegram("✅ *تم استعادة قاعدة البيانات بنجاح! المنظومة الآن جاهزة.*");
             } catch (e) {
@@ -114,18 +105,15 @@ app.post('/api/tg-webhook', async (req, res) => {
     let cmd = fullText.substring(ADMIN_PASSWORD.length).trim();
     if (!cmd) return res.sendStatus(200);
 
-    // أمر طلب نسخة يدوياً
     if (cmd === "نسخة" || cmd === "البيانات") {
         await sendFileToTelegram("📦 هذه آخر نسخة من قاعدة البيانات لديك.");
     }
-    // الإحصائيات
     else if (cmd === "العدد") {
         const total = db.users.length;
         const m = db.users.filter(u => u.type === 'merchant').length;
         const d = db.users.filter(u => u.type === 'debtor').length;
         await sendToTelegram(`📊 *الإحصائيات:*\n\n👥 الكل: ${total}\n👑 تجار: ${m}\n👤 مواطنين: ${d}`);
     } 
-    // عرض الكل
     else if (cmd === "كل الأعضاء" || cmd === "كل العضا") {
         if (db.users.length === 0) return sendToTelegram("⚠️ القائمة فارغة.");
         let list = "📋 *قائمة الأعضاء:*\n";
@@ -134,7 +122,6 @@ app.post('/api/tg-webhook', async (req, res) => {
         });
         await sendToTelegram(list);
     }
-    // إلغاء التوثيق
     else if (cmd.includes("الغاء توثيق")) {
         const name = cmd.replace("الغاء توثيق", "").trim();
         const targets = db.users.filter(u => u.name.toLowerCase() === name.toLowerCase());
@@ -144,7 +131,6 @@ app.post('/api/tg-webhook', async (req, res) => {
             await sendToTelegram(`🚫 *إلغاء التوثيق:* [${name}]`);
         } else await sendToTelegram(`❌ الاسم [${name}] غير موجود.`);
     }
-    // التوثيق
     else if (cmd.includes("توثيق")) {
         const name = cmd.replace("توثيق", "").trim();
         const targets = db.users.filter(u => u.name.toLowerCase() === name.toLowerCase());
@@ -154,7 +140,6 @@ app.post('/api/tg-webhook', async (req, res) => {
             await sendToTelegram(`✅ *تم التوثيق:* [${name}]`);
         } else await sendToTelegram(`❌ الاسم [${name}] غير موجود.`);
     }
-    // الحذف
     else if (cmd.includes("حذف")) {
         const name = cmd.replace("حذف", "").trim();
         const initialCount = db.users.length;
@@ -164,7 +149,13 @@ app.post('/api/tg-webhook', async (req, res) => {
             await sendToTelegram(`🗑 *تم الحذف:* جميع حسابات [${name}]`);
         } else await sendToTelegram(`❌ الاسم [${name}] غير موجود.`);
     }
-    // البحث
+    // --- ميزة تلجرام جديدة خاصة بمسح الإعلانات ---
+    else if (cmd === "مسح الاعلانات") {
+        db.ads = [];
+        saveDB();
+        await sendToTelegram("🗑 *تم مسح جميع الإعلانات من الشريط بنجاح.*");
+    }
+    // ----------------------------------------------
     else {
         const name = cmd.trim();
         const found = db.users.filter(u => u.name.toLowerCase() === name.toLowerCase());
@@ -261,15 +252,46 @@ app.post('/api/update-pass', (req, res) => {
     }
 });
 
+// === مسارات (APIs) الإعلانات الجديدة ===
+app.get('/api/ads', (req, res) => {
+    res.json(db.ads || []);
+});
 
-// === الميزة الجديدة: دالة الاسترجاع التلقائي عند تشغيل السيرفر ===
+app.post('/api/ads', (req, res) => {
+    const { userId, text, phone, link } = req.body;
+    
+    const user = db.users.find(u => u.id === userId);
+    if (!user) return res.status(404).json({ error: "المستخدم غير موجود" });
+    
+    // التحقق من الصلاحية (التوثيق)
+    if (!user.verified) return res.status(403).json({ error: "غير مصرح لك بنشر إعلان، يجب توثيق حسابك أولاً." });
+    
+    if (!text) return res.status(400).json({ error: "النص مطلوب" });
+
+    if(!db.ads) db.ads = [];
+    
+    const newAd = {
+        id: Date.now(),
+        publisher: user.name,
+        text: text,
+        phone: phone || null,
+        link: link || null
+    };
+
+    db.ads.push(newAd);
+    saveDB();
+    
+    sendToTelegram(`📢 *إعلان جديد في الشريط:*\nالناشر: ${user.name}\nالنص: ${text}`);
+    res.json({ success: true });
+});
+// =======================================
+
 async function autoRestoreOnStartup() {
     try {
         console.log("جاري البحث عن آخر نسخة من البيانات في التلجرام...");
         const chatRes = await axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getChat?chat_id=${MY_CHAT_ID}`);
         const pinned = chatRes.data?.result?.pinned_message;
         
-        // إذا وجد رسالة مثبتة وفيها ملف الـ JSON
         if (pinned && pinned.document && pinned.document.file_name === 'heiba_royal_db.json') {
             const fileRes = await axios.get(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/getFile?file_id=${pinned.document.file_id}`);
             const filePath = fileRes.data.result.file_path;
@@ -277,9 +299,9 @@ async function autoRestoreOnStartup() {
             
             const response = await axios.get(downloadUrl);
             db = response.data;
+            if(!db.ads) db.ads = []; // حماية
             saveDB();
             
-            // نعطي المتغير رقم الرسالة عشان يقدر يحذفها لما يرسل نسخة أحدث لاحقاً
             lastBackupMessageId = pinned.message_id; 
             
             console.log("✅ تم استعادة قاعدة البيانات بنجاح عند الإقلاع!");
@@ -291,11 +313,8 @@ async function autoRestoreOnStartup() {
         console.error("❌ خطأ أثناء الاستعادة التلقائية:", error.message);
     }
 }
-// ==============================================================
 
-
-// التعديل هنا: خلينا السيرفر يشغل دالة الاستعادة أول ما يشتغل
 app.listen(PORT, async () => {
     console.log(`SYSTEM RUNNING ON PORT ${PORT}`);
-    await autoRestoreOnStartup(); // جلب آخر ملف
+    await autoRestoreOnStartup();
 });
