@@ -30,242 +30,334 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding: 10px;
+            padding: 15px;
             position: relative;
-            overflow: hidden; /* لمنع النزول العشوائي */
+            overflow-x: hidden;
         }
         
         /* خلفية متحركة */
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.05) 0%, transparent 30%),
-                radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.05) 0%, transparent 40%);
+                radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.1) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.1) 0%, transparent 40%);
             pointer-events: none;
             z-index: 0;
         }
         
+        /* الهيدر */
         .header {
             text-align: center;
-            padding: 10px;
+            padding: 15px;
             background: rgba(26, 30, 36, 0.7);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
+            border-radius: 30px;
             border: 2px solid var(--gold);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            position: relative;
             z-index: 10;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-            flex-shrink: 0;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
         }
         
         .header h1 {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 900;
             background: linear-gradient(45deg, #FFD700, #00ffff, #FFD700);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 5px;
         }
         
         .role-badge {
             display: inline-block;
-            padding: 4px 15px;
+            padding: 8px 25px;
             background: linear-gradient(45deg, var(--gold), var(--gold-dark));
             color: black;
             font-weight: bold;
             border-radius: 50px;
-            font-size: 14px;
-            margin-top: 5px;
+            font-size: 16px;
+            box-shadow: 0 0 20px var(--gold);
         }
         
         /* صندوق التسجيل */
         .setup-box {
             background: var(--card-bg);
             border: 2px solid var(--neon);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.3);
+            position: relative;
             z-index: 10;
-            max-width: 400px;
-            width: 100%;
-            margin: auto;
+            backdrop-filter: blur(5px);
+            margin-bottom: 20px;
         }
         
         .setup-box input {
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             margin: 10px 0;
             background: var(--input-bg);
             border: 2px solid transparent;
-            border-radius: 15px;
+            border-radius: 20px;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             text-align: center;
             font-weight: bold;
+            transition: 0.3s;
+        }
+        
+        .setup-box input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 25px var(--gold);
             outline: none;
         }
         
-        .setup-box input:focus { border-color: var(--gold); }
+        .setup-box input::placeholder {
+            color: #888;
+            font-size: 16px;
+        }
         
         .btn-enter {
             width: 100%;
-            padding: 15px;
+            padding: 18px;
             background: linear-gradient(45deg, var(--gold), #FFA500);
             border: none;
-            border-radius: 15px;
+            border-radius: 20px;
             color: black;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            transition: 0.3s;
+            margin-top: 15px;
+            box-shadow: 0 0 30px var(--gold);
         }
         
-        /* الواجهة الرئيسية للمنظومة */
-        #mainWorkspace {
-            display: none;
-            flex-direction: column;
-            flex: 1;
-            z-index: 10;
-            overflow: hidden;
-            gap: 10px;
+        .btn-enter:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 50px var(--gold);
         }
         
-        /* منطقة الفيديو (مخفية بالبداية) */
+        /* منطقة الفيديو */
         #videoArea {
             display: none;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            background: var(--card-bg);
-            padding: 10px;
-            border-radius: 15px;
-            border: 2px solid var(--gold);
-            max-height: 30vh;
-            overflow-y: auto;
+            position: relative;
+            width: 100%;
+            height: 250px;
+            background: black;
+            border-radius: 25px;
+            border: 3px solid var(--gold);
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 40px var(--gold);
+            z-index: 10;
         }
         
-        .video-box {
-            position: relative;
-            background: black;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid var(--input-bg);
+        #remoteVid {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        .video-box video { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .video-name {
-            position: absolute; bottom: 5px; left: 5px;
-            background: rgba(0,0,0,0.7); padding: 2px 8px;
-            border-radius: 5px; font-size: 12px; color: var(--gold);
+        
+        #localVid {
+            width: 120px;
+            height: 90px;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            border: 3px solid var(--neon);
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 0 20px var(--neon);
         }
         
         /* منطقة الشات */
         #chat {
             flex: 1;
             background: rgba(26, 30, 36, 0.8);
-            border-radius: 20px;
-            padding: 15px;
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 20px;
+            margin: 15px 0;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
             border: 2px solid var(--neon);
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            z-index: 10;
+            min-height: 300px;
+            max-height: 400px;
         }
         
+        /* الرسائل */
         .msg {
-            padding: 10px 15px;
-            border-radius: 15px;
+            padding: 12px 18px;
+            border-radius: 20px;
             max-width: 85%;
             font-size: 16px;
             line-height: 1.5;
             word-wrap: break-word;
+            animation: popIn 0.3s ease;
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
         
         .msg.me {
             background: linear-gradient(135deg, #1D2A35, #0F1A24);
-            align-self: flex-start; border-right: 4px solid var(--neon);
+            align-self: flex-start;
+            border-right: 5px solid var(--neon);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
         }
         
         .msg.other {
             background: linear-gradient(135deg, #2A2F36, #1A1F26);
-            align-self: flex-end; border-left: 4px solid var(--gold);
+            align-self: flex-end;
+            border-left: 5px solid var(--gold);
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
         }
         
         .msg.sys {
-            background: rgba(255, 215, 0, 0.1);
-            align-self: center; border: 1px solid var(--gold);
-            color: var(--gold); font-size: 13px; text-align: center;
-        }
-        
-        .msg b { color: var(--gold); font-size: 13px; display: block; margin-bottom: 5px; }
-        .msg img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
-        .msg a { color: var(--neon); text-decoration: none; font-weight: bold; }
-        
-        /* شريط الإدخال والأزرار */
-        .controls-row {
-            display: flex;
-            gap: 5px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-        }
-        
-        .controls-row::-webkit-scrollbar { display: none; }
-        
-        .btn-action {
-            background: var(--input-bg);
-            border: 1px solid var(--gold);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 10px;
+            background: rgba(255, 215, 0, 0.15);
+            align-self: center;
+            border: 2px solid var(--gold);
+            color: var(--gold);
             font-size: 14px;
-            cursor: pointer;
-            white-space: nowrap;
-            display: flex; align-items: center; gap: 5px;
+            max-width: 70%;
+            text-align: center;
+            backdrop-filter: blur(5px);
         }
-        .btn-action:hover { background: var(--gold); color: black; }
-        .btn-danger { border-color: #ff4444; color: #ff4444; }
         
+        .msg b {
+            color: var(--gold);
+            font-size: 14px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        /* شريط الإدخال */
         .input-row {
             display: flex;
-            gap: 8px;
-            background: var(--card-bg);
-            padding: 10px;
-            border-radius: 20px;
-            border: 2px solid var(--gold);
+            gap: 10px;
             align-items: center;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 40px;
+            border: 2px solid var(--gold);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            z-index: 10;
+            position: relative;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tool-btn {
+            width: 45px; /* صغرتها شوية عشان تناسب الإضافات الجديدة */
+            height: 45px;
+            border-radius: 50%;
+            background: var(--input-bg);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .tool-btn:hover {
+            transform: scale(1.1);
+            background: var(--gold);
+            color: black;
+            box-shadow: 0 0 25px var(--gold);
         }
         
         #msgInput {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             background: var(--input-bg);
-            border: none;
-            border-radius: 15px;
+            border: 2px solid transparent;
+            border-radius: 30px;
             color: white;
             font-size: 16px;
+            direction: rtl;
+            text-align: right;
+            min-width: 150px;
+        }
+        
+        #msgInput:focus {
+            border-color: var(--neon);
+            box-shadow: 0 0 20px var(--neon);
             outline: none;
+        }
+        
+        #msgInput::placeholder {
+            color: #888;
+            font-size: 14px;
         }
         
         .btn-send {
             background: linear-gradient(45deg, var(--gold), #FFA500);
             border: none;
-            border-radius: 15px;
+            border-radius: 40px;
             padding: 12px 20px;
             color: black;
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 0 20px var(--gold);
+            min-width: 80px;
+        }
+        
+        .btn-send:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 35px var(--gold);
+        }
+        
+        #endCallBtn {
+            background: #ff4444 !important;
+            border-color: white !important;
+            color: white !important;
         }
         
         /* الإشعارات */
         #toastContainer {
-            position: fixed; top: 10px; left: 10px; z-index: 9999;
-            display: flex; flex-direction: column; gap: 10px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
+        
         .toast {
-            background: var(--card-bg); border-right: 4px solid var(--gold);
-            padding: 10px 15px; border-radius: 10px; color: white; font-size: 14px;
+            background: var(--card-bg);
+            border-right: 5px solid var(--gold);
+            padding: 15px 25px;
+            border-radius: 20px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
@@ -277,302 +369,408 @@
         <span class="role-badge" id="roleBadge">منتظر الدخول...</span>
     </div>
     
-    <!-- واجهة الدخول -->
     <div class="setup-box" id="setup">
-        <input type="text" id="userName" placeholder="الاسم الكريم" autocomplete="off">
-        <input type="text" id="roomNum" placeholder="رقم الغرفة السري" autocomplete="off">
+        <input type="text" id="userName" placeholder="الاسم الثلاثي" autocomplete="off">
+        <input type="text" id="roomNum" placeholder="رقم الغرفة" autocomplete="off">
         <button class="btn-enter" onclick="initFadi()">🚀 ادخل المنظومة</button>
     </div>
     
-    <!-- الواجهة الرئيسية -->
-    <div id="mainWorkspace">
-        
-        <!-- الأزرار العلوية -->
-        <div class="controls-row">
-            <button class="btn-action" onclick="toggleMic()" id="btnMic">🎤 مايك</button>
-            <button class="btn-action" onclick="startCall(false)">📞 اتصال صوت</button>
-            <button class="btn-action" onclick="startCall(true)">🎥 فيديو</button>
-            <button class="btn-action" onclick="shareScreen()">🖥️ شاشة</button>
-            <button class="btn-action" onclick="document.getElementById('fileInput').click()">📁 إرسال ملف</button>
-            <button class="btn-action btn-danger" onclick="endCall()" id="btnEnd" style="display:none;">🛑 إنهاء</button>
-            <input type="file" id="fileInput" style="display:none;" onchange="sendFile(this)">
-        </div>
+    <div id="videoArea">
+        <video id="remoteVid" autoplay playsinline></video>
+        <video id="localVid" autoplay muted playsinline></video>
+    </div>
+    
+    <div id="chat"></div>
+    <audio id="remoteVoice" autoplay></audio>
+    
+    <!-- مدخل الملفات المخفي -->
+    <input type="file" id="fileInput" style="display:none;" onchange="handleFileUpload(event)">
 
-        <div id="videoArea"></div>
+    <div class="input-row" id="inputSection" style="display:none;">
+        <button class="tool-btn" title="مرفقات وملفات" onclick="document.getElementById('fileInput').click()">📎</button>
+        <button class="tool-btn" id="recordBtn" title="تسجيل رسالة صوتية" onclick="toggleVoiceRecord()">🎙️</button>
+        <button class="tool-btn" id="micBtn" title="كتم/تشغيل المايك في المكالمة" onclick="toggleMic()">🎤</button>
+        <button class="tool-btn" title="مكالمة صوتية" onclick="callAll(false)">📞</button>
+        <button class="tool-btn" title="مكالمة فيديو" onclick="callAll(true)">🎥</button>
+        <button class="tool-btn" id="endCallBtn" title="إنهاء المكالمة" onclick="endCall()" style="display: none;">🛑</button>
         
-        <div id="chat"></div>
-        
-        <div class="input-row">
-            <!-- حل مشكلة نزول الكيبورد: التركيز يرجع للمربع بعد الإرسال -->
-            <input type="text" id="msgInput" placeholder="اكتب رسالتك..." 
-                   onkeypress="if(event.key==='Enter') { event.preventDefault(); sendText(); this.focus(); }">
-            <button class="btn-send" onclick="sendText(); document.getElementById('msgInput').focus();">إرسال 🚀</button>
-        </div>
+        <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') send()">
+        <button class="btn-send" onclick="send()">إرسال</button>
     </div>
 
     <script>
-        let peer, myId, myName, roomName;
-        let isHost = false;
-        let connections = {}; // لحفظ اتصالات الدردشة
-        let activeCalls = {}; // لحفظ المكالمات
-        let myStream = null;
+        let peer, myName, myRoom, conns = [], currentCall, myStream;
         let isMicMuted = false;
+        
+        // متغيرات تسجيل الصوت
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecordingVoice = false;
 
-        const cfg = { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } };
-
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'toast'; t.innerText = msg;
-            document.getElementById('toastContainer').appendChild(t);
-            setTimeout(() => t.remove(), 3000);
+        const chatBox = document.getElementById('chat');
+        const toastContainer = document.getElementById('toastContainer');
+        
+        const cfg = {
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            }
+        };
+        
+        // نظام الإشعارات
+        function showToast(msg, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = msg;
+            toast.style.borderRightColor = type === 'gold' ? '#FFD700' : '#00ffff';
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
-
-        function logMsg(htmlContent, type, user = null) {
-            const box = document.getElementById('chat');
-            const div = document.createElement('div');
-            div.className = `msg ${type}`;
-            div.innerHTML = type === 'sys' ? `⚡ ${htmlContent}` : `<b>${user}</b>${htmlContent}`;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
-        }
-
-        // --- تهيئة المنظومة ---
+        
+        // بداية التشغيل
         function initFadi() {
             myName = document.getElementById('userName').value.trim();
-            roomName = document.getElementById('roomNum').value.trim();
+            myRoom = document.getElementById('roomNum').value.trim();
             
-            if(!myName || !roomName) return showToast('❌ اكتب الاسم ورقم الغرفة!');
+            if(!myName || !myRoom) {
+                showToast('❌ اكتب اسمك ورقم الغرفة', 'gold');
+                return;
+            }
             
             document.getElementById('setup').style.display = 'none';
-            document.getElementById('mainWorkspace').style.display = 'flex';
-            showToast('⚡ جاري الاتصال بالمنظومة...');
+            document.getElementById('inputSection').style.display = 'flex';
+            showToast('⚡ جاري الاتصال...', 'info');
             
-            // محاولة إنشاء الغرفة كالزعيم
-            const tempPeer = new Peer(roomName, cfg);
-            
-            tempPeer.on('open', (id) => {
-                peer = tempPeer;
-                myId = id;
-                isHost = true;
-                document.getElementById('roleBadge').textContent = '👑 أنت الزعيم (المضيف)';
-                logMsg('المنظومة جاهزة وأنت الزعيم!', 'sys');
-                setupHost();
-            });
-
-            tempPeer.on('error', (err) => {
-                if(err.type === 'unavailable-id') {
-                    // الغرفة موجودة، أدخل كعضو
-                    isHost = false;
-                    document.getElementById('roleBadge').textContent = '👤 عضو في المنظومة';
-                    myId = roomName + '-' + Math.floor(Math.random()*9999);
-                    peer = new Peer(myId, cfg);
-                    
-                    peer.on('open', () => {
-                        logMsg('✅ دخلت المنظومة بنجاح', 'sys');
-                        setupClient();
-                    });
-                } else {
-                    showToast('خطأ: ' + err.type);
-                }
-            });
+            tryHost();
         }
-
-        // --- إدارة الزعيم (Host) ---
-        function setupHost() {
-            peer.on('connection', c => {
-                connections[c.peer] = c;
-                c.on('open', () => c.send({ type: 'sys', text: 'تم الربط مع الزعيم بنجاح' }));
+        
+        function tryHost() {
+            peer = new Peer(myRoom, cfg);
+            
+            peer.on('open', () => {
+                document.getElementById('roleBadge').textContent = '👑 زعيم المجموعة';
+                log('👑 انت الزعيم.. المجموعة جاهزة', 'sys');
+                showToast('👑 انت الزعيم', 'gold');
                 
-                c.on('data', data => {
-                    if(data.type === 'join') {
-                        logMsg(`${data.user} انضم للمنظومة`, 'sys');
-                        broadcast({type: 'sys', text: `${data.user} انضم للمنظومة`}, c.peer);
-                    } else {
-                        // عرض الرسالة للزعيم وإعادة إرسالها للباقي
-                        handleData(data);
-                        broadcast(data, c.peer);
-                    }
+                peer.on('connection', c => {
+                    conns.push(c);
+                    handleConn(c, true);
+                    showToast('📱 عضو جديد انضم', 'info');
                 });
                 
-                c.on('close', () => delete connections[c.peer]);
+                peer.on('call', call => handleCall(call));
             });
-            peer.on('call', answerCall);
+            
+            peer.on('error', err => {
+                if(err.type === 'unavailable-id') {
+                    joinRoom();
+                } else {
+                    showToast('⚠️ خطأ: ' + err.type, 'gold');
+                }
+            });
         }
-
-        // --- إدارة العضو (Client) ---
-        function setupClient() {
-            const c = peer.connect(roomName);
+        
+        function joinRoom() {
+            peer = new Peer(myRoom + '-' + Math.floor(Math.random() * 9999), cfg);
+            
+            peer.on('open', () => {
+                document.getElementById('roleBadge').textContent = '👤 عضو في المجموعة';
+                log('✅ دخلت المجموعة', 'sys');
+                showToast('✅ تم الاتصال', 'info');
+                
+                let c = peer.connect(myRoom);
+                conns.push(c);
+                handleConn(c, false);
+            });
+            
+            peer.on('call', call => handleCall(call));
+        }
+        
+        function handleConn(c, isHost) {
             c.on('open', () => {
-                connections[roomName] = c;
                 c.send({ type: 'join', user: myName });
             });
-            c.on('data', handleData);
-            peer.on('call', answerCall);
-        }
-
-        // --- معالجة البيانات (نصوص وصور وملفات) ---
-        function broadcast(data, exclude = null) {
-            for(let id in connections) {
-                if(id !== exclude) connections[id].send(data);
-            }
-        }
-
-        function handleData(d) {
-            if(d.type === 'sys') logMsg(d.text, 'sys');
-            else if(d.type === 'text') logMsg(d.text, 'other', d.user);
-            else if(d.type === 'file') {
-                if(d.fileType.startsWith('image/')) {
-                    logMsg(`<img src="${d.fileData}" alt="صورة">`, 'other', d.user);
-                } else {
-                    logMsg(`📁 <a href="${d.fileData}" download="${d.fileName}">تحميل ملف: ${d.fileName}</a>`, 'other', d.user);
+            
+            c.on('data', d => {
+                // إعادة توجيه من الزعيم للبقية
+                if(isHost && d.type !== 'join') {
+                    conns.forEach(client => {
+                        if(client !== c) client.send(d);
+                    });
                 }
-            }
-        }
-
-        function sendText() {
-            const input = document.getElementById('msgInput');
-            const text = input.value.trim();
-            if(!text) return;
-            
-            logMsg(text, 'me', myName);
-            const data = { type: 'text', user: myName, text: text };
-            
-            if(isHost) broadcast(data);
-            else if(connections[roomName]) connections[roomName].send(data);
-            
-            input.value = '';
-        }
-
-        // --- إرسال الملفات والصور ---
-        function sendFile(input) {
-            const file = input.files[0];
-            if(!file) return;
-            
-            // تحويل الملف لـ Base64 عشان يرسله بسهولة
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const fileData = e.target.result;
-                const data = { type: 'file', user: myName, fileName: file.name, fileType: file.type, fileData: fileData };
                 
-                // عرض عندي
-                if(file.type.startsWith('image/')) logMsg(`<img src="${fileData}" alt="صورة">`, 'me', myName);
-                else logMsg(`📁 <a href="${fileData}" download="${file.name}">تم إرسال: ${file.name}</a>`, 'me', myName);
-                
-                // إرسال للباقي
-                if(isHost) broadcast(data);
-                else if(connections[roomName]) connections[roomName].send(data);
-            };
-            reader.readAsDataURL(file);
-            input.value = ''; // تصفير الحقل
-        }
-
-        // --- نظام المكالمات (صوت/فيديو/شاشة) ---
-        function addVideo(stream, peerId, label) {
-            const area = document.getElementById('videoArea');
-            area.style.display = 'grid';
-            
-            if(document.getElementById('vid_'+peerId)) return; // موجود مسبقا
-            
-            const box = document.createElement('div');
-            box.className = 'video-box';
-            box.id = 'vid_'+peerId;
-            
-            const vid = document.createElement('video');
-            vid.srcObject = stream;
-            vid.autoplay = true;
-            vid.playsInline = true;
-            if(peerId === 'me') vid.muted = true; // كتم صوتي أنا عشان الصدى
-            
-            const nameLbl = document.createElement('div');
-            nameLbl.className = 'video-name';
-            nameLbl.innerText = label;
-            
-            box.appendChild(vid);
-            box.appendChild(nameLbl);
-            area.appendChild(box);
-            
-            document.getElementById('btnEnd').style.display = 'block';
-        }
-
-        async function startCall(isVideo) {
-            try {
-                myStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: isVideo });
-                addVideo(myStream, 'me', myName + ' (أنت)');
-                
-                // الاتصال بالكل
-                if(isHost) {
-                    for(let id in connections) makeCall(id, myStream);
-                } else {
-                    makeCall(roomName, myStream);
+                if(d.type === 'msg') {
+                    log(d.text, 'other', d.user);
+                    if(d.text.includes('@' + myName)) {
+                        showToast(`💬 ${d.user} منشن لك`, 'gold');
+                    }
                 }
-                showToast(isVideo ? '🎥 بدأ بث الفيديو' : '📞 بدأت المكالمة الصوتية');
-            } catch(e) { showToast('❌ يرجى إعطاء صلاحية الكاميرا والمايك'); }
-        }
-
-        async function shareScreen() {
-            try {
-                myStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-                addVideo(myStream, 'me', myName + ' (شاشتي)');
                 
-                if(isHost) {
-                    for(let id in connections) makeCall(id, myStream);
-                } else {
-                    makeCall(roomName, myStream);
+                if(d.type === 'join') {
+                    log(d.user + ' انضم للمجموعة', 'sys');
                 }
-                showToast('🖥️ جاري مشاركة الشاشة');
-                
-                myStream.getVideoTracks()[0].onended = endCall; // لما يوقف من المتصفح
-            } catch(e) { showToast('❌ تم إلغاء مشاركة الشاشة'); }
-        }
 
-        function makeCall(peerId, stream) {
-            const call = peer.call(peerId, stream, { metadata: { caller: myName } });
-            handleCallEvents(call, peerId);
-        }
+                // استقبال الملفات
+                if(d.type === 'file') {
+                    renderMedia(d, 'other');
+                }
 
-        function answerCall(call) {
-            const callerName = call.metadata ? call.metadata.callerName : 'عضو';
-            showToast(`📞 بث وارد من ${callerName}`);
-            
-            // الرد بدون بث كاميرتي (إلا لو كنت باثث أصلا)
-            call.answer(myStream); 
-            handleCallEvents(call, call.peer);
-        }
-
-        function handleCallEvents(call, peerId) {
-            activeCalls[peerId] = call;
-            call.on('stream', remoteStream => addVideo(remoteStream, peerId, 'مشارك'));
-            call.on('close', () => {
-                const v = document.getElementById('vid_'+peerId);
-                if(v) v.remove();
-                delete activeCalls[peerId];
-                if(Object.keys(activeCalls).length === 0) endCall();
+                // استقبال الرسائل الصوتية
+                if(d.type === 'voice') {
+                    renderMedia(d, 'other');
+                }
             });
         }
-
-        function endCall() {
-            if(myStream) myStream.getTracks().forEach(t => t.stop());
-            myStream = null;
-            
-            for(let id in activeCalls) activeCalls[id].close();
-            activeCalls = {};
-            
-            document.getElementById('videoArea').innerHTML = '';
-            document.getElementById('videoArea').style.display = 'none';
-            document.getElementById('btnEnd').style.display = 'none';
-            logMsg('🔴 تم إنهاء البث/المكالمة', 'sys');
-        }
-
-        function toggleMic() {
-            if(myStream) {
-                isMicMuted = !isMicMuted;
-                myStream.getAudioTracks().forEach(t => t.enabled = !isMicMuted);
-                document.getElementById('btnMic').innerText = isMicMuted ? '🔇 مكتوم' : '🎤 مايك';
-                document.getElementById('btnMic').style.borderColor = isMicMuted ? '#ff4444' : 'var(--gold)';
+        
+        function handleCall(call) {
+            if(confirm('📞 اتصال وارد.. تريد الرد؟')) {
+                navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: call.metadata?.video || false
+                }).then(s => {
+                    myStream = s;
+                    
+                    if(call.metadata?.video) {
+                        document.getElementById('videoArea').style.display = 'block';
+                        document.getElementById('localVid').srcObject = s;
+                    }
+                    
+                    call.answer(s);
+                    setupCall(call);
+                    
+                }).catch(e => {
+                    showToast('❌ لا يمكن فتح الكاميرا/المايك', 'gold');
+                });
             } else {
-                showToast('لازم تبدأ اتصال أولاً عشان تتحكم بالمايك');
+                call.close();
             }
         }
+        
+        function setupCall(call) {
+            currentCall = call;
+            document.getElementById('endCallBtn').style.display = 'flex';
+            
+            call.on('stream', remoteStream => {
+                if(call.metadata?.video) {
+                    document.getElementById('remoteVid').srcObject = remoteStream;
+                } else {
+                    document.getElementById('remoteVoice').srcObject = remoteStream;
+                }
+            });
+            
+            call.on('close', () => endCall());
+        }
+        
+        function callAll(video) {
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: video
+            }).then(s => {
+                myStream = s;
+                
+                if(video) {
+                    document.getElementById('videoArea').style.display = 'block';
+                    document.getElementById('localVid').srcObject = s;
+                }
+                
+                conns.forEach(c => {
+                    let call = peer.call(c.peer, s, { metadata: { video: video } });
+                    setupCall(call);
+                });
+                
+                showToast(video ? '📹 مكالمة فيديو بدأت' : '📞 مكالمة صوتية بدأت', 'info');
+                
+            }).catch(e => {
+                showToast('❌ صلاحيات الكاميرا/المايك مطلوبة', 'gold');
+            });
+        }
+        
+        function endCall() {
+            if(currentCall) currentCall.close();
+            if(myStream) myStream.getTracks().forEach(t => t.stop());
+            
+            document.getElementById('videoArea').style.display = 'none';
+            document.getElementById('endCallBtn').style.display = 'none';
+            log('🔴 تم إنهاء المكالمة', 'sys');
+            showToast('🔴 انتهت المكالمة', 'info');
+        }
+        
+        function toggleMic() {
+            if(myStream) {
+                myStream.getAudioTracks().forEach(t => t.enabled = isMicMuted);
+                isMicMuted = !isMicMuted;
+                
+                document.getElementById('micBtn').style.background = isMicMuted ? '#ff4444' : '';
+                document.getElementById('micBtn').style.color = isMicMuted ? 'white' : '';
+                
+                showToast(isMicMuted ? '🔇 الميكروفون كاتم' : '🎤 الميكروفون شغال', 'info');
+            } else {
+                showToast('⚠️ مافيش مكالمة شغالة عشان تكتم المايك', 'gold');
+            }
+        }
+
+        // --- الإضافات الجديدة: تسجيل الصوت والمرفقات ---
+
+        // 1. نظام تسجيل الصوت وإرساله
+        async function toggleVoiceRecord() {
+            const recBtn = document.getElementById('recordBtn');
+            
+            if (!isRecordingVoice) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = e => {
+                        if (e.data.size > 0) audioChunks.push(e.data);
+                    };
+                    
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const dataUrl = e.target.result;
+                            const voiceData = { type: 'voice', user: myName, data: dataUrl };
+                            
+                            // عرض عندي
+                            renderMedia(voiceData, 'me');
+                            // ارسال للكل
+                            conns.forEach(c => c.send(voiceData));
+                        };
+                        reader.readAsDataURL(audioBlob);
+                        
+                        // إغلاق المايك بعد التسجيل
+                        stream.getTracks().forEach(track => track.stop()); 
+                    };
+                    
+                    mediaRecorder.start();
+                    isRecordingVoice = true;
+                    recBtn.style.background = '#ff4444';
+                    recBtn.style.color = 'white';
+                    recBtn.innerHTML = '⏹️';
+                    showToast('🔴 جاري التسجيل.. اضغط ثانية للإرسال', 'info');
+                    
+                } catch (err) {
+                    showToast('❌ لازم تسمح بالمايك أولاً', 'gold');
+                }
+            } else {
+                // إيقاف التسجيل وإرساله
+                mediaRecorder.stop();
+                isRecordingVoice = false;
+                recBtn.style.background = '';
+                recBtn.style.color = '';
+                recBtn.innerHTML = '🎙️';
+                showToast('✅ تم إرسال التسجيل', 'info');
+            }
+        }
+
+        // 2. نظام رفع الملفات (صور، فيديو، ألعاب...)
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            
+            // قراءة الملف وتحويله
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                const fileData = { 
+                    type: 'file', 
+                    user: myName, 
+                    filename: file.name, 
+                    filetype: file.type || 'unknown', 
+                    data: dataUrl 
+                };
+                
+                // عرض عندي
+                renderMedia(fileData, 'me');
+                // ارسال للكل
+                conns.forEach(c => c.send(fileData));
+            };
+            
+            // التنبيه لو كان الملف كبير جداً
+            if(file.size > 5000000) { 
+                showToast('⚠️ الملف كبير، قد يستغرق بعض الوقت للارسال', 'gold');
+            }
+            
+            reader.readAsDataURL(file);
+            event.target.value = ''; // تصفير الحقل
+        }
+
+        // دالة مساعدة لعرض الوسائط (صوت أو ملفات) في الشات
+        function renderMedia(d, typeStr) {
+            let htmlContent = '';
+            
+            if (d.type === 'voice') {
+                htmlContent = `<audio src="${d.data}" controls style="width: 100%; height: 40px; margin-top: 5px; border-radius: 20px; outline: none;"></audio>`;
+                log('🎤 رسالة صوتية', typeStr, d.user, htmlContent);
+            } 
+            else if (d.type === 'file') {
+                if(d.filetype.startsWith('image/')) {
+                    htmlContent = `<img src="${d.data}" style="max-width:100%; border-radius:15px; margin-top:5px; border: 2px solid var(--neon);">`;
+                } else if (d.filetype.startsWith('video/')) {
+                    htmlContent = `<video src="${d.data}" controls style="max-width:100%; border-radius:15px; margin-top:5px; border: 2px solid var(--neon);"></video>`;
+                } else {
+                    htmlContent = `<div style="background: var(--input-bg); padding: 10px; border-radius: 10px; margin-top: 5px; text-align: center; border: 1px solid var(--gold);">
+                        <a href="${d.data}" download="${d.filename}" style="color:var(--gold); text-decoration:none; font-weight: bold;">
+                            📥 تحميل الملف:<br><span style="font-size:12px; color:#fff;">${d.filename}</span>
+                        </a>
+                    </div>`;
+                }
+                log('', typeStr, d.user, htmlContent);
+            }
+        }
+        
+        // --- نهاية الإضافات ---
+
+        // دالة الشات الأساسية (تم تعديلها لتقبل مرفقات html)
+        function log(msg, type, user = null, attachmentHtml = null) {
+            const div = document.createElement('div');
+            div.className = `msg ${type}`;
+            
+            let finalContent = '';
+            
+            if(type === 'sys') {
+                finalContent = `⚡ ${msg}`;
+            } else {
+                // تحويل @ mentions
+                let formattedMsg = msg ? msg.replace(/@(\w+)/g, '<span style="background: #FFD70033; padding: 2px 5px; border-radius: 10px; color: #FFD700;">@$1</span>') : '';
+                finalContent = user ? `<b>${user}</b><br>${formattedMsg}` : formattedMsg;
+            }
+            
+            // إضافة المرفقات لو موجودة
+            if(attachmentHtml) {
+                finalContent += attachmentHtml;
+            }
+            
+            div.innerHTML = finalContent;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function send() {
+            const input = document.getElementById('msgInput');
+            const text = input.value.trim();
+            
+            if(!text) return;
+            
+            // عرض عندي
+            log(text, 'me', myName);
+            
+            // ارسال للكل
+            conns.forEach(c => {
+                c.send({ type: 'msg', user: myName, text: text });
+            });
+            
+            input.value = '';
+            input.focus();
+        }
+        
+        // تحذير الخروج
+        window.onbeforeunload = function() {
+            return "انت خارج من المنظومة!";
+        };
     </script>
 </body>
 </html>
