@@ -35,7 +35,6 @@
             overflow-x: hidden;
         }
         
-        /* خلفية متحركة */
         body::before {
             content: '';
             position: fixed;
@@ -50,7 +49,6 @@
             z-index: 0;
         }
         
-        /* الهيدر */
         .header {
             text-align: center;
             padding: 15px;
@@ -85,7 +83,6 @@
             box-shadow: 0 0 20px var(--gold);
         }
         
-        /* صندوق التسجيل */
         .setup-box {
             background: var(--card-bg);
             border: 2px solid var(--neon);
@@ -118,11 +115,6 @@
             outline: none;
         }
         
-        .setup-box input::placeholder {
-            color: #888;
-            font-size: 16px;
-        }
-        
         .btn-enter {
             width: 100%;
             padding: 18px;
@@ -143,40 +135,46 @@
             box-shadow: 0 0 50px var(--gold);
         }
         
-        /* منطقة الفيديو */
+        /* شبكة الفيديو الجماعية (Video Grid) */
         #videoArea {
             display: none;
-            position: relative;
             width: 100%;
-            height: 250px;
-            background: black;
-            border-radius: 25px;
-            border: 3px solid var(--gold);
+            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             margin-bottom: 20px;
-            overflow: hidden;
-            box-shadow: 0 0 40px var(--gold);
             z-index: 10;
+            position: relative;
         }
         
-        #remoteVid {
+        .video-card {
+            position: relative;
+            background: black;
+            border-radius: 20px;
+            border: 2px solid var(--gold);
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            aspect-ratio: 4/3;
+        }
+        
+        .video-card video {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
         
-        #localVid {
-            width: 120px;
-            height: 90px;
+        .video-card .user-label {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
-            border: 3px solid var(--neon);
-            border-radius: 15px;
-            object-fit: cover;
-            box-shadow: 0 0 20px var(--neon);
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: var(--gold);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid var(--gold);
         }
         
-        /* منطقة الشات */
         #chat {
             flex: 1;
             background: rgba(26, 30, 36, 0.8);
@@ -192,10 +190,9 @@
             box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
             z-index: 10;
             min-height: 300px;
-            max-height: 400px;
+            max-height: 450px;
         }
         
-        /* الرسائل */
         .msg {
             padding: 12px 18px;
             border-radius: 20px;
@@ -243,7 +240,6 @@
             margin-bottom: 5px;
         }
         
-        /* شريط الإدخال */
         .input-row {
             display: flex;
             gap: 10px;
@@ -260,7 +256,7 @@
         }
         
         .tool-btn {
-            width: 45px; /* صغرتها شوية عشان تناسب الإضافات الجديدة */
+            width: 45px;
             height: 45px;
             border-radius: 50%;
             background: var(--input-bg);
@@ -301,11 +297,6 @@
             outline: none;
         }
         
-        #msgInput::placeholder {
-            color: #888;
-            font-size: 14px;
-        }
-        
         .btn-send {
             background: linear-gradient(45deg, var(--gold), #FFA500);
             border: none;
@@ -320,18 +311,12 @@
             min-width: 80px;
         }
         
-        .btn-send:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 35px var(--gold);
-        }
-        
         #endCallBtn {
             background: #ff4444 !important;
             border-color: white !important;
             color: white !important;
         }
         
-        /* الإشعارات */
         #toastContainer {
             position: fixed;
             bottom: 20px;
@@ -375,23 +360,20 @@
         <button class="btn-enter" onclick="initFadi()">🚀 ادخل المنظومة</button>
     </div>
     
-    <div id="videoArea">
-        <video id="remoteVid" autoplay playsinline></video>
-        <video id="localVid" autoplay muted playsinline></video>
-    </div>
+    <!-- شبكة شاشات الفيديو الجماعية -->
+    <div id="videoArea"></div>
     
     <div id="chat"></div>
-    <audio id="remoteVoice" autoplay></audio>
+    <div id="audioContainer"></div>
     
-    <!-- مدخل الملفات المخفي -->
     <input type="file" id="fileInput" style="display:none;" onchange="handleFileUpload(event)">
 
     <div class="input-row" id="inputSection" style="display:none;">
         <button class="tool-btn" title="مرفقات وملفات" onclick="document.getElementById('fileInput').click()">📎</button>
         <button class="tool-btn" id="recordBtn" title="تسجيل رسالة صوتية" onclick="toggleVoiceRecord()">🎙️</button>
-        <button class="tool-btn" id="micBtn" title="كتم/تشغيل المايك في المكالمة" onclick="toggleMic()">🎤</button>
-        <button class="tool-btn" title="مكالمة صوتية" onclick="callAll(false)">📞</button>
-        <button class="tool-btn" title="مكالمة فيديو" onclick="callAll(true)">🎥</button>
+        <button class="tool-btn" id="micBtn" title="كتم/تشغيل المايك" onclick="toggleMic()">🎤</button>
+        <button class="tool-btn" title="مكالمة صوتية جماعية" onclick="startGroupCall(false)">📞</button>
+        <button class="tool-btn" title="مكالمة فيديو جماعية" onclick="startGroupCall(true)">🎥</button>
         <button class="tool-btn" id="endCallBtn" title="إنهاء المكالمة" onclick="endCall()" style="display: none;">🛑</button>
         
         <input type="text" id="msgInput" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter') send()">
@@ -399,27 +381,29 @@
     </div>
 
     <script>
-        let peer, myName, myRoom, conns = [], currentCall, myStream;
+        let peer, myName, myRoom, myPeerId;
+        let conns = {}; // حفظ الاتصالات مع المعرفات
+        let activeCalls = {};
+        let myStream = null;
         let isMicMuted = false;
-        
-        // متغيرات تسجيل الصوت
+        let isHost = false;
+        let peersList = {}; // قائمة أسماء الأعضاء المتصلين
+
         let mediaRecorder;
         let audioChunks = [];
         let isRecordingVoice = false;
 
         const chatBox = document.getElementById('chat');
         const toastContainer = document.getElementById('toastContainer');
+        const videoArea = document.getElementById('videoArea');
+        const audioContainer = document.getElementById('audioContainer');
         
         const cfg = {
             config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
-                ]
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
             }
         };
         
-        // نظام الإشعارات
         function showToast(msg, type = 'info') {
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -429,7 +413,6 @@
             setTimeout(() => toast.remove(), 3000);
         }
         
-        // بداية التشغيل
         function initFadi() {
             myName = document.getElementById('userName').value.trim();
             myRoom = document.getElementById('roomNum').value.trim();
@@ -447,173 +430,225 @@
         }
         
         function tryHost() {
-            peer = new Peer(myRoom, cfg);
+            myPeerId = myRoom;
+            peer = new Peer(myPeerId, cfg);
             
             peer.on('open', () => {
+                isHost = true;
                 document.getElementById('roleBadge').textContent = '👑 زعيم المجموعة';
-                log('👑 انت الزعيم.. المجموعة جاهزة', 'sys');
-                showToast('👑 انت الزعيم', 'gold');
+                log('👑 أنت الزعيم.. الغرفة جاهزة للمتصلين', 'sys');
+                showToast('👑 أنت الزعيم', 'gold');
                 
-                peer.on('connection', c => {
-                    conns.push(c);
-                    handleConn(c, true);
-                    showToast('📱 عضو جديد انضم', 'info');
-                });
-                
-                peer.on('call', call => handleCall(call));
+                setupPeerEvents();
             });
             
             peer.on('error', err => {
                 if(err.type === 'unavailable-id') {
                     joinRoom();
                 } else {
-                    showToast('⚠️ خطأ: ' + err.type, 'gold');
+                    showToast('⚠️ خطأ اتصال: ' + err.type, 'gold');
                 }
             });
         }
         
         function joinRoom() {
-            peer = new Peer(myRoom + '-' + Math.floor(Math.random() * 9999), cfg);
+            isHost = false;
+            myPeerId = myRoom + '-' + Math.floor(Math.random() * 9000 + 1000);
+            peer = new Peer(myPeerId, cfg);
             
             peer.on('open', () => {
                 document.getElementById('roleBadge').textContent = '👤 عضو في المجموعة';
-                log('✅ دخلت المجموعة', 'sys');
-                showToast('✅ تم الاتصال', 'info');
+                log('✅ دخلت المجموعة بنجاح', 'sys');
+                showToast('✅ تم الاتصال بالغرفة', 'info');
                 
-                let c = peer.connect(myRoom);
-                conns.push(c);
-                handleConn(c, false);
+                setupPeerEvents();
+                let hostConn = peer.connect(myRoom);
+                handleNewConnection(hostConn);
             });
-            
-            peer.on('call', call => handleCall(call));
         }
-        
-        function handleConn(c, isHost) {
+
+        function setupPeerEvents() {
+            peer.on('connection', conn => handleNewConnection(conn));
+            peer.on('call', call => handleIncomingCall(call));
+        }
+
+        function handleNewConnection(c) {
             c.on('open', () => {
-                c.send({ type: 'join', user: myName });
+                conns[c.peer] = c;
+                c.send({ type: 'join', user: myName, peerId: myPeerId });
             });
+
+            c.on('data', d => handleIncomingData(d, c));
             
-            c.on('data', d => {
-                // إعادة توجيه من الزعيم للبقية
-                if(isHost && d.type !== 'join') {
-                    conns.forEach(client => {
-                        if(client !== c) client.send(d);
-                    });
+            c.on('close', () => {
+                if(peersList[c.peer]) {
+                    log(`🔻 غادر ${peersList[c.peer]} المجموعة`, 'sys');
+                    delete peersList[c.peer];
                 }
-                
-                if(d.type === 'msg') {
-                    log(d.text, 'other', d.user);
-                    if(d.text.includes('@' + myName)) {
-                        showToast(`💬 ${d.user} منشن لك`, 'gold');
-                    }
-                }
-                
-                if(d.type === 'join') {
-                    log(d.user + ' انضم للمجموعة', 'sys');
-                }
-
-                // استقبال الملفات
-                if(d.type === 'file') {
-                    renderMedia(d, 'other');
-                }
-
-                // استقبال الرسائل الصوتية
-                if(d.type === 'voice') {
-                    renderMedia(d, 'other');
-                }
+                delete conns[c.peer];
+                removeVideoElement(c.peer);
             });
         }
-        
-        function handleCall(call) {
-            if(confirm('📞 اتصال وارد.. تريد الرد؟')) {
+
+        function handleIncomingData(d, conn) {
+            if(d.type === 'join') {
+                peersList[d.peerId] = d.user;
+                log(`${d.user} انضم للمجموعة`, 'sys');
+
+                // إذا كان الزعيم، يرسل قائمة بقية الأعضاء للعضو الجديد ليتصل بهم جميعاً (Full Mesh)
+                if(isHost) {
+                    let allPeers = Object.keys(conns).map(id => ({ id: id, name: peersList[id] }));
+                    conn.send({ type: 'peers_list', list: allPeers });
+                }
+            }
+
+            if(d.type === 'peers_list') {
+                d.list.forEach(item => {
+                    if(item.id !== myPeerId && !conns[item.id]) {
+                        peersList[item.id] = item.name;
+                        let newConn = peer.connect(item.id);
+                        handleNewConnection(newConn);
+                    }
+                });
+            }
+
+            if(d.type === 'msg') {
+                log(d.text, 'other', d.user);
+                if(d.text.includes('@' + myName)) {
+                    showToast(`💬 ${d.user} أشار إليك`, 'gold');
+                }
+            }
+
+            if(d.type === 'file' || d.type === 'voice') {
+                renderMedia(d, 'other');
+            }
+        }
+
+        // --- إدارة مكالمات الفيديو والصوت الجماعية المباشرة ---
+
+        function startGroupCall(isVideo) {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: isVideo }).then(stream => {
+                myStream = stream;
+                document.getElementById('endCallBtn').style.display = 'flex';
+                videoArea.style.display = 'grid';
+
+                // إضافة الشاشة المحلية أولاً
+                addVideoElement(myPeerId, myName + ' (أنت)', myStream, true);
+
+                // الاتصال بجميع المشتركين معاً
+                Object.keys(conns).forEach(targetPeerId => {
+                    let call = peer.call(targetPeerId, myStream, { metadata: { user: myName, video: isVideo } });
+                    setupCallStream(call);
+                });
+
+                showToast(isVideo ? '📹 بدأت المكالمة الجماعية' : '📞 بدأت المكالمة الصوتية', 'info');
+
+            }).catch(err => {
+                showToast('❌ يتطلب الإذن للوصول للمايك والكاميرا', 'gold');
+            });
+        }
+
+        function handleIncomingCall(call) {
+            if(confirm(`📞 مكالمة واردة من ${call.metadata?.user || 'عضو'}.. هل تريد الرد؟`)) {
                 navigator.mediaDevices.getUserMedia({
                     audio: true,
                     video: call.metadata?.video || false
-                }).then(s => {
-                    myStream = s;
-                    
-                    if(call.metadata?.video) {
-                        document.getElementById('videoArea').style.display = 'block';
-                        document.getElementById('localVid').srcObject = s;
-                    }
-                    
-                    call.answer(s);
-                    setupCall(call);
-                    
-                }).catch(e => {
-                    showToast('❌ لا يمكن فتح الكاميرا/المايك', 'gold');
+                }).then(stream => {
+                    myStream = stream;
+                    document.getElementById('endCallBtn').style.display = 'flex';
+                    videoArea.style.display = 'grid';
+
+                    addVideoElement(myPeerId, myName + ' (أنت)', myStream, true);
+                    call.answer(stream);
+                    setupCallStream(call);
+
+                }).catch(() => {
+                    showToast('❌ تعذر فتح الكاميرا أو المايك', 'gold');
                 });
             } else {
                 call.close();
             }
         }
-        
-        function setupCall(call) {
-            currentCall = call;
-            document.getElementById('endCallBtn').style.display = 'flex';
-            
+
+        function setupCallStream(call) {
+            activeCalls[call.peer] = call;
+
             call.on('stream', remoteStream => {
-                if(call.metadata?.video) {
-                    document.getElementById('remoteVid').srcObject = remoteStream;
-                } else {
-                    document.getElementById('remoteVoice').srcObject = remoteStream;
-                }
+                let remoteUserName = call.metadata?.user || peersList[call.peer] || 'عضو';
+                addVideoElement(call.peer, remoteUserName, remoteStream, false);
             });
-            
-            call.on('close', () => endCall());
-        }
-        
-        function callAll(video) {
-            navigator.mediaDevices.getUserMedia({
-                audio: true,
-                video: video
-            }).then(s => {
-                myStream = s;
-                
-                if(video) {
-                    document.getElementById('videoArea').style.display = 'block';
-                    document.getElementById('localVid').srcObject = s;
-                }
-                
-                conns.forEach(c => {
-                    let call = peer.call(c.peer, s, { metadata: { video: video } });
-                    setupCall(call);
-                });
-                
-                showToast(video ? '📹 مكالمة فيديو بدأت' : '📞 مكالمة صوتية بدأت', 'info');
-                
-            }).catch(e => {
-                showToast('❌ صلاحيات الكاميرا/المايك مطلوبة', 'gold');
+
+            call.on('close', () => {
+                removeVideoElement(call.peer);
             });
         }
-        
-        function endCall() {
-            if(currentCall) currentCall.close();
-            if(myStream) myStream.getTracks().forEach(t => t.stop());
-            
-            document.getElementById('videoArea').style.display = 'none';
-            document.getElementById('endCallBtn').style.display = 'none';
-            log('🔴 تم إنهاء المكالمة', 'sys');
-            showToast('🔴 انتهت المكالمة', 'info');
+
+        function addVideoElement(peerId, labelName, stream, isMuted) {
+            if(document.getElementById('vid-card-' + peerId)) return;
+
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.id = 'vid-card-' + peerId;
+
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.autoplay = true;
+            video.playsInline = true;
+            if(isMuted) video.muted = true;
+
+            const label = document.createElement('div');
+            label.className = 'user-label';
+            label.textContent = labelName;
+
+            card.appendChild(video);
+            card.appendChild(label);
+            videoArea.appendChild(card);
         }
-        
-        function toggleMic() {
-            if(myStream) {
-                myStream.getAudioTracks().forEach(t => t.enabled = isMicMuted);
-                isMicMuted = !isMicMuted;
-                
-                document.getElementById('micBtn').style.background = isMicMuted ? '#ff4444' : '';
-                document.getElementById('micBtn').style.color = isMicMuted ? 'white' : '';
-                
-                showToast(isMicMuted ? '🔇 الميكروفون كاتم' : '🎤 الميكروفون شغال', 'info');
-            } else {
-                showToast('⚠️ مافيش مكالمة شغالة عشان تكتم المايك', 'gold');
+
+        function removeVideoElement(peerId) {
+            const card = document.getElementById('vid-card-' + peerId);
+            if(card) card.remove();
+
+            if(videoArea.children.length === 0) {
+                videoArea.style.display = 'none';
             }
         }
 
-        // --- الإضافات الجديدة: تسجيل الصوت والمرفقات ---
+        function endCall() {
+            Object.values(activeCalls).forEach(call => call.close());
+            activeCalls = {};
 
-        // 1. نظام تسجيل الصوت وإرساله
+            if(myStream) {
+                myStream.getTracks().forEach(track => track.stop());
+                myStream = null;
+            }
+
+            videoArea.innerHTML = '';
+            videoArea.style.display = 'none';
+            document.getElementById('endCallBtn').style.display = 'none';
+            showToast('🔴 انتهت المكالمة الجماعية', 'info');
+        }
+
+        function toggleMic() {
+            if(myStream) {
+                let audioTrack = myStream.getAudioTracks()[0];
+                if(audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    isMicMuted = !audioTrack.enabled;
+
+                    const btn = document.getElementById('micBtn');
+                    btn.style.background = isMicMuted ? '#ff4444' : '';
+                    btn.style.color = isMicMuted ? 'white' : '';
+
+                    showToast(isMicMuted ? '🔇 تم كتم الميكروفون' : '🎤 الميكروفون يعمل', 'info');
+                }
+            } else {
+                showToast('⚠️ لا توجد مكالمة جارية للكتم', 'gold');
+            }
+        }
+
+        // --- التسجيلات المباشرة والمرفقات ---
+
         async function toggleVoiceRecord() {
             const recBtn = document.getElementById('recordBtn');
             
@@ -631,17 +666,11 @@
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                         const reader = new FileReader();
                         reader.onload = (e) => {
-                            const dataUrl = e.target.result;
-                            const voiceData = { type: 'voice', user: myName, data: dataUrl };
-                            
-                            // عرض عندي
+                            const voiceData = { type: 'voice', user: myName, data: e.target.result };
                             renderMedia(voiceData, 'me');
-                            // ارسال للكل
-                            conns.forEach(c => c.send(voiceData));
+                            broadcastData(voiceData);
                         };
                         reader.readAsDataURL(audioBlob);
-                        
-                        // إغلاق المايك بعد التسجيل
                         stream.getTracks().forEach(track => track.stop()); 
                     };
                     
@@ -653,52 +682,48 @@
                     showToast('🔴 جاري التسجيل.. اضغط ثانية للإرسال', 'info');
                     
                 } catch (err) {
-                    showToast('❌ لازم تسمح بالمايك أولاً', 'gold');
+                    showToast('❌ يلزم السماح بالمايك للتسجيل', 'gold');
                 }
             } else {
-                // إيقاف التسجيل وإرساله
                 mediaRecorder.stop();
                 isRecordingVoice = false;
                 recBtn.style.background = '';
                 recBtn.style.color = '';
                 recBtn.innerHTML = '🎙️';
-                showToast('✅ تم إرسال التسجيل', 'info');
+                showToast('✅ تم إرسال التسجيل الصوتي', 'info');
             }
         }
 
-        // 2. نظام رفع الملفات (صور، فيديو، ألعاب...)
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if(!file) return;
             
-            // قراءة الملف وتحويله
             const reader = new FileReader();
             reader.onload = (e) => {
-                const dataUrl = e.target.result;
                 const fileData = { 
                     type: 'file', 
                     user: myName, 
                     filename: file.name, 
                     filetype: file.type || 'unknown', 
-                    data: dataUrl 
+                    data: e.target.result 
                 };
                 
-                // عرض عندي
                 renderMedia(fileData, 'me');
-                // ارسال للكل
-                conns.forEach(c => c.send(fileData));
+                broadcastData(fileData);
             };
             
-            // التنبيه لو كان الملف كبير جداً
-            if(file.size > 5000000) { 
-                showToast('⚠️ الملف كبير، قد يستغرق بعض الوقت للارسال', 'gold');
+            if(file.size > 10000000) { 
+                showToast('⚠️ حجم الملف كبير، قد يستغرق لحظات للوصول', 'gold');
             }
             
             reader.readAsDataURL(file);
-            event.target.value = ''; // تصفير الحقل
+            event.target.value = '';
         }
 
-        // دالة مساعدة لعرض الوسائط (صوت أو ملفات) في الشات
+        function broadcastData(dataObj) {
+            Object.values(conns).forEach(c => c.send(dataObj));
+        }
+
         function renderMedia(d, typeStr) {
             let htmlContent = '';
             
@@ -721,10 +746,7 @@
                 log('', typeStr, d.user, htmlContent);
             }
         }
-        
-        // --- نهاية الإضافات ---
 
-        // دالة الشات الأساسية (تم تعديلها لتقبل مرفقات html)
         function log(msg, type, user = null, attachmentHtml = null) {
             const div = document.createElement('div');
             div.className = `msg ${type}`;
@@ -734,12 +756,10 @@
             if(type === 'sys') {
                 finalContent = `⚡ ${msg}`;
             } else {
-                // تحويل @ mentions
                 let formattedMsg = msg ? msg.replace(/@(\w+)/g, '<span style="background: #FFD70033; padding: 2px 5px; border-radius: 10px; color: #FFD700;">@$1</span>') : '';
                 finalContent = user ? `<b>${user}</b><br>${formattedMsg}` : formattedMsg;
             }
             
-            // إضافة المرفقات لو موجودة
             if(attachmentHtml) {
                 finalContent += attachmentHtml;
             }
@@ -755,21 +775,15 @@
             
             if(!text) return;
             
-            // عرض عندي
             log(text, 'me', myName);
-            
-            // ارسال للكل
-            conns.forEach(c => {
-                c.send({ type: 'msg', user: myName, text: text });
-            });
+            broadcastData({ type: 'msg', user: myName, text: text });
             
             input.value = '';
             input.focus();
         }
         
-        // تحذير الخروج
         window.onbeforeunload = function() {
-            return "انت خارج من المنظومة!";
+            return "هل أنت تأكد من خروجك من المنظومة؟";
         };
     </script>
 </body>
