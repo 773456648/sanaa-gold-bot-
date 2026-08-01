@@ -495,7 +495,6 @@
                 peersList[d.peerId] = d.user;
                 log(`${d.user} انضم للمجموعة`, 'sys');
 
-                // إذا كان الزعيم، يرسل قائمة بقية الأعضاء للعضو الجديد ليتصل بهم جميعاً (Full Mesh)
                 if(isHost) {
                     let allPeers = Object.keys(conns).map(id => ({ id: id, name: peersList[id] }));
                     conn.send({ type: 'peers_list', list: allPeers });
@@ -524,24 +523,51 @@
             }
         }
 
-        // --- إدارة مكالمات الفيديو والصوت الجماعية المباشرة ---
+        // --- إدارة مكالمات الفيديو والصوت الجماعية المباشرة (مع توفير النت) ---
+
+        // دالة جديدة للتحكم في استهلاك الإنترنت أثناء المكالمة ومنع التقطيع
+        function optimizeBandwidth(peerConnection) {
+            if (!peerConnection) return;
+            const senders = peerConnection.getSenders();
+            senders.forEach(sender => {
+                if (sender.track && sender.track.kind === 'video') {
+                    const parameters = sender.getParameters();
+                    if (!parameters.encodings) parameters.encodings = [{}];
+                    
+                    // تحديد أقصى معدل نقل بـ 600 كيلوبت (يحافظ على جودة الصورة ويوفر النت جداً)
+                    parameters.encodings[0].maxBitrate = 600000; 
+                    sender.setParameters(parameters).catch(e => console.log('Bitrate tweak error:', e));
+                }
+            });
+        }
 
         function startGroupCall(isVideo) {
-            navigator.mediaDevices.getUserMedia({ audio: true, video: isVideo }).then(stream => {
+            // إضافة قيود الكاميرا والمايك لدقة ثابتة وموفرة للبيانات
+            const mediaConstraints = {
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true
+                },
+                video: isVideo ? {
+                    width: { ideal: 1280, max: 1280 },
+                    height: { ideal: 720, max: 720 },
+                    frameRate: { ideal: 15, max: 24 } // تقليل الإطارات يمنع التقطيع تماماً
+                } : false
+            };
+
+            navigator.mediaDevices.getUserMedia(mediaConstraints).then(stream => {
                 myStream = stream;
                 document.getElementById('endCallBtn').style.display = 'flex';
                 videoArea.style.display = 'grid';
 
-                // إضافة الشاشة المحلية أولاً
                 addVideoElement(myPeerId, myName + ' (أنت)', myStream, true);
 
-                // الاتصال بجميع المشتركين معاً
                 Object.keys(conns).forEach(targetPeerId => {
                     let call = peer.call(targetPeerId, myStream, { metadata: { user: myName, video: isVideo } });
                     setupCallStream(call);
                 });
 
-                showToast(isVideo ? '📹 بدأت المكالمة الجماعية' : '📞 بدأت المكالمة الصوتية', 'info');
+                showToast(isVideo ? '📹 بدأت المكالمة (بوضع توفير البيانات والـ HD)' : '📞 بدأت المكالمة الصوتية', 'info');
 
             }).catch(err => {
                 showToast('❌ يتطلب الإذن للوصول للمايك والكاميرا', 'gold');
@@ -550,10 +576,21 @@
 
         function handleIncomingCall(call) {
             if(confirm(`📞 مكالمة واردة من ${call.metadata?.user || 'عضو'}.. هل تريد الرد؟`)) {
-                navigator.mediaDevices.getUserMedia({
-                    audio: true,
-                    video: call.metadata?.video || false
-                }).then(stream => {
+                
+                // تطبيق نفس القيود الموفرة للبيانات على المستلم أيضاً
+                const mediaConstraints = {
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    },
+                    video: call.metadata?.video ? {
+                        width: { ideal: 1280, max: 1280 },
+                        height: { ideal: 720, max: 720 },
+                        frameRate: { ideal: 15, max: 24 }
+                    } : false
+                };
+
+                navigator.mediaDevices.getUserMedia(mediaConstraints).then(stream => {
                     myStream = stream;
                     document.getElementById('endCallBtn').style.display = 'flex';
                     videoArea.style.display = 'grid';
@@ -572,6 +609,11 @@
 
         function setupCallStream(call) {
             activeCalls[call.peer] = call;
+
+            // تطبيق ضغط البيانات فوراً على الاتصال لمنع سحب الإنترنت بقوة
+            if (call.peerConnection) {
+                optimizeBandwidth(call.peerConnection);
+            }
 
             call.on('stream', remoteStream => {
                 let remoteUserName = call.metadata?.user || peersList[call.peer] || 'عضو';
@@ -783,7 +825,7 @@
         }
         
         window.onbeforeunload = function() {
-            return "هل أنت تأكد من خروجك من المنظومة؟";
+            return "هل أنت متأكد من خروجك من المنظومة؟";
         };
     </script>
 </body>
